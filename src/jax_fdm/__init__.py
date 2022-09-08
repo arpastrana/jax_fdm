@@ -16,6 +16,10 @@ from __future__ import print_function
 
 import os
 
+# this only works on startup!
+from jax.config import config
+config.update("jax_enable_x64", True)
+
 
 __author__ = ["Rafael Pastrana"]
 __copyright__ = "Rafael Pastrana"
@@ -33,3 +37,4 @@ TEMP = os.path.abspath(os.path.join(HOME, "temp"))
 
 
 __all__ = ["HOME", "DATA", "DOCS", "TEMP"]
+
