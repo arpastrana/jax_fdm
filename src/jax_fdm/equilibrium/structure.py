@@ -1,3 +1,4 @@
+import numpy as np
 import jax.numpy as jnp
 
 from compas.numerical import connectivity_matrix
@@ -57,7 +58,7 @@ class EquilibriumStructure:
         if self._connectivity is None:
             node_idx = self.node_index
             edges = [(node_idx[u], node_idx[v]) for u, v in self.network.edges()]
-            self._connectivity = jnp.array(connectivity_matrix(edges, "list"), dtype=np.float64)
+            self._connectivity = np.array(connectivity_matrix(edges, "list"), dtype=np.float64)
         return self._connectivity
 
     @property
@@ -75,7 +76,7 @@ class EquilibriumStructure:
         Returns a list with the keys of the anchored nodes.
         """
         if not self._fixed_nodes:
-            self._fixed_nodes = [self.node_index[node] for node in self.network.nodes_supports()]
+            self._fixed_nodes = [self.node_index[node] for node in self.network.nodes_fixed()]
         return self._fixed_nodes
 
     @property
@@ -90,6 +91,6 @@ class EquilibriumStructure:
             sorted_indices = []
             for _, index in sorted(indices.items(), key=lambda item: item[0]):
                 sorted_indices.append(index)
-            self._freefixed_nodes = sorted_indices
+            self._freefixed_nodes = tuple(sorted_indices)
 
         return self._freefixed_nodes

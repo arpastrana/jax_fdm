@@ -1,4 +1,4 @@
-from dfdm.goals import Goal
+from jax_fdm.goals import Goal
 
 
 class NodeGoal(Goal):

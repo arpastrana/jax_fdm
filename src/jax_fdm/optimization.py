@@ -15,7 +15,7 @@ from scipy.optimize import NonlinearConstraint
 
 from compas.data import Data
 
-from dfdm.equilibrium import EquilibriumModel
+from jax_fdm.equilibrium import EquilibriumModel
 
 
 # ==========================================================================

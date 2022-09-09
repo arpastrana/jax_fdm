@@ -3,9 +3,9 @@ import jax.numpy as jnp
 from compas.geometry import closest_point_on_line
 from compas.geometry import closest_point_on_plane
 
-from dfdm.goals import VectorGoal
+from jax_fdm.goals import VectorGoal
 
-from dfdm.goals.nodegoal import NodeGoal
+from jax_fdm.goals.nodegoal import NodeGoal
 
 
 class PointGoal(VectorGoal, NodeGoal):

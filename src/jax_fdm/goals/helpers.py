@@ -1,6 +1,6 @@
 import jax.numpy as jnp
 
-from dfdm.goals import GoalState
+from jax_fdm.goals import GoalState
 
 
 # ==========================================================================

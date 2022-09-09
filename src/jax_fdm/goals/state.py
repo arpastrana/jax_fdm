@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from collections import namedtuple
 
 import jax.numpy as jnp
 

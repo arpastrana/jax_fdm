@@ -1,6 +1,6 @@
 import jax.numpy as jnp
 
-from dfdm.equilibrium.model import EquilibriumModel
+from jax_fdm.equilibrium.model import EquilibriumModel
 
 
 # ==========================================================================
@@ -68,7 +68,6 @@ def network_update(network, eq_state):
     forcedensities = eq_state.force_densities.tolist()
 
     # update q values and lengths on edges
-    # for idx, edge in enumerate(network.edges()):
     for idx, edge in network.index_uv().items():
         network.edge_attribute(edge, name="length", value=lengths[idx])
         network.edge_attribute(edge, name="force", value=forces[idx])
@@ -76,7 +75,6 @@ def network_update(network, eq_state):
 
     # update residuals on nodes
     for idx, node in network.index_key().items():
-    # for idx, node in enumerate(network.nodes()):
         for name, value in zip("xyz", xyz[idx]):
             network.node_attribute(node, name=name, value=value)
 

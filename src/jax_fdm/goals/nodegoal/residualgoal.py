@@ -3,10 +3,10 @@ A bunch of goals to strive for.
 """
 import jax.numpy as jnp
 
-from dfdm.goals import ScalarGoal
-from dfdm.goals import VectorGoal
+from jax_fdm.goals import ScalarGoal
+from jax_fdm.goals import VectorGoal
 
-from dfdm.goals.nodegoal import NodeGoal
+from jax_fdm.goals.nodegoal import NodeGoal
 
 
 class ResidualForceGoal(ScalarGoal, NodeGoal):
@@ -67,4 +67,5 @@ class ResidualDirectionGoal(VectorGoal, NodeGoal):
     def target(self, prediction):
         """
         """
-        return self._target / jnp.linalg.norm(self._target)
+        target = jnp.array(self._target)
+        return target / jnp.linalg.norm(target)

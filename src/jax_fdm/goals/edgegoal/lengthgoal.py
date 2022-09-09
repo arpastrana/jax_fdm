@@ -1,7 +1,7 @@
 import jax.numpy as jnp
 
-from dfdm.goals import ScalarGoal
-from dfdm.goals.edgegoal import EdgeGoal
+from jax_fdm.goals import ScalarGoal
+from jax_fdm.goals.edgegoal import EdgeGoal
 
 
 class LengthGoal(ScalarGoal, EdgeGoal):

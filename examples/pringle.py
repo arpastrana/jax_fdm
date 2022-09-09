@@ -17,20 +17,20 @@ from compas.geometry import length_vector
 from compas_view2.app import App
 
 # static equilibrium
-from dfdm.datastructures import FDNetwork
+from jax_fdm.datastructures import FDNetwork
 
-from dfdm.equilibrium import constrained_fdm
-from dfdm.equilibrium import EquilibriumModel
+from jax_fdm.equilibrium import constrained_fdm
+from jax_fdm.equilibrium import EquilibriumModel
 
-from dfdm.goals import LengthGoal
-from dfdm.goals import PlaneGoal
-from dfdm.goals import ResidualForceGoal
+from jax_fdm.goals import LengthGoal
+from jax_fdm.goals import PlaneGoal
+from jax_fdm.goals import ResidualForceGoal
 
-from dfdm.losses import Loss
-from dfdm.losses import SquaredError
+from jax_fdm.losses import Loss
+from jax_fdm.losses import SquaredError
 
-from dfdm.optimization import SLSQP
-from dfdm.optimization import OptimizationRecorder
+from jax_fdm.optimization import SLSQP
+from jax_fdm.optimization import OptimizationRecorder
 
 # ==========================================================================
 # Initial parameters
