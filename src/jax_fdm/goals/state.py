@@ -1,11 +1,9 @@
-from dataclasses import dataclass
-from collections import namedtuple
+from typing import NamedTuple
 
 import jax.numpy as jnp
 
 
-@dataclass
-class GoalState:
+class GoalState(NamedTuple):
     prediction: jnp.ndarray
     target: jnp.ndarray
     weight: jnp.ndarray

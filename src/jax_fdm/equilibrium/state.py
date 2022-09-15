@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from typing import NamedTuple
 
 import jax.numpy as jnp
 
@@ -7,9 +7,7 @@ import jax.numpy as jnp
 # Equilibrium state
 # ==========================================================================
 
-# TODO: A method that reindexes state arrays to match network indexing
-@dataclass
-class EquilibriumState:
+class EquilibriumState(NamedTuple):
     xyz: jnp.ndarray
     residuals: jnp.ndarray
     lengths: jnp.ndarray
