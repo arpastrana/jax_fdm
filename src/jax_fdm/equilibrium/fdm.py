@@ -33,7 +33,7 @@ def fdm(network):
 # ==========================================================================
 
 
-def constrained_fdm(network, optimizer, loss, bounds=(None, None), constraints=None, maxiter=100, tol=1e-6, callback=None):
+def constrained_fdm(network, optimizer, loss, bounds=(None, None), constraints=[], maxiter=100, tol=1e-6, callback=None):
 
     # optimizer works
     q_opt = optimizer.minimize(network, loss, bounds, constraints, maxiter, tol, callback=callback)

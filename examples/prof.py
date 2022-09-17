@@ -12,9 +12,9 @@ from jax_fdm.equilibrium import fdm
 # ==========================================================================
 
 arch_length = 5.0
-num_segments = 5
 q_init = -1
 pz = -0.1
+num_segments = 1000
 
 # ==========================================================================
 # Create the geometry of an arch
@@ -57,19 +57,21 @@ from dfdm.equilibrium import EquilibriumModel
 model = EquilibriumModel(network)
 q = np.asarray(network.edges_forcedensities(), dtype=np.float64)
 
-ntests = 10
+ntests = 5
 
 times = 0.
+print("Autograd")
 for _ in range(ntests):
     start = time()
-    eq_state = model(q)
+    # eq_state = model._nodes_free_positions(q)
+    model._nodes_free_positions(q)
     end = time() - start
     if _ == 0:
-        print(end)
+        print(f"Warmup time: {end}")
         continue
     times += end
 
-print("autograd", times / ntests)
+print("Average runtime", times / ntests)
 
 # ==========================================================================
 # Run thee force density method
@@ -82,14 +84,18 @@ from jax_fdm.equilibrium import EquilibriumModel
 model = EquilibriumModel(network)
 q = jnp.asarray(network.edges_forcedensities(), dtype=jnp.float64)
 
+print("JAX")
 times = 0.
 for _ in range(ntests):
     start = time()
-    eq_state = model(q).block_until_ready()
+    # model._nodes_free_positions(q).block_until_ready()
+    eq_state = model(q)
+    # xyz = eq_state.xyz.block_until_ready()
+
     end = time() - start
     if _ == 0:
-        print(end)
+        print(f"Warmup time: {end}")
         continue
     times += end
 
-print("jax", times / ntests)
+print("Average runtime", times / ntests)

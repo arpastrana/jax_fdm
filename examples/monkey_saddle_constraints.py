@@ -20,15 +20,15 @@ from compas_singular.datastructures import CoarseQuadMesh
 from compas_view2.app import App
 
 # force density
-from dfdm.datastructures import FDNetwork
-from dfdm.equilibrium import EquilibriumModel
-from dfdm.equilibrium import constrained_fdm, fdm
-from dfdm.optimization import TrustRegionConstrained
-from dfdm.optimization import OptimizationRecorder
-from dfdm.goals import ResidualForceGoal
-from dfdm.losses import SquaredError
-from dfdm.losses import Loss
-from dfdm.constraints import LengthConstraint
+from jax_fdm.datastructures import FDNetwork
+from jax_fdm.equilibrium import EquilibriumModel
+from jax_fdm.equilibrium import constrained_fdm, fdm
+from jax_fdm.optimization import TrustRegionConstrained
+from jax_fdm.optimization import OptimizationRecorder
+from jax_fdm.goals import NodeResidualForceGoal
+from jax_fdm.losses import SquaredError
+from jax_fdm.losses import Loss
+from jax_fdm.constraints import NetworkEdgesLengthConstraint
 
 # ==========================================================================
 # Parameters
@@ -52,7 +52,7 @@ optimizer = TrustRegionConstrained  # optimization algorithm
 maxiter = 200  # optimizer maximum iterations
 tol = 1e-2  # optimizer tolerance
 
-record = True  # True to record optimization history of force densities
+record = False  # True to record optimization history of force densities
 export = False  # export result to JSON
 
 # ==========================================================================
@@ -173,7 +173,7 @@ goals = []
 for key in network0.nodes_supports():
     step = steps[key]
     reaction = (1 - step / max_step) ** r_exp * (rmax - rmin) + rmin
-    goal = ResidualForceGoal(key, reaction)
+    goal = NodeResidualForceGoal(key, reaction)
     goals.append(goal)
 
 # ==========================================================================
@@ -182,7 +182,7 @@ for key in network0.nodes_supports():
 
 constraints = None
 if add_constraints:
-    constraints = [LengthConstraint(bound_low=length_min, bound_up=length_max)]
+    constraints = [NetworkEdgesLengthConstraint(bound_low=length_min, bound_up=length_max)]
 
 # ==========================================================================
 # Combine error functions and regularizer into custom loss function

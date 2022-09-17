@@ -16,9 +16,8 @@ from __future__ import print_function
 
 import os
 
-# this only works on startup!
-from jax.config import config
-config.update("jax_enable_x64", True)
+import numpy as np
+import jax.numpy as jnp
 
 
 __author__ = ["Rafael Pastrana"]
@@ -35,6 +34,13 @@ DATA = os.path.abspath(os.path.join(HOME, "data"))
 DOCS = os.path.abspath(os.path.join(HOME, "docs"))
 TEMP = os.path.abspath(os.path.join(HOME, "temp"))
 
-
 __all__ = ["HOME", "DATA", "DOCS", "TEMP"]
 
+# define floating point precision
+DTYPE_NP = np.float64
+DTYPE_JAX = jnp.float64
+
+# this only works on startup!
+if DTYPE_JAX == jnp.float64 or DTYPE_NP == np.float64:
+    from jax.config import config
+    config.update("jax_enable_x64", True)

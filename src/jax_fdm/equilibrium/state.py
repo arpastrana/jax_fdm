@@ -13,3 +13,4 @@ class EquilibriumState(NamedTuple):
     lengths: jnp.ndarray
     forces: jnp.ndarray
     force_densities: jnp.ndarray
+    vectors: jnp.ndarray

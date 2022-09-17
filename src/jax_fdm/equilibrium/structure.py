@@ -13,6 +13,8 @@ class EquilibriumStructure:
         self._network = network
 
         self._connectivity = None
+        self._connectivity_free = None
+        self._connectivity_fixed = None
 
         self._free_nodes = None
         self._fixed_nodes = None
@@ -60,6 +62,26 @@ class EquilibriumStructure:
             edges = [(node_idx[u], node_idx[v]) for u, v in self.network.edges()]
             self._connectivity = np.array(connectivity_matrix(edges, "list"), dtype=np.float64)
         return self._connectivity
+
+    @property
+    def connectivity_fixed(self):
+        """
+        The connectivity of the fixed nodes of the network.
+        """
+        if self._connectivity_fixed is None:
+            fixed_nodes = self.fixed_nodes
+            self._connectivity_fixed = self.connectivity[:, fixed_nodes]
+        return self._connectivity_fixed
+
+    @property
+    def connectivity_free(self):
+        """
+        The connectivity of the free nodes of the network.
+        """
+        if self._connectivity_free is None:
+            free_nodes = self.free_nodes
+            self._connectivity_free = self.connectivity[:, free_nodes]
+        return self._connectivity_free
 
     @property
     def free_nodes(self):

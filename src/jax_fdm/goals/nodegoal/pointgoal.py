@@ -8,27 +8,21 @@ from jax_fdm.goals import VectorGoal
 from jax_fdm.goals.nodegoal import NodeGoal
 
 
-class PointGoal(VectorGoal, NodeGoal):
+class NodePointGoal(VectorGoal, NodeGoal):
     """
     Make a node of a network to reach target xyz coordinates.
     """
     def __init__(self, key, target, weight=1.0):
         super().__init__(key=key, target=target, weight=weight)
 
-    def prediction(self, eq_state, index):
+    def prediction(self, eq_state):
         """
         The current xyz coordinates of the node in a network.
         """
-        return eq_state.xyz[index, :]
-
-    def target(self, prediction):
-        """
-        The target xyz coordinates.
-        """
-        return jnp.array(self._target, dtype=jnp.float64)
+        return eq_state.xyz[self.index, :]
 
 
-class LineGoal(PointGoal):
+class NodeLineGoal(NodePointGoal):
     """
     Pulls the xyz position of a node to a target line ray.
     """
@@ -44,7 +38,7 @@ class LineGoal(PointGoal):
         return jnp.array(point, dtype=jnp.float64)
 
 
-class PlaneGoal(PointGoal):
+class NodePlaneGoal(NodePointGoal):
     """
     Pulls the xyz position of a node to a target plane.
     """
@@ -56,6 +50,6 @@ class PlaneGoal(PointGoal):
         """
         point = prediction
         plane = self._target
-        point = closest_point_on_plane(point, plane)
+        point = closest_point_on_plane(prediction, plane)
 
         return jnp.array(point, dtype=jnp.float64)

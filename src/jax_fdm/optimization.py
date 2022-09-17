@@ -18,6 +18,9 @@ from compas.data import Data
 
 from jax_fdm.equilibrium import EquilibriumModel
 
+from jax_fdm.goals import goals_reindex
+
+from jax_fdm.losses import Regularizer
 
 # ==========================================================================
 # Optimizer
@@ -34,25 +37,28 @@ class Optimizer():
         Returns the defined constraints in a format amenable to `scipy.minimize`.
         """
         if constraints:
-            print(f"Warning! {self.__class__.__name__} does not support constraints. I am ignoring them.")
+            print(f"Warning! {self.name} does not support constraints. I am ignoring them.")
         return ()
 
     def minimize(self, network, loss, bounds=(None, None), constraints=[], maxiter=100, tol=1e-6, verbose=True, callback=None):
-        # returns the optimization result: dataclass OptimizationResult
         """
         Minimize a loss function via some flavor of gradient descent.
         """
-        name = self.name
-
         # array-ize parameters
         q = jnp.asarray(network.edges_forcedensities(), dtype=jnp.float64)
 
         # message
-        num_goals = sum([len(term.goals) for term in loss.loss_terms])
+        num_goals = sum([len(term.goals) for term in loss.terms if not isinstance(term, Regularizer)])
         print(f"\n***Constrained form finding***\nParameters: {len(q)} \tGoals: {num_goals} \tConstraints: {len(constraints)}")
 
         # create an equilibrium model from a network
         model = EquilibriumModel(network)
+
+        # reindex goals
+        for term in loss.terms:
+            if isinstance(term, Regularizer):
+                continue
+            goals_reindex(term.goals, model)
 
         # loss matters
         loss = partial(loss, model=model)
@@ -95,7 +101,7 @@ class Optimizer():
         # minimize
         res_q = minimize(fun=loss,
                          jac=grad_loss,
-                         method=name,
+                         method=self.name,
                          x0=q,
                          tol=tol,
                          bounds=bounds,

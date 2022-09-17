@@ -1,6 +1,8 @@
 """
 A bunch of goals to strive for.
 """
+import numpy as np
+
 import jax.numpy as jnp
 
 from jax_fdm.goals import ScalarGoal
@@ -9,37 +11,37 @@ from jax_fdm.goals import VectorGoal
 from jax_fdm.goals.nodegoal import NodeGoal
 
 
-class ResidualForceGoal(ScalarGoal, NodeGoal):
+class NodeResidualForceGoal(ScalarGoal, NodeGoal):
     """
     Make the residual force in a network to match a non-negative magnitude.
     """
     def __init__(self, key, target, weight=1.0):
-        assert target >= 0.0, "Only non-negative target forces are supported!"
+        # assert target >= 0.0, "Only non-negative target forces are supported!"
         super().__init__(key=key, target=target, weight=weight)
 
-    def prediction(self, eq_state, index):
+    def prediction(self, eq_state):
         """
         The residual at the the predicted node of the network.
         """
-        residual = eq_state.residuals[index, :]
-        return jnp.atleast_1d(jnp.linalg.norm(residual))
+        residual = eq_state.residuals[self.index, :]
+        return jnp.atleast_1d(jnp.linalg.norm(residual, axis=-1, keepdims=True))
 
 
-class ResidualVectorGoal(VectorGoal, NodeGoal):
+class NodeResidualVectorGoal(VectorGoal, NodeGoal):
     """
     Make the residual force in a network to match the magnitude and direction of a vector.
     """
     def __init__(self, key, target, weight=1.0):
         super().__init__(key=key, target=target, weight=weight)
 
-    def prediction(self, eq_state, index):
+    def prediction(self, eq_state):
         """
         The residual at the the predicted node of the network.
         """
-        return eq_state.residuals[index, :]
+        return eq_state.residuals[self.index, :]
 
 
-class ResidualDirectionGoal(VectorGoal, NodeGoal):
+class NodeResidualDirectionGoal(VectorGoal, NodeGoal):
     """
     Make the residual force in a network to match the direction of a vector.
 
@@ -57,15 +59,15 @@ class ResidualDirectionGoal(VectorGoal, NodeGoal):
     def __init__(self, key, target, weight=1.0):
         super().__init__(key=key, target=target, weight=weight)
 
-    def prediction(self, eq_state, index):
+    def prediction(self, eq_state):
         """
         The residual at the the predicted node of the network.
         """
-        residual = eq_state.residuals[index, :]
-        return residual / jnp.linalg.norm(residual)  # unitized residual
+        residual = eq_state.residuals[self.index, :]
+        return residual / jnp.linalg.norm(residual, axis=-1, keepdims=True)  # unitized residual
 
     def target(self, prediction):
         """
         """
-        target = jnp.array(self._target)
-        return target / jnp.linalg.norm(target)
+        target = np.array(self._target)
+        return target / np.linalg.norm(target, axis=-1, keep_dims=True)

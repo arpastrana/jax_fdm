@@ -8,14 +8,10 @@ class EdgeGoal(Goal):
     def __init__(self, key, target, weight):
         super().__init__(key=key, target=target, weight=weight)
 
-    def index(self, model):
+    def model_index(self, model):
         """
         The index of the goal key in a structure.
         """
-        return model.structure.edge_index[self.key()]
-
-    def key(self):
-        """
-        The key of the node in the network.
-        """
-        return self._key
+        if isinstance(self.key, tuple) and len(self.key) == 2:
+            return model.structure.edge_index[self.key]
+        return tuple([model.structure.edge_index[key] for key in self.key])

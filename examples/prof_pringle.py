@@ -1,7 +1,15 @@
 """
 Solve a constrained force density problem using gradient-based optimization.
 """
+import os
+import timeit
+
+import jax
+
 from math import fabs
+
+import jax.numpy as jnp
+import numpy as np
 
 import matplotlib.pyplot as plt
 
@@ -22,9 +30,9 @@ from jax_fdm.datastructures import FDNetwork
 from jax_fdm.equilibrium import constrained_fdm
 from jax_fdm.equilibrium import EquilibriumModel
 
-from jax_fdm.goals import EdgeLengthGoal
-from jax_fdm.goals import NodePlaneGoal
-from jax_fdm.goals import NodeResidualForceGoal
+from jax_fdm.goals import LengthGoal
+from jax_fdm.goals import PlaneGoal
+from jax_fdm.goals import ResidualForceGoal
 
 from jax_fdm.losses import Loss
 from jax_fdm.losses import SquaredError
@@ -131,28 +139,62 @@ rzs = rzs + rzs[0:-1][::-1]
 
 goals = []
 for rz, arch in zip(rzs, arches):
-    goals.append(NodeResidualForceGoal(arch[0], target=rz, weight=100.0))
-    goals.append(NodeResidualForceGoal(arch[-1], target=rz, weight=100.0))
+    goals.append(ResidualForceGoal(arch[0], target=rz, weight=100.0))
+    goals.append(ResidualForceGoal(arch[-1], target=rz, weight=100.0))
 
 for node in network.nodes_free():
     origin = network.node_coordinates(node)
     normal = [1.0, 0.0, 0.0]
-    goal = NodePlaneGoal(node, target=(origin, normal), weight=10.0)
+    goal = PlaneGoal(node, target=(origin, normal), weight=10.0)
     goals.append(goal)
 
 for edge in cross_edges:
     target_length = network.edge_length(*edge)
-    goals.append(EdgeLengthGoal(edge, target=target_length, weight=1.0))
+    goals.append(LengthGoal(edge, target=target_length, weight=1.0))
 
 # ==========================================================================
 # Create loss function
 # ==========================================================================
 
-loss = Loss(SquaredError(goals))
+error = SquaredError(goals)
+loss = Loss(error)
 
 # ==========================================================================
-# Solve constrained form-finding problem
+# JAX test
 # ==========================================================================
+
+model = EquilibriumModel(network)
+q = jnp.array(network.edges_forcedensities(), dtype=jnp.float64)
+
+
+# def eq_jax():
+#     eqstate = model(q)
+#     return eqstate.residuals.block_until_ready()
+
+# def error_jax():
+#     return error(model(q), model)
+
+# def loss_jax():
+#     return loss(q, model).block_until_ready()
+
+
+# ntests = 5
+
+# print("***Equilibrium***")
+# warmup_time = timeit.timeit('eq_jax()', 'from __main__ import eq_jax', number=ntests) / ntests
+# print(f"Warmup runtime: {warmup_time}")
+# avg_time = timeit.timeit('eq_jax()', 'from __main__ import eq_jax', number=ntests) / ntests
+# print(f"Average runtime for {ntests} calls: {avg_time}")
+
+# print("***Loss ***")
+# warmup_time = timeit.timeit('loss_jax()', 'from __main__ import loss_jax', number=ntests) / ntests
+# print(f"Warmup runtime: {warmup_time}")
+# avg_time = timeit.timeit('loss_jax()', 'from __main__ import loss_jax', number=ntests) / ntests
+# print(f"Average runtime for {ntests} calls: {avg_time}")
+
+# # ==========================================================================
+# # Solve constrained form-finding problem
+# # ==========================================================================
 
 recorder = None
 if record:

@@ -20,18 +20,18 @@ from compas_singular.datastructures import CoarseQuadMesh
 from compas_view2.app import App
 
 # force density
-from dfdm.datastructures import FDNetwork
-from dfdm.equilibrium import EquilibriumModel
-from dfdm.equilibrium import constrained_fdm, fdm
-from dfdm.optimization import SLSQP
-from dfdm.optimization import OptimizationRecorder
-from dfdm.goals import LengthGoal
-from dfdm.goals import ResidualForceGoal
-from dfdm.goals import NetworkLoadPathGoal
-from dfdm.losses import PredictionError
-from dfdm.losses import SquaredError
-from dfdm.losses import Loss
-from dfdm.losses import L2Regularizer
+from jax_fdm.datastructures import FDNetwork
+from jax_fdm.equilibrium import EquilibriumModel
+from jax_fdm.equilibrium import constrained_fdm, fdm
+from jax_fdm.optimization import SLSQP
+from jax_fdm.optimization import OptimizationRecorder
+from jax_fdm.goals import EdgeLengthGoal
+from jax_fdm.goals import NodeResidualForceGoal
+from jax_fdm.goals import NetworkLoadPathGoal
+from jax_fdm.losses import PredictionError
+from jax_fdm.losses import SquaredError
+from jax_fdm.losses import Loss
+from jax_fdm.losses import L2Regularizer
 
 # ==========================================================================
 # Parameters
@@ -56,7 +56,7 @@ alpha_lp = 0.01   # weight of the total load path minimization goal
 maxiter = 500  # optimizer maximum iterations
 tol = 1e-3  # optimizer tolerance
 
-record = True  # True to record optimization history of force densities
+record = False  # True to record optimization history of force densities
 export = False  # export result to JSON
 
 # ==========================================================================
@@ -151,19 +151,31 @@ if export:
 # ==========================================================================
 
 # edge lengths
+# goals_a = []
+# lengths = [network0.edge_length(*edge) for edge in network0.edges()]
+# goals_a.append(EdgeLengthGoal(key=list(network0.edges()),
+#                               target=lengths,
+#                               weight=weight_length))
+# edge lengths
 goals_a = []
 for edge in network0.edges():
     length = network0.edge_length(*edge)
-    goal = LengthGoal(edge, length, weight=weight_length)
+    goal = EdgeLengthGoal(edge, length, weight=weight_length)
     goals_a.append(goal)
 
 # reaction forces
 goals_b = []
+reactions = []
 for key in network0.nodes_supports():
     step = steps[key]
     reaction = (1 - step / max_step) ** r_exp * (rmax - rmin) + rmin
-    goal = ResidualForceGoal(key, reaction, weight=weight_residual)
+    reactions.append(reaction)
+    goal = NodeResidualForceGoal(key, reaction, weight=weight_residual)
     goals_b.append(goal)
+
+# goals_b.append(NodeResidualForceGoal(key=list(network0.nodes_supports()),
+#                                      target=reactions,
+#                                      weight=weight_residual))
 
 # global loadpath goal
 goals_c = []
@@ -178,6 +190,7 @@ squared_error_a = SquaredError(goals_a, alpha=1.0, name="EdgeLengthGoal")
 squared_error_b = SquaredError(goals_b, alpha=1.0, name="ReactionForceGoal")
 loadpath_error = PredictionError(goals_b, alpha=alpha_lp, name="LoadPathGoal")
 regularizer = L2Regularizer(alpha=alpha)
+
 loss = Loss(squared_error_a, squared_error_b, loadpath_error, regularizer)
 
 # ==========================================================================

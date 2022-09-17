@@ -1,3 +1,4 @@
+from .errors import *  # noqa F403
 from .losses import *  # noqa F403
 from .regularizers import *  #noqa F403
 
