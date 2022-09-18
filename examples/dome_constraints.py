@@ -30,9 +30,9 @@ from jax_fdm.equilibrium import fdm
 from jax_fdm.equilibrium import constrained_fdm
 from jax_fdm.equilibrium import EquilibriumModel
 
-from jax_fdm.goals import EdgeVectorAngleGoal
-from jax_fdm.goals import EdgeLengthGoal
-from jax_fdm.goals import NodeLineGoal
+from jax_fdm.goals import EdgesVectorAngleGoal
+from jax_fdm.goals import EdgesLengthGoal
+from jax_fdm.goals import NodesLineGoal
 
 from jax_fdm.constraints import EdgeVectorAngleConstraint
 from jax_fdm.constraints import NetworkEdgesLengthConstraint
@@ -72,20 +72,20 @@ qmin = None
 qmax = None
 
 # goal horizontal projection
-add_horizontal_projection_goal = True
+add_horizontal_projection_goal = False
 
 # goal edge length
 add_edge_length_goal = False
 length_target = 0.03
 
 # goal and constraint edge angle
-add_edge_angle_goal = False
+add_edge_angle_goal = True
 angle_vector = [0.0, 0.0, 1.0]  # reference vector to compute angle to in goal
 angle_base = 10.0  # angle constraint, lower bound
 angle_top = 30.0  # angle constraint, upper bound
 
 # constraint angle
-add_edge_angle_constraint = True
+add_edge_angle_constraint = False
 angle_vector_constraint = [0.0, 0.0, 1.0]  # reference vector to compute angle to in constraint
 angle_min = 10.0
 angle_max = 30.0
@@ -180,27 +180,33 @@ if add_horizontal_projection_goal:
     for node in network.nodes_free():
         xyz = network.node_coordinates(node)
         line = Line(xyz, add_vectors(xyz, [0.0, 0.0, 1.0]))
-        goal = NodeLineGoal(node, target=line)
+        goal = NodesLineGoal(node, target=line)
         goals.append(goal)
 
 # edge length goal
 if add_edge_length_goal:
-    for cross_ring in edges_cross_rings[:]:
-        for edge in cross_ring:
-            length = network.edge_length(*edge)
-            goal = EdgeLengthGoal(edge, target=length, weight=1.)
-            goals.append(goal)
+    lengths = [network.edge_length(*edge) for edge in edges_cross]
+    goal = EdgesLengthGoal(edges_cross, lengths)
+    goals.append(goal)
 
 # edge angle goal
 if add_edge_angle_goal:
+    edges = []
+    # vectors = []
+    angles = []
+
     for i, ring in enumerate(edges_cross_rings):
         angle_delta = angle_top - angle_base
         angle = angle_base + angle_delta * (i / (num_rings - 1))
         print(f"Edges ring {i + 1}/{len(edges_cross_rings)}. Angle goal: {angle}")
 
         for edge in ring:
-            goal = EdgeVectorAngleGoal(edge, vector=angle_vector, target=angle)
-            goals.append(goal)
+            edges.append(edge)
+            # vectors.append(angle_vector)
+            angles.append(angle)
+
+    goal = EdgesVectorAngleGoal(edges, vectors=angle_vector, targets=angles)
+    goals.append(goal)
 
 loss = Loss(SquaredError(goals=goals))
 

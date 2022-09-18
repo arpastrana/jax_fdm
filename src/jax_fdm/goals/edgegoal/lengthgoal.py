@@ -1,21 +1,16 @@
-from functools import partial
-
-import jax.numpy as jnp
-
 from jax_fdm.goals import ScalarGoal
-from jax_fdm.goals.edgegoal import EdgeGoal
+from jax_fdm.goals.edgegoal import EdgesGoal
 
 
-class EdgeLengthGoal(ScalarGoal, EdgeGoal):
+class EdgesLengthGoal(ScalarGoal, EdgesGoal):
     """
     Make an edge of a network to reach a certain length.
     """
-    def __init__(self, key, target, weight=1.0):
-        super().__init__(key=key, target=target, weight=weight)
+    def __init__(self, keys, targets, weights=1.0):
+        super().__init__(key=keys, target=targets, weight=weights)
 
     def prediction(self, eq_state):
         """
         The current edge length.
         """
-        length = eq_state.lengths[self.index, ]
-        return jnp.atleast_1d(length)
+        return eq_state.lengths[self.index, ]

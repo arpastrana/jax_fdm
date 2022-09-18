@@ -2,15 +2,15 @@ import numpy as np
 import jax.numpy as jnp
 
 from jax_fdm.goals import VectorGoal
-from jax_fdm.goals.edgegoal import EdgeGoal
+from jax_fdm.goals.edgegoal import EdgesGoal
 
 
-class EdgeDirectionGoal(VectorGoal, EdgeGoal):
+class EdgesDirectionGoal(VectorGoal, EdgesGoal):
     """
     Make the direction of the edge of a network to be parallel to a target vector.
     """
-    def __init__(self, key, target, weight=1.0):
-        super().__init__(key=key, target=target, weight=weight)
+    def __init__(self, keys, targets, weights=1.0):
+        super().__init__(key=keys, target=targets, weight=weights)
 
     def prediction(self, eq_state):
         """

@@ -8,10 +8,10 @@ import jax.numpy as jnp
 from jax_fdm.goals import ScalarGoal
 from jax_fdm.goals import VectorGoal
 
-from jax_fdm.goals.nodegoal import NodeGoal
+from jax_fdm.goals.nodegoal import NodesGoal
 
 
-class NodeResidualForceGoal(ScalarGoal, NodeGoal):
+class NodeResidualForceGoal(ScalarGoal, NodesGoal):
     """
     Make the residual force in a network to match a non-negative magnitude.
     """
@@ -27,7 +27,7 @@ class NodeResidualForceGoal(ScalarGoal, NodeGoal):
         return jnp.atleast_1d(jnp.linalg.norm(residual, axis=-1, keepdims=True))
 
 
-class NodeResidualVectorGoal(VectorGoal, NodeGoal):
+class NodeResidualVectorGoal(VectorGoal, NodesGoal):
     """
     Make the residual force in a network to match the magnitude and direction of a vector.
     """
@@ -41,7 +41,7 @@ class NodeResidualVectorGoal(VectorGoal, NodeGoal):
         return eq_state.residuals[self.index, :]
 
 
-class NodeResidualDirectionGoal(VectorGoal, NodeGoal):
+class NodeResidualDirectionGoal(VectorGoal, NodesGoal):
     """
     Make the residual force in a network to match the direction of a vector.
 

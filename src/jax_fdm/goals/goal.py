@@ -58,6 +58,7 @@ class AbstractGoal:
 # Base goal for a scalar quantity
 # ==========================================================================
 
+
 class Goal:
     """
     The base goal.
@@ -102,6 +103,7 @@ class Goal:
         target = self.target(prediction)
         weight = self.weight()
 
+        print(prediction.shape, target.shape, weight.shape, weight)
         return GoalState(target=target, prediction=prediction, weight=weight)
 
 # ==========================================================================
@@ -117,13 +119,13 @@ class ScalarGoal:
         """
         The importance of the goal
         """
-        return np.atleast_1d(self._weight)
+        return np.array(self._weight)
 
     def target(self, prediction):
         """
         The target to strive for.
         """
-        return np.atleast_1d(self._target)
+        return np.array(self._target)
 
 # ==========================================================================
 # Base goal for vector quantities

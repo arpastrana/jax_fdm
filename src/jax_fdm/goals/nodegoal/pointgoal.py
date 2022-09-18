@@ -5,10 +5,10 @@ from compas.geometry import closest_point_on_plane
 
 from jax_fdm.goals import VectorGoal
 
-from jax_fdm.goals.nodegoal import NodeGoal
+from jax_fdm.goals.nodegoal import NodesGoal
 
 
-class NodePointGoal(VectorGoal, NodeGoal):
+class NodesPointGoal(VectorGoal, NodesGoal):
     """
     Make a node of a network to reach target xyz coordinates.
     """
@@ -22,7 +22,7 @@ class NodePointGoal(VectorGoal, NodeGoal):
         return eq_state.xyz[self.index, :]
 
 
-class NodeLineGoal(NodePointGoal):
+class NodesLineGoal(NodesPointGoal):
     """
     Pulls the xyz position of a node to a target line ray.
     """
@@ -38,7 +38,7 @@ class NodeLineGoal(NodePointGoal):
         return jnp.array(point, dtype=jnp.float64)
 
 
-class NodePlaneGoal(NodePointGoal):
+class NodesPlaneGoal(NodesPointGoal):
     """
     Pulls the xyz position of a node to a target plane.
     """

@@ -14,7 +14,6 @@ from scipy.optimize import minimize
 from scipy.optimize import Bounds
 from scipy.optimize import NonlinearConstraint
 
-from compas.data import Data
 
 from jax_fdm.equilibrium import EquilibriumModel
 
@@ -27,7 +26,10 @@ from jax_fdm.losses import Regularizer
 # ==========================================================================
 
 
-class Optimizer():
+class Optimizer:
+    """
+    Base class for all optimizers.
+    """
     def __init__(self, name, disp=True, **kwargs):
         self.name = name
         self.disp = disp
@@ -204,28 +206,3 @@ class SLSQP(ConstrainedOptimizer):
                 clist.append(cdict)
 
         return clist
-
-# ==========================================================================
-# Recorder
-# ==========================================================================
-
-
-class OptimizationRecorder(Data):
-    def __init__(self):
-        self.history = []
-
-    def record(self, value):
-        self.history.append(value)
-
-    def __call__(self, q, *args, **kwargs):
-        self.record(q)
-
-    @property
-    def data(self):
-        data = dict()
-        data["history"] = self.history
-        return data
-
-    @data.setter
-    def data(self, data):
-        self.history = data["history"]

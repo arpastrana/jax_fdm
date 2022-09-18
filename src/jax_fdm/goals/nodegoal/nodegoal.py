@@ -1,12 +1,12 @@
 from jax_fdm.goals import Goal
 
 
-class NodeGoal(Goal):
+class NodesGoal(Goal):
     """
     Base class for all goals that pertain to a selection of the nodes of a network.
     """
-    def __init__(self, key, target, weight):
-        super().__init__(key=key, target=target, weight=weight)
+    def __init__(self, keys, targets, weights):
+        super().__init__(key=kesy, target=targets, weight=weights)
 
     def model_index(self, model):
         """
