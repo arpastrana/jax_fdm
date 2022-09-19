@@ -192,7 +192,6 @@ if add_edge_length_goal:
 # edge angle goal
 if add_edge_angle_goal:
     edges = []
-    # vectors = []
     angles = []
 
     for i, ring in enumerate(edges_cross_rings):
@@ -202,7 +201,6 @@ if add_edge_angle_goal:
 
         for edge in ring:
             edges.append(edge)
-            # vectors.append(angle_vector)
             angles.append(angle)
 
     goal = EdgesVectorAngleGoal(edges, vectors=angle_vector, targets=angles)

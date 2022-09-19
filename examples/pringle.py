@@ -22,9 +22,9 @@ from jax_fdm.datastructures import FDNetwork
 from jax_fdm.equilibrium import constrained_fdm
 from jax_fdm.equilibrium import EquilibriumModel
 
-from jax_fdm.goals import EdgeLengthGoal
-from jax_fdm.goals import NodePlaneGoal
-from jax_fdm.goals import NodeResidualForceGoal
+from jax_fdm.goals import EdgesLengthGoal
+from jax_fdm.goals import NodesPlaneGoal
+from jax_fdm.goals import NodesResidualForceGoal
 
 from jax_fdm.losses import Loss
 from jax_fdm.losses import SquaredError
@@ -40,7 +40,7 @@ length_vault = 6.0
 width_vault = 3.0
 
 num_u = 10
-num_v = 5  # only odd numbers
+num_v = 9  # only odd numbers
 
 q_init = -0.25
 pz = -0.1
@@ -130,19 +130,19 @@ rzs = rzs + rzs[0:-1][::-1]
 # ==========================================================================
 
 goals = []
+
+# residual forces
 for rz, arch in zip(rzs, arches):
-    goals.append(NodeResidualForceGoal(arch[0], target=rz, weight=100.0))
-    goals.append(NodeResidualForceGoal(arch[-1], target=rz, weight=100.0))
+    goals.append(NodesResidualForceGoal(keys=(arch[0], arch[-1]), targets=rz, weights=100.0))
 
-for node in network.nodes_free():
-    origin = network.node_coordinates(node)
-    normal = [1.0, 0.0, 0.0]
-    goal = NodePlaneGoal(node, target=(origin, normal), weight=10.0)
-    goals.append(goal)
+# transversal planes
+normal = [1.0, 0.0, 0.0]
+planes = [(network.node_coordinates(node), normal) for node in network.nodes_free()]
+goals.append(NodesPlaneGoal(list(network.nodes_free()), planes, weights=10.0))
 
-for edge in cross_edges:
-    target_length = network.edge_length(*edge)
-    goals.append(EdgeLengthGoal(edge, target=target_length, weight=1.0))
+# transversal edge lengths
+lengths = [network.edge_length(*edge) for edge in cross_edges]
+goals.append(EdgesLengthGoal(cross_edges, targets=lengths, weights=1.0))
 
 # ==========================================================================
 # Create loss function

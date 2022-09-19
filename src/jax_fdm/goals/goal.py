@@ -103,7 +103,6 @@ class Goal:
         target = self.target(prediction)
         weight = self.weight()
 
-        print(prediction.shape, target.shape, weight.shape, weight)
         return GoalState(target=target, prediction=prediction, weight=weight)
 
 # ==========================================================================
@@ -140,7 +139,7 @@ class VectorGoal:
         """
         The importance of the goal
         """
-        return np.asarray([self._weight] * 3, dtype=np.float64)
+        return np.asarray(self._weight, dtype=np.float64)
 
     def target(self, prediction):
         """

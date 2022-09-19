@@ -22,11 +22,12 @@ from compas_view2.app import App
 # force density
 from jax_fdm.datastructures import FDNetwork
 from jax_fdm.equilibrium import EquilibriumModel
-from jax_fdm.equilibrium import constrained_fdm, fdm
+from jax_fdm.equilibrium import fdm
+from jax_fdm.equilibrium import constrained_fdm
 from jax_fdm.optimization import SLSQP
 from jax_fdm.optimization import OptimizationRecorder
-from jax_fdm.goals import EdgeLengthGoal
-from jax_fdm.goals import NodeResidualForceGoal
+from jax_fdm.goals import EdgesLengthGoal
+from jax_fdm.goals import NodesResidualForceGoal
 from jax_fdm.goals import NetworkLoadPathGoal
 from jax_fdm.losses import PredictionError
 from jax_fdm.losses import SquaredError
@@ -151,17 +152,11 @@ if export:
 # ==========================================================================
 
 # edge lengths
-# goals_a = []
-# lengths = [network0.edge_length(*edge) for edge in network0.edges()]
-# goals_a.append(EdgeLengthGoal(key=list(network0.edges()),
-#                               target=lengths,
-#                               weight=weight_length))
-# edge lengths
 goals_a = []
-for edge in network0.edges():
-    length = network0.edge_length(*edge)
-    goal = EdgeLengthGoal(edge, length, weight=weight_length)
-    goals_a.append(goal)
+lengths = [network0.edge_length(*edge) for edge in network0.edges()]
+goals_a.append(EdgesLengthGoal(keys=list(network0.edges()),
+                               targets=lengths,
+                               weights=weight_length))
 
 # reaction forces
 goals_b = []
@@ -170,12 +165,10 @@ for key in network0.nodes_supports():
     step = steps[key]
     reaction = (1 - step / max_step) ** r_exp * (rmax - rmin) + rmin
     reactions.append(reaction)
-    goal = NodeResidualForceGoal(key, reaction, weight=weight_residual)
-    goals_b.append(goal)
 
-# goals_b.append(NodeResidualForceGoal(key=list(network0.nodes_supports()),
-#                                      target=reactions,
-#                                      weight=weight_residual))
+goals_b.append(NodesResidualForceGoal(keys=list(network0.nodes_supports()),
+                                      targets=reactions,
+                                      weights=weight_residual))
 
 # global loadpath goal
 goals_c = []

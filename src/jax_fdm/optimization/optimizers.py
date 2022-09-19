@@ -30,7 +30,7 @@ class Optimizer:
     """
     Base class for all optimizers.
     """
-    def __init__(self, name, disp=True, **kwargs):
+    def __init__(self, name, disp=True):
         self.name = name
         self.disp = disp
 
@@ -50,7 +50,13 @@ class Optimizer:
         q = jnp.asarray(network.edges_forcedensities(), dtype=jnp.float64)
 
         # message
-        num_goals = sum([len(term.goals) for term in loss.terms if not isinstance(term, Regularizer)])
+        num_goals = 0
+        for term in loss.terms:
+            if isinstance(term, Regularizer):
+                continue
+            for goal in term.goals:
+                num_goals += len(goal.key)
+
         print(f"\n***Constrained form finding***\nParameters: {len(q)} \tGoals: {num_goals} \tConstraints: {len(constraints)}")
 
         # create an equilibrium model from a network

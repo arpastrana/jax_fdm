@@ -10,7 +10,7 @@ class EdgesDirectionGoal(VectorGoal, EdgesGoal):
     Make the direction of the edge of a network to be parallel to a target vector.
     """
     def __init__(self, keys, targets, weights=1.0):
-        super().__init__(key=keys, target=targets, weight=weights)
+        super().__init__(keys=keys, targets=targets, weights=weights)
 
     def prediction(self, eq_state):
         """

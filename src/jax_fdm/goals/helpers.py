@@ -1,7 +1,5 @@
 import numpy as np
 
-import jax.numpy as jnp
-
 from jax_fdm.goals import GoalState
 
 
@@ -37,15 +35,3 @@ def goals_state(goals, eqstate, model):
     weights = np.concatenate(weights, axis=0)
 
     return GoalState(prediction=predictions, target=targets, weight=weights)
-
-
-"""
-q = np.random(n)
-eqstate = fdm(q)
-
-loss = 0.0
-for goal in goals:
-    gstate = goal(eqstate)
-    loss += miniloss(gstate)
-return loss
-"""

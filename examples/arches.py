@@ -15,7 +15,7 @@ from compas_view2.app import App
 # static equilibrium
 from jax_fdm.datastructures import FDNetwork
 from jax_fdm.equilibrium import constrained_fdm
-from jax_fdm.goals import NodeResidualDirectionGoal
+from jax_fdm.goals import NodesResidualDirectionGoal
 from jax_fdm.losses import SquaredError
 from jax_fdm.losses import Loss
 from jax_fdm.optimization import SLSQP
@@ -90,9 +90,9 @@ vertical_comps = [0.1, 0.2, 0.4, 0.8, 1.6, 3.2]
 
 for idx, vertical_comp in enumerate(vertical_comps):
 
-    goals = []
-    goals.append(NodeResidualDirectionGoal(0, target=[-1.0, 0.0, -vertical_comp]))
-    goals.append(NodeResidualDirectionGoal(num_segments, target=[1.0, 0.0, -vertical_comp]))
+    goals = [NodesResidualDirectionGoal(keys=(0, num_segments),
+                                        targets=[[-1.0, 0.0, -vertical_comp],
+                                                 [1.0, 0.0, -vertical_comp]])]
 
 # ==========================================================================
 # Optimization

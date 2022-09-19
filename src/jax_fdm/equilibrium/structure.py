@@ -1,5 +1,4 @@
 import numpy as np
-import jax.numpy as jnp
 
 from compas.numerical import connectivity_matrix
 

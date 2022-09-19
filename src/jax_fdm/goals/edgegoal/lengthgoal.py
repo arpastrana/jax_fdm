@@ -7,7 +7,7 @@ class EdgesLengthGoal(ScalarGoal, EdgesGoal):
     Make an edge of a network to reach a certain length.
     """
     def __init__(self, keys, targets, weights=1.0):
-        super().__init__(key=keys, target=targets, weight=weights)
+        super().__init__(keys=keys, targets=targets, weights=weights)
 
     def prediction(self, eq_state):
         """

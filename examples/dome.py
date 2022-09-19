@@ -34,11 +34,11 @@ from jax_fdm.equilibrium import fdm
 from jax_fdm.equilibrium import constrained_fdm
 from jax_fdm.equilibrium import EquilibriumModel
 
-from jax_fdm.goals import EdgeDirectionGoal
-from jax_fdm.goals import EdgeLengthGoal
-from jax_fdm.goals import NodeLineGoal
-from jax_fdm.goals import NodePlaneGoal
-from jax_fdm.goals import NodeResidualForceGoal
+from jax_fdm.goals import EdgesDirectionGoal
+from jax_fdm.goals import EdgesLengthGoal
+from jax_fdm.goals import NodesLineGoal
+from jax_fdm.goals import NodesPlaneGoal
+from jax_fdm.goals import NodesResidualForceGoal
 from jax_fdm.goals import NetworkLoadPathGoal
 from jax_fdm.goals import NetworkEdgesDirectionGoal
 from jax_fdm.goals import NetworkEdgesLengthGoal
@@ -205,8 +205,8 @@ for i, cross_ring in enumerate(edges_cross_rings):
         vectors.append(vector)
 
 ecross = [e for cr in edges_cross_rings for e in cr]
-goals = [EdgeDirectionGoal(key=ecross, target=vectors),
-         EdgeLengthGoal(key=ecross, target=length_target)]
+goals = [EdgesDirectionGoal(keys=ecross, targets=vectors),
+         EdgesLengthGoal(keys=ecross, targets=length_target)]
 
 # ==========================================================================
 # Define loss function with goals

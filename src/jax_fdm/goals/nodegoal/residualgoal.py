@@ -11,28 +11,28 @@ from jax_fdm.goals import VectorGoal
 from jax_fdm.goals.nodegoal import NodesGoal
 
 
-class NodeResidualForceGoal(ScalarGoal, NodesGoal):
+class NodesResidualForceGoal(ScalarGoal, NodesGoal):
     """
     Make the residual force in a network to match a non-negative magnitude.
     """
-    def __init__(self, key, target, weight=1.0):
+    def __init__(self, keys, targets, weights=1.0):
         # assert target >= 0.0, "Only non-negative target forces are supported!"
-        super().__init__(key=key, target=target, weight=weight)
+        super().__init__(keys=keys, targets=targets, weights=weights)
 
     def prediction(self, eq_state):
         """
         The residual at the the predicted node of the network.
         """
         residual = eq_state.residuals[self.index, :]
-        return jnp.atleast_1d(jnp.linalg.norm(residual, axis=-1, keepdims=True))
+        return jnp.linalg.norm(residual, axis=-1)
 
 
-class NodeResidualVectorGoal(VectorGoal, NodesGoal):
+class NodesResidualVectorGoal(VectorGoal, NodesGoal):
     """
     Make the residual force in a network to match the magnitude and direction of a vector.
     """
-    def __init__(self, key, target, weight=1.0):
-        super().__init__(key=key, target=target, weight=weight)
+    def __init__(self, keys, targets, weights=1.0):
+        super().__init__(keys=keys, targets=targets, weights=weights)
 
     def prediction(self, eq_state):
         """
@@ -41,7 +41,7 @@ class NodeResidualVectorGoal(VectorGoal, NodesGoal):
         return eq_state.residuals[self.index, :]
 
 
-class NodeResidualDirectionGoal(VectorGoal, NodesGoal):
+class NodesResidualDirectionGoal(VectorGoal, NodesGoal):
     """
     Make the residual force in a network to match the direction of a vector.
 
@@ -56,8 +56,8 @@ class NodeResidualDirectionGoal(VectorGoal, NodesGoal):
     potentially expensive trigonometric operations required to yield
     a proper metric.
     """
-    def __init__(self, key, target, weight=1.0):
-        super().__init__(key=key, target=target, weight=weight)
+    def __init__(self, keys, targets, weights=1.0):
+        super().__init__(keys=keys, targets=targets, weights=weights)
 
     def prediction(self, eq_state):
         """
@@ -70,4 +70,4 @@ class NodeResidualDirectionGoal(VectorGoal, NodesGoal):
         """
         """
         target = np.array(self._target)
-        return target / np.linalg.norm(target, axis=-1, keep_dims=True)
+        return target / np.linalg.norm(target, axis=-1, keepdims=True)
