@@ -19,3 +19,10 @@ class NodesLineGoal(NodesPointGoal):
         point = closest_point_on_line(prediction, line)
 
         return jnp.array(point, dtype=jnp.float64)
+
+    @staticmethod
+    def _closest_point_on_line(point, line):
+        """
+        Computes the closest location on a line to a supplied point.
+        """
+        pass
