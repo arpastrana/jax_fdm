@@ -27,9 +27,14 @@ from compas_view2.app import App
 # ==========================================================================
 
 name = "dome"
-interval = 50
+
+modify_view = True
+interval = 10  # 50
+timeout = None
+fps = 48
+camera_zoom = 15  # -35 for monkey saddle, 0 for pringle, 15 for dome
 animate = True
-record = False
+save = True
 
 # ==========================================================================
 # Helper functions
@@ -96,7 +101,7 @@ network = fdm(network0)
 # Read in optimization history
 # ==========================================================================
 
-FILE_IN= os.path.abspath(os.path.join(HERE, f"{name}_history.json"))
+FILE_IN = os.path.abspath(os.path.join(HERE, f"{name}_history.json"))
 recorder = OptimizationRecorder.from_json(FILE_IN)
 
 # ==========================================================================
@@ -107,9 +112,10 @@ recorder = OptimizationRecorder.from_json(FILE_IN)
 viewer = App(width=1600, height=900, show_grid=True)
 
 # modify view
-viewer.view.camera.zoom(-35)  # number of steps, negative to zoom out
-viewer.view.camera.rotation[2] = 2 * pi / 3  # set rotation around z axis to zero
-viewer.view.camera.rotation_delta = (2 / 3) * pi / len(recorder.history)  # set rotation around z axis to zero
+if modify_view:
+    viewer.view.camera.zoom(camera_zoom)  # number of steps, negative to zoom out
+    viewer.view.camera.rotation[2] = 2 * pi / 3  # set rotation around z axis to zero
+    viewer.view.camera.rotation_delta = (2 / 3) * pi / len(recorder.history)  # set rotation around z axis to zero
 
 # draw network
 viewer.add(network.copy(), show_points=False, linewidth=1.0, color=Color.grey())
@@ -132,8 +138,10 @@ for residual in residuals.values():
 
 # create update function
 if animate:
-    @viewer.on(interval=interval, frames=len(recorder.history), record=record, record_path=f"temp/{name}.gif")
+    @viewer.on(interval=interval, timeout=timeout, frames=len(recorder.history), record=save, record_fps=fps, record_path=f"temp/{name}.gif")
     def wiggle(f):
+
+        print(f"Current frame: {f}/{len(recorder.history)}")
         q = np.array(recorder.history[f])
         eqstate = model(q)
 
@@ -152,7 +160,6 @@ if animate:
             obj.update()
 
         viewer.view.camera.rotate(dx=1, dy=0)
-
 
 
 # show le crème
