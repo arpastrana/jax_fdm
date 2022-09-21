@@ -40,12 +40,12 @@ from jax_fdm.goals import NodesLineGoal
 from jax_fdm.goals import NodesPlaneGoal
 from jax_fdm.goals import NodesResidualForceGoal
 from jax_fdm.goals import NetworkLoadPathGoal
-from jax_fdm.goals import NetworkEdgesDirectionGoal
-from jax_fdm.goals import NetworkEdgesLengthGoal
+# from jax_fdm.goals import NetworkEdgesDirectionGoal
+# from jax_fdm.goals import NetworkEdgesLengthGoal
 
-from jax_fdm.constraints import EdgeVectorAngleConstraint
-from jax_fdm.constraints import NetworkEdgesLengthConstraint
-from jax_fdm.constraints import NetworkEdgesForceConstraint
+# from jax_fdm.constraints import EdgeVectorAngleConstraint
+# from jax_fdm.constraints import NetworkEdgesLengthConstraint
+# from jax_fdm.constraints import NetworkEdgesForceConstraint
 
 from jax_fdm.losses import PredictionError
 from jax_fdm.losses import SquaredError
@@ -79,7 +79,7 @@ pz = -0.1  # z component of the applied load
 # optimization
 optimizer = BFGS
 maxiter = 10000
-tol = 1e-3  # 1e-6 for best results at the cost of a considerable speed decrease
+tol = 1e-6  # 1e-6 for best results at the cost of a considerable speed decrease
 
 # parameter bounds
 qmin = None  # -200.0
@@ -94,8 +94,8 @@ angle_base = 20.0  # angle constraint, lower bound
 angle_top = 30.0  # angle constraint, upper bound
 
 # io
-export = False
-record = False
+export = True
+record = True
 
 HERE = os.path.dirname(__file__)
 
@@ -292,7 +292,7 @@ for config in sweep_configs:
     if record and fofin_method != fdm:
         model = EquilibriumModel(network)
         fig = plt.figure(dpi=150)
-        for loss_term in [loss] + list(loss.loss_terms):
+        for loss_term in [loss] + list(loss.terms):
             y = []
             for q in recorder.history:
                 eqstate = model(q)

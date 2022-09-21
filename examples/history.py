@@ -26,7 +26,7 @@ from compas_view2.app import App
 # Read in optimization history
 # ==========================================================================
 
-name = "monkey_saddle"
+name = "dome"
 interval = 50
 animate = True
 record = False

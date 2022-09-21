@@ -54,6 +54,14 @@ class AbstractGoal:
         """
         raise NotImplementedError
 
+
+    @abstractmethod
+    def __call__(self, eqstate):
+        """
+        Return the current goal state.
+        """
+        pass
+
 # ==========================================================================
 # Base goal for a scalar quantity
 # ==========================================================================
@@ -118,29 +126,23 @@ class ScalarGoal:
         """
         The importance of the goal
         """
-        return np.array(self._weight)
+        return np.array(self._weight, dtype=np.float64)
 
     def target(self, prediction):
         """
         The target to strive for.
         """
-        return np.array(self._target)
+        return np.array(self._target, dtype=np.float64)
 
 # ==========================================================================
 # Base goal for vector quantities
 # ==========================================================================
 
 
-class VectorGoal:
+class VectorGoal(ScalarGoal):
     """
     A goal that is expressed as a vector 3D quantity.
     """
-    def weight(self):
-        """
-        The importance of the goal
-        """
-        return np.asarray(self._weight, dtype=np.float64)
-
     def target(self, prediction):
         """
         The target to strive for.

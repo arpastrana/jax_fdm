@@ -2,7 +2,7 @@ import numpy as np
 
 import jax.numpy as jnp
 
-from jax_fdm.goals import NodesPointGoal
+from jax_fdm.goals.nodegoal import NodesPointGoal
 
 
 class NodesPlaneGoal(NodesPointGoal):

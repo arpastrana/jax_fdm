@@ -42,6 +42,7 @@ from jax_fdm.losses import SquaredError
 from jax_fdm.losses import Loss
 
 from jax_fdm.optimization import SLSQP
+from jax_fdm.optimization import BFGS
 from jax_fdm.optimization import OptimizationRecorder
 
 
@@ -63,23 +64,23 @@ q0_cross = -0.5  # starting force density for the edges transversal to the rings
 pz = -0.1  # z component of the applied load
 
 # optimization
-optimizer = SLSQP
+optimizer = BFGS
 maxiter = 1000
-tol = 1e-3
+tol = 1e-6
 
 # parameter bounds
 qmin = None
 qmax = None
 
 # goal horizontal projection
-add_horizontal_projection_goal = False
+add_horizontal_projection_goal = True
 
 # goal edge length
 add_edge_length_goal = False
 length_target = 0.03
 
 # goal and constraint edge angle
-add_edge_angle_goal = True
+add_edge_angle_goal = False
 angle_vector = [0.0, 0.0, 1.0]  # reference vector to compute angle to in goal
 angle_base = 10.0  # angle constraint, lower bound
 angle_top = 30.0  # angle constraint, upper bound
@@ -177,11 +178,20 @@ goals = []
 
 # horizontal projection goal
 if add_horizontal_projection_goal:
+    # for node in network.nodes_free():
+    #     xyz = network.node_coordinates(node)
+    #     line = Line(xyz, add_vectors(xyz, [0.0, 0.0, 1.0]))
+    #     goal = NodesLineGoal([node], targets=[line])
+    #     goals.append(goal)
+
+    lines = []
     for node in network.nodes_free():
         xyz = network.node_coordinates(node)
         line = Line(xyz, add_vectors(xyz, [0.0, 0.0, 1.0]))
-        goal = NodesLineGoal(node, target=line)
-        goals.append(goal)
+        lines.append(line)
+
+    goal = NodesLineGoal(list(network.nodes_free()), lines)
+    goals.append(goal)
 
 # edge length goal
 if add_edge_length_goal:
