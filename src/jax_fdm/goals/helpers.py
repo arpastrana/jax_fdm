@@ -12,7 +12,7 @@ def goals_reindex(goals, model):
     Compute the index of a goal based on its node or edge key.
     """
     for goal in goals:
-        index = goal.model_index(model)
+        index = goal.index_from_model(model, goal.key)
         goal.index = index
 
 
