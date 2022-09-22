@@ -1,16 +1,14 @@
 from jax_fdm.goals import ScalarGoal
-from jax_fdm.goals.edgegoal import EdgesGoal
+from jax_fdm.goals.edgegoal import EdgeGoal
 
 
-class EdgesLengthGoal(ScalarGoal, EdgesGoal):
+class EdgeLengthGoal(ScalarGoal, EdgeGoal):
     """
     Make an edge of a network to reach a certain length.
     """
-    def __init__(self, keys, targets, weights=1.0):
-        super().__init__(keys=keys, targets=targets, weights=weights)
-
-    def prediction(self, eq_state):
+    @staticmethod
+    def prediction(eq_state, index):
         """
         The current edge length.
         """
-        return eq_state.lengths[self.index, ]
+        return eq_state.lengths[index]
