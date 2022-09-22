@@ -3,6 +3,7 @@ A gradient-based optimizer.
 """
 from time import time
 
+from itertools import groupby
 from functools import partial
 
 import jax.numpy as jnp
@@ -14,17 +15,18 @@ from scipy.optimize import minimize
 from scipy.optimize import Bounds
 from scipy.optimize import NonlinearConstraint
 
-
+from jax_fdm import DTYPE_JAX
 from jax_fdm.equilibrium import EquilibriumModel
 
 from jax_fdm.goals import goals_reindex
+from jax_fdm.goals import GoalCollection
 
 from jax_fdm.losses import Regularizer
+
 
 # ==========================================================================
 # Optimizer
 # ==========================================================================
-
 
 class Optimizer:
     """
@@ -47,7 +49,7 @@ class Optimizer:
         Minimize a loss function via some flavor of gradient descent.
         """
         # array-ize parameters
-        q = jnp.asarray(network.edges_forcedensities(), dtype=jnp.float64)
+        q = jnp.asarray(network.edges_forcedensities(), dtype=DTYPE_JAX)
 
         # message
         num_goals = 0
@@ -62,6 +64,21 @@ class Optimizer:
         # create an equilibrium model from a network
         model = EquilibriumModel(network)
 
+        # TODO: gather goal collections for acceleration
+        for term in loss.terms:
+
+            # sort goals by class name
+            goals = term.goals
+            goals = sorted(goals, key=lambda g: type(g).__name__)
+            groups = groupby(goals, lambda g: type(g))
+
+            goal_collections = []
+            for key, goal_group in groups:
+                gc = GoalCollection(list(goal_group))
+                goal_collections.append(gc)
+
+            term.goals = goal_collections
+
         # reindex goals
         for term in loss.terms:
             if isinstance(term, Regularizer):
@@ -70,6 +87,8 @@ class Optimizer:
 
         # loss matters
         loss = partial(loss, model=model)
+
+        print("Warming up the pressure cooker...")
 
         # warm up loss
         start_time = time()
