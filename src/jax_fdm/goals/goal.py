@@ -1,71 +1,19 @@
-from abc import abstractmethod
-from abc import abstractproperty
+from functools import partial
 
 import numpy as np
+
+from jax import jit
+
+from jax import vmap
+
+from jax_fdm import DTYPE_NP
 
 from jax_fdm.goals import GoalState
 
 
 # ==========================================================================
-# Meta base goals
+# Base goal
 # ==========================================================================
-
-class AbstractGoal:
-
-    @abstractmethod
-    def __call__(self, eqstate):
-        """
-        Return the current goal state.
-        """
-        raise NotImplementedError
-
-    @abstractproperty
-    def key(self):
-        """
-        The key of an element in a network.
-        """
-        raise NotImplementedError
-
-    @abstractproperty
-    def index(self):
-        """
-        The index of the goal key in the canonical ordering of a structure.
-        """
-        raise NotImplementedError
-
-    @abstractproperty
-    def weight(self):
-        """
-        The importance of the goal.
-        """
-        raise NotImplementedError
-
-    @abstractmethod
-    def prediction(self, eq_state):
-        """
-        The current reference value in the equilibrium state.
-        """
-        raise NotImplementedError
-
-    @abstractmethod
-    def target(self, prediction):
-        """
-        The target to achieve.
-        """
-        raise NotImplementedError
-
-
-    @abstractmethod
-    def __call__(self, eqstate):
-        """
-        Return the current goal state.
-        """
-        pass
-
-# ==========================================================================
-# Base goal for a scalar quantity
-# ==========================================================================
-
 
 class Goal:
     """
@@ -75,11 +23,13 @@ class Goal:
     """
     def __init__(self, key, target, weight):
         self._key = None
+        self._weight = None
+        self._target = None
         self._index = None
 
         self.key = key
-        self._weight = weight
-        self._target = target
+        self.weight = weight
+        self.target = target
 
     @property
     def key(self):
@@ -101,50 +51,84 @@ class Goal:
 
     @index.setter
     def index(self, index):
-        self._index = index
+        if isinstance(index, int):
+            index = [index]
+        self._index = np.array(index)
 
+    @property
+    def weight(self):
+        """
+        The importance of the goal.
+        """
+        return self._weight
+
+    @weight.setter
+    def weight(self, weight):
+        self._weight = np.reshape(np.asarray(weight, dtype=DTYPE_NP), (-1, 1))
+
+    @property
+    def target(self):
+        """
+        The target to achieve.
+        """
+        raise NotImplementedError
+
+    @staticmethod
+    def goal(target, prediction):
+        """
+        The target to achieve.
+        """
+        return target
+
+    @partial(jit, static_argnums=0)
     def __call__(self, eqstate):
         """
         Return the current goal state.
         """
-        prediction = self.prediction(eqstate)
-        target = self.target(prediction)
-        weight = self.weight()
+        # index = self.index(model)
+        prediction = vmap(self.prediction, in_axes=(None, 0))(eqstate, self.index)
+        goal = vmap(self.goal)(self.target, prediction)
 
-        return GoalState(target=target, prediction=prediction, weight=weight)
+        return GoalState(goal=goal, prediction=prediction, weight=self.weight)
+
 
 # ==========================================================================
 # Base goal for a scalar quantity
 # ==========================================================================
 
-
 class ScalarGoal:
     """
     A goal that is expressed as a scalar quantity.
     """
-    def weight(self):
+    @property
+    def target(self):
         """
-        The importance of the goal
+        The target to achieve.
         """
-        return np.array(self._weight, dtype=np.float64)
+        return self._target
 
-    def target(self, prediction):
-        """
-        The target to strive for.
-        """
-        return np.array(self._target, dtype=np.float64)
+    @target.setter
+    def target(self, target):
+        if isinstance(target, (int, float)):
+            target = [target]
+        self._target = np.reshape(np.array(target), (-1, 1))
+
 
 # ==========================================================================
 # Base goal for vector quantities
 # ==========================================================================
 
-
-class VectorGoal(ScalarGoal):
+class VectorGoal:
     """
     A goal that is expressed as a vector 3D quantity.
     """
-    def target(self, prediction):
+    @property
+    def target(self):
         """
-        The target to strive for.
+        The target to achieve
         """
-        return np.asarray(self._target, dtype=np.float64)
+        return self._target
+
+    @target.setter
+    def target(self, target):
+        self._target = np.reshape(np.asarray(target, dtype=DTYPE_NP), (-1, 3))
