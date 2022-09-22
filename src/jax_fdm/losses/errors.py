@@ -46,7 +46,7 @@ class SquaredError(Error):
     """
     @staticmethod
     def error(gstate):
-        return jnp.sum(gstate.weight * jnp.square(gstate.prediction - gstate.target))
+        return jnp.sum(gstate.weight * jnp.square(gstate.prediction - gstate.goal))
 
     @staticmethod
     def errors(errors):
@@ -59,7 +59,7 @@ class MeanSquaredError(SquaredError):
     Average out all errors because no single error is important enough.
     """
     @staticmethod
-    def error(errors):
+    def errors(errors):
         return jnp.mean(errors)
 
 
