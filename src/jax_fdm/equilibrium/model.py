@@ -29,11 +29,11 @@ class EquilibriumModel:
 
     @partial(jit, static_argnums=0)
     def _edges_lengths(self, vectors):
-        return jnp.linalg.norm(vectors, axis=1)
+        return jnp.linalg.norm(vectors, axis=1, keepdims=True)
 
     @partial(jit, static_argnums=0)
     def _edges_forces(self, q, lengths):
-        return q * lengths
+        return jnp.reshape(q, (-1, 1)) * lengths
 
     @partial(jit, static_argnums=0)
     def _nodes_residuals(self, q, xyz, vectors):

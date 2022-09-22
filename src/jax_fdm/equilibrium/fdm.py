@@ -58,6 +58,7 @@ def network_updated(network, eq_state):
 def network_update(network, eq_state):
     """
     Update in-place the attributes of a network with an equilibrium state.
+
     TODO: to be extra sure, the node-index and edge-index mappings should be handled
     by EquilibriumModel/EquilibriumStructure
     """
@@ -69,8 +70,8 @@ def network_update(network, eq_state):
 
     # update q values and lengths on edges
     for idx, edge in network.index_uv().items():
-        network.edge_attribute(edge, name="length", value=lengths[idx])
-        network.edge_attribute(edge, name="force", value=forces[idx])
+        network.edge_attribute(edge, name="length", value=lengths[idx].pop())
+        network.edge_attribute(edge, name="force", value=forces[idx].pop())
         network.edge_attribute(edge, name="q", value=forcedensities[idx])
 
     # update residuals on nodes
