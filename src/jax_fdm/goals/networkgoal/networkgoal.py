@@ -5,11 +5,12 @@ class NetworkGoal(Goal):
     """
     Base class for all goals that pertain to all the nodes and edgees of a network.
     """
-    def __init__(self, keys, target, weight):
-        super().__init__(key=keys, target=target, weight=weight)
+    def __init__(self, key=-1, target=0.0, weight=1.0):
+        super().__init__(key=key, target=target, weight=weight)
 
-    def model_index(self, model):
+    @staticmethod
+    def index_from_model(model, key):
         """
         The index of the goal key in a structure.
         """
-        pass
+        return -1

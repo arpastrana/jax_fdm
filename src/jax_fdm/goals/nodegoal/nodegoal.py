@@ -1,15 +1,19 @@
 from jax_fdm.goals import Goal
 
 
-class NodesGoal(Goal):
+class NodeGoal(Goal):
     """
-    Base class for all goals that pertain to a selection of the nodes of a network.
+    Base class for all goals that pertain to the node of a network.
     """
-    def __init__(self, keys, targets, weights):
-        super().__init__(key=keys, target=targets, weight=weights)
+    def __init__(self, key, target, weight=1.0):
+        super().__init__(key=key, target=target, weight=weight)
 
-    def model_index(self, model):
+    @staticmethod
+    def index_from_model(model, key):
         """
-        The index of the goal key in a structure.
+        The index of the edge in a structure.
         """
-        return tuple([model.structure.node_index[key] for key in self.key])
+        try:
+            return model.structure.node_index[key]
+        except TypeError:
+            return tuple([model.structure.node_index[k] for k in key])

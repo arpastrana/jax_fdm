@@ -1,61 +1,85 @@
 import numpy as np
 import jax.numpy as jnp
 
+from jax_fdm.geometry import angle_vectors
+
 from jax_fdm.goals import ScalarGoal
-from jax_fdm.goals.edgegoal import EdgesGoal
-
-from jax import jit
+from jax_fdm.goals.edgegoal import EdgeGoal
 
 
-class EdgesVectorAngleGoal(ScalarGoal, EdgesGoal):
+class EdgeAngleGoal(ScalarGoal, EdgeGoal):
     """
-    Make the direction of the edge of a network to be parallel to a target vector.
+    Reach a target angle between the direction of an edge and a reference vector.
     """
-    def __init__(self, keys, vectors, targets, weights=1.0):
-        super().__init__(keys=keys, targets=targets, weights=weights)
-        self.vectors_other = vectors
+    def __init__(self, key, vector, target, weight=1.0):
+        super().__init__(key=key, target=target, weight=weight)
+        self._vector = None
+        self.vector = vector
 
-    def prediction(self, eq_state):
+    @property
+    def vector(self):
         """
-        The edge vector in the network.
+        The vector to take the angle with.
         """
-        vectors = eq_state.vectors[self.index, :]
-        others = np.reshape(np.array(self.vectors_other), (-1, 3))
-        return self._angle_vectors(vectors, others)
+        return self._vector
 
-    @staticmethod
-    @jit
-    def _angle_vectors(u, v):
-        """
-        Compute the smallest angle between two vectors.
-        """
-        L = jnp.linalg.norm(u, axis=-1) * jnp.linalg.norm(v, axis=-1)
-        a = jnp.einsum('ij,ij->i', u, v) / L
-        a = jnp.maximum(jnp.minimum(a, 1.0), -1.0)
+    @vector.setter
+    def vector(self, vector):
+        self._vector = jnp.reshape(jnp.asarray(vector), (-1, 3))
 
-        return jnp.degrees(jnp.arccos(a))
+    def prediction(self, eq_state, index):
+        """
+        The angle between the edge and the reference vector.
+        """
+        vector = eq_state.vectors[index, :]
+        return angle_vectors(vector, self.vector[index, :])
 
 
 if __name__ == "__main__":
 
     vector = [[0.0, 0.0, 1.0], [-1.0, 0.0, 0.0]]
-    v = np.array(vector)
+    # vector = np.array([0.0, 0.0, 1.0])
+    us = np.reshape(np.array(vector), (-1, 3))
 
-    vector = np.array([0.0, 0.0, 1.0])
-    # v = vector
-    v = np.reshape(np.array(vector), (-1, 3))
+    vectors_other = [[1.0, 0.0, 0.0], [-1.0, 0.0, 0.0]]
+    vs = np.reshape(np.array(vectors_other), (-1, 3))
 
-    target = 30.0
-    weight = 1
+    # target = 30.0
+    # keys = [(0, 1), (1, 2)]
+    # goal = EdgeAngleGoal(keys, vector, target)
 
-    keys = [(0, 1), (1, 2)]
+    for u, v in zip(us, vs):
+        # breakpoint()
+        angle = angle_vectors(u, v)
+        print(angle.shape)
+        print(angle)
 
-    goal = EdgesVectorAngleGoal(keys, vector, target, weight)
 
-    u = jnp.array([[1.0, 0.0, 0.0], [-1.0, 0.0, 0.0]])
+    # @staticmethod
+    # def _angle_vectors(u, v):
+    #     """
+    #     Compute the smallest angle between two vectors.
+    #     """
+    #     L = jnp.linalg.norm(u) * jnp.linalg.norm(v)
+    #     cosim = (u @ v) / L
+    #     cosim = jnp.maximum(jnp.minimum(cosim, -1.0), -1.0)
 
-    angles = goal._angle_vectors(u, v)
-    # angles = goal._angle_vectors_vmap(u, v)
-    print(angles.shape)
+    #     return jnp.degrees(jnp.arccos(cosim))
 
-    print(angles)
+    # @staticmethod
+    # def prediction(eq_state, index, gattrs):
+    #     """
+    #     The edge vector in the network.
+    #     """
+    #     vector = eq_state.vectors[index, :]
+    #     return angle_vectors(vector, gattrs["vector"])
+
+    # def _angle_vectors(u, v):
+    #     """
+    #     Compute the smallest angle between two vectors.
+    #     """
+    #     L = jnp.linalg.norm(u, axis=-1) * jnp.linalg.norm(v, axis=-1)
+    #     a = jnp.einsum('ij,ij->i', u, v) / L
+    #     a = jnp.maximum(jnp.minimum(a, 1.0), -1.0)
+
+    #     return jnp.degrees(jnp.arccos(a))

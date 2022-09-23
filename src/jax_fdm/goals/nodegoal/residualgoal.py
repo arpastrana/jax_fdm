@@ -5,43 +5,40 @@ import numpy as np
 
 import jax.numpy as jnp
 
+from jax_fdm.geometry import normalize_vector
+
 from jax_fdm.goals import ScalarGoal
 from jax_fdm.goals import VectorGoal
 
-from jax_fdm.goals.nodegoal import NodesGoal
+from jax_fdm.goals.nodegoal import NodeGoal
 
 
-class NodesResidualForceGoal(ScalarGoal, NodesGoal):
+class NodeResidualForceGoal(ScalarGoal, NodeGoal):
     """
     Make the residual force in a network to match a non-negative magnitude.
     """
-    def __init__(self, keys, targets, weights=1.0):
-        # assert target >= 0.0, "Only non-negative target forces are supported!"
-        super().__init__(keys=keys, targets=targets, weights=weights)
-
-    def prediction(self, eq_state):
+    @staticmethod
+    def prediction(eq_state, index):
         """
         The residual at the the predicted node of the network.
         """
-        residual = eq_state.residuals[self.index, :]
-        return jnp.linalg.norm(residual, axis=-1)
+        residual = eq_state.residuals[index, :]
+        return jnp.linalg.norm(residual, keepdims=True)
 
 
-class NodesResidualVectorGoal(VectorGoal, NodesGoal):
+class NodeResidualVectorGoal(VectorGoal, NodeGoal):
     """
     Make the residual force in a network to match the magnitude and direction of a vector.
     """
-    def __init__(self, keys, targets, weights=1.0):
-        super().__init__(keys=keys, targets=targets, weights=weights)
-
-    def prediction(self, eq_state):
+    @staticmethod
+    def prediction(eq_state, index):
         """
         The residual at the the predicted node of the network.
         """
-        return eq_state.residuals[self.index, :]
+        return eq_state.residuals[index, :]
 
 
-class NodesResidualDirectionGoal(VectorGoal, NodesGoal):
+class NodeResidualDirectionGoal(VectorGoal, NodeGoal):
     """
     Make the residual force in a network to match the direction of a vector.
 
@@ -56,18 +53,16 @@ class NodesResidualDirectionGoal(VectorGoal, NodesGoal):
     potentially expensive trigonometric operations required to yield
     a proper metric.
     """
-    def __init__(self, keys, targets, weights=1.0):
-        super().__init__(keys=keys, targets=targets, weights=weights)
-
-    def prediction(self, eq_state):
+    @staticmethod
+    def prediction(eq_state, index):
         """
         The residual at the the predicted node of the network.
         """
-        residual = eq_state.residuals[self.index, :]
-        return residual / jnp.linalg.norm(residual, axis=-1, keepdims=True)  # unitized residual
+        residual = eq_state.residuals[index, :]
+        return normalize_vector(residual)
 
-    def target(self, prediction):
+    @staticmethod
+    def goal(target, prediction):
         """
         """
-        target = np.array(self._target)
-        return target / np.linalg.norm(target, axis=-1, keepdims=True)
+        return normalize_vector(target)
