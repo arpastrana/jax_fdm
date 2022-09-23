@@ -118,3 +118,6 @@ temp/**
 docs/api/generated/
 
 conda.recipe/
+
+*.json
+!data/json/monkey_saddle.json
