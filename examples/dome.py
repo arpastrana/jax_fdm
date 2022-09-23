@@ -19,7 +19,6 @@ from compas.geometry import length_vector
 from compas.geometry import subtract_vectors
 from compas.geometry import cross_vectors
 from compas.geometry import rotate_points
-from compas.geometry import scale_vector
 from compas.geometry import Polygon
 from compas.geometry import offset_polygon
 from compas.utilities import pairwise
@@ -30,31 +29,17 @@ from compas_view2.app import App
 # static equilibrium
 from jax_fdm.datastructures import FDNetwork
 
+from jax_fdm.equilibrium import EquilibriumModel
 from jax_fdm.equilibrium import fdm
 from jax_fdm.equilibrium import constrained_fdm
-from jax_fdm.equilibrium import EquilibriumModel
 
-from jax_fdm.goals import EdgesDirectionGoal
-from jax_fdm.goals import EdgesLengthGoal
-from jax_fdm.goals import NodesLineGoal
-from jax_fdm.goals import NodesPlaneGoal
-from jax_fdm.goals import NodesResidualForceGoal
-from jax_fdm.goals import NetworkLoadPathGoal
-# from jax_fdm.goals import NetworkEdgesDirectionGoal
-# from jax_fdm.goals import NetworkEdgesLengthGoal
+from jax_fdm.goals import EdgeLengthGoal
+from jax_fdm.goals import EdgeDirectionGoal
+from jax_fdm.goals import EdgeAngleGoal
 
-# from jax_fdm.constraints import EdgeVectorAngleConstraint
-# from jax_fdm.constraints import NetworkEdgesLengthConstraint
-# from jax_fdm.constraints import NetworkEdgesForceConstraint
-
-from jax_fdm.losses import PredictionError
 from jax_fdm.losses import SquaredError
-from jax_fdm.losses import MeanSquaredError
-from jax_fdm.losses import L2Regularizer
 from jax_fdm.losses import Loss
 
-from jax_fdm.optimization import SLSQP
-from jax_fdm.optimization import TrustRegionConstrained
 from jax_fdm.optimization import BFGS
 
 from jax_fdm.optimization import OptimizationRecorder
@@ -94,8 +79,8 @@ angle_base = 20.0  # angle constraint, lower bound
 angle_top = 30.0  # angle constraint, upper bound
 
 # io
-export = True
-record = True
+export = False
+record = False
 
 HERE = os.path.dirname(__file__)
 
@@ -182,14 +167,18 @@ if export:
 
 goals = []
 
-vector_edges = []
-edge_goal = {}
-vectors = []
+# edge length goal
+for cross_ring in edges_cross_rings:
+    for edge in cross_ring:
+        goal = EdgeLengthGoal(edge, target=length_target, weight=1.)
+        goals.append(goal)
 
+# edge vector goal
 for i, cross_ring in enumerate(edges_cross_rings):
 
     angle_delta = angle_top - angle_base
     angle = angle_base + angle_delta * (i / (num_rings - 1))
+
     print(f"Edges ring {i + 1}/{len(edges_cross_rings)}. Angle goal: {angle}")
 
     for u, v in cross_ring:
@@ -202,17 +191,72 @@ for i, cross_ring in enumerate(edges_cross_rings):
         end = rotate_points([point], -radians(angle), axis=normal, origin=xyz).pop()
         vector = subtract_vectors(end, xyz)
 
-        vectors.append(vector)
-
-ecross = [e for cr in edges_cross_rings for e in cr]
-goals = [EdgesDirectionGoal(keys=ecross, targets=vectors),
-         EdgesLengthGoal(keys=ecross, targets=length_target)]
+        goal = EdgeDirectionGoal(edge, target=vector, weight=1.0)
+        # goal = EdgeAngleGoal(edge, vector=angle_vector, target=angle, weight=1.0)
+        goals.append(goal)
 
 # ==========================================================================
 # Define loss function with goals
 # ==========================================================================
 
 loss = Loss(SquaredError(goals=goals))
+
+# ==========================================================================
+# Define loss function with goals
+# ==========================================================================
+
+# print()
+
+# import jax.numpy as jnp
+# from jax import jit
+# from jax_fdm.goals import goals_reindex
+# from jax_fdm.goals import GoalCollection
+# from itertools import groupby
+# from jax import grad
+
+# model = EquilibriumModel(network)
+# q = jnp.asarray(network.edges_forcedensities())
+
+# reindex goals
+# for term in loss.terms:
+#     goals_reindex(term.goals, model)
+
+# gradient = jit(grad(loss), static_argnums=1)(q, model)
+
+# print("singles")
+# print("loss", loss(q, model))
+# print("gradient shape", gradient.shape)
+# print("gradient norm", jnp.linalg.norm(gradient))
+# print("gradient max", jnp.amax(gradient))
+
+# loss = loss2
+
+# for term in loss.terms:
+#     # sort goals by class name
+#     goals = term.goals
+#     goals = sorted(goals, key=lambda g: type(g).__name__)
+#     groups = groupby(goals, lambda g: type(g))
+
+#     goal_collections = []
+#     for key, goal_group in groups:
+#         gc = GoalCollection(list(goal_group))
+#         goal_collections.append(gc)
+
+#     term.goals = goal_collections
+
+# # reindex goals
+# for term in loss.terms:
+#     goals_reindex(term.goals, model)
+
+# gradient = jit(grad(loss), static_argnums=1)(q, model)
+
+# print("collections")
+# print("loss", loss(q, model))
+# print("gradient shape", gradient.shape)
+# print("gradient norm", jnp.linalg.norm(gradient))
+# print("gradient max", jnp.amax(gradient))
+
+# raise
 
 # ==========================================================================
 # Form-finding sweep
@@ -328,10 +372,11 @@ viewer = App(width=1600, height=900, show_grid=False)
 
 # add all networks except the last one
 networks = list(networks.values())
-for i, network in enumerate(networks):
-    if i == (len(networks) - 1):
-        continue
-    viewer.add(network, show_points=True, linewidth=1.0, color=Color.grey().darkened(i * 10))
+
+# for i, network in enumerate(networks):
+#     if i == (len(networks) - 1):
+#         continue
+#     viewer.add(network, show_points=False, linewidth=1.0, color=Color.grey().darkened(i * 10))
 
 network0 = networks[0]
 if len(networks) > 1:
@@ -381,10 +426,10 @@ for node in c_network.nodes():
         continue
 
     # print(node, residual, length_vector(residual))
-    residual_line = Line(pt, add_vectors(pt, residual))
-    viewer.add(residual_line,
-               linewidth=4.0,
-               color=Color.pink())  # Color.purple()
+    # residual_line = Line(pt, add_vectors(pt, residual))
+    # viewer.add(residual_line,
+    #            linewidth=4.0,
+    #            color=Color.pink())
 
 # draw applied loads
 for node in c_network.nodes():
@@ -400,5 +445,4 @@ for node in c_network.nodes_supports():
     viewer.add(Point(x, y, z), color=Color.green(), size=30)
 
 # show le crème
-# viewer.zoom_extents()
 viewer.show()

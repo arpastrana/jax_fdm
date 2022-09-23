@@ -21,14 +21,18 @@ from compas_view2.app import App
 
 # force density
 from jax_fdm.datastructures import FDNetwork
+
 from jax_fdm.equilibrium import EquilibriumModel
 from jax_fdm.equilibrium import fdm
 from jax_fdm.equilibrium import constrained_fdm
+
 from jax_fdm.optimization import SLSQP
 from jax_fdm.optimization import OptimizationRecorder
-from jax_fdm.goals import EdgesLengthGoal
-from jax_fdm.goals import NodesResidualForceGoal
+
+from jax_fdm.goals import EdgeLengthGoal
+from jax_fdm.goals import NodeResidualForceGoal
 from jax_fdm.goals import NetworkLoadPathGoal
+
 from jax_fdm.losses import PredictionError
 from jax_fdm.losses import SquaredError
 from jax_fdm.losses import Loss
@@ -48,8 +52,8 @@ qmin, qmax = -20.0, -0.01  # min and max force densities
 rmin, rmax = 2.0, 10.0  # min and max reaction forces
 r_exp = 1.0  # reaction force variation exponent
 
-weight_residual = 10.0  # weight for residual force goal in optimisation
 weight_length = 1.0  # weight for edge length goal in optimisation
+weight_residual = 10.0  # weight for residual force goal in optimisation
 
 alpha = 0.1  # weight of the L2 regularization term in the loss function
 alpha_lp = 0.01   # weight of the total load path minimization goal
@@ -153,22 +157,18 @@ if export:
 
 # edge lengths
 goals_a = []
-lengths = [network0.edge_length(*edge) for edge in network0.edges()]
-goals_a.append(EdgesLengthGoal(keys=list(network0.edges()),
-                               targets=lengths,
-                               weights=weight_length))
+for edge in network0.edges():
+    length = network0.edge_length(*edge)
+    goal = EdgeLengthGoal(edge, length, weight=weight_length)
+    goals_a.append(goal)
 
 # reaction forces
 goals_b = []
-reactions = []
 for key in network0.nodes_supports():
     step = steps[key]
     reaction = (1 - step / max_step) ** r_exp * (rmax - rmin) + rmin
-    reactions.append(reaction)
-
-goals_b.append(NodesResidualForceGoal(keys=list(network0.nodes_supports()),
-                                      targets=reactions,
-                                      weights=weight_residual))
+    goal = NodeResidualForceGoal(key, reaction, weight=weight_residual)
+    goals_b.append(goal)
 
 # global loadpath goal
 goals_c = []
@@ -181,7 +181,7 @@ goals_c.append(load_path)
 
 squared_error_a = SquaredError(goals_a, alpha=1.0, name="EdgeLengthGoal")
 squared_error_b = SquaredError(goals_b, alpha=1.0, name="ReactionForceGoal")
-loadpath_error = PredictionError(goals_b, alpha=alpha_lp, name="LoadPathGoal")
+loadpath_error = PredictionError(goals_c, alpha=alpha_lp, name="LoadPathGoal")
 regularizer = L2Regularizer(alpha=alpha)
 
 loss = Loss(squared_error_a, squared_error_b, loadpath_error, regularizer)
@@ -315,7 +315,7 @@ for node in network.nodes():
     residual_line = Line(pt, add_vectors(pt, residual))
     viewer.add(residual_line,
                linewidth=4.0,
-               color=Color.pink())  # Color.purple()
+               color=Color.pink())
 
 # draw applied loads
 for node in network.nodes():

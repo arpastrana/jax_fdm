@@ -12,6 +12,8 @@ from compas.geometry import Line
 from compas.geometry import Point
 from compas.geometry import add_vectors
 from compas.geometry import length_vector
+from compas.geometry import Translation
+from compas.datastructures import network_transform
 
 # visualization
 from compas_view2.app import App
@@ -22,15 +24,16 @@ from jax_fdm.datastructures import FDNetwork
 from jax_fdm.equilibrium import constrained_fdm
 from jax_fdm.equilibrium import EquilibriumModel
 
-from jax_fdm.goals import EdgesLengthGoal
-from jax_fdm.goals import NodesPlaneGoal
-from jax_fdm.goals import NodesResidualForceGoal
+from jax_fdm.goals import EdgeLengthGoal
+from jax_fdm.goals import NodePlaneGoal
+from jax_fdm.goals import NodeResidualForceGoal
 
 from jax_fdm.losses import Loss
 from jax_fdm.losses import SquaredError
 
 from jax_fdm.optimization import SLSQP
 from jax_fdm.optimization import OptimizationRecorder
+
 
 # ==========================================================================
 # Initial parameters
@@ -111,6 +114,10 @@ for node in network.nodes_free():
 for edge in network.edges():
     network.edge_forcedensity(edge, q_init)
 
+# center vault around origin
+T = Translation.from_vector([-length_vault / 2., -width_vault / 2., 0.])
+network_transform(network, T)
+
 # ==========================================================================
 # Create a target distribution of residual force magnitudes
 # ==========================================================================
@@ -133,16 +140,20 @@ goals = []
 
 # residual forces
 for rz, arch in zip(rzs, arches):
-    goals.append(NodesResidualForceGoal(keys=(arch[0], arch[-1]), targets=rz, weights=100.0))
+    goals.append(NodeResidualForceGoal(arch[0], target=rz, weight=100.0))
+    goals.append(NodeResidualForceGoal(arch[-1], target=rz, weight=100.0))
 
 # transversal planes
-normal = [1.0, 0.0, 0.0]
-planes = [(network.node_coordinates(node), normal) for node in network.nodes_free()]
-goals.append(NodesPlaneGoal(list(network.nodes_free()), planes, weights=10.0))
+for node in network.nodes_free():
+    origin = network.node_coordinates(node)
+    normal = [1.0, 0.0, 0.0]
+    goal = NodePlaneGoal(node, target=(origin, normal), weight=10.0)
+    goals.append(goal)
 
 # transversal edge lengths
-lengths = [network.edge_length(*edge) for edge in cross_edges]
-goals.append(EdgesLengthGoal(cross_edges, targets=lengths, weights=1.0))
+for edge in cross_edges:
+    target_length = network.edge_length(*edge)
+    goals.append(EdgeLengthGoal(edge, target=target_length, weight=1.0))
 
 # ==========================================================================
 # Create loss function
@@ -218,7 +229,10 @@ fds = [fabs(c_network.edge_forcedensity(edge)) for edge in c_network.edges()]
 colors = {}
 for edge in c_network.edges():
     fd = fabs(c_network.edge_forcedensity(edge))
-    ratio = (fd - min(fds)) / (max(fds) - min(fds))
+    try:
+        ratio = (fd - min(fds)) / (max(fds) - min(fds))
+    except ZeroDivisionError:
+        ratio = 1.
     colors[edge] = cmap(ratio)
 
 # optimized network
