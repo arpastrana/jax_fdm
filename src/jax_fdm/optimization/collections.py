@@ -1,35 +1,38 @@
-from itertools import groupby
+import inspect
 
-from dfdm.goals import Goal
+from collections import defaultdict
+
+from itertools import groupby
 
 
 class Collection:
-    pass
-
-
-class GoalCollection(Collection, Goal):
     """
     A collection of goals of the same type to speed up optimization.
     """
-    def __new__(cls, goals):
+    def __new__(cls, collectibles):
+        """
+        Gather a collection of objects into a single vectorized object.
+        """
         # check homogenity
-        gtypes = [type(g) for g in goals]
-        if len(set(gtypes)) != 1:
-            raise TypeError("The input goals are not of the same type!")
-
-        # get keys
-        keys = [goal.key for goal in goals]
-
-        # get weights
-        weights = [goal.weight for goal in goals]
-
-        # targets
-        targets = [goal.target for goal in goals]
+        ctypes = [type(c) for c in collectibles]
+        if len(set(ctypes)) != 1:
+            raise TypeError("The input collectibles are not of the same type!")
 
         # extract class
-        gcls = gtypes.pop()
+        cls = ctypes.pop()
 
-        return gcls(key=keys, target=targets, weight=weights)
+        # class signature
+        sig = inspect.signature(cls)
+
+        # collect init signature values
+        ckwargs = defaultdict(list)
+        for key in sig.parameters.keys():
+            for collectible in collectibles:
+                attr = getattr(collectible, key)
+                ckwargs[key].append(attr)
+
+        return cls(**ckwargs)
+
 
 # ==========================================================================
 # Main

@@ -19,7 +19,7 @@ from jax_fdm import DTYPE_JAX
 from jax_fdm.equilibrium import EquilibriumModel
 
 from jax_fdm.goals import goals_reindex
-from jax_fdm.goals import GoalCollection
+from jax_fdm.optimization import Collection
 
 from jax_fdm.losses import Regularizer
 
@@ -57,8 +57,7 @@ class Optimizer:
             if isinstance(term, Regularizer):
                 continue
             for goal in term.goals:
-                num_goals += len(goal.key)
-
+                num_goals += 1
         print(f"\n***Constrained form finding***\nParameters: {len(q)} \tGoals: {num_goals} \tConstraints: {len(constraints)}")
 
         # create an equilibrium model from a network
@@ -67,17 +66,23 @@ class Optimizer:
         # TODO: gather goal collections for acceleration
         for term in loss.terms:
 
-            # sort goals by class name
+            # skip regularizers
+            if isinstance(term, Regularizer):
+                continue
+
             goals = term.goals
+
+            # sort goals by class name
             goals = sorted(goals, key=lambda g: type(g).__name__)
             groups = groupby(goals, lambda g: type(g))
 
-            goal_collections = []
+            collections = []
             for key, goal_group in groups:
-                gc = GoalCollection(list(goal_group))
-                goal_collections.append(gc)
+                gc = Collection(list(goal_group))
+                collections.append(gc)
 
-            term.goals = goal_collections
+            # collections.extend(uncollectibles)
+            term.goals = collections
 
         # reindex goals
         for term in loss.terms:
