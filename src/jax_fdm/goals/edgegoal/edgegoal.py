@@ -11,7 +11,7 @@ class EdgeGoal(Goal):
     @staticmethod
     def index_from_model(model, key):
         """
-        The index of the edge in a structure.
+        The index of the edge key in an equilibrium structure.
         """
         try:
             return model.structure.edge_index[key]

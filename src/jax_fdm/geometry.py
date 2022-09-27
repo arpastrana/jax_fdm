@@ -56,3 +56,17 @@ def closest_point_on_line(point, line):
     ap = point - a
     c = vector_projection(ap, ab)
     return a + c
+
+
+def normal_polygon(polygon):
+    """
+    Computes the normal of a polygon defined by a sequence of points.
+
+    A polygon must have at least two points.
+    """
+    centroid = jnp.mean(polygon, axis=0)
+    op = polygon - centroid
+    # TODO: vectorize ns, may cause jit unecessary loop-unrolling
+    ns = jnp.array([jnp.cross(op[i - 1], op[i]) * 0.5 for i in range(len(op))])
+    n = jnp.sum(ns, axis=0)
+    return normalize_vector(n)

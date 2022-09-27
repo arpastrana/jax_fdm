@@ -71,12 +71,17 @@ class Optimizer:
                 continue
 
             goals = term.goals
+            collections = []
+
+            # for goal in term.goals:
+            #     if goal._iscollection:
+            #         goal = term.goals.pop(term.goals.index(goal))
+            #         collections.append(goal)
 
             # sort goals by class name
             goals = sorted(goals, key=lambda g: type(g).__name__)
             groups = groupby(goals, lambda g: type(g))
 
-            collections = []
             for key, goal_group in groups:
                 gc = Collection(list(goal_group))
                 collections.append(gc)
@@ -164,8 +169,21 @@ class ConstrainedOptimizer(Optimizer):
         if not constraints:
             return
 
+        # sort constraints by class name
+        constraints = sorted(constraints, key=lambda g: type(g).__name__)
+        groups = groupby(constraints, lambda g: type(g))
+
+        collections = []
+        for key, group in groups:
+            collection = Collection(list(group))
+            collections.append(collection)
+
+        constraints = collections
+
         clist = []
         for constraint in constraints:
+            # initialize constraint
+            constraint.init(model)
             fun = jit(partial(constraint, model=model))
             jac = jit(jacobian(fun))
             lb = constraint.bound_low

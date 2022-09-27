@@ -1,5 +1,7 @@
 from functools import partial
 
+from itertools import chain
+
 import numpy as np
 
 from jax import jit
@@ -40,6 +42,10 @@ class Goal:
 
     @key.setter
     def key(self, key):
+        if isinstance(key, int) or (isinstance(key, tuple) and len(key) == 2):
+            key = key
+        elif sum(isinstance(i, list) for i in key) > 0:
+            key = key.pop()
         self._key = key
 
     @property

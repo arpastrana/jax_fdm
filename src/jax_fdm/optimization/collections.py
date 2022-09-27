@@ -31,7 +31,10 @@ class Collection:
                 attr = getattr(collectible, key)
                 ckwargs[key].append(attr)
 
-        return cls(**ckwargs)
+        collection = cls(**ckwargs)
+        collection._iscollection = True
+
+        return collection
 
 
 # ==========================================================================

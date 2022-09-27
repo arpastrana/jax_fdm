@@ -79,8 +79,8 @@ angle_base = 20.0  # angle constraint, lower bound
 angle_top = 30.0  # angle constraint, upper bound
 
 # io
-export = False
-record = False
+export = True
+record = True
 
 HERE = os.path.dirname(__file__)
 
@@ -200,63 +200,6 @@ for i, cross_ring in enumerate(edges_cross_rings):
 # ==========================================================================
 
 loss = Loss(SquaredError(goals=goals))
-
-# ==========================================================================
-# Define loss function with goals
-# ==========================================================================
-
-# print()
-
-# import jax.numpy as jnp
-# from jax import jit
-# from jax_fdm.goals import goals_reindex
-# from jax_fdm.goals import GoalCollection
-# from itertools import groupby
-# from jax import grad
-
-# model = EquilibriumModel(network)
-# q = jnp.asarray(network.edges_forcedensities())
-
-# reindex goals
-# for term in loss.terms:
-#     goals_reindex(term.goals, model)
-
-# gradient = jit(grad(loss), static_argnums=1)(q, model)
-
-# print("singles")
-# print("loss", loss(q, model))
-# print("gradient shape", gradient.shape)
-# print("gradient norm", jnp.linalg.norm(gradient))
-# print("gradient max", jnp.amax(gradient))
-
-# loss = loss2
-
-# for term in loss.terms:
-#     # sort goals by class name
-#     goals = term.goals
-#     goals = sorted(goals, key=lambda g: type(g).__name__)
-#     groups = groupby(goals, lambda g: type(g))
-
-#     goal_collections = []
-#     for key, goal_group in groups:
-#         gc = GoalCollection(list(goal_group))
-#         goal_collections.append(gc)
-
-#     term.goals = goal_collections
-
-# # reindex goals
-# for term in loss.terms:
-#     goals_reindex(term.goals, model)
-
-# gradient = jit(grad(loss), static_argnums=1)(q, model)
-
-# print("collections")
-# print("loss", loss(q, model))
-# print("gradient shape", gradient.shape)
-# print("gradient norm", jnp.linalg.norm(gradient))
-# print("gradient max", jnp.amax(gradient))
-
-# raise
 
 # ==========================================================================
 # Form-finding sweep

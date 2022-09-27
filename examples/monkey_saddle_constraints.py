@@ -21,14 +21,21 @@ from compas_view2.app import App
 
 # force density
 from jax_fdm.datastructures import FDNetwork
+
 from jax_fdm.equilibrium import EquilibriumModel
-from jax_fdm.equilibrium import constrained_fdm, fdm
+from jax_fdm.equilibrium import fdm
+from jax_fdm.equilibrium import constrained_fdm
+
 from jax_fdm.optimization import TrustRegionConstrained
 from jax_fdm.optimization import OptimizationRecorder
+
 from jax_fdm.goals import NodeResidualForceGoal
+
+from jax_fdm.constraints import EdgeLengthConstraint
+
 from jax_fdm.losses import SquaredError
 from jax_fdm.losses import Loss
-from jax_fdm.constraints import NetworkEdgesLengthConstraint
+
 
 # ==========================================================================
 # Parameters
@@ -182,7 +189,11 @@ for key in network0.nodes_supports():
 
 constraints = None
 if add_constraints:
-    constraints = [NetworkEdgesLengthConstraint(bound_low=length_min, bound_up=length_max)]
+
+    constraints = []
+    for edge in network0.edges():
+        constraint = EdgeLengthConstraint(edge, bound_low=length_min, bound_up=length_max)
+        constraints.append(constraint)
 
 # ==========================================================================
 # Combine error functions and regularizer into custom loss function
