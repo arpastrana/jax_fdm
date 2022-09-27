@@ -2,8 +2,6 @@ import inspect
 
 from collections import defaultdict
 
-from itertools import groupby
-
 
 class Collection:
     """
@@ -35,37 +33,3 @@ class Collection:
         collection._iscollection = True
 
         return collection
-
-
-# ==========================================================================
-# Main
-# ==========================================================================
-
-if __name__ == "__main__":
-
-    from jax_fdm.goals import EdgeLengthGoal
-    from collections import Counter
-
-
-    # goal_a = EdgesLengthGoal([(0, 1), (1, 2)], targets=[0.5, 0.75])
-    # goal_b = NodesPointGoal([3, 4, 5], targets=[[0., 0., 0.], [1., 1., 1.]])
-
-    # goal_b = NodesPointGoal(3, targets=[0., 0., 0.])
-    goal_a = EdgeLengthGoal((1, 2), 0.5)
-    goal_b = EdgeLengthGoal((0, 1), 1.5)
-
-    goals = [goal_a, goal_b, goal_a]
-
-    # counter = Counter(goals)
-
-    # sort goals by class name
-    keyfunc = lambda g: type(g).__name__
-    goals = sorted(goals, key=keyfunc)
-    keyfunc = lambda g: type(g)
-    groups = groupby(goals, keyfunc)
-
-    goal_collections = []
-    for key, goal_group in groups:
-        gc = GoalCollection(list(goal_group))
-        print(f"Goal type{type(gc)}:\tKeys: {gc.key}\tWeights: {gc.weight.shape}{gc.weight}\tTargets: {gc.target.shape}{gc.target}\n\n")
-        goal_collections.append(gc)

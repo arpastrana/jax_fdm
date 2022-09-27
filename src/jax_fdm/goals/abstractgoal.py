@@ -49,10 +49,3 @@ class AbstractGoal:
         The target to achieve.
         """
         raise NotImplementedError
-
-    @abstractmethod
-    def __call__(self, eqstate):
-        """
-        Return the current goal state.
-        """
-        raise NotImplementedError

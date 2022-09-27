@@ -1,8 +1,6 @@
 """
 A bunch of goals to strive for.
 """
-import numpy as np
-
 import jax.numpy as jnp
 
 from jax_fdm.geometry import normalize_vector

@@ -1,5 +1,3 @@
-import jax.numpy as jnp
-
 from jax_fdm.geometry import normalize_vector
 
 from jax_fdm.goals import VectorGoal

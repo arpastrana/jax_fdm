@@ -192,7 +192,6 @@ for i, cross_ring in enumerate(edges_cross_rings):
         vector = subtract_vectors(end, xyz)
 
         goal = EdgeDirectionGoal(edge, target=vector, weight=1.0)
-        # goal = EdgeAngleGoal(edge, vector=angle_vector, target=angle, weight=1.0)
         goals.append(goal)
 
 # ==========================================================================
