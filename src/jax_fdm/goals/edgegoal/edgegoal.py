@@ -8,12 +8,11 @@ class EdgeGoal(Goal):
     def __init__(self, key, target, weight=1.0):
         super().__init__(key=key, target=target, weight=weight)
 
-    @staticmethod
-    def index_from_model(model, key):
+    def index_from_model(self, model):
         """
         The index of the edge key in an equilibrium structure.
         """
         try:
-            return model.structure.edge_index[key]
+            return model.structure.edge_index[self.key]
         except TypeError:
-            return tuple([model.structure.edge_index[k] for k in key])
+            return tuple([model.structure.edge_index[k] for k in self.key])

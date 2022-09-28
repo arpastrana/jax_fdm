@@ -84,12 +84,17 @@ class Goal:
         """
         return target
 
+    def init(self, model):
+        """
+        Initialize the goal with information from an equilibrium model.
+        """
+        self.index = self.index_from_model(model)
+
     @partial(jit, static_argnums=0)
     def __call__(self, eqstate):
         """
         Return the current goal state.
         """
-        # index = self.index(model)
         prediction = vmap(self.prediction, in_axes=(None, 0))(eqstate, self.index)
         goal = vmap(self.goal)(self.target, prediction)
 

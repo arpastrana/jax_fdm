@@ -86,7 +86,7 @@ class Constraint:
     #     """
     #     eqstate = model(q)
     #     return self.constraint(eqstate, model)
-    #
+
     def init(self, model):
         """
         Initialize the constraint with information from an equilibrium model.
