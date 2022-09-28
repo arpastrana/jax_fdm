@@ -18,10 +18,7 @@ from scipy.optimize import NonlinearConstraint
 from jax_fdm import DTYPE_JAX
 from jax_fdm.equilibrium import EquilibriumModel
 
-from jax_fdm.goals import goals_reindex
 from jax_fdm.optimization import Collection
-
-from jax_fdm.losses import Regularizer
 
 
 # ==========================================================================
@@ -52,55 +49,24 @@ class Optimizer:
         q = jnp.asarray(network.edges_forcedensities(), dtype=DTYPE_JAX)
 
         # message
-        num_goals = 0
-        for term in loss.terms:
-            if isinstance(term, Regularizer):
-                continue
-            for goal in term.goals:
-                num_goals += 1
-        print(f"\n***Constrained form finding***\nParameters: {len(q)} \tGoals: {num_goals} \tConstraints: {len(constraints)}")
+        print(f"\n***Constrained form finding***\nParameters: {len(q)} \tGoals: {loss.number_of_goals()} \tConstraints: {len(constraints)}")
 
         # create an equilibrium model from a network
         model = EquilibriumModel(network)
 
-        # TODO: gather goal collections for acceleration
-        for term in loss.terms:
+        # build goal collections
+        for term in loss.terms_error:
 
-            # skip regularizers
-            if isinstance(term, Regularizer):
-                continue
-
-            goals = term.goals
-            collections = []
-
-            # for goal in term.goals:
-            #     if goal._iscollection:
-            #         goal = term.goals.pop(term.goals.index(goal))
-            #         collections.append(goal)
-
-            # sort goals by class name
-            goals = sorted(goals, key=lambda g: type(g).__name__)
-            groups = groupby(goals, lambda g: type(g))
-
-            for key, goal_group in groups:
-                gc = Collection(list(goal_group))
-                collections.append(gc)
-
-            # collections.extend(uncollectibles)
-            term.goals = collections
-
-        # reindex goals
-        for term in loss.terms:
-            if isinstance(term, Regularizer):
-                continue
-            goals_reindex(term.goals, model)
+            goal_collections = self.collect_goals(term.goals)
+            for goal_collection in goal_collections:
+                goal_collection.init(model)
+            term.collections = goal_collections
 
         # loss matters
         loss = partial(loss, model=model)
 
-        print("Warming up the pressure cooker...")
-
         # warm up loss
+        print("Warming up the pressure cooker...")
         start_time = time()
         loss(q)
         print(f"Loss warmup time: {round(time() - start_time, 4)} seconds")
@@ -124,7 +90,7 @@ class Optimizer:
 
         bounds = Bounds(lb=lb, ub=ub)
 
-        # TODO: support for scipy non-linear constraints
+        # constraints
         start_time = time()
         constraints = self.constraints(constraints, model, q)
         print(f"Constraints warmup time: {round(time() - start_time, 4)} seconds")
@@ -153,6 +119,21 @@ class Optimizer:
 
         return res_q.x
 
+    def collect_goals(self, goals):
+        """
+        Convert a list of goals into a list of goal collections.
+        """
+        goals = sorted(goals, key=lambda g: type(g).__name__)
+        groups = groupby(goals, lambda g: type(g))
+
+        collections = []
+        for key, group in groups:
+            collection = Collection(list(group))
+            collections.append(collection)
+
+        return collections
+
+
 # ==========================================================================
 # Optimizers
 # ==========================================================================
@@ -162,14 +143,10 @@ class ConstrainedOptimizer(Optimizer):
     """
     A gradient-based optimizer that handles constraints.
     """
-    def constraints(self, constraints, model, q):
+    def collect_constraints(self, constraints):
         """
-        Returns the defined constraints in a format amenable to `scipy.minimize`.
+        Convert a list of constraints into a list of constraint collections.
         """
-        if not constraints:
-            return
-
-        # sort constraints by class name
         constraints = sorted(constraints, key=lambda g: type(g).__name__)
         groups = groupby(constraints, lambda g: type(g))
 
@@ -178,19 +155,32 @@ class ConstrainedOptimizer(Optimizer):
             collection = Collection(list(group))
             collections.append(collection)
 
-        constraints = collections
+        return collections
+
+    def constraints(self, constraints, model, q):
+        """
+        Returns the defined constraints in a format amenable to `scipy.minimize`.
+        """
+        if not constraints:
+            return
+
+        constraints = self.collect_constraints(constraints)
 
         clist = []
         for constraint in constraints:
             # initialize constraint
             constraint.init(model)
+
+            # gather information for scipy constraint
             fun = jit(partial(constraint, model=model))
             jac = jit(jacobian(fun))
             lb = constraint.bound_low
             ub = constraint.bound_up
+
             # warm start
             fun(q)
             jac(q)
+
             # store non linear constraint
             clist.append(NonlinearConstraint(fun=fun, jac=jac, lb=lb, ub=ub))
 
