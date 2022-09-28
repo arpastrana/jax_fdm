@@ -64,7 +64,7 @@ pz = -0.1  # z component of the applied load
 # optimization
 optimizer = BFGS
 maxiter = 10000
-tol = 1e-6  # 1e-6 for best results at the cost of a considerable speed decrease
+tol = 1e-3  # 1e-6 for best results at the cost of a considerable speed decrease
 
 # parameter bounds
 qmin = None  # -200.0
@@ -79,8 +79,8 @@ angle_base = 20.0  # angle constraint, lower bound
 angle_top = 30.0  # angle constraint, upper bound
 
 # io
-export = True
-record = True
+export = False
+record = False
 
 HERE = os.path.dirname(__file__)
 

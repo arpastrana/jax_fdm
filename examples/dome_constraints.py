@@ -37,6 +37,7 @@ from jax_fdm.losses import SquaredError
 from jax_fdm.losses import Loss
 
 from jax_fdm.optimization import SLSQP
+from jax_fdm.optimization import TrustRegionConstrained
 from jax_fdm.optimization import OptimizationRecorder
 
 
@@ -58,8 +59,8 @@ q0_cross = -0.5  # starting force density for the edges transversal to the rings
 pz = -0.1  # z component of the applied load
 
 # optimization
-optimizer = SLSQP
-maxiter = 1000
+optimizer = TrustRegionConstrained
+maxiter = 10000
 tol = 1e-3
 
 # parameter bounds
@@ -67,20 +68,20 @@ qmin = None
 qmax = None
 
 # goal horizontal projection
-add_horizontal_projection_goal = False
+add_horizontal_projection_goal = True
 
 # goal edge length
 add_edge_length_goal = False
 length_target = 0.03
 
 # goal and constraint edge angle
-add_edge_angle_goal = True
+add_edge_angle_goal = False
 angle_vector = [0.0, 0.0, 1.0]  # reference vector to compute angle to in goal
 angle_base = 10.0  # angle constraint, lower bound
 angle_top = 30.0  # angle constraint, upper bound
 
 # constraint angle
-add_edge_angle_constraint = False
+add_edge_angle_constraint = True
 angle_vector_constraint = [0.0, 0.0, 1.0]  # reference vector to compute angle to in constraint
 angle_min = 10.0
 angle_max = 30.0
@@ -91,7 +92,7 @@ length_min = 0.10
 length_max = 0.35
 
 # constraint force
-add_edge_force_constraint = True
+add_edge_force_constraint = False
 force_min = -20.0
 force_max = 0.0
 
@@ -183,7 +184,7 @@ if add_edge_length_goal:
     for edge in edges_cross:
         length = network.edge_length(*edge)
         goal = EdgeLengthGoal(edge, target=length)
-    goals.append(goal)
+        goals.append(goal)
 
 # edge angle goal
 if add_edge_angle_goal:
@@ -216,9 +217,7 @@ if add_edge_angle_constraint:
                                              bound_low=angle_min,
                                              bound_up=angle_max)
             constraint_angles.append(constraint)
-        constraints.extend(constraint_angles)
-    constraints = [constraints[0]]
-
+    constraints.extend(constraint_angles)
 
 if add_edge_length_constraint:
     for edge in network.edges():
@@ -282,13 +281,13 @@ for config in sweep_configs:
     fields = [q, f, l]
     field_names = ["FDs", "Forces", "Lengths"]
 
-    # if constraint_angles:
-    #     model = EquilibriumModel(network)
-    #     q = np.array(network.edges_forcedensities())
-    #     eqstate = model(q)
-    #     a = [constraint.constraint(eqstate, constraint.index) for constraint in constraint_angles]
-    #     fields.append(a)
-    #     field_names.append("Angles")
+    if constraint_angles:
+        model = EquilibriumModel(network)
+        q = np.array(network.edges_forcedensities())
+        eqstate = model(q)
+        a = [constraint.constraint(eqstate, constraint.index_from_model(model)).item() for constraint in constraint_angles]
+        fields.append(a)
+        field_names.append("Angles")
 
     print(f"Load path: {round(network.loadpath(), 3)}")
     for name, vals in zip(field_names, fields):
@@ -309,7 +308,7 @@ networks = list(networks.values())
 for i, network in enumerate(networks):
     if i == (len(networks) - 1):
         continue
-    viewer.add(network, show_points=True, linewidth=1.0, color=Color.grey().darkened(i * 10))
+    viewer.add(network, show_points=False, linewidth=1.0, color=Color.grey().darkened(i * 10))
 
 network0 = networks[0]
 c_network = networks[-1]  # last network is colored

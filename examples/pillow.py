@@ -219,7 +219,6 @@ for network_name, network in networks.items():
         continue
 
     print("\n Design {}".format(network_name))
-
     print(f"Load path: {round(network.loadpath(), 3)}")
 
     q = list(network.edges_forcedensities())

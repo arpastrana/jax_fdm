@@ -28,17 +28,17 @@ from compas_view2.app import App
 # Read in optimization history
 # ==========================================================================
 
-name = "dome"
+name = "butt"
 
 modify_view = True
-camera_zoom = 14  # -35 for monkey saddle, 0 for pringle, 14 for dome
+camera_zoom = -70 # -35 for monkey saddle, 0 for pringle, 14 for dome, -70 for butt
 
 decimate = False
 decimate_step = 0
 
-interval = 500  # 50
+interval = 50  # 50
 timeout = None
-fps = 48
+fps = 24
 
 animate = True
 save = True
@@ -123,8 +123,9 @@ viewer = App(width=1600, height=900, show_grid=True)
 # modify view
 if modify_view:
     viewer.view.camera.zoom(camera_zoom)  # number of steps, negative to zoom out
-    # viewer.view.camera.rotation[2] = 2 * pi / 3  # set rotation around z axis to zero
-    # viewer.view.camera.rotation_delta = (2 / 3) * pi / len(recorder.history)  # set rotation around z axis to zero
+    viewer.view.camera.rotation[2] = 2 * pi / 3  # set rotation around z axis to zero
+    # viewer.view.camera.rotation[2] = pi / 2  # set rotation around z axis to zero
+    viewer.view.camera.rotation_delta = (2 / 3) * pi / len(recorder.history)  # set rotation around z axis to zero
 
 # draw network
 # viewer.add(network.copy(), show_points=False, linewidth=1.0, color=Color.grey())
