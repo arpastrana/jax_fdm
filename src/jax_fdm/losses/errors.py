@@ -16,6 +16,7 @@ class Error:
         self.goals = goals
         self.alpha = alpha
         self.name = name or self.__class__.__name__
+        self.collections = []
 
     @staticmethod
     def error(errors):
@@ -28,16 +29,28 @@ class Error:
     @partial(jit, static_argnums=0)
     def __call__(self, eqstate):
         func = partial(self._error_goal, eqstate=eqstate)
-        errors = jax.tree_map(func, self.goals)
+        errors = jax.tree_map(func, self.collections)
         return self.errors(jnp.array(errors)) * self.alpha
 
     def _error_goal(self, goal, eqstate):
         return self.error(goal(eqstate))
 
+    def number_of_goals(self):
+        """
+        The total number of individual goals in this error term.
+        """
+        return len(self.goals)
+
+    def number_of_collections(self):
+        """
+        The total number of goal collections in this error term.
+        """
+        return len(self.collections)
+
+
 # ==========================================================================
 # Precooked error functions
 # ==========================================================================
-
 
 class SquaredError(Error):
     """
@@ -45,10 +58,12 @@ class SquaredError(Error):
     Measures the distance between the current and the target value of a goal.
     """
     @staticmethod
+    @jit
     def error(gstate):
         return jnp.sum(gstate.weight * jnp.square(gstate.prediction - gstate.goal))
 
     @staticmethod
+    @jit
     def errors(errors):
         return jnp.sum(errors)
 
