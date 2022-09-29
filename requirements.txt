@@ -1,2 +1,4 @@
 jax[cpu]
 compas
+compas_singular
+compas_view2
