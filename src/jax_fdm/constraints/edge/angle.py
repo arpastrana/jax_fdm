@@ -25,6 +25,19 @@ class EdgeAngleConstraint(EdgeConstraint):
     def vector(self, vector):
         self._vector = jnp.reshape(jnp.asarray(vector), (-1, 3))
 
+    def init(self, model):
+        """
+        Initialize the constraint with information from an equilibrium model.
+        """
+        super().init(model)
+
+        # create matrix of vectors
+        vector = self.vector
+        zeros = jnp.zeros((max(self.index) + 1, 3))
+        for v, idx in zip(vector, self.index):
+            zeros[idx, :] = v
+        self.vector = vector
+
     def constraint(self, eqstate, index):
         """
         Returns the angle between an edge in an equilibrium state and a vector.

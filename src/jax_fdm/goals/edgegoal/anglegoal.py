@@ -26,6 +26,19 @@ class EdgeAngleGoal(ScalarGoal, EdgeGoal):
     def vector(self, vector):
         self._vector = jnp.reshape(jnp.asarray(vector), (-1, 3))
 
+    def init(self, model):
+        """
+        Initialize the goal with information from an equilibrium model.
+        """
+        super().init(model)
+
+        # create matrix of vectors
+        vector = self.vector
+        zeros = jnp.zeros((max(self.index) + 1, 3))
+        for v, idx in zip(vector, self.index):
+            zeros[idx, :] = v
+        self.vector = vector
+
     def prediction(self, eq_state, index):
         """
         The angle between the edge and the reference vector.
