@@ -44,13 +44,13 @@ from jax_fdm.losses import L2Regularizer
 
 name = "monkey_saddle"
 
-n = 3  # densification of coarse mesh
+n = 4  # densification of coarse mesh
 
-q0 = -1.0
+q0 = -2.0
 px, py, pz = 0.0, 0.0, -1.0  # loads at each node
 qmin, qmax = -20.0, -0.01  # min and max force densities
 rmin, rmax = 2.0, 10.0  # min and max reaction forces
-r_exp = 1.0  # reaction force variation exponent
+r_exp = 0.5  # reaction force variation exponent
 
 weight_length = 1.0  # weight for edge length goal in optimisation
 weight_residual = 10.0  # weight for residual force goal in optimisation
@@ -227,12 +227,12 @@ if record and export:
 if record:
     model = EquilibriumModel(network)
     fig = plt.figure(dpi=150)
-    for loss_term in [loss] + list(loss.loss_terms):
+    for loss_term in [loss] + list(loss.terms):
         y = []
         for q in recorder.history:
             eqstate = model(q)
             try:
-                error = loss_term(eqstate, model)
+                error = loss_term(eqstate)
             except:
                 error = loss_term(q, model)
             y.append(error)
@@ -295,7 +295,7 @@ for edge in network.edges():
 
 # optimized network
 viewer.add(network,
-           show_vertices=True,
+           show_vertices=False,
            pointsize=12.0,
            show_edges=True,
            linecolors=colors,

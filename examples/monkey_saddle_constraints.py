@@ -250,12 +250,12 @@ if record and export:
 if record:
     model = EquilibriumModel(network)
     fig = plt.figure(dpi=150)
-    for loss_term in [loss] + list(loss.loss_terms):
+    for loss_term in [loss] + list(loss.terms):
         y = []
         for q in recorder.history:
             eqstate = model(q)
             try:
-                error = loss_term(eqstate, model)
+                error = loss_term(eqstate)
             except:
                 error = loss_term(q, model)
             y.append(error)

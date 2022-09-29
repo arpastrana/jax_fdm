@@ -19,6 +19,7 @@ from compas.geometry import length_vector
 from compas.geometry import subtract_vectors
 from compas.geometry import cross_vectors
 from compas.geometry import rotate_points
+from compas.geometry import scale_vector
 from compas.geometry import Polygon
 from compas.geometry import offset_polygon
 from compas.utilities import pairwise
@@ -173,6 +174,7 @@ for cross_ring in edges_cross_rings:
         goals.append(goal)
 
 # edge vector goal
+vectors_goal = []
 for i, cross_ring in enumerate(edges_cross_rings):
 
     angle_delta = angle_top - angle_base
@@ -192,6 +194,7 @@ for i, cross_ring in enumerate(edges_cross_rings):
 
         goal = EdgeDirectionGoal(edge, target=vector, weight=1.0)
         goals.append(goal)
+        vectors_goal.append((vector, edge))
 
 # ==========================================================================
 # Define loss function with goals
@@ -314,10 +317,10 @@ viewer = App(width=1600, height=900, show_grid=False)
 # add all networks except the last one
 networks = list(networks.values())
 
-# for i, network in enumerate(networks):
-#     if i == (len(networks) - 1):
-#         continue
-#     viewer.add(network, show_points=False, linewidth=1.0, color=Color.grey().darkened(i * 10))
+for i, network in enumerate(networks):
+    if i == (len(networks) - 1):
+        continue
+    viewer.add(network, show_points=False, linewidth=1.0, color=Color.grey().darkened(i * 10))
 
 network0 = networks[0]
 if len(networks) > 1:
@@ -325,13 +328,12 @@ if len(networks) > 1:
 else:
     c_network = networks[0]
 
-# for vector, edge in vector_edges:
-#     u, v = edge
-#     xyz = c_network.node_coordinates(u)
-#     viewer.add(Line(xyz, add_vectors(xyz, scale_vector(vector, 0.1))))
+for vector, edge in vectors_goal:
+    u, v = edge
+    xyz = c_network.node_coordinates(u)
+    viewer.add(Line(xyz, add_vectors(xyz, scale_vector(vector, 0.1))))
 
 # plot the last network
-# edges color map
 cmap = ColorMap.from_mpl("viridis")
 
 fds = [fabs(c_network.edge_forcedensity(edge)) for edge in c_network.edges()]
@@ -346,8 +348,7 @@ for edge in c_network.edges():
 
 # optimized network
 viewer.add(c_network,
-           show_vertices=True,
-           pointsize=20.0,
+           show_vertices=False,
            show_edges=True,
            linecolors=colors,
            linewidth=5.0)
@@ -356,21 +357,16 @@ for node in c_network.nodes():
 
     pt = c_network.node_coordinates(node)
 
-    # draw lines betwen subject and target nodes
-    # target_pt = network0.node_coordinates(node)
-    # viewer.add(Line(target_pt, pt), linewidth=1.0, color=Color.grey().lightened())
-
     # draw residual forces
     residual = c_network.node_residual(node)
 
     if length_vector(residual) < 0.001:
         continue
 
-    # print(node, residual, length_vector(residual))
-    # residual_line = Line(pt, add_vectors(pt, residual))
-    # viewer.add(residual_line,
-    #            linewidth=4.0,
-    #            color=Color.pink())
+    residual_line = Line(pt, add_vectors(pt, residual))
+    viewer.add(residual_line,
+               linewidth=4.0,
+               color=Color.pink())
 
 # draw applied loads
 for node in c_network.nodes():

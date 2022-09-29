@@ -41,7 +41,7 @@ q0 = -1.0
 px, py, pz = 0.0, 0.0, -0.2  # loads at each node
 qmin, qmax = -20.0, -0.01  # min and max force densities
 
-maxiter = 1  # optimizer maximum iterations
+maxiter = 1000  # optimizer maximum iterations
 tol = 1e-3  # optimizer tolerance
 
 record = False  # True to record optimization history of force densities

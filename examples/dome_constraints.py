@@ -36,9 +36,7 @@ from jax_fdm.constraints import EdgeForceConstraint
 from jax_fdm.losses import SquaredError
 from jax_fdm.losses import Loss
 
-from jax_fdm.optimization import SLSQP
 from jax_fdm.optimization import TrustRegionConstrained
-from jax_fdm.optimization import OptimizationRecorder
 
 
 # ==========================================================================

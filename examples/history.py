@@ -10,8 +10,6 @@ from compas.colors import ColorMap
 from compas.geometry import Line
 from compas.geometry import Point
 from compas.geometry import add_vectors
-from compas.geometry import Translation
-from compas.datastructures import network_transformed
 
 # dfdm
 from dfdm.optimization import OptimizationRecorder
@@ -28,19 +26,21 @@ from compas_view2.app import App
 # Read in optimization history
 # ==========================================================================
 
-name = "butt"
+name = "monkey_saddle"
 
 modify_view = True
-camera_zoom = -70 # -35 for monkey saddle, 0 for pringle, 14 for dome, -70 for butt
+show_grid = True
+camera_zoom = -35  # -35 for monkey saddle, 0 for pringle, 14 for dome, -70 for butt
 
 decimate = False
 decimate_step = 0
 
 interval = 50  # 50
 timeout = None
-fps = 24
+fps = 12
 
 animate = True
+rotate_while_animate = True
 save = True
 
 
@@ -104,7 +104,6 @@ FILE_IN = os.path.abspath(os.path.join(HERE, f"{name}_base.json"))
 network0 = FDNetwork.from_json(FILE_IN)
 model = EquilibriumModel(network0)
 network = fdm(network0)
-# network = network_transformed(network, Translation.from_vector([0.0, 0.0, -20.0]))
 
 # ==========================================================================
 # Read in optimization history
@@ -118,17 +117,15 @@ recorder = OptimizationRecorder.from_json(FILE_IN)
 # ==========================================================================
 
 # instantiate viewer
-viewer = App(width=1600, height=900, show_grid=True)
+viewer = App(width=1600, height=900, show_grid=show_grid)
 
 # modify view
 if modify_view:
     viewer.view.camera.zoom(camera_zoom)  # number of steps, negative to zoom out
     viewer.view.camera.rotation[2] = 2 * pi / 3  # set rotation around z axis to zero
-    # viewer.view.camera.rotation[2] = pi / 2  # set rotation around z axis to zero
     viewer.view.camera.rotation_delta = (2 / 3) * pi / len(recorder.history)  # set rotation around z axis to zero
 
 # draw network
-# viewer.add(network.copy(), show_points=False, linewidth=1.0, color=Color.grey())
 network_obj = viewer.add(network, show_points=False, linewidth=5.0, color=Color.grey().darkened())
 
 # draw supports
@@ -156,7 +153,14 @@ if decimate:
 
 # create update function
 if animate:
-    @viewer.on(interval=interval, timeout=timeout, frames=len(recorder.history), record=save, record_fps=fps, record_path=f"temp/{name}.gif")
+    config_animate = {"interval": interval,
+                      "timeout": timeout,
+                      "frames": len(recorder.history),
+                      "record": save,
+                      "record_fps": fps,
+                      "record_path": f"temp/{name}.gif"}
+
+    @viewer.on(**config_animate)
     def wiggle(f):
 
         print(f"Current frame: {f + 1}/{len(recorder.history)}")
@@ -177,8 +181,8 @@ if animate:
         for _, obj in viewer.view.objects.items():
             obj.update()
 
-        # viewer.view.camera.rotate(dx=1, dy=0)
-
+        if rotate_while_animate:
+            viewer.view.camera.rotate(dx=1, dy=0)
 
 # show le crème
 viewer.show()

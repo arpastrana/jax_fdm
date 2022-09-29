@@ -1,6 +1,8 @@
 """
 Solve a constrained force density problem using gradient-based optimization.
 """
+import os
+
 from math import fabs
 
 import matplotlib.pyplot as plt
@@ -39,6 +41,8 @@ from jax_fdm.optimization import OptimizationRecorder
 # Initial parameters
 # ==========================================================================
 
+name = "pringle"
+
 length_vault = 6.0
 width_vault = 3.0
 
@@ -51,7 +55,10 @@ pz = -0.1
 rz_min = 0.45
 rz_max = 2.0
 
-record = False
+record = True
+export = True
+
+HERE = os.path.dirname(__file__)
 
 # ==========================================================================
 # Instantiate a force density network
@@ -119,6 +126,15 @@ T = Translation.from_vector([-length_vault / 2., -width_vault / 2., 0.])
 network_transform(network, T)
 
 # ==========================================================================
+# Export FD network with problem definition
+# ==========================================================================
+
+if export:
+    FILE_OUT = os.path.join(HERE, f"../data/json/{name}_base.json")
+    network.to_json(FILE_OUT)
+    print("Problem definition exported to", FILE_OUT)
+
+# ==========================================================================
 # Create a target distribution of residual force magnitudes
 # ==========================================================================
 
@@ -136,30 +152,35 @@ rzs = rzs + rzs[0:-1][::-1]
 # Define goals
 # ==========================================================================
 
-goals = []
-
 # residual forces
+goals_a = []
 for rz, arch in zip(rzs, arches):
-    goals.append(NodeResidualForceGoal(arch[0], target=rz, weight=100.0))
-    goals.append(NodeResidualForceGoal(arch[-1], target=rz, weight=100.0))
+    goals_a.append(NodeResidualForceGoal(arch[0], target=rz, weight=100.0))
+    goals_a.append(NodeResidualForceGoal(arch[-1], target=rz, weight=100.0))
 
 # transversal planes
+goals_b = []
 for node in network.nodes_free():
     origin = network.node_coordinates(node)
     normal = [1.0, 0.0, 0.0]
     goal = NodePlaneGoal(node, target=(origin, normal), weight=10.0)
-    goals.append(goal)
+    goals_b.append(goal)
 
 # transversal edge lengths
+goals_c = []
 for edge in cross_edges:
     target_length = network.edge_length(*edge)
-    goals.append(EdgeLengthGoal(edge, target=target_length, weight=1.0))
+    goals_c.append(EdgeLengthGoal(edge, target=target_length, weight=1.0))
 
 # ==========================================================================
 # Create loss function
 # ==========================================================================
 
-loss = Loss(SquaredError(goals))
+squared_error_a = SquaredError(goals_a, alpha=1.0, name="ResidualForceGoal")
+squared_error_b = SquaredError(goals_b, alpha=1.0, name="NodePlaneGoal")
+squared_error_c = SquaredError(goals_c, alpha=1.0, name="EdgeLengthGoal")
+
+loss = Loss(squared_error_a, squared_error_b, squared_error_c)
 
 # ==========================================================================
 # Solve constrained form-finding problem
@@ -178,18 +199,40 @@ c_network = constrained_fdm(network,
                             callback=recorder)
 
 # ==========================================================================
+# Export JSON
+# ==========================================================================
+
+if export:
+    FILE_OUT = os.path.join(HERE, f"../data/json/{name}_optimized.json")
+    c_network.to_json(FILE_OUT)
+    print("Form found design exported to", FILE_OUT)
+
+# ==========================================================================
+# Export optimization history
+# ==========================================================================
+
+if record and export:
+    FILE_OUT = os.path.join(HERE, f"../data/json/{name}_history.json")
+    recorder.to_json(FILE_OUT)
+    print("Optimization history exported to", FILE_OUT)
+
+# ==========================================================================
 # Plot loss components
 # ==========================================================================
 
 if record:
     model = EquilibriumModel(network)
     fig = plt.figure(dpi=150)
-    y = []
-    for q in recorder.history:
-        eqstate = model(q)
-        error = loss(eqstate, model)
-        y.append(error)
-    plt.plot(y, label=loss.__class__.__name__)
+    for loss_term in [loss] + list(loss.terms):
+        y = []
+        for q in recorder.history:
+            eqstate = model(q)
+            try:
+                error = loss_term(eqstate)
+            except:
+                error = loss_term(q, model)
+            y.append(error)
+        plt.plot(y, label=loss_term.name)
 
     plt.xlabel("Optimization iterations")
     plt.ylabel("Loss")
