@@ -32,6 +32,7 @@ def vector_projection(u, v):
     """
     l2 = jnp.sum(v ** 2)
     x = (u @ jnp.transpose(v)) / l2
+
     return v * x
 
 
@@ -44,6 +45,7 @@ def closest_point_on_plane(point, plane):
     d = normal @ origin
     e = normal @ point - d
     k = e / jnp.sum(jnp.square(normal))
+
     return point - normal * k
 
 
@@ -55,6 +57,7 @@ def closest_point_on_line(point, line):
     ab = b - a
     ap = point - a
     c = vector_projection(ap, ab)
+
     return a + c
 
 
@@ -69,4 +72,26 @@ def normal_polygon(polygon):
     # TODO: vectorize ns, may cause jit unecessary loop-unrolling
     ns = jnp.array([jnp.cross(op[i - 1], op[i]) * 0.5 for i in range(len(op))])
     n = jnp.sum(ns, axis=0)
+
     return normalize_vector(n)
+
+
+def curvature_point_polygon(point, polygon):
+    """
+    Compute the discrete curvature at a point based on a polygon surrounding it.
+    The discrete curvature of a node equals 2 * pi - sum(alphas).
+
+    Notes
+    -----
+    Alphas is the list of angles between each pair of successive edges as outward vectors from the node.
+    Polygon is numpy array #points x 3.
+    """
+    op = polygon - point
+    norm_op = jnp.reshape(jnp.linalg.norm(op, axis=1), (-1, 1))
+    op = op / norm_op
+    op_off = jnp.roll(op, 1, axis=0)
+    dot = jnp.sum(op_off * op, axis=1)
+    dot = jnp.maximum(jnp.minimum(dot, jnp.full(dot.shape, 1)), jnp.full(dot.shape, -1))
+    angles = jnp.arccos(dot)
+
+    return 2 * jnp.pi - jnp.sum(angles)
