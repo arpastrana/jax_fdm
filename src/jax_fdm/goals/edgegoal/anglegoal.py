@@ -1,3 +1,4 @@
+import numpy as np
 import jax.numpy as jnp
 
 from jax_fdm.geometry import angle_vectors
@@ -34,10 +35,10 @@ class EdgeAngleGoal(ScalarGoal, EdgeGoal):
 
         # create matrix of vectors
         vector = self.vector
-        zeros = jnp.zeros((max(self.index) + 1, 3))
+        vm = np.zeros((max(self.index) + 1, 3))
         for v, idx in zip(vector, self.index):
-            zeros[idx, :] = v
-        self.vector = vector
+            vm[idx, :] = v
+        self.vector = vm
 
     def prediction(self, eq_state, index):
         """
