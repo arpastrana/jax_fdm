@@ -35,7 +35,6 @@ from jax_fdm.equilibrium import constrained_fdm
 
 from jax_fdm.goals import EdgeLengthGoal
 from jax_fdm.goals import EdgeDirectionGoal
-from jax_fdm.goals import EdgeAngleGoal
 
 from jax_fdm.losses import SquaredError
 from jax_fdm.losses import Loss

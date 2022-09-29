@@ -63,14 +63,14 @@ def closest_point_on_line(point, line):
 
 def normal_polygon(polygon):
     """
-    Computes the normal of a polygon defined by a sequence of points.
+    Computes the unit-length normal of a polygon defined by a sequence of points.
 
     A polygon must have at least two points.
     """
     centroid = jnp.mean(polygon, axis=0)
     op = polygon - centroid
-    # TODO: vectorize ns, may cause jit unecessary loop-unrolling
-    ns = jnp.array([jnp.cross(op[i - 1], op[i]) * 0.5 for i in range(len(op))])
+    op_off = jnp.roll(op, 1, axis=0)
+    ns = jnp.multiply(jnp.cross(op_off, op), 0.5)
     n = jnp.sum(ns, axis=0)
 
     return normalize_vector(n)
