@@ -1,8 +1,7 @@
 """
 A bunch of goals to strive for.
 """
-import jax.numpy as jnp
-
+from jax_fdm.geometry import length_vector
 from jax_fdm.geometry import normalize_vector
 
 from jax_fdm.goals import ScalarGoal
@@ -21,7 +20,8 @@ class NodeResidualForceGoal(ScalarGoal, NodeGoal):
         The residual at the the predicted node of the network.
         """
         residual = eq_state.residuals[index, :]
-        return jnp.linalg.norm(residual, keepdims=True)
+
+        return length_vector(residual)
 
 
 class NodeResidualVectorGoal(VectorGoal, NodeGoal):
@@ -57,6 +57,7 @@ class NodeResidualDirectionGoal(VectorGoal, NodeGoal):
         The residual at the the predicted node of the network.
         """
         residual = eq_state.residuals[index, :]
+
         return normalize_vector(residual)
 
     @staticmethod
