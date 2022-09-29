@@ -61,8 +61,6 @@ class Constraint:
             bound = np.ravel(bound)
         self._bound_low = bound
 
-        # self._bound_low = np.ravel(bound)
-
     @property
     def bound_up(self):
         """
@@ -102,5 +100,5 @@ class Constraint:
         constraint = vmap(self.constraint, in_axes=(None, 0))(eqstate, self.index)
         return jnp.ravel(constraint)
 
-    def constraint(self, eqstate):
+    def constraint(self, eqstate, index):
         raise NotImplementedError
