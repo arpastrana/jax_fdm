@@ -77,3 +77,9 @@ class Loss:
         The total number of regularization terms in the loss.
         """
         return len(self.terms_regularization)
+
+    def number_of_collections(self):
+        """
+        The total number of goal collections for all error terms in the loss.
+        """
+        return sum([term.number_of_collections() for term in self.terms_error])

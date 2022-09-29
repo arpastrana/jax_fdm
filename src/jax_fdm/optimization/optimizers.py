@@ -61,6 +61,12 @@ class Optimizer:
             for goal_collection in goal_collections:
                 goal_collection.init(model)
             term.collections = goal_collections
+        print(f"Goal collections: {loss.number_of_collections()}")
+
+        # constraints
+        start_time = time()
+        constraints = self.constraints(constraints, model, q)
+        print(f"Constraints warmup time: {round(time() - start_time, 4)} seconds")
 
         # loss matters
         loss = partial(loss, model=model)
@@ -90,10 +96,6 @@ class Optimizer:
 
         bounds = Bounds(lb=lb, ub=ub)
 
-        # constraints
-        start_time = time()
-        constraints = self.constraints(constraints, model, q)
-        print(f"Constraints warmup time: {round(time() - start_time, 4)} seconds")
 
         if verbose:
             print(f"Optimization with {self.name} started...")
@@ -165,6 +167,8 @@ class ConstrainedOptimizer(Optimizer):
             return
 
         constraints = self.collect_constraints(constraints)
+
+        print(f"Constraint colections: {len(constraints)}")
 
         clist = []
         for constraint in constraints:
