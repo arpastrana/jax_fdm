@@ -96,7 +96,6 @@ class Optimizer:
 
         bounds = Bounds(lb=lb, ub=ub)
 
-
         if verbose:
             print(f"Optimization with {self.name} started...")
 
