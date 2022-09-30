@@ -73,7 +73,7 @@ loss = Loss(PredictionError(goals=[NetworkLoadPathGoal()]))
 constraints = [EdgeLengthConstraint(edge, 0.75, 1.0) for edge in network.edges()]
 optimizer = SLSQP()
 
-c_network = constrained_fdm(network, optimizer, loss, constraints)
+c_network = constrained_fdm(network, optimizer, loss, constraints=constraints)
 c_network.to_json("data/json/arch_constrained.json")
 ```
 
