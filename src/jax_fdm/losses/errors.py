@@ -73,9 +73,18 @@ class MeanSquaredError(SquaredError):
     The seminal mean squared error.
     Average out all errors because no single error is important enough.
     """
-    @staticmethod
-    def errors(errors):
-        return jnp.mean(errors)
+    def errors(self, errors):
+        return super().errors(errors) / self.number_of_goals()
+
+
+class RootMeanSquaredError(MeanSquaredError):
+    """
+    The root mean squared error.
+    Average out all errors because no single error is important enough.
+    """
+    def errors(self, errors):
+        error = super().errors(errors)
+        return jnp.sqrt(error)
 
 
 class PredictionError(Error):
