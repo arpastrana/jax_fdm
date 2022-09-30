@@ -5,7 +5,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 from scipy.spatial.distance import directed_hausdorff
 
-
 # compas
 from compas.colors import Color
 from compas.colors import ColorMap
@@ -25,14 +24,10 @@ from jax_fdm.equilibrium import fdm
 from jax_fdm.equilibrium import constrained_fdm
 
 from jax_fdm.optimization import SLSQP
-from jax_fdm.optimization import BFGS
 from jax_fdm.optimization import OptimizationRecorder
 
 from jax_fdm.goals import NodePointGoal
 
-from jax_fdm.losses import SquaredError
-from jax_fdm.losses import MeanSquaredError
-from jax_fdm.losses import PredictionError
 from jax_fdm.losses import RootMeanSquaredError
 from jax_fdm.losses import Loss
 
