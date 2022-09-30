@@ -3,9 +3,10 @@ graft src
 prune .github
 prune data
 prune docs
-prune scripts
+prune examples
 prune tests
 prune temp
+prune images
 
 include LICENSE
 include README.md
