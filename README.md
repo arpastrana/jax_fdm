@@ -4,7 +4,7 @@ A differentiable, hardware-accelerated framework for inverse form-finding.
 
 ![](fdm_header.gif)
 
-JAX FDM enables the solution of inverse form-finding problems of discrete force networks, and streamlines the integration of form-fiding simulations into deep learning architectures for machine learnign research. 
+JAX FDM enables the solution of inverse form-finding problems of discrete force networks and streamlines the integration of form-fiding simulations into deep learning architectures for machine learning research. 
 
 
 - simple to use API.
@@ -16,6 +16,7 @@ JAX FDM enables the solution of inverse form-finding problems of discrete force 
 JAX FDM accelerated their solution streamlines their solution via gradient-based optimization.
 
 This tool offers a (growing!) collection of algotiths, loss functions, goals, and constraints that you can mix and match freely to model a custom constrained form-fiding problem. 
+goals and constraints at the node, edge and network level.
 
 the time-tested, Force Density method. Tension or compression only
 
@@ -37,21 +38,25 @@ Work in progress! Expect a release soon.
 
 ## Quick example
 
+
 ```python
-import equinox as eqx
-import jax
+from jax_fdm.datastructures import FDNetwork
+from jax_fdm.equilibrium import constrained_fdm
+from jax_fdm.optimization import SLSQP
+from jax_fdm.constraints import EdgeLengthConstraint
+from jax_fdm.goals import NetworkLoadPathGoal
+from jax_fdm.losses import PredictionError
+from jax_fdm.losses import Loss
 
-class Linear(eqx.Module):
-    weight: jax.numpy.ndarray
-    bias: jax.numpy.ndarray
 
-    def __init__(self, in_size, out_size, key):
-        wkey, bkey = jax.random.split(key)
-        self.weight = jax.random.normal(wkey, (out_size, in_size))
-        self.bias = jax.random.normal(bkey, (out_size,))
+network = Network.from_json("data/arch.json")
 
-    def __call__(self, x):
-        return self.weight @ x + self.bias
+loss = Loss(PredictionError(goals=[NetworkLoadPath()]))
+constraints = [EdgeLengthConstraint(edge, 1.0, 4,5) for edge in network.edges()]
+optimizer = SLSQP()
+
+c_network = constrained_fdm(network, optimizer, loss, constraints)
+c_network.to_json("data/arch_constrained.json")
 ```
 
 ## More examples
@@ -72,6 +77,11 @@ If you found this library to be useful in academic or industry work, please cons
     year={2022},
     url={https://github.com/arpastrana/jax_fdm}
 ```
+
+## Acknowledgements
+
+This work has been supported by the **U.S. National Science Foundation** under grant **OAC-2118201** and the [Institute for Data Driven Dynamical Design](https://www.mines.edu/id4/).
+
 
 ## See also
 
