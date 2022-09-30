@@ -1,7 +1,10 @@
 # the essentials
 import os
 from math import fabs
+import numpy as np
 import matplotlib.pyplot as plt
+from scipy.spatial.distance import directed_hausdorff
+
 
 # compas
 from compas.colors import Color
@@ -14,7 +17,7 @@ from compas.geometry import length_vector
 # visualization
 from compas_view2.app import App
 
-# force density
+# jax fdm
 from jax_fdm.datastructures import FDNetwork
 
 from jax_fdm.equilibrium import EquilibriumModel
@@ -22,11 +25,15 @@ from jax_fdm.equilibrium import fdm
 from jax_fdm.equilibrium import constrained_fdm
 
 from jax_fdm.optimization import SLSQP
+from jax_fdm.optimization import BFGS
 from jax_fdm.optimization import OptimizationRecorder
 
 from jax_fdm.goals import NodePointGoal
 
 from jax_fdm.losses import SquaredError
+from jax_fdm.losses import MeanSquaredError
+from jax_fdm.losses import PredictionError
+from jax_fdm.losses import RootMeanSquaredError
 from jax_fdm.losses import Loss
 
 
@@ -37,12 +44,13 @@ from jax_fdm.losses import Loss
 name = "butt"
 name_target = "butt_target"
 
-q0 = -1.0
+q0 = -2.0
 px, py, pz = 0.0, 0.0, -0.2  # loads at each node
-qmin, qmax = -20.0, -0.01  # min and max force densities
+qmin, qmax = -20.0, -0.0  # min and max force densities
+optimizer = SLSQP  # the optimization algorithm
 
 maxiter = 1000  # optimizer maximum iterations
-tol = 1e-3  # optimizer tolerance
+tol = 1e-6  # optimizer tolerance
 
 record = False  # True to record optimization history of force densities
 export = False  # export result to JSON
@@ -60,7 +68,6 @@ network = FDNetwork.from_json(FILE_IN)
 # ==========================================================================
 
 FILE_IN = os.path.abspath(os.path.join(HERE, f"../data/json/{name_target}.json"))
-print(FILE_IN)
 network_target = FDNetwork.from_json(FILE_IN)
 
 # ==========================================================================
@@ -99,8 +106,7 @@ for node in network.nodes():
 # Combine error functions and regularizer into custom loss function
 # ==========================================================================
 
-squared_error = SquaredError(goals, alpha=1.0)
-
+squared_error = RootMeanSquaredError(goals, alpha=1.0)
 loss = Loss(squared_error)
 
 # ==========================================================================
@@ -121,9 +127,8 @@ recorder = None
 if record:
     recorder = OptimizationRecorder()
 
-
-network = constrained_fdm(network,
-                          optimizer=SLSQP(),
+network = constrained_fdm(network0,
+                          optimizer=optimizer(),
                           loss=loss,
                           bounds=(qmin, qmax),
                           maxiter=maxiter,
@@ -169,6 +174,18 @@ if export:
     print("Form found design exported to", FILE_OUT)
 
 # ==========================================================================
+# Hausdorff distance
+# ==========================================================================
+
+U = np.array([network.node_coordinates(node) for node in network.nodes()])
+V = np.array([network_target.node_coordinates(node) for node in network_target.nodes()])
+directed_u = directed_hausdorff(U, V)[0]
+directed_v = directed_hausdorff(V, U)[0]
+hausdorff = max(directed_u, directed_v)
+
+print(f"Hausdorff distances: Directed U: {directed_u}\tDirected V: {directed_v}\tUndirected: {round(hausdorff, 4)}")
+
+# ==========================================================================
 # Report stats
 # ==========================================================================
 
@@ -195,7 +212,6 @@ viewer.view.camera.zoom(-35)  # number of steps, negative to zoom out
 viewer.view.camera.rotation[2] = 0.0  # set rotation around z axis to zero
 
 # reference network
-# viewer.add(network_fd, show_points=False, linewidth=1.0, color=Color.black())
 viewer.add(network_target, show_points=False, linewidth=1.0, color=Color.grey().darkened())
 
 # edges color map
@@ -213,8 +229,7 @@ for edge in network.edges():
 
 # optimized network
 viewer.add(network,
-           show_vertices=True,
-           pointsize=12.0,
+           show_vertices=False,
            show_edges=True,
            linecolors=colors,
            linewidth=5.0)
@@ -223,13 +238,17 @@ for node in network.nodes():
 
     pt = network.node_coordinates(node)
 
+    # draw lines to target
+    line = Line(pt, network_target.node_coordinates(node))
+    viewer.add(line,
+               color=Color.grey())
+
     # draw residual forces
     residual = network.node_residual(node)
 
     if length_vector(residual) < 0.001:
         continue
 
-    # print(node, residual, length_vector(residual))
     residual_line = Line(pt, add_vectors(pt, residual))
     viewer.add(residual_line,
                linewidth=4.0,
