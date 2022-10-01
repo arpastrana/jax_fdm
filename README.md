@@ -10,11 +10,26 @@ JAX FDM enables the solution of inverse form-finding problems for discrete force
 
 ## Installation
 
+First, create a new [Anaconda](https://www.anaconda.com/) environment and then activate it:
+
+```bash
+conda create -n jaxenv
+conda activate jaxenv
+```
+
+Next, and install COMPAS and COMPAS VIEW2 via `conda`:
+
+```bash
+conda install -c conda-forge compas compas_view2
+```
+
+Finally, install JAX FDM with a one-liner:
+
 ```bash
 pip install jax-fdm
 ```
 
-Requires Python 3.7+, JAX 0.3.17+, Numpy 1.23.3+, Scipy 1.9.1+, and COMPAS 1.16.0+.
+JAX FDM requires Python 3.7+, JAX 0.3.17+, Numpy 1.23.3+, Scipy 1.9.1+, and COMPAS 1.16.0+.
 For visualization, use COMPAS_VIEW2 +0.7.0.
 
 ## Key features
