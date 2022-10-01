@@ -59,6 +59,13 @@ pip install jax-fdm
 JAX FDM requires Python 3.7+, JAX 0.3.17+, Numpy 1.23.3+, Scipy 1.9.1+, and COMPAS 1.16.0+.
 For visualization, use COMPAS_VIEW2 +0.7.0.
 
+**Disclaimer.** 
+
+JAX is only officially supported on Linux (Ubuntu 16.04 or later) and macOS (10.12 or later) platforms, and so is the case with JAX FDM. 
+Consequently, the installing JAX FDM on Windows may require other approach than the instructitons listed above.
+One alternative for Windows users is to use JAX and JAX FDM on CPU and GPU via the [Windows Subsystem for Linux](https://learn.microsoft.com/en-us/windows/wsl/about).
+Please refer to [JAX's installation instructions](https://github.com/google/jax#installation) for other alternatives.
+
 ## Documentation
 
 Work in progress! Expect a release soon.
