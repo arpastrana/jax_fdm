@@ -6,35 +6,7 @@ A differentiable, hardware-accelerated framework for inverse form-finding in str
 
 ![](images/fdm_header.gif)
 
-JAX FDM enables the solution of inverse form-finding problems for discrete force networks using the force density method (FDM) and gradient-based optimization. 
-It streamlines the integration of form-finding simulations into a deep learning architecture for machine learning research. 
-
-### Key features
-
-- **Legendary form-finding solver.**
-JAX FDM computes a state of static equilibrium for a discrete force networks with the [force density method (FDM)](https://www.sciencedirect.com/science/article/pii/0045782574900450), the time-tested form-finding solver backed up by over 50 years of peer-reviewed research.
-<!--  -->
-- **Autotune those force densities.**
-Form-found structures must fulfill design constraints to become viable structures in the real world.
-Formulate inverse form-finding scenarios like this as an optimization problem with JAX FDM.
-Then, let one of the framework's gradient-based optimizers automatically tweak the force densities of a network to obtain a state of static equilibrium that meets the defined design constraints.
-<!-- Some popular examples of inverse form-finding problems include best-fitting a vault to an arbitrary target shape, minimizing the load path of a funicular network, or controlling the thrust and the supports of a bridge. -->
-<!-- (Coming soon: tweak the support positions and the applied loads, in addition to the force densities, too!). -->
-- **Rich bank of goals, constraints and loss functions.**
-No two structures are alike.
-JAX FDM allows you to model your custom inverse form-finding problem with JAX FDM's (growing!) collection of goals, constraints and loss functions via a simple, object-oriented API.
-The available goals and constraints in the framework are granular and can be applied to the entire network, or to a subsets of its nodes, edges and combinations thereof! 
-<!-- Don't see a goal or a constraint you fit?. Add yours with ease! Consult our documentation guide (in progress) to see how you add yours. -->
-- **Derivatives, JIT compilation and paralellization.**
-JAX FDM is written in [JAX](https://github.com/google/jax), a library for high-performance numerical computing and machine learning research, and it thus inherits many of JAX' perks: calculate derivatives, parallelize, and just-in-time (JIT) compile entire form-finding simulations written in Python code.
-The same JAX code can be run in a CPU, or in multiple GPUs or TPUs (🤯). Accelerate your simulations with minimal burden!
-<!--  -->
-- **Form-finding as another layer in a neural network.**
-Since it is automatically differentiable, JAX FDM can be seamlessly added as a module of a differentiable function approximator (a.k.a. a neural network) that can be then trained end-to-end.
-Let the neural network learn the underlying physics of static equilibrium *directly* from form-finding solver instead of resorting to laborious techniques like data augmentation!
-
-JAX FDM is a research project under development.
-Expect sharp edges and possibly some API breaking changes as we continue to support a broader set of features.
+JAX FDM enables the solution of inverse form-finding problems for discrete force networks using the force density method (FDM) and gradient-based optimization. It streamlines the integration of form-finding simulations into deep learning models for machine learning research.
 
 ## Installation
 
@@ -44,6 +16,33 @@ pip install jax-fdm
 
 Requires Python 3.7+, JAX 0.3.17+, Numpy 1.23.3+, Scipy 1.9.1+, and COMPAS 1.16.0+.
 For visualization, use COMPAS_VIEW2 +0.7.0.
+
+## Key features
+
+- **Derivatives, JIT compilation and paralellization.**
+JAX FDM is written in [JAX](https://github.com/google/jax), a library for high-performance numerical computing and machine learning research, and it thus inherits many of JAX's perks: calculate derivatives, parallelize, and just-in-time (JIT) compile entire form-finding simulations written in Python code.
+<!-- The same JAX code can be run in a CPU, or in multiple GPUs or TPUs (🤯). Accelerate your simulations with minimal burden! -->
+- **Legendary form-finding solver.**
+JAX FDM computes static equilibrium states for discrete force networks with the [force density method (FDM)](https://www.sciencedirect.com/science/article/pii/0045782574900450), the time-tested form-finding solver backed up by over 50 years of peer-reviewed research.
+<!--  -->
+- **Autotune those force densities.**
+A form-found structure should fulfill additional design requirements to become a feasible structure in the real world.
+Formulate an inverse form-finding scenario like this as an optimization problem with JAX FDM.
+Then, let one of its gradient-based optimizers solve this readme by automatically tweaking the network's force densities.
+<!-- Some popular examples of inverse form-finding problems include best-fitting a vault to an arbitrary target shape, minimizing the load path of a funicular network, or controlling the thrust and the supports of a bridge. -->
+<!-- (Coming soon: tweak the support positions and the applied loads, in addition to the force densities, too!). -->
+- **A rich bank of goals, constraints and loss functions.**
+No two structures are alike.
+JAX FDM allows you to model a custom inverse form-finding problem with its (growing!) collection of goals, constraints, and loss functions via a simple, object-oriented API.
+The available goals and constraints in the framework are granular and applicable to an entire network; to a subset of its nodes, edges, and combinations thereof.
+<!-- Don't see a goal or a constraint you fit?. Add yours with ease! Consult our documentation guide (in progress) to see how you add yours. -->
+- **Form-finding simulations as another layer in a neural network.**
+Form-finding solver as another layer in a neural network. As an automatically differentiable library, JAX FDM can be seamlessly added as a module of a differentiable function approximator (like a neural network) that can be then trained end-to-end.
+Let the neural network learn the underlying physics of static equilibrium *directly* rom a form-finding solver instead of resorting to laborious techniques like data augmentation.
+<!--  -->
+
+JAX FDM is a research project under development.
+Expect sharp edges and possibly some API breaking changes as we continue to support a broader set of features.
 
 ## Documentation
 
