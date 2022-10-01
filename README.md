@@ -19,7 +19,7 @@ For visualization, use COMPAS_VIEW2 +0.7.0.
 
 ## Key features
 
-- **Derivatives, JIT compilation and paralellization.**
+- **Derivatives, JIT compilation and parallelization.**
 JAX FDM is written in [JAX](https://github.com/google/jax), a library for high-performance numerical computing and machine learning research, and it thus inherits many of JAX's perks: calculate derivatives, parallelize, and just-in-time (JIT) compile entire form-finding simulations written in Python code.
 <!-- The same JAX code can be run in a CPU, or in multiple GPUs or TPUs (🤯). Accelerate your simulations with minimal burden! -->
 - **Legendary form-finding solver.**
