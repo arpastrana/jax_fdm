@@ -68,7 +68,8 @@ network.edges_forcedensities(q=-1.0)
 network.nodes_supports(keys=[node for node in network if network.is_leaf(node)])
 network.nodes_loads([0.0, 0.0, -0.2])
 
-loss = Loss(PredictionError(goals=[NetworkLoadPathGoal()]))
+goals = [NetworkLoadPathGoal()]
+loss = Loss(PredictionError(goals))
 constraints = [EdgeLengthConstraint(edge, 0.75, 1.0) for edge in network.edges()]
 optimizer = SLSQP()
 
