@@ -8,30 +8,6 @@ A differentiable, hardware-accelerated framework for inverse form-finding in str
 
 JAX FDM enables the solution of inverse form-finding problems for discrete force networks using the force density method (FDM) and gradient-based optimization. It streamlines the integration of form-finding simulations into deep learning models for machine learning research.
 
-## Installation
-
-First, create a new [Anaconda](https://www.anaconda.com/) environment and then activate it:
-
-```bash
-conda create -n jaxenv
-conda activate jaxenv
-```
-
-Next, and install COMPAS and COMPAS VIEW2 via `conda`:
-
-```bash
-conda install -c conda-forge compas compas_view2
-```
-
-Finally, install JAX FDM with a one-liner:
-
-```bash
-pip install jax-fdm
-```
-
-JAX FDM requires Python 3.7+, JAX 0.3.17+, Numpy 1.23.3+, Scipy 1.9.1+, and COMPAS 1.16.0+.
-For visualization, use COMPAS_VIEW2 +0.7.0.
-
 ## Key features
 
 - **Derivatives, JIT compilation and parallelization.**
@@ -58,6 +34,30 @@ Let the neural network learn the underlying physics of static equilibrium *direc
 
 JAX FDM is a research project under development.
 Expect sharp edges and possibly some API breaking changes as we continue to support a broader set of features.
+
+## Installation
+
+First, create a new [Anaconda](https://www.anaconda.com/) environment and then activate it:
+
+```bash
+conda create -n jaxenv
+conda activate jaxenv
+```
+
+Next, install COMPAS and COMPAS VIEW2 via `conda`:
+
+```bash
+conda install -c conda-forge compas compas_view2
+```
+
+Finally, install JAX FDM with a one-liner via `pip`:
+
+```bash
+pip install jax-fdm
+```
+
+JAX FDM requires Python 3.7+, JAX 0.3.17+, Numpy 1.23.3+, Scipy 1.9.1+, and COMPAS 1.16.0+.
+For visualization, use COMPAS_VIEW2 +0.7.0.
 
 ## Documentation
 
