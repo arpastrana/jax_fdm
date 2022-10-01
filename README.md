@@ -11,7 +11,7 @@ JAX FDM enables the solution of inverse form-finding problems for discrete force
 ## Key features
 
 - **Derivatives, JIT compilation and parallelization.**
-JAX FDM is written in [JAX](https://github.com/google/jax), a library for high-performance numerical computing and machine learning research, and it thus inherits many of JAX's perks: calculate derivatives, parallelize, and just-in-time (JIT) compile entire form-finding simulations written in Python code.
+JAX FDM is written in [JAX](https://github.com/google/jax), a library for high-performance numerical computing and machine learning research, and it thus inherits many of JAX's perks: calculate derivatives, parallelize, and just-in-time (JIT) compile entire form-finding simulations written in Python code, and run them on a CPU, a GPU, or a TPU.
 <!-- The same JAX code can be run in a CPU, or in multiple GPUs or TPUs (🤯). Accelerate your simulations with minimal burden! -->
 - **Legendary form-finding solver.**
 JAX FDM computes static equilibrium states for discrete force networks with the [force density method (FDM)](https://www.sciencedirect.com/science/article/pii/0045782574900450), the time-tested form-finding solver backed up by over 50 years of peer-reviewed research.
@@ -63,7 +63,7 @@ For visualization, use COMPAS_VIEW2 +0.7.0.
 
 JAX is officially supported on Linux (Ubuntu 16.04 or later) and macOS (10.12 or later) platforms.
 This is the case with JAX FDM too. 
-Consequently, installing JAX FDM on Windows may require other approach than the instructitons listed above.
+Consequently, installing JAX FDM on Windows may require a different approach from that given by the instructitons listed above.
 One alternative for Windows users is to use JAX and JAX FDM on CPU and GPU via the [Windows Subsystem for Linux](https://learn.microsoft.com/en-us/windows/wsl/about).
 Please refer to [JAX's installation instructions](https://github.com/google/jax#installation) for other alternatives.
 
@@ -73,7 +73,7 @@ Work in progress! Expect a release soon.
 
 ## Quick example
 
-Say the goal is to compute the form of an arch that minimizes the total Maxwell load path of an arch subjected to vertical point loads, while constraining the length of its segments between 0.75 and 1.
+Say the goal is to compute the form of an arch subjected to vertical point loads that minimizes its total Maxwell's load path, while constraining the length of its segments between 0.75 and 1.
 We solve this inverse form-finding problem with the SLSQP optimization algorithm.
 
 ```python
@@ -88,7 +88,7 @@ from jax_fdm.losses import Loss
 
 network = FDNetwork.from_json("data/json/arch.json")
 network.edges_forcedensities(q=-1.0)
-network.nodes_supports(keys=[node for node in network if network.is_leaf(node)])
+network.nodes_supports(keys=[node for node in network.nodes() if network.is_leaf(node)])
 network.nodes_loads([0.0, 0.0, -0.2])
 
 goals = [NetworkLoadPathGoal()]
