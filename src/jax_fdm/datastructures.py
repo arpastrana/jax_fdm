@@ -98,6 +98,18 @@ class FDNetwork(Network):
         """
         return self.node_attributes(key=key, names=("rx", "ry", "rz"))
 
+    def nodes_reactions(self, keys=None):
+        """
+        Gets the reaction forces of the nodes of the network.
+        """
+        return self.nodes_attributes(names=("rx", "ry", "rz"), keys=keys)
+
+    def node_reaction(self, key):
+        """
+        Gets the reaction force of a single node of the network.
+        """
+        return self.node_attributes(key=key, names=("rx", "ry", "rz"))
+
     def edge_force(self, key):
         """
         Gets the forces at a single edge the network.
