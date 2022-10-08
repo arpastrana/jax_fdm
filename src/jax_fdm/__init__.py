@@ -36,6 +36,7 @@ TEMP = os.path.abspath(os.path.join(HOME, "temp"))
 
 __all__ = ["HOME", "DATA", "DOCS", "TEMP"]
 
+# config.py
 # define floating point precision
 DTYPE_NP = np.float64
 DTYPE_JAX = jnp.float64
