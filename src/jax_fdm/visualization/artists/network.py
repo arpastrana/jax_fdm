@@ -41,7 +41,7 @@ class FDNetworkArtist(NetworkArtist):
                  reactioncolor=None,
                  reactionscale=None,
                  reactiontol=None,
-                 show_nodes=True,
+                 show_nodes=False,
                  show_edges=True,
                  show_loads=True,
                  show_reactions=True,

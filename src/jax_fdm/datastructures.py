@@ -149,3 +149,25 @@ class FDNetwork(Network):
         Gets the total load path of the network.
         """
         return sum(list(self.edges_loadpaths()))
+
+    def print_stats(self, other_stats=None):
+        """
+        Print information aboud the equilibrium state of the network.
+        """
+        stats = {"FDs": self.edges_forcedensities(),
+                 "Forces": self.edges_forces(),
+                 "Lengths": self.edges_lengths()}
+
+        other_stats = other_stats or dict()
+        stats.update(other_stats)
+
+        print("\n***Network stats***")
+        print(f"Load path: {round(self.loadpath(), 3)}")
+
+        for name, vals in stats.items():
+
+            minv = round(min(vals), 3)
+            maxv = round(max(vals), 3)
+            meanv = round(sum(vals) / len(vals), 3)
+
+            print(f"{name}\t\tMin: {minv}\tMax: {maxv}\tMean: {meanv}")
