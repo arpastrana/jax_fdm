@@ -3,22 +3,17 @@ import jax.numpy as jnp
 # compas
 from compas.colors import Color
 from compas.colors import ColorMap
-from compas.geometry import Line
-from compas.geometry import Point
 from compas.geometry import Translation
 from compas.geometry import add_vectors
-from compas.geometry import length_vector
 
-# visualization
-from compas_view2.app import App
-
-# static equilibrium
+# jax_fdm
 from jax_fdm.datastructures import FDNetwork
 from jax_fdm.equilibrium import constrained_fdm
 from jax_fdm.goals import NodeResidualDirectionGoal
 from jax_fdm.losses import SquaredError
 from jax_fdm.losses import Loss
 from jax_fdm.optimization import SLSQP
+from jax_fdm.visualization import Viewer
 
 # ==========================================================================
 # Initial parameters
@@ -27,7 +22,7 @@ from jax_fdm.optimization import SLSQP
 length_arch = 5.0
 num_segments = 10
 q_init = -1
-pz = -0.1
+pz = -0.3
 start = [0.0, 0.0, 0.0]
 
 # ==========================================================================
@@ -73,10 +68,10 @@ for edge in network.edges():
 # Instantiate viewer
 # ==========================================================================
 
-viewer = App(width=1600, height=900, show_grid=False)
+viewer = Viewer(width=1600, height=900, show_grid=False)
 
 # reference arch
-viewer.add(network, show_points=False, linewidth=4.0)
+viewer.add(network, as_wireframe=True, show_points=False, linewidth=4.0)
 
 # color map
 cmap = ColorMap.from_mpl("viridis")
@@ -119,51 +114,18 @@ for idx, vertical_comp in enumerate(vertical_comps):
 
     # reference arch
     viewer.add(network.transformed(T),
+               as_wireframe=True,
                show_points=False,
                linewidth=2.0,
                color=Color.grey().darkened())
 
     # constrained arch
-    constrained_network = constrained_network.transformed(T)
-    viewer.add(constrained_network,
-               show_vertices=True,
-               pointsize=12.0,
-               show_edges=True,
-               linecolor=color,
-               linewidth=5.0)
-
-    for node in constrained_network.nodes():
-
-        pt = add_vectors(network.node_coordinates(node), t_vector)
-
-        # draw lines betwen subject and target nodes
-        target_pt = constrained_network.node_coordinates(node)
-        viewer.add(Line(target_pt, pt))
-
-        # draw residual forces
-        residual = constrained_network.node_residual(node)
-
-        if length_vector(residual) < 0.001:
-            continue
-
-        # print(node, residual, length_vector(residual))
-        residual_line = Line(pt, add_vectors(pt, residual))
-        viewer.add(residual_line,
-                   linewidth=2.0,
-                   color=color.darkened())  # Color.purple()
-
-    # draw applied loads
-    for node in constrained_network.nodes():
-        pt = constrained_network.node_coordinates(node)
-        load = network.node_load(node)
-        viewer.add(Line(pt, add_vectors(pt, load)),
-                   linewidth=4.0,
-                   color=Color.green().darkened())
-
-    # draw supports
-    for node in constrained_network.nodes_supports():
-        x, y, z = constrained_network.node_coordinates(node)
-        viewer.add(Point(x, y, z), color=Color.green(), size=20)
+    c_network = constrained_network.transformed(T)
+    viewer.add(c_network,
+               edgewidth=(0.01, 0.15),
+               edgecolor=color,
+               reactionscale=0.25,
+               reactioncolor=Color.pink())
 
 # show le crème
 viewer.show()

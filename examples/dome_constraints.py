@@ -2,21 +2,14 @@
 Solve a constrained force density problem using gradient-based optimization.
 """
 import numpy as np
-from math import fabs
 
 # compas
 from compas.colors import Color
-from compas.colors import ColorMap
 from compas.geometry import Line
-from compas.geometry import Point
 from compas.geometry import add_vectors
-from compas.geometry import length_vector
 from compas.geometry import Polygon
 from compas.geometry import offset_polygon
 from compas.utilities import pairwise
-
-# visualization
-from compas_view2.app import App
 
 # static equilibrium
 from jax_fdm.datastructures import FDNetwork
@@ -38,6 +31,7 @@ from jax_fdm.losses import Loss
 
 from jax_fdm.optimization import TrustRegionConstrained
 
+from jax_fdm.visualization import Viewer
 
 # ==========================================================================
 # Initial parameters
@@ -271,95 +265,45 @@ for config in sweep_configs:
     if config["save"]:
         networks[config["name"]] = network
 
-    # Report stats
-    q = list(network.edges_forcedensities())
-    f = list(network.edges_forces())
-    l = list(network.edges_lengths())
-
-    fields = [q, f, l]
-    field_names = ["FDs", "Forces", "Lengths"]
+    extra_stats = None
 
     if constraint_angles:
         model = EquilibriumModel(network)
         q = np.array(network.edges_forcedensities())
         eqstate = model(q)
         a = [constraint.constraint(eqstate, constraint.index_from_model(model)).item() for constraint in constraint_angles]
-        fields.append(a)
-        field_names.append("Angles")
+        extra_stats = {"Angles": a}
 
-    print(f"Load path: {round(network.loadpath(), 3)}")
-    for name, vals in zip(field_names, fields):
-
-        minv = round(min(vals), 3)
-        maxv = round(max(vals), 3)
-        meanv = round(sum(vals) / len(vals), 3)
-        print(f"{name}\t\tMin: {minv}\tMax: {maxv}\tMean: {meanv}")
+    # Report stats
+    network.print_stats(extra_stats)
 
 # ==========================================================================
 # Visualization
 # ==========================================================================
 
-viewer = App(width=1600, height=900, show_grid=False)
+viewer = Viewer(width=1600, height=900, show_grid=False)
 
 # add all networks except the last one
 networks = list(networks.values())
+
 for i, network in enumerate(networks):
     if i == (len(networks) - 1):
         continue
-    viewer.add(network, show_points=False, linewidth=1.0, color=Color.grey().darkened(i * 10))
+    viewer.add(network,
+               as_wireframe=True,
+               show_points=False,
+               linewidth=1.0,
+               color=Color.grey().darkened(i * 10))
 
 network0 = networks[0]
 c_network = networks[-1]  # last network is colored
 
-# edges color map
-cmap = ColorMap.from_mpl("viridis")
-
-fds = [fabs(c_network.edge_forcedensity(edge)) for edge in c_network.edges()]
-colors = {}
-for edge in c_network.edges():
-    fd = fabs(c_network.edge_forcedensity(edge))
-    try:
-        ratio = (fd - min(fds)) / (max(fds) - min(fds))
-    except ZeroDivisionError:
-        ratio = 1.
-    colors[edge] = cmap(ratio)
-
-# optimized network
+# view optimized network
 viewer.add(c_network,
-           show_vertices=True,
-           pointsize=20.0,
-           show_edges=True,
-           linecolors=colors,
-           linewidth=5.0)
-
-for node in c_network.nodes():
-
-    pt = c_network.node_coordinates(node)
-
-    # draw residual forces
-    residual = c_network.node_residual(node)
-
-    if length_vector(residual) < 0.001:
-        continue
-
-    residual_line = Line(pt, add_vectors(pt, residual))
-    viewer.add(residual_line,
-               linewidth=4.0,
-               color=Color.pink())  # Color.purple()
-
-# draw applied loads
-for node in c_network.nodes():
-    pt = c_network.node_coordinates(node)
-    load = c_network.node_load(node)
-    viewer.add(Line(pt, add_vectors(pt, load)),
-               linewidth=4.0,
-               color=Color.green().darkened())
-
-# draw supports
-for node in c_network.nodes_supports():
-    x, y, z = c_network.node_coordinates(node)
-    viewer.add(Point(x, y, z), color=Color.green(), size=30)
+           edgewidth=(0.01, 0.05),
+           edgecolor="fd",
+           loadscale=2.0,
+           reactioncolor=Color.pink())
 
 # show le crème
-# viewer.zoom_extents()
 viewer.show()

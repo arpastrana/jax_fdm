@@ -1,18 +1,14 @@
 # compas
-from compas.colors import Color
-from compas.geometry import Line
-from compas.geometry import Point
-from compas.geometry import Polyline
 from compas.geometry import add_vectors
-from compas.geometry import length_vector
-
-# visualization
-from compas_view2.app import App
+from compas.colors import Color
+from compas.geometry import Polyline
 
 # static equilibrium
 from jax_fdm.datastructures import FDNetwork
 
 from jax_fdm.equilibrium import fdm
+
+from jax_fdm.visualization import Viewer
 
 # ==========================================================================
 # Initial parameters
@@ -21,7 +17,7 @@ from jax_fdm.equilibrium import fdm
 arch_length = 5.0
 num_segments = 10
 q_init = -1
-pz = -0.1
+pz = -0.2
 
 # ==========================================================================
 # Create the geometry of an arch
@@ -63,50 +59,19 @@ eq_network = fdm(network)
 # Visualization
 # ==========================================================================
 
-viewer = App(width=1600, height=900, show_grid=True)
+viewer = Viewer(width=1600, height=900, show_grid=True)
 
 # equilibrated arch
 viewer.add(eq_network,
-           show_vertices=True,
-           pointsize=12.0,
-           show_edges=True,
-           linecolor=Color.teal(),
-           linewidth=5.0)
+           edgewidth=(0.01, 0.1),
+           edgecolor=Color.teal(),
+           reactioncolor=Color.pink())
 
 # reference arch
-viewer.add(network, show_points=False, linewidth=4.0)
-
-for node in eq_network.nodes():
-
-    pt = eq_network.node_coordinates(node)
-
-    # draw lines betwen subject and target nodes
-    target_pt = network.node_coordinates(node)
-    viewer.add(Line(target_pt, pt))
-
-    # draw residual forces
-    residual = eq_network.node_residual(node)
-
-    if length_vector(residual) < 0.001:
-        continue
-
-    residual_line = Line(pt, add_vectors(pt, residual))
-    viewer.add(residual_line,
-               linewidth=4.0,
-               color=Color.pink())
-
-# draw applied loads
-for node in eq_network.nodes():
-    pt = eq_network.node_coordinates(node)
-    load = network.node_load(node)
-    viewer.add(Line(pt, add_vectors(pt, load)),
-               linewidth=4.0,
-               color=Color.green().darkened())
-
-# draw supports
-for node in eq_network.nodes_supports():
-    x, y, z = eq_network.node_coordinates(node)
-    viewer.add(Point(x, y, z), color=Color.green(), size=20)
+viewer.add(network,
+           as_wireframe=True,
+           show_points=False,
+           linewidth=2.0)
 
 # show le crème
 viewer.show()

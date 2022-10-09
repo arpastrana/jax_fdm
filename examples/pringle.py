@@ -3,28 +3,17 @@ Solve a constrained force density problem using gradient-based optimization.
 """
 import os
 
-from math import fabs
-
-import matplotlib.pyplot as plt
-
 # compas
 from compas.colors import Color
-from compas.colors import ColorMap
 from compas.geometry import Line
-from compas.geometry import Point
 from compas.geometry import add_vectors
-from compas.geometry import length_vector
 from compas.geometry import Translation
 from compas.datastructures import network_transform
-
-# visualization
-from compas_view2.app import App
 
 # static equilibrium
 from jax_fdm.datastructures import FDNetwork
 
 from jax_fdm.equilibrium import constrained_fdm
-from jax_fdm.equilibrium import EquilibriumModel
 
 from jax_fdm.goals import EdgeLengthGoal
 from jax_fdm.goals import NodePlaneGoal
@@ -35,6 +24,9 @@ from jax_fdm.losses import SquaredError
 
 from jax_fdm.optimization import SLSQP
 from jax_fdm.optimization import OptimizationRecorder
+
+from jax_fdm.visualization import LossPlotter
+from jax_fdm.visualization import Viewer
 
 
 # ==========================================================================
@@ -221,103 +213,41 @@ if record and export:
 # ==========================================================================
 
 if record:
-    model = EquilibriumModel(network)
-    fig = plt.figure(dpi=150)
-    for loss_term in [loss] + list(loss.terms):
-        y = []
-        for q in recorder.history:
-            eqstate = model(q)
-            try:
-                error = loss_term(eqstate)
-            except:
-                error = loss_term(q, model)
-            y.append(error)
-        plt.plot(y, label=loss_term.name)
-
-    plt.xlabel("Optimization iterations")
-    plt.ylabel("Loss")
-    plt.yscale("log")
-    plt.grid()
-    plt.legend()
-    plt.show()
+    plotter = LossPlotter(loss, network, dpi=150, figsize=(8, 4))
+    plotter.plot(recorder.history)
+    plotter.show()
 
 # ==========================================================================
 # Print out stats
 # ==========================================================================
 
-q = [c_network.edge_forcedensity(edge) for edge in c_network.edges()]
-f = [c_network.edge_force(edge) for edge in c_network.edges()]
-l = [c_network.edge_length(*edge) for edge in c_network.edges()]
-
-for name, vals in zip(("Q", "Forces", "Lengths"), (q, f, l)):
-
-    minv = round(min(vals), 3)
-    maxv = round(max(vals), 3)
-    meanv = round(sum(vals) / len(vals), 3)
-    print(f"{name}\t\tMin: {minv}\tMax: {maxv}\tMean: {meanv}")
+c_network.print_stats()
 
 # ==========================================================================
 # Visualization
 # ==========================================================================
 
-viewer = App(width=1600, height=900, show_grid=False)
-
-# reference network
-viewer.add(network, show_points=True, linewidth=2.0, color=Color.grey().darkened())
-
-# edges color map
-cmap = ColorMap.from_mpl("viridis")
-
-fds = [fabs(c_network.edge_forcedensity(edge)) for edge in c_network.edges()]
-colors = {}
-for edge in c_network.edges():
-    fd = fabs(c_network.edge_forcedensity(edge))
-    try:
-        ratio = (fd - min(fds)) / (max(fds) - min(fds))
-    except ZeroDivisionError:
-        ratio = 1.
-    colors[edge] = cmap(ratio)
+viewer = Viewer(width=1600, height=900, show_grid=False)
 
 # optimized network
 viewer.add(c_network,
-           show_vertices=True,
-           pointsize=12.0,
-           show_edges=True,
-           linecolors=colors,
-           linewidth=5.0)
+           edgewidth=(0.02, 0.1),
+           loadscale=2.0,
+           edgecolor="fd",
+           reactioncolor=Color.pink())
 
+# reference network
+viewer.add(network,
+           as_wireframe=True,
+           show_points=False,
+           linewidth=2.0,
+           color=Color.grey().darkened())
+
+# draw lines betwen subject and target nodes
 for node in c_network.nodes():
-
     pt = c_network.node_coordinates(node)
-
-    # draw lines betwen subject and target nodes
     target_pt = network.node_coordinates(node)
     viewer.add(Line(target_pt, pt), linewidth=1.0, color=Color.grey().lightened())
-
-    # draw residual forces
-    residual = c_network.node_residual(node)
-
-    if length_vector(residual) < 0.001:
-        continue
-
-    # print(node, residual, length_vector(residual))
-    residual_line = Line(pt, add_vectors(pt, residual))
-    viewer.add(residual_line,
-               linewidth=4.0,
-               color=Color.pink())  # Color.purple()
-
-# draw applied loads
-for node in c_network.nodes():
-    pt = c_network.node_coordinates(node)
-    load = c_network.node_load(node)
-    viewer.add(Line(pt, add_vectors(pt, load)),
-               linewidth=4.0,
-               color=Color.green().darkened())
-
-# draw supports
-for node in c_network.nodes_supports():
-    x, y, z = c_network.node_coordinates(node)
-    viewer.add(Point(x, y, z), color=Color.green(), size=20)
 
 # show le crème
 viewer.show()

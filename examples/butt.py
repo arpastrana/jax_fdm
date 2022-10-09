@@ -1,25 +1,15 @@
 # the essentials
 import os
-from math import fabs
 import numpy as np
-import matplotlib.pyplot as plt
 from scipy.spatial.distance import directed_hausdorff
 
 # compas
 from compas.colors import Color
-from compas.colors import ColorMap
 from compas.geometry import Line
-from compas.geometry import Point
-from compas.geometry import add_vectors
-from compas.geometry import length_vector
-
-# visualization
-from compas_view2.app import App
 
 # jax fdm
 from jax_fdm.datastructures import FDNetwork
 
-from jax_fdm.equilibrium import EquilibriumModel
 from jax_fdm.equilibrium import fdm
 from jax_fdm.equilibrium import constrained_fdm
 
@@ -30,6 +20,9 @@ from jax_fdm.goals import NodePointGoal
 
 from jax_fdm.losses import RootMeanSquaredError
 from jax_fdm.losses import Loss
+
+from jax_fdm.visualization import LossPlotter
+from jax_fdm.visualization import Viewer
 
 
 # ==========================================================================
@@ -47,7 +40,7 @@ optimizer = SLSQP  # the optimization algorithm
 maxiter = 1000  # optimizer maximum iterations
 tol = 1e-6  # optimizer tolerance
 
-record = False  # True to record optimization history of force densities
+record = True  # True to record optimization history of force densities
 export = False  # export result to JSON
 
 # ==========================================================================
@@ -144,20 +137,9 @@ if record and export:
 # ==========================================================================
 
 if record:
-    model = EquilibriumModel(network)
-    fig = plt.figure(dpi=150)
-    y = []
-    for q in recorder.history:
-        error = loss(q, model)
-        y.append(error)
-    plt.plot(y, label=loss.name)
-
-    plt.xlabel("Optimization iterations")
-    plt.ylabel("Loss")
-    plt.yscale("log")
-    plt.grid()
-    plt.legend()
-    plt.show()
+    plotter = LossPlotter(loss, network, dpi=150, figsize=(8, 4))
+    plotter.plot(recorder.history)
+    plotter.show()
 
 # ==========================================================================
 # Export JSON
@@ -184,83 +166,37 @@ print(f"Hausdorff distances: Directed U: {directed_u}\tDirected V: {directed_v}\
 # Report stats
 # ==========================================================================
 
-q = list(network.edges_forcedensities())
-f = list(network.edges_forces())
-l = list(network.edges_lengths())
-
-print(f"Load path: {round(network.loadpath(), 3)}")
-for name, vals in zip(("FDs", "Forces", "Lengths"), (q, f, l)):
-
-    minv = round(min(vals), 3)
-    maxv = round(max(vals), 3)
-    meanv = round(sum(vals) / len(vals), 3)
-    print(f"{name}\t\tMin: {minv}\tMax: {maxv}\tMean: {meanv}")
+network.print_stats()
 
 # ==========================================================================
 # Visualization
 # ==========================================================================
 
-viewer = App(width=1600, height=900, show_grid=False)
+viewer = Viewer(width=1600, height=900, show_grid=False)
 
 # modify view
 viewer.view.camera.zoom(-35)  # number of steps, negative to zoom out
 viewer.view.camera.rotation[2] = 0.0  # set rotation around z axis to zero
 
-# reference network
-viewer.add(network_target, show_points=False, linewidth=1.0, color=Color.grey().darkened())
-
-# edges color map
-cmap = ColorMap.from_mpl("viridis")
-
-fds = [fabs(network.edge_forcedensity(edge)) for edge in network.edges()]
-colors = {}
-for edge in network.edges():
-    fd = fabs(network.edge_forcedensity(edge))
-    try:
-        ratio = (fd - min(fds)) / (max(fds) - min(fds))
-    except ZeroDivisionError:
-        ratio = 1.
-    colors[edge] = cmap(ratio)
-
 # optimized network
 viewer.add(network,
-           show_vertices=False,
-           show_edges=True,
-           linecolors=colors,
-           linewidth=5.0)
+           edgewidth=(0.05, 0.3),
+           edgecolor="fd",
+           loadscale=2.0,
+           reactioncolor=Color.pink())
 
+# reference network
+viewer.add(network_target,
+           as_wireframe=True,
+           show_points=False,
+           linewidth=1.0,
+           color=Color.grey().darkened())
+
+# draw lines to target
 for node in network.nodes():
-
     pt = network.node_coordinates(node)
-
-    # draw lines to target
     line = Line(pt, network_target.node_coordinates(node))
-    viewer.add(line,
-               color=Color.grey())
-
-    # draw residual forces
-    residual = network.node_residual(node)
-
-    if length_vector(residual) < 0.001:
-        continue
-
-    residual_line = Line(pt, add_vectors(pt, residual))
-    viewer.add(residual_line,
-               linewidth=4.0,
-               color=Color.pink())
-
-# draw applied loads
-for node in network.nodes():
-    pt = network.node_coordinates(node)
-    load = network.node_load(node)
-    viewer.add(Line(pt, add_vectors(pt, load)),
-               linewidth=4.0,
-               color=Color.green().darkened())
-
-# draw supports
-for node in network.nodes_supports():
-    x, y, z = network.node_coordinates(node)
-    viewer.add(Point(x, y, z), color=Color.green(), size=20)
+    viewer.add(line, color=Color.grey())
 
 # show le crème
 viewer.show()

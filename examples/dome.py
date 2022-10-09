@@ -2,20 +2,15 @@
 Solve a constrained force density problem using gradient-based optimization.
 """
 import os
-import matplotlib.pyplot as plt
 
 # math
-from math import fabs
 from math import radians
 from math import sqrt
 
 # compas
 from compas.colors import Color
-from compas.colors import ColorMap
 from compas.geometry import Line
-from compas.geometry import Point
 from compas.geometry import add_vectors
-from compas.geometry import length_vector
 from compas.geometry import subtract_vectors
 from compas.geometry import cross_vectors
 from compas.geometry import rotate_points
@@ -24,13 +19,9 @@ from compas.geometry import Polygon
 from compas.geometry import offset_polygon
 from compas.utilities import pairwise
 
-# visualization
-from compas_view2.app import App
-
 # static equilibrium
 from jax_fdm.datastructures import FDNetwork
 
-from jax_fdm.equilibrium import EquilibriumModel
 from jax_fdm.equilibrium import fdm
 from jax_fdm.equilibrium import constrained_fdm
 
@@ -43,6 +34,10 @@ from jax_fdm.losses import Loss
 from jax_fdm.optimization import BFGS
 
 from jax_fdm.optimization import OptimizationRecorder
+
+from jax_fdm.visualization import LossPlotter
+from jax_fdm.visualization import Viewer
+
 
 # ==========================================================================
 # Initial parameters
@@ -249,20 +244,7 @@ for config in sweep_configs:
         networks[config["name"]] = network
 
     # Report stats
-    q = list(network.edges_forcedensities())
-    f = list(network.edges_forces())
-    l = list(network.edges_lengths())
-
-    fields = [q, f, l]
-    field_names = ["FDs", "Forces", "Lengths"]
-
-    print(f"Load path: {round(network.loadpath(), 3)}")
-    for field_name, vals in zip(field_names, fields):
-
-        minv = round(min(vals), 3)
-        maxv = round(max(vals), 3)
-        meanv = round(sum(vals) / len(vals), 3)
-        print(f"{field_name}\t\tMin: {minv}\tMax: {maxv}\tMean: {meanv}")
+    network.print_stats()
 
 # ==========================================================================
 # Export optimization history
@@ -278,25 +260,9 @@ for config in sweep_configs:
 # ==========================================================================
 
     if record and fofin_method != fdm:
-        model = EquilibriumModel(network)
-        fig = plt.figure(dpi=150)
-        for loss_term in [loss] + list(loss.terms):
-            y = []
-            for q in recorder.history:
-                eqstate = model(q)
-                try:
-                    error = loss_term(eqstate)
-                except:
-                    error = loss_term(q, model)
-                y.append(error)
-            plt.plot(y, label=loss_term.name)
-
-        plt.xlabel("Optimization iterations")
-        plt.ylabel("Loss")
-        plt.yscale("log")
-        plt.grid()
-        plt.legend()
-        plt.show()
+        plotter = LossPlotter(loss, network, dpi=150, figsize=(8, 4))
+        plotter.plot(recorder.history)
+        plotter.show()
 
 # ==========================================================================
 # Export JSON
@@ -312,15 +278,19 @@ if export:
 # Visualization
 # ==========================================================================
 
-viewer = App(width=1600, height=900, show_grid=False)
+viewer = Viewer(width=1600, height=900, show_grid=False)
 
-# add all networks except the last one
 networks = list(networks.values())
 
+# add all networks except the last one
 for i, network in enumerate(networks):
     if i == (len(networks) - 1):
         continue
-    viewer.add(network, show_points=False, linewidth=1.0, color=Color.grey().darkened(i * 10))
+    viewer.add(network,
+               as_wireframe=True,
+               show_points=False,
+               linewidth=1.0,
+               color=Color.grey().darkened(i * 10))
 
 network0 = networks[0]
 if len(networks) > 1:
@@ -328,58 +298,18 @@ if len(networks) > 1:
 else:
     c_network = networks[0]
 
+# optimized network
+viewer.add(c_network,
+           edgewidth=(0.005, 0.03),
+           show_nodes=False,
+           show_reactions=False,
+           edgecolor="force")
+
+# add target vectors
 for vector, edge in vectors_goal:
     u, v = edge
     xyz = c_network.node_coordinates(u)
     viewer.add(Line(xyz, add_vectors(xyz, scale_vector(vector, 0.1))))
-
-# plot the last network
-cmap = ColorMap.from_mpl("viridis")
-
-fds = [fabs(c_network.edge_forcedensity(edge)) for edge in c_network.edges()]
-colors = {}
-for edge in c_network.edges():
-    fd = fabs(c_network.edge_forcedensity(edge))
-    try:
-        ratio = (fd - min(fds)) / (max(fds) - min(fds))
-    except ZeroDivisionError:
-        ratio = 1.
-    colors[edge] = cmap(ratio)
-
-# optimized network
-viewer.add(c_network,
-           show_vertices=False,
-           show_edges=True,
-           linecolors=colors,
-           linewidth=5.0)
-
-for node in c_network.nodes():
-
-    pt = c_network.node_coordinates(node)
-
-    # draw residual forces
-    residual = c_network.node_residual(node)
-
-    if length_vector(residual) < 0.001:
-        continue
-
-    residual_line = Line(pt, add_vectors(pt, residual))
-    viewer.add(residual_line,
-               linewidth=4.0,
-               color=Color.pink())
-
-# draw applied loads
-for node in c_network.nodes():
-    pt = c_network.node_coordinates(node)
-    load = c_network.node_load(node)
-    viewer.add(Line(pt, add_vectors(pt, load)),
-               linewidth=4.0,
-               color=Color.green().darkened())
-
-# draw supports
-for node in c_network.nodes_supports():
-    x, y, z = c_network.node_coordinates(node)
-    viewer.add(Point(x, y, z), color=Color.green(), size=30)
 
 # show le crème
 viewer.show()

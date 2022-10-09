@@ -11,15 +11,16 @@ from compas.geometry import Line
 from compas.geometry import Point
 from compas.geometry import add_vectors
 
-# dfdm
-from dfdm.optimization import OptimizationRecorder
-from dfdm.datastructures import FDNetwork
-from dfdm.equilibrium import EquilibriumModel
-from dfdm.equilibrium import fdm
-from dfdm.equilibrium import network_update
+# jax_fdm
+from jax_fdm.optimization import OptimizationRecorder
 
-# compas view
-from compas_view2.app import App
+from jax_fdm.datastructures import FDNetwork
+
+from jax_fdm.equilibrium import EquilibriumModel
+from jax_fdm.equilibrium import fdm
+from jax_fdm.equilibrium import network_update
+
+from jax_fdm.visualization import Viewer
 
 
 # ==========================================================================
@@ -41,7 +42,7 @@ fps = 12
 
 animate = True
 rotate_while_animate = True
-save = True
+save = False
 
 
 # ==========================================================================
@@ -117,7 +118,7 @@ recorder = OptimizationRecorder.from_json(FILE_IN)
 # ==========================================================================
 
 # instantiate viewer
-viewer = App(width=1600, height=900, show_grid=show_grid)
+viewer = Viewer(width=1600, height=900, show_grid=show_grid)
 
 # modify view
 if modify_view:
@@ -126,7 +127,11 @@ if modify_view:
     viewer.view.camera.rotation_delta = (2 / 3) * pi / len(recorder.history)  # set rotation around z axis to zero
 
 # draw network
-network_obj = viewer.add(network, show_points=False, linewidth=5.0, color=Color.grey().darkened())
+network_obj = viewer.add(network,
+                         as_wireframe=True,
+                         show_points=False,
+                         linewidth=5.0,
+                         color=Color.grey().darkened())
 
 # draw supports
 for node in network.nodes_supports():
@@ -177,12 +182,17 @@ if animate:
         # update residual forces
         residuals_update(residuals, network)
 
-        # update all buffer objects in the view
         for _, obj in viewer.view.objects.items():
             obj.update()
 
         if rotate_while_animate:
             viewer.view.camera.rotate(dx=1, dy=0)
+
+        # update all buffer objects in the view
+        # for artist in viewer.artists:
+        #   artist.update(network)
+        #   for obj in artist.objects:
+        #       obj.update()
 
 # show le crème
 viewer.show()
