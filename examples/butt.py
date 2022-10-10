@@ -182,8 +182,7 @@ viewer.view.camera.rotation[2] = 0.0  # set rotation around z axis to zero
 viewer.add(network,
            edgewidth=(0.05, 0.3),
            edgecolor="fd",
-           loadscale=2.0,
-           reactioncolor=Color.pink())
+           loadscale=2.0)
 
 # reference network
 viewer.add(network_target,

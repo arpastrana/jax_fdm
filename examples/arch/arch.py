@@ -64,8 +64,7 @@ viewer = Viewer(width=1600, height=900, show_grid=True)
 # equilibrated arch
 viewer.add(eq_network,
            edgewidth=(0.01, 0.1),
-           edgecolor=Color.teal(),
-           reactioncolor=Color.pink())
+           edgecolor="force")
 
 # reference arch
 viewer.add(network,

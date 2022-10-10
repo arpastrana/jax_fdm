@@ -302,8 +302,7 @@ c_network = networks[-1]  # last network is colored
 viewer.add(c_network,
            edgewidth=(0.01, 0.05),
            edgecolor="fd",
-           loadscale=2.0,
-           reactioncolor=Color.pink())
+           loadscale=2.0)
 
 # show le crème
 viewer.show()

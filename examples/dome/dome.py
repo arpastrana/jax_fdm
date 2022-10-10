@@ -8,7 +8,6 @@ from math import radians
 from math import sqrt
 
 # compas
-from compas.colors import Color
 from compas.geometry import Line
 from compas.geometry import add_vectors
 from compas.geometry import subtract_vectors
@@ -280,28 +279,10 @@ if export:
 
 viewer = Viewer(width=1600, height=900, show_grid=False)
 
-networks = list(networks.values())
-
-# add all networks except the last one
-for i, network in enumerate(networks):
-    if i == (len(networks) - 1):
-        continue
-    viewer.add(network,
-               as_wireframe=True,
-               show_points=False,
-               linewidth=1.0,
-               color=Color.grey().darkened(i * 10))
-
-network0 = networks[0]
-if len(networks) > 1:
-    c_network = networks[-1]  # last network is colored
-else:
-    c_network = networks[0]
-
 # optimized network
+c_network = networks["eq_g"]
 viewer.add(c_network,
-           edgewidth=(0.005, 0.03),
-           show_nodes=False,
+           edgewidth=(0.003, 0.03),
            show_reactions=False,
            edgecolor="force")
 

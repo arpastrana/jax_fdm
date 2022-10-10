@@ -124,8 +124,7 @@ for idx, vertical_comp in enumerate(vertical_comps):
     viewer.add(c_network,
                edgewidth=(0.01, 0.15),
                edgecolor=color,
-               reactionscale=0.25,
-               reactioncolor=Color.pink())
+               reactionscale=0.25)
 
 # show le crème
 viewer.show()

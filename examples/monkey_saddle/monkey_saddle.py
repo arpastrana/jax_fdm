@@ -62,7 +62,7 @@ export = False  # export result to JSON
 # ==========================================================================
 
 HERE = os.path.dirname(__file__)
-FILE_IN = os.path.abspath(os.path.join(HERE, f"../data/json/{name}.json"))
+FILE_IN = os.path.abspath(os.path.join(HERE, f"../../data/json/{name}.json"))
 mesh = CoarseQuadMesh.from_json(FILE_IN)
 
 print('Initial coarse mesh:', mesh)
@@ -140,7 +140,7 @@ network0.edges_forcedensities(q=q0)
 # ==========================================================================
 
 if export:
-    FILE_OUT = os.path.join(HERE, f"../data/json/{name}_base.json")
+    FILE_OUT = os.path.join(HERE, f"../../data/json/{name}_base.json")
     network0.to_json(FILE_OUT)
     print("Problem definition exported to", FILE_OUT)
 
@@ -208,7 +208,7 @@ network = constrained_fdm(network0,
 # ==========================================================================
 
 if record and export:
-    FILE_OUT = os.path.join(HERE, f"../data/json/{name}_history.json")
+    FILE_OUT = os.path.join(HERE, f"../../data/json/{name}_history.json")
     recorder.to_json(FILE_OUT)
     print("Optimization history exported to", FILE_OUT)
 
@@ -226,7 +226,7 @@ if record:
 # ==========================================================================
 
 if export:
-    FILE_OUT = os.path.join(HERE, f"../data/json/{name}_optimized.json")
+    FILE_OUT = os.path.join(HERE, f"../../data/json/{name}_optimized.json")
     network.to_json(FILE_OUT)
     print("Form found design exported to", FILE_OUT)
 
@@ -249,8 +249,8 @@ viewer.view.camera.rotation[2] = 0.0  # set rotation around z axis to zero
 # optimized network
 viewer.add(network,
            edgewidth=(0.05, 0.25),
-           edgecolor="fd",
-           reactioncolor=Color.pink())
+           reactionscale=0.75,
+           edgecolor="fd")
 
 # reference network
 viewer.add(network0,

@@ -233,8 +233,7 @@ viewer = Viewer(width=1600, height=900, show_grid=False)
 viewer.add(c_network,
            edgewidth=(0.02, 0.1),
            loadscale=2.0,
-           edgecolor="fd",
-           reactioncolor=Color.pink())
+           edgecolor="fd")
 
 # reference network
 viewer.add(network,

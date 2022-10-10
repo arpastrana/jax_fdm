@@ -284,8 +284,7 @@ viewer.add(c_network,
            show_nodes=False,
            edgecolor="fd",
            loadscale=0.5,
-           reactionscale=0.5,
-           reactioncolor=Color.pink())
+           reactionscale=0.5)
 
 # show le crème
 viewer.show()
