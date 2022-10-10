@@ -10,6 +10,3 @@ def register_artists():
     Register objects to the artist factory.
     """
     Artist.register(FDNetwork, FDNetworkViewerArtist, context="Viewer")
-
-
-register_artists()
