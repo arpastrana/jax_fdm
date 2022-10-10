@@ -1,35 +1,36 @@
 <h1 align='center'>JAX FDM</h1>
 
-A differentiable, hardware-accelerated framework for inverse form-finding in structural design.
+A differentiable, hardware-accelerated framework for constrained form-finding in structural design.
 
 > Crafted with care in the [Form-Finding Lab](http://formfindinglab.princeton.edu/) at [Princeton University](https://princeton.edu) ❤️🇺🇸
 
 ![](images/fdm_header.gif)
 
-JAX FDM enables the solution of inverse form-finding problems for discrete force networks using the force density method (FDM) and gradient-based optimization. It streamlines the integration of form-finding simulations into deep learning models for machine learning research.
+JAX FDM enables the solution of inverse form-finding problems for discrete force networks using the force density method (FDM) and gradient-based optimization.
+It streamlines the integration of form-finding simulations into deep learning models for machine learning research.
 
 ## Key features
 
 - **Derivatives, JIT compilation and parallelization.**
-JAX FDM is written in [JAX](https://github.com/google/jax), a library for high-performance numerical computing and machine learning research, and it thus inherits many of JAX's perks: calculate derivatives, parallelize, and just-in-time (JIT) compile entire form-finding simulations written in Python code, and run them on a CPU, a GPU, or a TPU.
+JAX FDM is written in [JAX](https://github.com/google/jax), a library for high-performance numerical computing and machine learning research, and it thus inherits many of JAX's perks: calculate derivatives, parallelize, and just-in-time (JIT) compile entire form-finding simulations written in Python code, and run them on a CPU, a GPU, or a TPU 🤯.
 <!-- The same JAX code can be run in a CPU, or in multiple GPUs or TPUs (🤯). Accelerate your simulations with minimal burden! -->
 - **Legendary form-finding solver.**
-JAX FDM computes static equilibrium states for discrete force networks with the [force density method (FDM)](https://www.sciencedirect.com/science/article/pii/0045782574900450), the time-tested form-finding solver backed up by over 50 years of peer-reviewed research.
+JAX FDM computes static equilibrium states for discrete force networks with the [force density method (FDM)](https://www.sciencedirect.com/science/article/pii/0045782574900450), the time-tested form-finding solver backed up by over 50 years of peer-reviewed research 📚.
 <!--  -->
 - **Autotune those force densities.**
 A form-found structure should fulfill additional design requirements to become a feasible structure in the real world.
 Formulate an inverse form-finding scenario like this as an optimization problem with JAX FDM.
-Then, let one of its gradient-based optimizers solve this readme by automatically tweaking the network's force densities.
+Then, let one of its gradient-based optimizers solve this readme by automatically tweaking the network's force densities 🕺🏻.
+(Coming soon: let the optimizer tune the support positions and the applied loads too!).
 <!-- Some popular examples of inverse form-finding problems include best-fitting a vault to an arbitrary target shape, minimizing the load path of a funicular network, or controlling the thrust and the supports of a bridge. -->
-<!-- (Coming soon: tweak the support positions and the applied loads, in addition to the force densities, too!). -->
 - **A rich bank of goals, constraints and loss functions.**
 No two structures are alike.
 JAX FDM allows you to model a custom inverse form-finding problem with its (growing!) collection of goals, constraints, and loss functions via a simple, object-oriented API.
-The available goals and constraints in the framework are granular and applicable to an entire network; to a subset of its nodes, edges, and combinations thereof.
+The available goals and constraints in the framework are granular and applicable to an entire network; to a subset of its nodes, edges, and combinations thereof 💡.
 <!-- Don't see a goal or a constraint you fit?. Add yours with ease! Consult our documentation guide (in progress) to see how you add yours. -->
 - **Form-finding simulations as another layer in a neural network.**
 Form-finding solver as another layer in a neural network. As an automatically differentiable library, JAX FDM can be seamlessly added as a module of a differentiable function approximator (like a neural network) that can be then trained end-to-end.
-Let the neural network learn the underlying physics of static equilibrium *directly* rom a form-finding solver instead of resorting to laborious techniques like data augmentation.
+Let the neural network learn the underlying physics of static equilibrium *directly* rom a form-finding solver instead of resorting to laborious techniques like data augmentation 🤖.
 <!--  -->
 
 JAX FDM is a research project under development.
@@ -73,11 +74,27 @@ Work in progress! Expect a release soon.
 
 ## Quick example
 
-Say the goal is to compute the form of an arch subjected to vertical point loads that minimizes its total Maxwell's load path, while constraining the length of its segments between 0.75 and 1.
-We solve this inverse form-finding problem with the SLSQP optimization algorithm.
+Suppose you are interested in generating a form in static equilibrium for a 10-meter span arch subjected to vertical point loads of 0.3 kN.
+The arch has to be a compression-only structure.
+You model the arch as a `jax_fdm` network, apply a force density of -1 to all of its edges, and compute the required shape with the force density method.
 
 ```python
 from jax_fdm.datastructures import FDNetwork
+from jax_fdm.equilibrium import fdm
+
+
+network = FDNetwork.from_json("data/json/arch.json")
+network.edges_forcedensities(q=-1.0)
+network.nodes_supports(keys=[node for node in network.nodes() if network.is_leaf(node)])
+network.nodes_loads([0.0, 0.0, -0.3])
+
+f_network = fdm(network)
+```
+
+You now wish to find a new form for this arch that minimizes the [total Maxwell´s load path](https://doi.org/10.1007/s00158-019-02214-w), while keeping the length of the arch segments between 0.75 and 1 meters.
+You solve this constrained form-finding problem with the SLSQP gradient-based optimizer.
+
+```python
 from jax_fdm.equilibrium import constrained_fdm
 from jax_fdm.optimization import SLSQP
 from jax_fdm.constraints import EdgeLengthConstraint
@@ -86,24 +103,29 @@ from jax_fdm.losses import PredictionError
 from jax_fdm.losses import Loss
 
 
-network = FDNetwork.from_json("data/json/arch.json")
-network.edges_forcedensities(q=-1.0)
-network.nodes_supports(keys=[node for node in network.nodes() if network.is_leaf(node)])
-network.nodes_loads([0.0, 0.0, -0.2])
-
-goals = [NetworkLoadPathGoal()]
-loss = Loss(PredictionError(goals))
+loss = Loss(PredictionError(goals=[NetworkLoadPathGoal]))
 constraints = [EdgeLengthConstraint(edge, 0.75, 1.0) for edge in network.edges()]
 optimizer = SLSQP()
 
 c_network = constrained_fdm(network, optimizer, loss, constraints=constraints)
-c_network.to_json("data/json/arch_constrained.json")
 ```
 
-We visualize the unconstrained form-found `network` (gray) and the constrained one, `c_network` (in teal), with COMPAS VIEW2, and draw lines between their nodes:
+You finally visualize the unconstrained form-found arch `f_network` (gray) and the constrained one, `c_network` (in teal) with the `Viewer`.
+
+```python
+from jax_fdm.visualization import Viewer
+
+
+viewer = Viewer(width=1600, height=900)
+viewer.add(c_network)
+viewer.add(f_network, as_wireframe=True)
+viewer.show()
+```
 
 ![](images/arch_loadpath.png)
 
+The constrained form is shallower than the unconstrained one as a result of the optimization process.
+The length of the arch segments also varies within the prescribe bounds to minimize the load path: segments are the longest where the arch's internal forces are lower (1.0 meter, at the appex); and conversely, the segments are shorter where the arch's internal forces are higher (0.75 m, at the base).
 
 ## More examples
 

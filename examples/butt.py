@@ -52,7 +52,7 @@ FILE_IN = os.path.abspath(os.path.join(HERE, f"../data/json/{name}.json"))
 network = FDNetwork.from_json(FILE_IN)
 
 # ==========================================================================
-# Import targer network
+# Import target network
 # ==========================================================================
 
 FILE_IN = os.path.abspath(os.path.join(HERE, f"../data/json/{name_target}.json"))
