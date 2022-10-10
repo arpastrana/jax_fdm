@@ -3,6 +3,9 @@ import matplotlib.pyplot as plt
 from jax_fdm.equilibrium import EquilibriumModel
 
 
+__all__ = ["LossPlotter"]
+
+
 class LossPlotter:
     """
     Plot a loss function.

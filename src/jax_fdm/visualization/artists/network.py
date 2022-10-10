@@ -10,6 +10,9 @@ from compas.colors import ColorMap
 from compas.utilities import remap_values
 
 
+__all__ = ["FDNetworkArtist"]
+
+
 class FDNetworkArtist(NetworkArtist):
     """
     The base artist to display a force density network across different contexts.

@@ -16,6 +16,9 @@ from compas_view2.collections import Collection
 from jax_fdm.visualization.artists import FDNetworkArtist
 
 
+__all__ = ["FDNetworkViewerArtist"]
+
+
 class FDNetworkViewerArtist(FDNetworkArtist):
     """
     An artist that draws a force density network to a viewer.
