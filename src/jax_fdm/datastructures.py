@@ -50,11 +50,11 @@ class FDNetwork(Network):
 
         return self.nodes_attribute(name="is_support", value=True, keys=keys)
 
-    def nodes_fixed(self):
+    def nodes_fixed(self, keys=None):
         """
-        Gets the node keys where a support has been assigned.
+        Gets or sets the node keys where a support has been assigned.
         """
-        return self.nodes_where({"is_support": True})
+        return self.nodes_supports(keys)
 
     def nodes_free(self):
         """
