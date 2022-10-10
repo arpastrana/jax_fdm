@@ -23,7 +23,7 @@ class LossPlotter:
                 eqstate = self.model(q)
                 try:
                     error = loss_term(eqstate)
-                except:
+                except TypeError:
                     error = loss_term(q, self.model)
                 errors.append(error)
             plt.plot(errors, label=loss_term.name)
