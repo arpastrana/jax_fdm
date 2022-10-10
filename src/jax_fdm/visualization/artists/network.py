@@ -14,14 +14,14 @@ class FDNetworkArtist(NetworkArtist):
     """
     The base artist to display a force density network across different contexts.
     """
-    default_edgecolor = Color.grey()
+    default_edgecolor = Color.teal()
     default_nodecolor = Color.grey().darkened(factor=50)
     default_nodesupportcolor = Color.from_rgb255(0, 150, 10)
     default_loadcolor = Color.from_rgb255(0, 150, 10)
-    default_reactioncolor = Color.from_rgb255(75, 75, 75)
+    default_reactioncolor = Color.pink()
 
     default_nodesize = 0.1
-    default_edgewidth = 1.0
+    default_edgewidth = (0.01, 0.1)
     default_loadscale = 1.0
     default_reactionscale = 1.0
     default_loadtol = 1e-3
@@ -45,6 +45,7 @@ class FDNetworkArtist(NetworkArtist):
                  show_edges=True,
                  show_loads=True,
                  show_reactions=True,
+                 show_supports=True,
                  *args,
                  **kwargs):
         super().__init__(network=network,
@@ -79,6 +80,7 @@ class FDNetworkArtist(NetworkArtist):
         self.show_edges = show_edges
         self.show_loads = show_loads
         self.show_reactions = show_reactions
+        self.show_supports = show_supports
 
     # ==========================================================================
     # Draw
@@ -255,9 +257,6 @@ class FDNetworkArtist(NetworkArtist):
 
                 self._edge_color = colors
 
-        else:
-            raise ValueError(f"Color {color} unsupported!")
-
     @property
     def node_color(self):
         """
@@ -312,6 +311,3 @@ class FDNetworkArtist(NetworkArtist):
                 widths = [self.default_edgewidth] * len(self.edges)
 
             self._edge_width = {edge: width for edge, width in zip(self.edges, widths)}
-
-        else:
-            raise ValueError(f"Unsupported edge width: {width}!")
