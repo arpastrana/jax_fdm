@@ -10,8 +10,11 @@ from compas.geometry import scale_vector
 from compas.geometry import add_vectors
 from compas.geometry import length_vector
 
-from compas_view2.shapes import Arrow
-from compas_view2.collections import Collection
+try:
+    from compas_view2.shapes import Arrow
+    from compas_view2.collections import Collection
+except ImportError:
+    pass
 
 from jax_fdm.visualization.artists import FDNetworkArtist
 

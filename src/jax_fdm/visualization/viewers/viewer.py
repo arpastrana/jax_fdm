@@ -1,6 +1,9 @@
 from compas.artists import Artist
 
-from compas_view2.app import App
+try:
+    from compas_view2.app import App
+except ImportError:
+    pass
 
 from jax_fdm.datastructures import FDNetwork
 
