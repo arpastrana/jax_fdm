@@ -3,7 +3,8 @@ from compas.artists import Artist
 try:
     from compas_view2.app import App
 except ImportError:
-    pass
+    class App:
+        pass
 
 from jax_fdm.datastructures import FDNetwork
 
