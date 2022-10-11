@@ -8,6 +8,10 @@ on:
     branches:
       - main
 
+defaults:
+  run:
+    shell: bash -l {0}
+
 jobs:
   build-package:
     if: "!contains(github.event.pull_request.labels.*.name, 'docs-only')"
@@ -15,16 +19,18 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, macos-latest]
-        python-version: ['3.7', '3.8', '3.9', '3.10']
+        python-version: ['3.8', '3.9', '3.10']
 
     steps:
       - uses: actions/checkout@v2
 
-      - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v2
+      - uses: conda-incubator/setup-miniconda@v2.0.0
         with:
+          miniconda-version: "latest"
+          channels: conda-forge
           python-version: ${{ matrix.python-version }}
 
       - uses: compas-dev/compas-actions.build@v1.1.1
         with:
           test_lint: true
+          test_compas: true

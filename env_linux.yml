@@ -1,0 +1,10 @@
+name: jaxenv
+channels:
+  - conda-forge
+dependencies:
+  - python
+  - compas
+  - compas_view2
+  - pip:
+    - -r requirements.txt
+    - -r requirements-dev.txt
