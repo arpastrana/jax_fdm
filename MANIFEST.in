@@ -16,6 +16,7 @@ include requirements.txt
 
 exclude requirements-dev.txt
 exclude pytest.ini .bumpversion.cfg .editorconfig
+exclude env_linux.yml env_osx.yml
 exclude tasks.py
 exclude CONTRIBUTING.md
 exclude conftest.py
