@@ -9,6 +9,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Implemented `visualization.viewers.Viewer` as a thin wrapper around `compas_view2.App`.
+- Created `visualization.plotters.LossPlotter`.
+- Implemented `visualization.viewers.FDNetworkViewerArtist`.
+- Implemented `visualization.artists.FDNetworkArtist`.
+- Created `jax_fdm.visualization` module.
+- Implemented `FDNetwork.print_stats()`.
+- Implemented `FDNetwork.node_reaction()` to get the reaction force at a fixed node.
+- Added `FDNetwork.nodes_fixed()` to query nodes with a support.
+
 ### Changed
 
 ### Removed
