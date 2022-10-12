@@ -263,26 +263,23 @@ viewer = Viewer(width=1600, height=900, show_grid=False)
 # add all networks except the last one
 networks = list(networks.values())
 
-for i, network in enumerate(networks):
-    if i == (len(networks) - 1):
-        continue
-    viewer.add(network,
-               as_wireframe=True,
-               show_points=False,
-               linewidth=1.0,
-               color=Color.grey().darkened(i * 10))
-
 network0 = networks[0]
 if len(networks) > 1:
     c_network = networks[-1]  # last network is colored
 else:
     c_network = networks[0]
 
+viewer.add(network0,
+           as_wireframe=True,
+           show_points=False,
+           linewidth=1.0,
+           color=Color.grey().darkened(i * 10))
+
 # optimized network
 viewer.add(c_network,
            edgewidth=(0.05, 0.2),
            show_nodes=False,
-           edgecolor="fd",
+           edgecolor="force",
            loadscale=0.5,
            reactionscale=0.5)
 

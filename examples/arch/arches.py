@@ -23,13 +23,14 @@ length_arch = 5.0
 num_segments = 10
 q_init = -1
 pz = -0.3
-start = [0.0, 0.0, 0.0]
 
 # ==========================================================================
 # Create the base geometry of the arch
 # ==========================================================================
 
 points = []
+
+start = [-length_arch / 2.0, 0.0, 0.0]
 length_segment = length_arch / num_segments
 for i in range(num_segments + 1):
     point = add_vectors(start, [i * length_segment, 0.0, 0.0])
@@ -68,10 +69,7 @@ for edge in network.edges():
 # Instantiate viewer
 # ==========================================================================
 
-viewer = Viewer(width=1600, height=900, show_grid=False)
-
-# reference arch
-viewer.add(network, as_wireframe=True, show_points=False, linewidth=4.0)
+viewer = Viewer(width=1600, height=900)
 
 # color map
 cmap = ColorMap.from_mpl("viridis")
@@ -111,13 +109,6 @@ for idx, vertical_comp in enumerate(vertical_comps):
 
     t_vector = [0.0, -idx, 0.0]
     T = Translation.from_vector([0.0, -idx, 0.0])
-
-    # reference arch
-    viewer.add(network.transformed(T),
-               as_wireframe=True,
-               show_points=False,
-               linewidth=2.0,
-               color=Color.grey().darkened())
 
     # constrained arch
     c_network = constrained_network.transformed(T)

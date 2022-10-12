@@ -281,10 +281,7 @@ viewer = Viewer(width=1600, height=900, show_grid=False)
 
 # optimized network
 c_network = networks["eq_g"]
-viewer.add(c_network,
-           edgewidth=(0.003, 0.03),
-           show_reactions=False,
-           edgecolor="force")
+viewer.add(c_network, edgewidth=(0.003, 0.03), edgecolor="force", reactionscale=0.1)
 
 # add target vectors
 for vector, edge in vectors_goal:

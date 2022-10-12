@@ -23,7 +23,7 @@ pz = -0.2
 # Create the geometry of an arch
 # ==========================================================================
 
-start = [0.0, 0.0, 0.0]
+start = [-arch_length / 2.0, 0.0, 0.0]
 end = add_vectors(start, [arch_length, 0.0, 0.0])
 curve = Polyline([start, end])
 points = curve.divide_polyline(num_segments)
@@ -62,15 +62,7 @@ eq_network = fdm(network)
 viewer = Viewer(width=1600, height=900, show_grid=True)
 
 # equilibrated arch
-viewer.add(eq_network,
-           edgewidth=(0.01, 0.1),
-           edgecolor="force")
-
-# reference arch
-viewer.add(network,
-           as_wireframe=True,
-           show_points=False,
-           linewidth=2.0)
+viewer.add(eq_network, edgewidth=(0.01, 0.1))
 
 # show le crème
 viewer.show()
