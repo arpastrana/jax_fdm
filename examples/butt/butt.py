@@ -48,14 +48,14 @@ export = False  # export result to JSON
 # ==========================================================================
 
 HERE = os.path.dirname(__file__)
-FILE_IN = os.path.abspath(os.path.join(HERE, f"../data/json/{name}.json"))
+FILE_IN = os.path.abspath(os.path.join(HERE, f"../../data/json/{name}.json"))
 network = FDNetwork.from_json(FILE_IN)
 
 # ==========================================================================
 # Import target network
 # ==========================================================================
 
-FILE_IN = os.path.abspath(os.path.join(HERE, f"../data/json/{name_target}.json"))
+FILE_IN = os.path.abspath(os.path.join(HERE, f"../../data/json/{name_target}.json"))
 network_target = FDNetwork.from_json(FILE_IN)
 
 # ==========================================================================
@@ -73,7 +73,7 @@ network.edges_forcedensities(q=q0)
 # ==========================================================================
 
 if export:
-    FILE_OUT = os.path.join(HERE, f"../data/json/{name}_base.json")
+    FILE_OUT = os.path.join(HERE, f"../data/../json/{name}_base.json")
     network.to_json(FILE_OUT)
     print("Problem definition exported to", FILE_OUT)
 
@@ -128,7 +128,7 @@ network = constrained_fdm(network0,
 # ==========================================================================
 
 if record and export:
-    FILE_OUT = os.path.join(HERE, f"../data/json/{name}_history.json")
+    FILE_OUT = os.path.join(HERE, f"../../data/json/{name}_history.json")
     recorder.to_json(FILE_OUT)
     print("Optimization history exported to", FILE_OUT)
 
@@ -146,7 +146,7 @@ if record:
 # ==========================================================================
 
 if export:
-    FILE_OUT = os.path.join(HERE, f"../data/json/{name}_optimized.json")
+    FILE_OUT = os.path.join(HERE, f"../../data/json/{name}_optimized.json")
     network.to_json(FILE_OUT)
     print("Form found design exported to", FILE_OUT)
 
@@ -180,7 +180,7 @@ viewer.view.camera.rotation[2] = 0.0  # set rotation around z axis to zero
 
 # optimized network
 viewer.add(network,
-           edgewidth=(0.05, 0.3),
+           edgewidth=(0.1, 0.3),
            edgecolor="fd",
            loadscale=2.0)
 
