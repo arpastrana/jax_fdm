@@ -19,7 +19,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), '../src'))
 project = "jax_fdm"
 copyright = "Rafael Pastrana"
 author = "Rafael Pastrana"
-release = "0.2.0"
+release = "0.2.1"
 version = ".".join(release.split(".")[0:2])
 
 master_doc = "index"
