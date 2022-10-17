@@ -7,6 +7,8 @@ class NodePointGoal(VectorGoal, NodeGoal):
     """
     Make a node of a network to reach target xyz coordinates.
     """
+    # @partial(jax.vmap)
+    # _prediction
     @staticmethod
     def prediction(eq_state, index):
         """

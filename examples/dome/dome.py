@@ -46,8 +46,8 @@ name = "dome"
 
 # geometric parameters
 diameter = 1.0
-num_sides = 8
-num_rings = 40
+num_sides = 16
+num_rings = 24
 offset_distance = 0.01  # ring offset
 
 # initial form-finding parameters
@@ -58,14 +58,14 @@ pz = -0.1  # z component of the applied load
 # optimization
 optimizer = BFGS
 maxiter = 10000
-tol = 1e-3  # 1e-6 for best results at the cost of a considerable speed decrease
+tol = 1e-4  # 1e-6 for best results at the cost of a considerable speed decrease
 
 # parameter bounds
 qmin = None  # -200.0
 qmax = None  # -0.001
 
 # goal length
-length_target = 0.03
+length_target = 0.06
 
 # goal vector, angle
 angle_vector = [0.0, 0.0, 1.0]  # reference vector to compute angle to in constraint
@@ -281,13 +281,21 @@ viewer = Viewer(width=1600, height=900, show_grid=False)
 
 # optimized network
 c_network = networks["eq_g"]
-viewer.add(c_network, edgewidth=(0.003, 0.03), edgecolor="force", reactionscale=0.1)
+viewer.add(c_network, edgewidth=(0.003, 0.03), edgecolor="fd", reactionscale=0.1, show_loads=False)
+
+from compas.datastructures import Mesh
+
+lines = c_network.to_lines()
+mesh = Mesh.from_lines(lines, delete_boundary_face=True)
+faces = sorted(list(mesh.faces()), key=lambda x: mesh.face_area(x))
+mesh.delete_face(faces[-1])
+viewer.add(mesh, show_points=False, show_lines=False, opacity=0.75)
 
 # add target vectors
-for vector, edge in vectors_goal:
-    u, v = edge
-    xyz = c_network.node_coordinates(u)
-    viewer.add(Line(xyz, add_vectors(xyz, scale_vector(vector, 0.1))))
+# for vector, edge in vectors_goal:
+#     u, v = edge
+#     xyz = c_network.node_coordinates(u)
+#     viewer.add(Line(xyz, add_vectors(xyz, scale_vector(vector, 0.1))))
 
 # show le crème
 viewer.show()

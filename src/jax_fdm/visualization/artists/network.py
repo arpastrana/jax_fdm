@@ -126,6 +126,8 @@ class FDNetworkArtist(NetworkArtist):
         """
         nodes = []
         for node in self.nodes:
+            if not self.network.node_attribute(node, "is_support"):
+                continue
             size = self.node_size[node]
             color = self.node_color[node]
             node = self.draw_node(node, size, color)

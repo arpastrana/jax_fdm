@@ -6,6 +6,7 @@ import os
 # compas
 from compas.colors import Color
 from compas.geometry import Line
+from compas.geometry import Plane
 from compas.geometry import add_vectors
 from compas.geometry import Translation
 from compas.datastructures import network_transform
@@ -36,7 +37,7 @@ from jax_fdm.visualization import Viewer
 name = "pringle"
 
 length_vault = 6.0
-width_vault = 3.0
+width_vault = 2.0
 
 num_u = 10
 num_v = 9  # only odd numbers
@@ -89,6 +90,7 @@ for i in range(num_v):
 
 cross_edges = []
 for i in range(1, num_u - 1):
+# for i in range(num_u):
     seq = []
     for arch in arches:
         seq.append(arch[i])
@@ -122,7 +124,7 @@ network_transform(network, T)
 # ==========================================================================
 
 if export:
-    FILE_OUT = os.path.join(HERE, f"../data/json/{name}_base.json")
+    FILE_OUT = os.path.join(HERE, f"../../data/json/{name}_base.json")
     network.to_json(FILE_OUT)
     print("Problem definition exported to", FILE_OUT)
 
@@ -155,7 +157,8 @@ goals_b = []
 for node in network.nodes_free():
     origin = network.node_coordinates(node)
     normal = [1.0, 0.0, 0.0]
-    goal = NodePlaneGoal(node, target=(origin, normal), weight=10.0)
+    plane = Plane(origin, normal)
+    goal = NodePlaneGoal(node, target=plane, weight=10.0)
     goals_b.append(goal)
 
 # transversal edge lengths
@@ -186,8 +189,8 @@ c_network = constrained_fdm(network,
                             optimizer=SLSQP(),
                             loss=loss,
                             bounds=(-5.0, -0.1),
-                            maxiter=200,
-                            tol=1e-9,
+                            maxiter=500,
+                            tol=1e-6,
                             callback=recorder)
 
 # ==========================================================================
@@ -195,7 +198,7 @@ c_network = constrained_fdm(network,
 # ==========================================================================
 
 if export:
-    FILE_OUT = os.path.join(HERE, f"../data/json/{name}_optimized.json")
+    FILE_OUT = os.path.join(HERE, f"../../data/json/{name}_optimized.json")
     c_network.to_json(FILE_OUT)
     print("Form found design exported to", FILE_OUT)
 
@@ -204,7 +207,7 @@ if export:
 # ==========================================================================
 
 if record and export:
-    FILE_OUT = os.path.join(HERE, f"../data/json/{name}_history.json")
+    FILE_OUT = os.path.join(HERE, f"../../data/json/{name}_history.json")
     recorder.to_json(FILE_OUT)
     print("Optimization history exported to", FILE_OUT)
 
@@ -227,26 +230,54 @@ c_network.print_stats()
 # Visualization
 # ==========================================================================
 
+planes = []
+
+start = [-length_vault / 2.0, 0.0, 0.5]
+
+for i in range(num_u-2):
+    start = add_vectors(start, [length_u, 0.0, 0.0])
+    plane = Plane(start, [1.0, 0.0, 0.0])
+    planes.append(plane)
+
 viewer = Viewer(width=1600, height=900, show_grid=False)
+
+# for plane in planes:
+#     viewer.add(plane, opacity=0.25, size=0.75)
 
 # optimized network
 viewer.add(c_network,
-           edgewidth=(0.02, 0.1),
+           edgewidth=(0.01, 0.075),
            loadscale=2.0,
+           reactionscale=0.5,
            edgecolor="fd")
 
 # reference network
-viewer.add(network,
-           as_wireframe=True,
-           show_points=False,
-           linewidth=2.0,
-           color=Color.grey().darkened())
+# viewer.add(network,
+#            as_wireframe=True,
+#            show_points=False,
+#            linewidth=2.0,
+#            color=Color.grey().darkened())
+
+from compas.datastructures import Mesh
+
+m_network = c_network.copy()
+for i in (0, num_u-1):
+    seq = []
+    for arch in arches:
+        seq.append(arch[i])
+    for u, v in zip(seq[:-1], seq[1:]):
+        m_network.add_edge(u, v)
+
+lines = m_network.to_lines()
+mesh = Mesh.from_lines(lines, delete_boundary_face=True)
+viewer.add(mesh, show_points=False, show_lines=False, opacity=0.25)
 
 # draw lines betwen subject and target nodes
-for node in c_network.nodes():
-    pt = c_network.node_coordinates(node)
-    target_pt = network.node_coordinates(node)
-    viewer.add(Line(target_pt, pt), linewidth=1.0, color=Color.grey().lightened())
+# for node in c_network.nodes():
+#     pt = c_network.node_coordinates(node)
+#     target_pt = network.node_coordinates(node)
+#     viewer.add(Line(target_pt, pt), linewidth=1.0, color=Color.grey().lightened())
+
 
 # show le crème
 viewer.show()

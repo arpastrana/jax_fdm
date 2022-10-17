@@ -32,7 +32,8 @@ from jax_fdm.visualization import Viewer
 name = "butt"
 name_target = "butt_target"
 
-q0 = -2.0
+q0 = -0.2
+dq = 1.2
 px, py, pz = 0.0, 0.0, -0.2  # loads at each node
 qmin, qmax = -20.0, -0.0  # min and max force densities
 optimizer = SLSQP  # the optimization algorithm
@@ -41,7 +42,7 @@ maxiter = 1000  # optimizer maximum iterations
 tol = 1e-6  # optimizer tolerance
 
 record = True  # True to record optimization history of force densities
-export = False  # export result to JSON
+export = True  # export result to JSON
 
 # ==========================================================================
 # Import network
@@ -50,6 +51,13 @@ export = False  # export result to JSON
 HERE = os.path.dirname(__file__)
 FILE_IN = os.path.abspath(os.path.join(HERE, f"../../data/json/{name}.json"))
 network = FDNetwork.from_json(FILE_IN)
+
+
+from compas.datastructures import Mesh
+name = "butt_mesh_target"
+FILE_IN = os.path.abspath(os.path.join(HERE, f"../../data/json/{name}.obj"))
+mesh = Mesh.from_obj(FILE_IN)
+assert mesh.number_of_edges() > 0.0
 
 # ==========================================================================
 # Import target network
@@ -66,14 +74,33 @@ network_target = FDNetwork.from_json(FILE_IN)
 supports = [node for node in network.nodes() if network.is_leaf(node)]
 network.nodes_supports(supports)
 network.nodes_loads([px, py, pz], keys=network.nodes_free())
+
 network.edges_forcedensities(q=q0)
+
+# from compas.geometry import dot_vectors
+# from math import fabs
+
+
+# for edge in network.edges():
+#     if fabs(dot_vectors(network.edge_direction(*edge), [1.0, 0.0, 0.0])) > 0.75:
+#         network.edge_forcedensity(edge, q0 / 7)
+#     else:
+#         network.edge_forcedensity(edge,q0)
+
+
+# from random import random
+
+# # set initial q to all edges
+# for edge in network.edges():
+#     q = q0 - dq * (random())
+#     network.edge_forcedensity(edge, q)
 
 # ==========================================================================
 # Export FD network with problem definition
 # ==========================================================================
 
 if export:
-    FILE_OUT = os.path.join(HERE, f"../data/../json/{name}_base.json")
+    FILE_OUT = os.path.join(HERE, f"../../data/json/{name}_base.json")
     network.to_json(FILE_OUT)
     print("Problem definition exported to", FILE_OUT)
 
@@ -138,8 +165,10 @@ if record and export:
 
 if record:
     plotter = LossPlotter(loss, network, dpi=150, figsize=(8, 4))
-    plotter.plot(recorder.history)
-    plotter.show()
+    # plotter.plot(recorder.history)
+    FILE_OUT = "temp/loss_func"
+    plotter.save(recorder.history, FILE_OUT)
+    # plotter.show()
 
 # ==========================================================================
 # Export JSON
@@ -179,23 +208,46 @@ viewer.view.camera.zoom(-35)  # number of steps, negative to zoom out
 viewer.view.camera.rotation[2] = 0.0  # set rotation around z axis to zero
 
 # optimized network
+# viewer.add(network,
+#            edgewidth=(0.1, 0.3),
+#            edgecolor="force",
+#            loadscale=2.0)
+# viewer.add(mesh, show_points=False, show_lines=False, opacity=0.15)
+
 viewer.add(network,
-           edgewidth=(0.1, 0.3),
+           edgewidth=(0.1, 0.15),
            edgecolor="fd",
-           loadscale=2.0)
+           loadscale=4.0,
+           reactionscale=0.5)
+           # show_reactions=False,
+           # show_loads=False,
+
+# viewer.add(network0,
+#            show_nodes=True,
+#            show_edges=False,
+#            show_reactions=False,
+#            nodesize=0.3,
+#            loadscale=4.0)
+
+# viewer.add(network0,
+#            as_wireframe=True,
+#            show_points=False,
+#            linewidth=6.0,
+#            color=Color.grey().darkened())
+
 
 # reference network
-viewer.add(network_target,
-           as_wireframe=True,
-           show_points=False,
-           linewidth=1.0,
-           color=Color.grey().darkened())
+# viewer.add(network_target,
+#            as_wireframe=True,
+#            show_points=False,
+#            linewidth=1.0,
+#            color=Color.grey().darkened())
 
-# draw lines to target
-for node in network.nodes():
-    pt = network.node_coordinates(node)
-    line = Line(pt, network_target.node_coordinates(node))
-    viewer.add(line, color=Color.grey())
+# # draw lines to target
+# for node in network.nodes():
+#     pt = network.node_coordinates(node)
+#     line = Line(pt, network_target.node_coordinates(node))
+#     viewer.add(line, color=Color.grey())
 
 # show le crème
 viewer.show()

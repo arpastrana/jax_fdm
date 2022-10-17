@@ -248,16 +248,30 @@ viewer.view.camera.rotation[2] = 0.0  # set rotation around z axis to zero
 
 # optimized network
 viewer.add(network,
-           edgewidth=(0.05, 0.25),
-           reactionscale=0.75,
+           edgewidth=(0.03, 0.3),
+           reactionscale=0.65,
            edgecolor="fd")
 
+m_network = network.copy()
+n = sum(polyedge2length.values()) / len(polyedge2length)
+for polyedge, length in polyedge2length.items():
+    if length < n:
+        for u, v in pairwise(polyedge):
+            m_network.add_edge(u, v)
+
+from compas.datastructures import Mesh
+
+lines = network.to_lines()
+mesh = Mesh.from_lines(lines, delete_boundary_face=True)
+viewer.add(mesh, show_points=False, show_lines=False, opacity=0.25)
+
+
 # reference network
-viewer.add(network0,
-           as_wireframe=True,
-           show_points=False,
-           linewidth=1.0,
-           color=Color.grey().darkened())
+# viewer.add(network0,
+#            as_wireframe=True,
+#            show_points=False,
+#            linewidth=1.0,
+#            color=Color.grey().darkened())
 
 # show le crème
 viewer.show()
