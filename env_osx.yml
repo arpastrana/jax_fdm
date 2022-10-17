@@ -4,7 +4,7 @@ channels:
 dependencies:
   - python
   - compas
-  - compas_view2
+  - compas_view2==0.7.0
   - pip:
     - -r requirements.txt
     - -r requirements-dev.txt
