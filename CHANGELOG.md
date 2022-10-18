@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Added `datastructures.FDNetwork.transformed()` 
+- Created `visualization.plotters.FDNetworkPlotterArtist`
+- Implemented `visualization.plotters.Plotter`
+
 ### Changed
 
 ### Removed
