@@ -4,6 +4,7 @@ A catalogue of force density networks.
 from math import fabs
 
 from compas.datastructures import Network
+from compas.geometry import transform_points
 
 
 class FDNetwork(Network):
@@ -171,3 +172,21 @@ class FDNetwork(Network):
             meanv = round(sum(vals) / len(vals), 3)
 
             print(f"{name}\t\tMin: {minv}\tMax: {maxv}\tMean: {meanv}")
+
+    def transformed(self, transformation):
+        """
+        Return a transformed copy of the network.
+        """
+        network = self.copy()
+
+        attr_groups = [("x", "y", "z"),
+                       ("px", "py", "pz"),
+                       ("rx", "ry", "rz")]
+
+        nodes = list(self.nodes())
+        for attr_names in attr_groups:
+            xyz_t = transform_points(self.nodes_attributes(names=attr_names, keys=nodes), transformation)
+            for node, xyz in zip(nodes, xyz_t):
+                network.node_attributes(node, names=attr_names, values=xyz)
+
+        return network

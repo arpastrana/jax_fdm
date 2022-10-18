@@ -18,7 +18,7 @@ class FDNetworkArtist(NetworkArtist):
     The base artist to display a force density network across different contexts.
     """
     default_edgecolor = Color.teal()
-    default_nodecolor = Color.grey().darkened(factor=50)
+    default_nodecolor = Color.grey().lightened(factor=100)
     default_nodesupportcolor = Color.from_rgb255(0, 150, 10)
 
     default_loadcolor = Color.from_rgb255(0, 150, 10)
