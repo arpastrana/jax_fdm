@@ -48,8 +48,8 @@ pz = -0.1
 rz_min = 0.45
 rz_max = 2.0
 
-record = True
-export = True
+record = False
+export = False
 
 HERE = os.path.dirname(__file__)
 
@@ -149,6 +149,7 @@ rzs = rzs + rzs[0:-1][::-1]
 # residual forces
 goals_a = []
 for rz, arch in zip(rzs, arches):
+    print(rz)
     goals_a.append(NodeResidualForceGoal(arch[0], target=rz, weight=100.0))
     goals_a.append(NodeResidualForceGoal(arch[-1], target=rz, weight=100.0))
 
@@ -165,6 +166,7 @@ for node in network.nodes_free():
 goals_c = []
 for edge in cross_edges:
     target_length = network.edge_length(*edge)
+    print(target_length)
     goals_c.append(EdgeLengthGoal(edge, target=target_length, weight=1.0))
 
 # ==========================================================================
@@ -241,22 +243,32 @@ for i in range(num_u-2):
 
 viewer = Viewer(width=1600, height=900, show_grid=False)
 
-# for plane in planes:
-#     viewer.add(plane, opacity=0.25, size=0.75)
+for plane in planes[0:int(len(planes)/2)]:
+    # viewer.add(plane, opacity=0.25, size=0.75)
+    viewer.add(plane, opacity=0.4, size=1.1)
+
 
 # optimized network
-viewer.add(c_network,
-           edgewidth=(0.01, 0.075),
-           loadscale=2.0,
-           reactionscale=0.5,
-           edgecolor="fd")
+# viewer.add(c_network,
+#            edgewidth=(0.01, 0.075),
+#            loadscale=2.0,
+#            reactionscale=0.5,
+#            edgecolor="fd")
 
 # reference network
-# viewer.add(network,
-#            as_wireframe=True,
-#            show_points=False,
-#            linewidth=2.0,
-#            color=Color.grey().darkened())
+viewer.add(network,
+           as_wireframe=True,
+           show_points=False,
+           linewidth=4.0,
+           color=Color.grey().darkened())
+
+viewer.add(network,
+           show_nodes=True,
+           show_edges=False,
+           show_reactions=False,
+           # nodesize=0.3,
+           loadscale=2.0)
+
 
 from compas.datastructures import Mesh
 
@@ -268,9 +280,9 @@ for i in (0, num_u-1):
     for u, v in zip(seq[:-1], seq[1:]):
         m_network.add_edge(u, v)
 
-lines = m_network.to_lines()
-mesh = Mesh.from_lines(lines, delete_boundary_face=True)
-viewer.add(mesh, show_points=False, show_lines=False, opacity=0.25)
+# lines = m_network.to_lines()
+# mesh = Mesh.from_lines(lines, delete_boundary_face=True)
+# viewer.add(mesh, show_points=False, show_lines=False, opacity=0.25)
 
 # draw lines betwen subject and target nodes
 # for node in c_network.nodes():

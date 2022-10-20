@@ -45,11 +45,11 @@ model_name = "pillow"
 
 # geometric parameters
 l1 = 10.0
-l2 = 10.0
-divisions = 8
+l2 = 5.0
+divisions = 10
 
 # initial form-finding parameters
-q0, dq = -2.0, 0.1  # starting average force density and random deviation
+q0, dq = -3.0, 0.0  # starting average force density and random deviation
 pz = -100.0  # z component of the total applied load
 
 # optimization
@@ -105,7 +105,14 @@ coarse.densification()
 mesh = coarse.get_quad_mesh()
 
 vertices, _ = mesh.to_vertices_and_faces()
-network = FDNetwork.from_nodes_and_edges(vertices, mesh.edges())
+# vertices = {vkey: xyz for vkey, xyz in vertices.items() if not mesh.is_vertex_on_boundary(vkey)}
+edges = [edge for edge in mesh.edges() if not mesh.is_edge_on_boundary(*edge)]
+network = FDNetwork.from_nodes_and_edges(vertices, edges)
+
+nodes = list(network.nodes())
+for node in nodes:
+    if len(network.neighbors(node)) < 1:
+        network.delete_node(node)
 
 # ==========================================================================
 # Define structural system
@@ -225,18 +232,18 @@ if add_curvature_constraint:
 
 networks["free"] = fdm(network)
 
-networks["uncstr_opt"] = constrained_fdm(network,
-                                         optimizer=optimizer(),
-                                         bounds=(qmin, qmax),
-                                         loss=loss,
-                                         maxiter=maxiter)
+# networks["uncstr_opt"] = constrained_fdm(network,
+#                                          optimizer=optimizer(),
+#                                          bounds=(qmin, qmax),
+#                                          loss=loss,
+#                                          maxiter=maxiter)
 
-networks["cstr_opt"] = constrained_fdm(network,
-                                       optimizer=optimizer(),
-                                       bounds=(qmin, qmax),
-                                       loss=loss,
-                                       constraints=constraints,
-                                       maxiter=maxiter)
+# networks["cstr_opt"] = constrained_fdm(network,
+#                                        optimizer=optimizer(),
+#                                        bounds=(qmin, qmax),
+#                                        loss=loss,
+#                                        constraints=constraints,
+#                                        maxiter=maxiter)
 
 # ==========================================================================
 # Print and export results
@@ -269,19 +276,19 @@ if len(networks) > 1:
 else:
     c_network = networks[0]
 
-viewer.add(network0,
-           as_wireframe=True,
-           show_points=False,
-           linewidth=1.0,
-           color=Color.grey().darkened(i * 10))
+# viewer.add(network0,
+#            as_wireframe=True,
+#            show_points=False,
+#            linewidth=1.0,
+#            color=Color.grey().darkened(i * 10))
 
 # optimized network
 viewer.add(c_network,
-           edgewidth=(0.05, 0.2),
+           edgewidth=(0.01, 0.1),
            show_nodes=False,
            edgecolor="force",
-           loadscale=0.5,
-           reactionscale=0.5)
+           loadscale=0.4,
+           reactionscale=0.25)
 
 # show le crème
 viewer.show()

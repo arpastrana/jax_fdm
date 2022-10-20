@@ -8,6 +8,7 @@ import numpy as np
 from compas.colors import Color
 from compas.colors import ColorMap
 from compas.geometry import Line
+from compas.geometry import Plane
 from compas.geometry import Point
 from compas.geometry import add_vectors
 from compas.geometry import scale_vector
@@ -39,11 +40,11 @@ decimate_step = 0
 
 interval = 50  # 50
 timeout = None
-fps = 8
+fps = 12
 
 animate = True
 rotate_while_animate = False
-save = False
+save = True
 
 
 # ==========================================================================
@@ -129,28 +130,45 @@ if modify_view:
     viewer.view.camera.rotation[2] = 0.8 * pi / 3  # set rotation around z axis to zero
     # viewer.view.camera.rotation_delta = (2 / 3) * pi / len(recorder.history)  # set rotation around z axis to zero
 
+length_vault = 6.0
+num_u = 10
+length_u = length_vault / (num_u - 1)
+start = [-length_vault / 2.0, 0.0, 0.5]
+
+planes = []
+for i in range(num_u-2):
+    start = add_vectors(start, [length_u, 0.0, 0.0])
+    plane = Plane(start, [1.0, 0.0, 0.0])
+    planes.append(plane)
+
+for plane in planes[0:int(len(planes)/2)]:
+    # viewer.add(plane, opacity=0.25, size=0.75)
+    viewer.add(plane, opacity=0.4, size=1.1)
+
+
 # draw network
 network_obj = viewer.add(network,
                          as_wireframe=True,
                          show_points=False,
-                         linewidth=10.0,
+                         linewidth=5.0,
                          color=Color.grey().darkened())
 
 # draw supports
 # for node in network.nodes_supports():
 #     x, y, z = network.node_coordinates(node)
-#     viewer.add(Point(x, y, z), color=Color.green(), size=20)
+#     viewer.add(Point(x, y, z), color=Color.from_rgb255(0, 150, 10), size=18)
 
 # draw loads
-load_scale = 4
+load_scale = 2
 loads = loads_draw(network, load_scale)
 for load in loads.values():
     viewer.add(load, linewidth=2.0, color=Color.green().darkened())
 
 # draw residual forces
-residuals = residuals_draw(network)
+reaction_scale = 0.5
+residuals = residuals_draw(network, reaction_scale)
 for residual in residuals.values():
-    viewer.add(residual, linewidth=8.0, color=Color.pink())
+    viewer.add(residual, linewidth=5.0, color=Color.pink())
 
 # warm start model
 _ = model(np.array(recorder.history[0]))
@@ -167,7 +185,7 @@ if animate:
                       "frames": len(recorder.history),
                       "record": save,
                       "record_fps": fps,
-                      "record_path": f"temp/{name}.gif"}
+                      "record_path": f"temp/{name}_{fps}fps.gif"}
 
     @viewer.on(**config_animate)
     def wiggle(f):
@@ -184,7 +202,7 @@ if animate:
         loads_update(loads, network, load_scale)
 
         # update residual forces
-        residuals_update(residuals, network)
+        residuals_update(residuals, network, reaction_scale)
 
         for _, obj in viewer.view.objects.items():
             obj.update()

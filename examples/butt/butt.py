@@ -235,7 +235,6 @@ viewer.add(network,
 #            linewidth=6.0,
 #            color=Color.grey().darkened())
 
-
 # reference network
 # viewer.add(network_target,
 #            as_wireframe=True,
