@@ -26,6 +26,13 @@ def normalize_vector(u):
     return u / length_vector(u)
 
 
+def subtract_vectors(u, v):
+    """
+    Subtract two vectors.
+    """
+    return u - v
+
+
 def vector_projection(u, v):
     """
     Calculates the orthogonal projection of u onto v.
@@ -59,6 +66,36 @@ def closest_point_on_line(point, line):
     c = vector_projection(ap, ab)
 
     return a + c
+
+
+def closest_point_on_segment(point, segment):
+    """
+    Calculate the closest location on a segment to an input point.
+    """
+    a, b = segment
+    p = closest_point_on_line(point, segment)
+
+    # calculate distances to the three possible points
+    d = distance_point_point_sqrd(a, b)
+    d1 = distance_point_point_sqrd(a, p)
+    d2 = distance_point_point_sqrd(b, p)
+
+    # return closest amont the three points
+    if d1 > d or d2 > d:
+        if d1 < d2:
+            return a
+        return b
+
+    return p
+
+
+def distance_point_point_sqrd(u, v):
+    """
+    Calculate the square of the distance between two points.
+    """
+    vector = subtract_vectors(u, v)
+
+    return jnp.sum(jnp.square(vector))
 
 
 def normal_polygon(polygon):
