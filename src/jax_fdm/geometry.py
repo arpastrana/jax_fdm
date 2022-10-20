@@ -1,5 +1,7 @@
 import jax.numpy as jnp
 
+from jax.lax import cond
+
 
 def angle_vectors(u, v):
     """
@@ -80,13 +82,21 @@ def closest_point_on_segment(point, segment):
     d1 = distance_point_point_sqrd(a, p)
     d2 = distance_point_point_sqrd(b, p)
 
-    # return closest amont the three points
-    if d1 > d or d2 > d:
-        if d1 < d2:
-            return a
+    # define callables to be compatible with the signature of lax.cond
+    def start_point():
+        return a
+
+    def end_point():
         return b
 
-    return p
+    def middle_point():
+        return p
+
+    def point_is_outside():
+        return cond(d1 < d2, start_point, end_point)
+
+    # return closest amont the three points
+    return cond(jnp.logical_or(d1 > d, d2 > d), point_is_outside, middle_point)
 
 
 def distance_point_point_sqrd(u, v):
@@ -132,3 +142,27 @@ def curvature_point_polygon(point, polygon):
     angles = jnp.arccos(dot)
 
     return 2 * jnp.pi - jnp.sum(angles)
+
+
+if __name__ == "__main__":
+    from jax import jit
+
+    point_a = [1.0, 0.0, 0.0]
+    point_b = [2.5, 0.0, 0.0]
+
+    segment = tuple([jnp.array(point) for point in (point_a, point_b)])
+
+    test_points = [[2.0, 1.0, 0.0],
+                   [-1.0, 0.0, 0.0],
+                   [5.0, -1.0, 0.0]]
+
+    result_points = [[2.0, 0.0, 0.0],
+                     [1.0, 0.0, 0.0],
+                     [2.5, 0.0, 0.0]
+                     ]
+
+    for tpoint, rpoint in zip(test_points, result_points):
+        cpoint = jit(closest_point_on_segment)(jnp.array(tpoint), segment)
+        assert jnp.allclose(cpoint, jnp.array(rpoint)), f"got {cpoint} wanted {rpoint}"
+
+    print("okay!")
