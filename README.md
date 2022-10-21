@@ -58,7 +58,7 @@ pip install jax-fdm
 ```
 
 JAX FDM requires Python 3.7+, JAX 0.3.17+, Numpy 1.23.3+, Scipy 1.9.1+, and COMPAS 1.16.0+.
-For visualization, use COMPAS_VIEW2 +0.7.0.
+For visualization, use COMPAS_VIEW2 0.7.0.
 
 **Disclaimer** 
 
@@ -140,7 +140,7 @@ If you found this library to be useful in academic or industry work, please cons
 
 ```bibtex
 @software{pastrana_jaxfdm,
-          title={{JAX~FDM}: A differentiable, hardware-accelerated framework for inverse form-finding in structural design},
+          title={{JAX~FDM}: A differentiable, hardware-accelerated framework for constrained form-finding in structural design},
           author={Rafael Pastrana and Sigrid Adriaenssens},
           year={2022},
           url={https://github.com/arpastrana/jax_fdm}

@@ -16,9 +16,6 @@ class Viewer(App):
     """
     A thin wrapper on :class:`compas_view2.app.App`.
     """
-    def __init__(self, *args, **kwargs):
-        super(Viewer, self).__init__(*args, **kwargs)
-
     def add(self, data, **kwargs):
         """
         Add a COMPAS data object to the viewer.
