@@ -9,10 +9,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Implemented `SecondOrderOptimizer`, which computes the hessian of a loss function.
+- Added support for the `NetwtonCG` and `LBFGSB` scipy optimizers.
+- Created `NodeSegmentGoal`
+- Implemented `closest_point_on_segment` using `lax.cond`
+
 ### Changed
+
+- Pinned viewer dependency to `compas_view2==0.7.0`
 
 ### Removed
 
+- Removed `Viewer.__init__()`
 
 ## [0.2.2] 2022-10-17
 
