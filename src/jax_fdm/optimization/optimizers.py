@@ -10,6 +10,7 @@ import jax.numpy as jnp
 from jax import jit
 from jax import grad
 from jax import jacobian
+from jax import hessian
 
 from scipy.optimize import minimize
 from scipy.optimize import Bounds
@@ -40,6 +41,18 @@ class Optimizer:
         if constraints:
             print(f"Warning! {self.name} does not support constraints. I am ignoring them.")
         return ()
+
+    def gradient(self, loss):
+        """
+        Compute the gradient function of a loss function.
+        """
+        return jit(grad(loss))
+
+    def hessian(self, loss):
+        """
+        Compute the hessian function of a loss function.
+        """
+        return
 
     def minimize(self, network, loss, bounds=(None, None), constraints=[], maxiter=100, tol=1e-6, verbose=True, callback=None):
         """
@@ -78,12 +91,22 @@ class Optimizer:
         print(f"Loss warmup time: {round(time() - start_time, 4)} seconds")
 
         # gradient of the loss function
-        grad_loss = jit(grad(loss))  # grad w.r.t. first function argument
+        grad_loss = self.gradient(loss)  # w.r.t. first function argument
 
         # warm up grad loss
-        start_time = time()
-        grad_loss(q)
-        print(f"Gradient warmup time: {round(time() - start_time, 4)} seconds")
+        if grad_loss:
+            start_time = time()
+            grad_loss(q)
+            print(f"Gradient warmup time: {round(time() - start_time, 4)} seconds")
+
+        # gradient of the loss function
+        hessian_loss = self.hessian(loss)  # w.r.t. first function argument
+
+        # warm up hessianloss
+        if hessian_loss:
+            start_time = time()
+            hessian_loss(q)
+            print(f"Hessian warmup time: {round(time() - start_time, 4)} seconds")
 
         # TODO: parameter bounds
         # bounds makes a re-index from one count system to the other
@@ -105,6 +128,7 @@ class Optimizer:
         # minimize
         res_q = minimize(fun=loss,
                          jac=grad_loss,
+                         hess=hessian_loss,
                          method=self.name,
                          x0=q,
                          tol=tol,
@@ -136,7 +160,7 @@ class Optimizer:
 
 
 # ==========================================================================
-# Optimizers
+# Constrained optimizer
 # ==========================================================================
 
 
@@ -189,6 +213,21 @@ class ConstrainedOptimizer(Optimizer):
 
         return clist
 
+
+# ==========================================================================
+# Second-order optimizer
+# ==========================================================================
+
+class SecondOrderOptimizer(Optimizer):
+    """
+    A gradient-based optimizer that uses the hessian to accelerate convergence.
+    """
+    def hessian(self, loss):
+        """
+        Compute the hessian function of a loss function.
+        """
+        return jit(hessian(loss))
+
 # ==========================================================================
 # Optimizers
 # ==========================================================================
@@ -202,12 +241,28 @@ class BFGS(Optimizer):
         super().__init__(name="BFGS", **kwargs)
 
 
+class LBFGSB(Optimizer):
+    """
+    The limited-memory Boyd-Fletcher-Floyd-Shannon-Byrd optimizer.
+    """
+    def __init__(self, **kwargs):
+        super().__init__(name="L-BFGS-B", disp=0, **kwargs)
+
+
 class TrustRegionConstrained(ConstrainedOptimizer):
     """
     A trust-region algorithm for constrained optimization.
     """
     def __init__(self, **kwargs):
         super().__init__(name="trust-constr", **kwargs)
+
+
+class NewtonCG(SecondOrderOptimizer):
+    """
+    A trust-region algorithm for constrained optimization.
+    """
+    def __init__(self, **kwargs):
+        super().__init__(name="Newton-CG", **kwargs)
 
 
 class SLSQP(ConstrainedOptimizer):
