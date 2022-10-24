@@ -35,23 +35,23 @@ from jax_fdm.visualization import Viewer
 
 name = "monkey_saddle"
 
-n = 3  # densification of coarse mesh
+n = 4  # 3 densification of coarse mesh
 
-q0 = -1.0  # initial force density
+q0 = -2.0  # initial force density
 px, py, pz = 0.0, 0.0, -1.0  # loads at each node
 qmin, qmax = -20.0, -0.01  # min and max force densities
 rmin, rmax = 2.0, 10.0  # min and max reaction forces
-r_exp = 1.0  # reaction force variation exponent
+r_exp = 0.5  # 1.0  reaction force variation exponent
 
 add_constraints = True  # input constraints to the optimization problem
 length_min = 0.5  # minimum allowed edge length for length constraint
-length_max = 4.5  # maximum allowed edge length for length constraint
+length_max = 4.0  # maximum allowed edge length for length constraint
 
 optimizer = TrustRegionConstrained  # optimization algorithm
-maxiter = 200  # optimizer maximum iterations
-tol = 1e-2  # optimizer tolerance
+maxiter = 500  # optimizer maximum iterations
+tol = 1e-3  # optimizer tolerance
 
-record = False  # True to record optimization history of force densities
+record = True  # True to record optimization history of force densities
 export = False  # export result to JSON
 
 # ==========================================================================

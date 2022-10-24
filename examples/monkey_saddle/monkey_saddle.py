@@ -15,7 +15,7 @@ from jax_fdm.datastructures import FDNetwork
 from jax_fdm.equilibrium import fdm
 from jax_fdm.equilibrium import constrained_fdm
 
-from jax_fdm.optimization import SLSQP
+from jax_fdm.optimization import LBFGSB
 from jax_fdm.optimization import OptimizationRecorder
 
 from jax_fdm.goals import EdgeLengthGoal
@@ -51,6 +51,7 @@ weight_residual = 10.0  # weight for residual force goal in optimisation
 alpha = 0.1  # weight of the L2 regularization term in the loss function
 alpha_lp = 0.01   # weight of the total load path minimization goal
 
+optimizer = LBFGSB  # optimization algorithm
 maxiter = 500  # optimizer maximum iterations
 tol = 1e-3  # optimizer tolerance
 
@@ -196,7 +197,7 @@ if record:
     recorder = OptimizationRecorder()
 
 network = constrained_fdm(network0,
-                          optimizer=SLSQP(),
+                          optimizer=optimizer(),
                           loss=loss,
                           bounds=(qmin, qmax),
                           maxiter=maxiter,

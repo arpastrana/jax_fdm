@@ -30,7 +30,7 @@ from jax_fdm.goals import EdgeDirectionGoal
 from jax_fdm.losses import SquaredError
 from jax_fdm.losses import Loss
 
-from jax_fdm.optimization import BFGS
+from jax_fdm.optimization import LBFGSB
 
 from jax_fdm.optimization import OptimizationRecorder
 
@@ -56,9 +56,9 @@ q0_cross = -0.5  # starting force density for the edges transversal to the rings
 pz = -0.1  # z component of the applied load
 
 # optimization
-optimizer = BFGS
+optimizer = LBFGSB
 maxiter = 10000
-tol = 1e-3  # 1e-6 for best results at the cost of a considerable speed decrease
+tol = 1e-6  # 1e-6 for best results at the cost of a considerable speed decrease
 
 # parameter bounds
 qmin = None  # -200.0

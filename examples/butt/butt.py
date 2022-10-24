@@ -13,7 +13,7 @@ from jax_fdm.datastructures import FDNetwork
 from jax_fdm.equilibrium import fdm
 from jax_fdm.equilibrium import constrained_fdm
 
-from jax_fdm.optimization import SLSQP
+from jax_fdm.optimization import LBFGSB
 from jax_fdm.optimization import OptimizationRecorder
 
 from jax_fdm.goals import NodePointGoal
@@ -35,12 +35,12 @@ name_target = "butt_target"
 q0 = -2.0
 px, py, pz = 0.0, 0.0, -0.2  # loads at each node
 qmin, qmax = -20.0, -0.0  # min and max force densities
-optimizer = SLSQP  # the optimization algorithm
 
+optimizer = LBFGSB  # the optimization algorithm
 maxiter = 1000  # optimizer maximum iterations
 tol = 1e-6  # optimizer tolerance
 
-record = True  # True to record optimization history of force densities
+record = False  # True to record optimization history of force densities
 export = False  # export result to JSON
 
 # ==========================================================================
