@@ -129,10 +129,10 @@ The length of the arch segments also varies within the prescribe bounds to minim
 
 ## More examples
 
-- [Creased masonry vault](https://github.com/arpastrana/jax_fdm/blob/main/examples/butt.py): Best-fit a target surface [(Panozzo, et al. 2013)](https://cims.nyu.edu/gcl/papers/designing-unreinforced-masonry-models-siggraph-2013-panozzo-et-al.pdf).
-- [Pointy dome](https://github.com/arpastrana/jax_fdm/blob/main/examples/dome.py): Control the tilt and the coarse width of a brick dome. 
-- [Triple-branching saddle](https://github.com/arpastrana/jax_fdm/blob/main/examples/monkey_saddle.py): Design the distribution of thrusts at the supports of a monkey saddle network while constraining the edge lengths.
-- [Saddle bridge](https://github.com/arpastrana/jax_fdm/blob/main/examples/pringle.py): Create a crease in the middle of the bridge while constraining to transversal edges of the network to a target plane. 
+- [Creased masonry vault](https://github.com/arpastrana/jax_fdm/blob/main/examples/butt/butt.py): Best-fit a target surface [(Panozzo, et al. 2013)](https://cims.nyu.edu/gcl/papers/designing-unreinforced-masonry-models-siggraph-2013-panozzo-et-al.pdf).
+- [Pointy dome](https://github.com/arpastrana/jax_fdm/blob/main/examples/dome/dome.py): Control the tilt and the coarse width of a brick dome. 
+- [Triple-branching saddle](https://github.com/arpastrana/jax_fdm/blob/main/examples/monkey_saddle/monkey_saddle.py): Design the distribution of thrusts at the supports of a monkey saddle network while constraining the edge lengths.
+- [Saddle bridge](https://github.com/arpastrana/jax_fdm/blob/main/examples/pringle/pringle.py): Create a crease in the middle of the bridge while constraining to transversal edges of the network to a target plane. 
 
 ## Citation
 
