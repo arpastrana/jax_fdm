@@ -9,10 +9,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Enabled the creation of animations with mesh representations of the elements of a `FDNetwork`!
+- `FDNetworkViewerArtist` implements `update_*()` methods to update objects in the `Viewer`.
+- `FDNetworViewerArtist` implements `add_*()` methods to add drawn objects to `Viewer`.
+- `FDNetworkArtist` now stores network element collections as attributes.
+
 ### Changed
+
 
 ### Removed
 
+- Removed `FDNetworkPlotterArtist.draw_loads()` as it is handled by parent artist class.
+- Removed `FDNetworkPlotterArtist.draw_reactions()` as it is handled by parent artist class.
 
 ## [0.2.3] 2022-10-25
 
