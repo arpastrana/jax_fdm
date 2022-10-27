@@ -56,7 +56,7 @@ maxiter = 500  # optimizer maximum iterations
 tol = 1e-3  # optimizer tolerance
 
 record = True  # True to record optimization history of force densities
-export = False  # export result to JSON
+export = True  # export result to JSON
 
 # ==========================================================================
 # Import coarse mesh

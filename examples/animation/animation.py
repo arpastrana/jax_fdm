@@ -36,7 +36,7 @@ camera_zoom = -35  # -35 for monkey saddle, 0 for pringle, 14 for dome, -70 for 
 decimate = False
 decimate_step = 0
 
-interval = 50  # 50
+interval = 500  # 50
 timeout = None
 fps = 12
 
@@ -100,7 +100,7 @@ def residuals_update(residuals, network):
 # Read in force density network
 # ==========================================================================
 
-HERE = os.path.join(os.path.dirname(__file__), "../data/json/")
+HERE = os.path.join(os.path.dirname(__file__), "../../data/json/")
 FILE_IN = os.path.abspath(os.path.join(HERE, f"{name}_base.json"))
 network0 = FDNetwork.from_json(FILE_IN)
 model = EquilibriumModel(network0)
