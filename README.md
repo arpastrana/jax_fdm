@@ -151,7 +151,7 @@ If you found this library to be useful in academic or industry work, please cons
           author={Rafael Pastrana and Sigrid Adriaenssens},
           year={2022},
           doi={10.5281/zenodo.7258292},
-          url={https://github.com/arpastrana/jax\_fdm}
+          url={https://github.com/arpastrana/jax\_fdm}}
 ```
 
 ## Acknowledgements
