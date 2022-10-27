@@ -147,10 +147,11 @@ If you found this library to be useful in academic or industry work, please cons
 
 ```bibtex
 @software{pastrana_jaxfdm,
-          title={{JAX~FDM}: A differentiable, hardware-accelerated framework for constrained form-finding in structural design},
+          title={{JAX~FDM}: Auto-differentiable and hardware-accelerated force density method},
           author={Rafael Pastrana and Sigrid Adriaenssens},
           year={2022},
-          url={https://github.com/arpastrana/jax_fdm}
+          doi={10.5281/zenodo.7258292},
+          url={https://github.com/arpastrana/jax\_fdm}
 ```
 
 ## Acknowledgements
