@@ -19,41 +19,15 @@ class FDNetworkPlotterArtist(FDNetworkArtist, NetworkArtist):
         """
         Draw the nodes of the network.
         """
-        NetworkArtist.draw_nodes(self)
-        return []
+        return NetworkArtist.draw_nodes(self)
 
     def draw_edges(self):
         """
         Draw the edges of the network.
         """
-        NetworkArtist.draw_edges(self)
-        return []
+        return NetworkArtist.draw_edges(self)
 
-    def draw_loads(self):
-        """
-        Draw the loads at the nodes of the network.
-        """
-        loads = []
-        for node in self.nodes:
-            load = self.draw_load(node, self.load_scale)
-            if load:
-                loads.append(load)
-
-        return loads
-
-    def draw_reactions(self):
-        """
-        Draw the reactions at the nodes of the network.
-        """
-        reactions = []
-        for node in self.nodes:
-            reaction = self.draw_reaction(node, self.reaction_scale)
-            if reaction:
-                reactions.append(reaction)
-
-        return reactions
-
-    def draw_reaction(self, node, scale):
+    def draw_reaction(self, node, scale, color):
         """
         Draw a reaction vector at a node.
         """
@@ -74,9 +48,9 @@ class FDNetworkPlotterArtist(FDNetworkArtist, NetworkArtist):
         # reverse vector to display direction of reaction forces
         reaction = self.draw_vector(scale_vector(vector, -1.0), start, scale)
 
-        return self.plotter.add(reaction, point=Point(*start), color=self.reaction_color)
+        return self.plotter.add(reaction, point=Point(*start), color=color)
 
-    def draw_load(self, node, scale):
+    def draw_load(self, node, scale, color):
         """
         Draw a load vector at a node.
         """
@@ -88,7 +62,7 @@ class FDNetworkPlotterArtist(FDNetworkArtist, NetworkArtist):
 
         load = self.draw_vector(vector, start, scale)
 
-        return self.plotter.add(load, point=Point(*start), color=self.load_color)
+        return self.plotter.add(load, point=Point(*start), color=color)
 
     @staticmethod
     def draw_vector(vector, start, scale):
