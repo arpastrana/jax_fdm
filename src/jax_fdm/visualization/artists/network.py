@@ -91,6 +91,14 @@ class FDNetworkArtist(NetworkArtist):
         self.show_reactions = show_reactions
         self.show_supports = show_supports
 
+        self.collection_edges = None
+        self.collection_nodes = None
+        self.collection_loads = None
+        self.collection_reactions = None
+
+        self._init_edgecolor = edgecolor
+        self._init_edgewidth = edgewidth
+
     # ==========================================================================
     # Draw
     # ==========================================================================
@@ -99,22 +107,14 @@ class FDNetworkArtist(NetworkArtist):
         """
         Draw everything.
         """
-        data = []
-
         if self.show_edges:
-            edges = self.draw_edges()
-            data.extend(edges)
+            self.collection_edges = self.draw_edges()
         if self.show_nodes:
-            nodes = self.draw_nodes()
-            data.extend(nodes)
+            self.collection_nodes = self.draw_nodes()
         if self.show_loads:
-            loads = self.draw_loads()
-            data.extend(loads)
+            self.collection_loads = self.draw_loads()
         if self.show_reactions:
-            reactions = self.draw_reactions()
-            data.extend(reactions)
-
-        return data
+            self.collection_reactions = self.draw_reactions()
 
     # ==========================================================================
     # Draw collections
@@ -124,12 +124,11 @@ class FDNetworkArtist(NetworkArtist):
         """
         Draw the nodes of the network.
         """
-        nodes = []
+        nodes = {}
         for node in self.nodes:
             size = self.node_size[node]
             color = self.node_color[node]
-            node = self.draw_node(node, size, color)
-            nodes.append(node)
+            nodes[node] = self.draw_node(node, size, color)
 
         return nodes
 
@@ -137,13 +136,12 @@ class FDNetworkArtist(NetworkArtist):
         """
         Draw the edges of the network.
         """
-        edges = []
+        edges = {}
 
         for edge in self.edges:
             width = self.edge_width[edge]
             color = self.edge_color[edge]
-            edge = self.draw_edge(edge, width, color)
-            edges.append(edge)
+            edges[edge] = self.draw_edge(edge, width, color)
 
         return edges
 
@@ -151,12 +149,12 @@ class FDNetworkArtist(NetworkArtist):
         """
         Draw the loads at the nodes of the network.
         """
-        loads = []
+        loads = {}
 
         for node in self.nodes:
             load = self.draw_load(node, self.load_scale, self.load_color)
             if load:
-                loads.append(load)
+                loads[node] = load
 
         return loads
 
@@ -164,12 +162,12 @@ class FDNetworkArtist(NetworkArtist):
         """
         Draw the reactions at the nodes of the network.
         """
-        reactions = []
+        reactions = {}
 
         for node in self.nodes:
             reaction = self.draw_reaction(node, self.reaction_scale, self.reaction_color)
             if reaction:
-                reactions.append(reaction)
+                reactions[node] = reaction
 
         return reactions
 
@@ -212,6 +210,16 @@ class FDNetworkArtist(NetworkArtist):
         Clear the edges.
         """
         pass
+
+    # ==========================================================================
+    # Update elements
+    # ==========================================================================
+
+    def update(self, eqstate):
+        """
+        Update the attributes of the network based on an equilibrium state.
+        """
+        raise NotImplementedError
 
     # ==========================================================================
     # Properties
