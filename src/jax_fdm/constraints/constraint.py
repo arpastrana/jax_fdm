@@ -10,6 +10,9 @@ from jax import vmap
 
 
 class Constraint:
+    """
+    Base class for all constraints.
+    """
     def __init__(self, key, bound_low, bound_up):
         self._key = None
         self._bound_low = None
@@ -53,12 +56,11 @@ class Constraint:
 
     @bound_low.setter
     def bound_low(self, bound):
-        if isinstance(bound, (int, float)):
-            bound = bound
-        elif len(bound) == 1:
-            bound = bound[0]
-        else:
-            bound = np.ravel(bound)
+        if not isinstance(bound, (int, float)):
+            if len(bound) == 1:
+                bound = bound[0]
+            else:
+                bound = np.ravel(bound)
         self._bound_low = bound
 
     @property
@@ -70,12 +72,11 @@ class Constraint:
 
     @bound_up.setter
     def bound_up(self, bound):
-        if isinstance(bound, (int, float)):
-            bound = bound
-        elif len(bound) == 1:
-            bound = bound[0]
-        else:
-            bound = np.ravel(bound)
+        if not isinstance(bound, (int, float)):
+            if len(bound) == 1:
+                bound = bound[0]
+            else:
+                bound = np.ravel(bound)
         self._bound_up = bound
 
     # def __call__(self, q, model):
@@ -91,12 +92,12 @@ class Constraint:
         """
         self.index = self.index_from_model(model)
 
-    @partial(jit, static_argnums=(0, 2))
-    def __call__(self, q, model):
+    # @partial(jit, static_argnums=(0, 2))
+    def __call__(self, q, xyz_fixed, loads, model):
         """
         The constraint function.
         """
-        eqstate = model(q)
+        eqstate = model(q, xyz_fixed, loads)
         constraint = vmap(self.constraint, in_axes=(None, 0))(eqstate, self.index)
         return jnp.ravel(constraint)
 
