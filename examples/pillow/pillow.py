@@ -107,10 +107,10 @@ network = FDNetwork.from_nodes_and_edges(vertices, mesh.edges())
 # Define structural system
 # ==========================================================================
 
-# define supports
+# define anchors
 for key in network.nodes():
     if mesh.is_vertex_on_boundary(key):
-        network.node_support(key)
+        network.node_anchor(key)
 
 # set initial q to all edges
 for edge in network.edges():

@@ -124,11 +124,11 @@ for rings_pair in pairwise(rings):
 # Define structural system
 # ==========================================================================
 
-# define supports
+# define anchors
 for node in rings[0]:
-    network.node_support(node)
+    network.node_anchor(node)
 
-# apply loads to unsupported nodes
+# apply loads to unanchored nodes
 for node in network.nodes_free():
     network.node_load(node, load=[0.0, 0.0, pz])
 

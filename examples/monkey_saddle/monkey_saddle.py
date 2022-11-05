@@ -83,7 +83,7 @@ mesh.collect_polyedges()
 print("Densified mesh:", mesh)
 
 # ==========================================================================
-# Define support conditions
+# Define anchor conditions
 # ==========================================================================
 
 polyedge2length = {}
@@ -92,15 +92,15 @@ for pkey, polyedge in mesh.polyedges(data=True):
         length = sum([mesh.edge_length(u, v) for u, v in pairwise(polyedge)])
         polyedge2length[tuple(polyedge)] = length
 
-supports = []
+anchors = []
 n = sum(polyedge2length.values()) / len(polyedge2length)
 for polyedge, length in polyedge2length.items():
     if length < n:
-        supports += polyedge
+        anchors += polyedge
 
-supports = set(supports)
+anchors = set(anchors)
 
-print("Number of supported nodes:", len(supports))
+print("Number of anchored nodes:", len(anchors))
 
 # ==========================================================================
 # Compute assembly sequence (simplified)
@@ -111,7 +111,7 @@ corners = set([vkey for vkey in mesh.vertices() if mesh.vertex_degree(vkey) == 2
 adjacency = mesh.adjacency
 weight = {(u, v): 1.0 for u in adjacency for v in adjacency[u]}
 
-for vkey in supports:
+for vkey in anchors:
     if vkey in corners:
         steps[vkey] = 0
     else:
@@ -128,13 +128,13 @@ steps = {vkey: max_step - step for vkey, step in steps.items()}
 # ==========================================================================
 
 nodes = [mesh.vertex_coordinates(vkey) for vkey in mesh.vertices()]
-edges = [(u, v) for u, v in mesh.edges() if u not in supports or v not in supports]
+edges = [(u, v) for u, v in mesh.edges() if u not in anchors or v not in anchors]
 network0 = FDNetwork.from_nodes_and_edges(nodes, edges)
 
 print("FD network:", network0)
 
 # data
-network0.nodes_supports(supports)
+network0.nodes_anchors(anchors)
 network0.nodes_loads([px, py, pz], keys=network0.nodes_free())
 network0.edges_forcedensities(q=q0)
 
@@ -169,7 +169,7 @@ for edge in network0.edges():
 
 # reaction forces
 goals_b = []
-for key in network0.nodes_supports():
+for key in network0.nodes_anchors():
     step = steps[key]
     reaction = (1 - step / max_step) ** r_exp * (rmax - rmin) + rmin
     goal = NodeResidualForceGoal(key, reaction, weight=weight_residual)

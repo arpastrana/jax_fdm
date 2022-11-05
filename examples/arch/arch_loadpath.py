@@ -12,7 +12,7 @@ from jax_fdm.visualization import Viewer
 
 network = FDNetwork.from_json("data/json/arch.json")
 network.edges_forcedensities(q=-1.0)
-network.nodes_supports(keys=[node for node in network.nodes() if network.is_leaf(node)])
+network.nodes_anchors(keys=[node for node in network.nodes() if network.is_leaf(node)])
 network.nodes_loads([0.0, 0.0, -0.3])
 
 f_network = fdm(network)

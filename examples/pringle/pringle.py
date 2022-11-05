@@ -102,12 +102,12 @@ for i in range(1, num_u - 1):
 # Define structural system
 # ==========================================================================
 
-# define supports
+# define anchors
 for arch in arches:
-    network.node_support(arch[0])
-    network.node_support(arch[-1])
+    network.node_anchor(arch[0])
+    network.node_anchor(arch[-1])
 
-# apply loads to unsupported nodes
+# apply loads to unanchored nodes
 for node in network.nodes_free():
     network.node_load(node, load=[0.0, 0.0, pz])
 

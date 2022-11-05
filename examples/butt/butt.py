@@ -65,8 +65,8 @@ network_target = FDNetwork.from_json(FILE_IN)
 # ==========================================================================
 
 # data
-supports = [node for node in network.nodes() if network.is_leaf(node)]
-network.nodes_supports(supports)
+anchors = [node for node in network.nodes() if network.is_leaf(node)]
+network.nodes_anchors(anchors)
 network.nodes_loads([px, py, pz], keys=network.nodes_free())
 network.edges_forcedensities(q=q0)
 
@@ -95,7 +95,7 @@ for edge in network.edges():
 # edge lengths
 goals = []
 for node in network.nodes():
-    if node in supports:
+    if node in anchors:
         continue
     xyz = network_target.node_coordinates(node)
     goal = NodePointGoal(node, xyz)

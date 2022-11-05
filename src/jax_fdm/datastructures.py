@@ -60,6 +60,12 @@ class FDNetwork(Network):
         """
         return self.node_attribute(key=key, name="is_support", value=True)
 
+    def node_anchor(self, key):
+        """
+        Sets a node as a fixed anchor.
+        """
+        return self.node_support(key)
+
     def is_node_support(self, key):
         """
         Test if the node is a fixed anchor.
@@ -84,6 +90,12 @@ class FDNetwork(Network):
     def nodes_fixed(self, keys=None):
         """
         Gets or sets the node keys where a support has been assigned.
+        """
+        return self.nodes_supports(keys)
+
+    def nodes_anchors(self, keys=None):
+        """
+        Gets or sets the node keys where an anchor has been assigned.
         """
         return self.nodes_supports(keys)
 

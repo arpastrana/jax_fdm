@@ -40,8 +40,8 @@ network = FDNetwork.from_lines(lines)
 # ==========================================================================
 
 # assign supports
-network.node_support(key=0)
-network.node_support(key=len(points) - 1)
+network.node_anchor(key=0)
+network.node_anchor(key=len(points) - 1)
 
 # set initial q to all edges
 network.edges_forcedensities(q_init, keys=network.edges())
