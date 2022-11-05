@@ -36,11 +36,40 @@ class FDNetwork(Network):
         keys = keys or self.nodes()
         return [self.node_coordinates(node, axes) for node in keys]
 
+    def nodes_fixedcoordinates(self, keys=None, axes="xyz"):
+        """
+        Gets the x, y, z coordinates of the anchors of the network.
+        """
+        if keys:
+            keys = {key for key in keys if self.is_node_support(key)}
+        else:
+            keys = self.nodes_fixed()
+
+        return [self.node_coordinates(node, axes) for node in keys]
+
+    def number_of_anchors(self):
+        """
+        The number of nodes with an anchor.
+        """
+        return len(list(self.nodes_fixed()))
+
     def node_support(self, key):
         """
         Sets a node as a fixed anchor.
         """
         return self.node_attribute(key=key, name="is_support", value=True)
+
+    def is_node_support(self, key):
+        """
+        Test if the node is a fixed anchor.
+        """
+        return self.node_attribute(key=key, name="is_support")
+
+    def is_edge_supported(self, key):
+        """
+        Test if any of the two nodes connected the edge is a fixed anchor.
+        """
+        return any(self.is_node_support(node) for node in key)
 
     def nodes_supports(self, keys=None):
         """
@@ -103,6 +132,7 @@ class FDNetwork(Network):
         """
         Gets the reaction forces of the nodes of the network.
         """
+        keys = keys or self.nodes_fixed()
         return self.nodes_attributes(names=("rx", "ry", "rz"), keys=keys)
 
     def node_reaction(self, key):
@@ -151,6 +181,16 @@ class FDNetwork(Network):
         """
         return sum(list(self.edges_loadpaths()))
 
+    def parameters(self):
+        """
+        Return the design parameters of the network.
+        """
+        q = self.edges_forcedensities()
+        xyz_fixed = self.nodes_fixedcoordinates()
+        loads = self.nodes_loads()
+
+        return q, xyz_fixed, loads
+
     def print_stats(self, other_stats=None):
         """
         Print information aboud the equilibrium state of the network.
@@ -159,7 +199,7 @@ class FDNetwork(Network):
                  "Forces": self.edges_forces(),
                  "Lengths": self.edges_lengths()}
 
-        other_stats = other_stats or dict()
+        other_stats = other_stats or {}
         stats.update(other_stats)
 
         print("\n***Network stats***")
@@ -179,13 +219,19 @@ class FDNetwork(Network):
         """
         network = self.copy()
 
-        attr_groups = [("x", "y", "z"),
-                       ("px", "py", "pz"),
-                       ("rx", "ry", "rz")]
+        # attr_groups = [("x", "y", "z"),
+        #                ("px", "py", "pz"),
+        #                ("rx", "ry", "rz")]
+
+        attr_groups = [("x", "y", "z")]
 
         nodes = list(self.nodes())
+
         for attr_names in attr_groups:
-            xyz_t = transform_points(self.nodes_attributes(names=attr_names, keys=nodes), transformation)
+            attrs = self.nodes_attributes(names=attr_names, keys=nodes)
+
+            xyz_t = transform_points(attrs, transformation)
+
             for node, xyz in zip(nodes, xyz_t):
                 network.node_attributes(node, names=attr_names, values=xyz)
 
