@@ -80,6 +80,7 @@ def network_update(network, eq_state):
     residuals = eq_state.residuals.tolist()
     forces = eq_state.forces.tolist()
     forcedensities = eq_state.force_densities.tolist()
+    loads = eq_state.loads.tolist()
 
     # update q values and lengths on edges
     for idx, edge in network.index_uv().items():
@@ -93,4 +94,7 @@ def network_update(network, eq_state):
             network.node_attribute(node, name=name, value=value)
 
         for name, value in zip(["rx", "ry", "rz"], residuals[idx]):
+            network.node_attribute(node, name=name, value=value)
+
+        for name, value in zip(["px", "py", "pz"], loads[idx]):
             network.node_attribute(node, name=name, value=value)
