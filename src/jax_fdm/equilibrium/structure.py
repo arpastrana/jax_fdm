@@ -8,12 +8,18 @@ from compas.numerical import connectivity_matrix
 # ==========================================================================
 
 class EquilibriumStructure:
+    """
+    An equilibrium structure.
+    """
     def __init__(self, network):
         self._network = network
 
         self._connectivity = None
         self._connectivity_free = None
         self._connectivity_fixed = None
+
+        self._edges = None
+        self._nodes = None
 
         self._free_nodes = None
         self._fixed_nodes = None
@@ -22,16 +28,29 @@ class EquilibriumStructure:
         self._node_index = None
         self._edge_index = None
 
-        # self._ordering_nodes = None
-        # self._ordering_edges = None
-        # self._ordering_free_fixed = None
-
     @property
     def network(self):
         """
         A COMPAS network.
         """
         return self._network
+
+    @property
+    def edges(self):
+        """
+        A list with the edge keys of the structure.
+        """
+        if not self._edges:
+            self._edges = list(self.network.edges())
+        return self._edges
+
+    @property
+    def nodes(self):
+        """
+        A list with the node keys of the structure.
+        """
+        if not self.nodes:
+            self._nodes = list(self.network.nodes())
 
     @property
     def node_index(self):
@@ -85,7 +104,7 @@ class EquilibriumStructure:
     @property
     def free_nodes(self):
         """
-        Returns a list with the keys of the anchored nodes.
+        Returns a list with the indices of the anchored nodes.
         """
         if not self._free_nodes:
             self._free_nodes = [self.node_index[node] for node in self.network.nodes_free()]
@@ -94,7 +113,7 @@ class EquilibriumStructure:
     @property
     def fixed_nodes(self):
         """
-        Returns a list with the keys of the anchored nodes.
+        Returns a list with the indices of the anchored nodes.
         """
         if not self._fixed_nodes:
             self._fixed_nodes = [self.node_index[node] for node in self.network.nodes_fixed()]
