@@ -8,8 +8,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## Unreleased
 
 ### Added
+- Implemented `jax_fdm.parameters` to choose optimization parameters a la carte!
+- Created `parameters.EdgeForceDensityParameter`.
+- Created `parameters.NodeAnchorXParameter`.
+- Created `parameters.NodeAnchorYParameter`.
+- Created `parameters.NodeAnchorZParameter`.
+- Created `parameters.NodeLoadXParameter`.
+- Created `parameters.NodeLoadYParameter`.
+- Created `parameters.NodeLoadZParameter`.
+- Implemented `EquilibriumStructure.nodes`.
+- Implemented `EquilibriumStructure.edges`.
 
 ### Changed
+
+- `EquilibriumModel.__call__` tasks `q`, `xyz_fixed` and `loads` as arguments.
+- `FDNetwork.transform` only modifies node coordinates.
+- `FDNetworkViewerArtist` shifts a node load by the maximum edge width at the node.
 
 ### Removed
 
