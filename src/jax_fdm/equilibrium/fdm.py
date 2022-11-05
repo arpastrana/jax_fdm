@@ -1,49 +1,62 @@
-import jax.numpy as jnp
+import numpy as np
 
-from jax_fdm.equilibrium.model import EquilibriumModel
+from jax_fdm import DTYPE_NP
+
+from jax_fdm.equilibrium import EquilibriumModel
 
 
 # ==========================================================================
 # Form-finding
 # ==========================================================================
 
-def _fdm(network, q):
+def _fdm(network, q, xyz_fixed, loads):
     """
     Compute a network in a state of static equilibrium using the force density method.
     """
-    # compute static equilibrium
     model = EquilibriumModel(network)
-    eq_state = model(q)
 
-    # update equilibrium state in network copy
-    return network_updated(network, eq_state)  # Network.update(eqstate)
+    # compute static equilibrium
+    eq_state = model(q, xyz_fixed, loads)
+
+    # update equilibrium state in a copy of the network
+    return network_updated(network, eq_state)
 
 
 def fdm(network):
     """
     Compute a network in a state of static equilibrium using the force density method.
     """
-    # get parameters
-    q = jnp.asarray(network.edges_forcedensities(), dtype=jnp.float64)
+    params = (np.array(p, dtype=DTYPE_NP) for p in network.parameters())
 
-    return _fdm(network, q)
+    return _fdm(network, *params)
+
 
 # ==========================================================================
 # Constrained form-finding
 # ==========================================================================
 
-
-def constrained_fdm(network, optimizer, loss, bounds=(None, None), constraints=[], maxiter=100, tol=1e-6, callback=None):
-
+def constrained_fdm(network,
+                    optimizer,
+                    loss,
+                    parameters=None,
+                    constraints=None,
+                    maxiter=100,
+                    tol=1e-6,
+                    callback=None):
+    """
+    Generate a network in a constrained state of static equilibrium using the force density method.
+    """
     # optimizer works
-    q_opt = optimizer.minimize(network, loss, bounds, constraints, maxiter, tol, callback=callback)
+    model = EquilibriumModel(network)
+    params_opt = optimizer.minimize(model, loss, parameters, constraints, maxiter, tol, callback)
+    q, xyz_fixed, loads = optimizer.parameters_fdm(params_opt)
 
-    return _fdm(network, q_opt)
+    return _fdm(network, q, xyz_fixed, loads)
+
 
 # ==========================================================================
 # Helpers
 # ==========================================================================
-
 
 def network_updated(network, eq_state):
     """
