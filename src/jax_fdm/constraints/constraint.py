@@ -79,6 +79,12 @@ class Constraint:
                 bound = np.ravel(bound)
         self._bound_up = bound
 
+    def init(self, model):
+        """
+        Initialize the constraint with information from an equilibrium model.
+        """
+        self.index = self.index_from_model(model)
+
     # def __call__(self, q, model):
     #     """
     #     The constraint function.
@@ -86,20 +92,17 @@ class Constraint:
     #     eqstate = model(q)
     #     return self.constraint(eqstate, model)
 
-    def init(self, model):
-        """
-        Initialize the constraint with information from an equilibrium model.
-        """
-        self.index = self.index_from_model(model)
-
-    # @partial(jit, static_argnums=(0, 2))
+    @partial(jit, static_argnums=(0, 4))
     def __call__(self, q, xyz_fixed, loads, model):
         """
-        The constraint function.
+        The called constraint function.
         """
         eqstate = model(q, xyz_fixed, loads)
         constraint = vmap(self.constraint, in_axes=(None, 0))(eqstate, self.index)
         return jnp.ravel(constraint)
 
     def constraint(self, eqstate, index):
+        """
+        The constraint function.
+        """
         raise NotImplementedError

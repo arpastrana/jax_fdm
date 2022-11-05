@@ -1,5 +1,7 @@
+import numpy as np
 import matplotlib.pyplot as plt
 
+from jax_fdm import DTYPE_NP
 from jax_fdm.equilibrium import EquilibriumModel
 
 
@@ -20,14 +22,17 @@ class LossPlotter:
         """
         Plot the loss function on an array of force densities.
         """
+        xyz_fixed = np.asarray([self.network.node_coordinates(node) for node in self.network.nodes_fixed()], dtype=DTYPE_NP)
+        loads = np.asarray(list(self.network.nodes_loads()), dtype=DTYPE_NP)
+
         for loss_term in [self.loss] + list(self.loss.terms):
             errors = []
             for q in qs:
-                eqstate = self.model(q)
+                eqstate = self.model(q, xyz_fixed, loads)
                 try:
                     error = loss_term(eqstate)
                 except TypeError:
-                    error = loss_term(q, self.model)
+                    error = loss_term(q, xyz_fixed, loads, self.model)
                 errors.append(error)
             plt.plot(errors, label=loss_term.name)
 
