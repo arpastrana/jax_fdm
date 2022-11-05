@@ -13,6 +13,7 @@ from jax_fdm.goals import NodeResidualDirectionGoal
 from jax_fdm.losses import SquaredError
 from jax_fdm.losses import Loss
 from jax_fdm.optimization import SLSQP
+from jax_fdm.parameters import EdgeForceDensityParameter
 from jax_fdm.visualization import Viewer
 
 # ==========================================================================
@@ -66,13 +67,13 @@ for edge in network.edges():
     network.edge_forcedensity(edge, q_init)
 
 # ==========================================================================
-# Instantiate viewer
+# Define parameters
 # ==========================================================================
 
-viewer = Viewer(width=1600, height=900)
-
-# color map
-cmap = ColorMap.from_mpl("viridis")
+parameters = []
+for edge in network.edges():
+    parameter = EdgeForceDensityParameter(edge)
+    parameters.append(parameter)
 
 # ==========================================================================
 # Define goals
@@ -81,7 +82,7 @@ cmap = ColorMap.from_mpl("viridis")
 constrained_networks = []
 vertical_comps = [0.1, 0.2, 0.4, 0.8, 1.6, 3.2]
 
-for idx, vertical_comp in enumerate(vertical_comps):
+for vertical_comp in vertical_comps:
 
     goals = []
     goals.append(NodeResidualDirectionGoal(0, target=[-1.0, 0.0, -vertical_comp]))
@@ -93,29 +94,41 @@ for idx, vertical_comp in enumerate(vertical_comps):
 
     constrained_network = constrained_fdm(network,
                                           optimizer=SLSQP(),
+                                          parameters=parameters,
                                           loss=Loss(SquaredError(goals)),
-                                          bounds=(-jnp.inf, 0.0),
                                           maxiter=200,
                                           tol=1e-9)
 
-    constrained_networks.append(constrained_networks)
+    constrained_networks.append(constrained_network)
+
+# ==========================================================================
+# Instantiate viewer
+# ==========================================================================
+
+viewer = Viewer(width=1600, height=900)
+
+# color map
+cmap = ColorMap.from_mpl("viridis")
 
 # ==========================================================================
 # Visualization
 # ==========================================================================
 
+for idx, c_network in enumerate(constrained_networks):
+
     # equilibrated arch
-    color = cmap(1.0 - idx / len(vertical_comps))
+    color = cmap(1.0 - idx / len(constrained_networks))
 
     t_vector = [0.0, -idx, 0.0]
     T = Translation.from_vector([0.0, -idx, 0.0])
 
     # constrained arch
-    c_network = constrained_network.transformed(T)
+    c_network = c_network.transformed(T)
+
     viewer.add(c_network,
                edgewidth=(0.01, 0.15),
                edgecolor=color,
-               reactionscale=0.25)
+               reactionscale=0.5)
 
 # show le crème
 viewer.show()

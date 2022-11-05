@@ -18,6 +18,8 @@ from jax_fdm.equilibrium import constrained_fdm
 from jax_fdm.optimization import LBFGSB
 from jax_fdm.optimization import OptimizationRecorder
 
+from jax_fdm.parameters import EdgeForceDensityParameter
+
 from jax_fdm.goals import EdgeLengthGoal
 from jax_fdm.goals import NodeResidualForceGoal
 from jax_fdm.goals import NetworkLoadPathGoal
@@ -146,6 +148,15 @@ if export:
     print("Problem definition exported to", FILE_OUT)
 
 # ==========================================================================
+# Define parameters
+# ==========================================================================
+
+parameters = []
+for edge in network0.edges():
+    parameter = EdgeForceDensityParameter(edge, qmin, qmax)
+    parameters.append(parameter)
+
+# ==========================================================================
 # Define goals
 # ==========================================================================
 
@@ -199,7 +210,7 @@ if record:
 network = constrained_fdm(network0,
                           optimizer=optimizer(),
                           loss=loss,
-                          bounds=(qmin, qmax),
+                          parameters=parameters,
                           maxiter=maxiter,
                           tol=tol,
                           callback=recorder)

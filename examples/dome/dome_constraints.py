@@ -31,6 +31,8 @@ from jax_fdm.losses import Loss
 
 from jax_fdm.optimization import TrustRegionConstrained
 
+from jax_fdm.parameters import EdgeForceDensityParameter
+
 from jax_fdm.visualization import Viewer
 
 # ==========================================================================
@@ -158,6 +160,15 @@ for edge in edges_cross:
 networks = {"start": network}
 
 # ==========================================================================
+# Define optimization parameters
+# ==========================================================================
+
+parameters = []
+for edge in network.edges():
+    parameter = EdgeForceDensityParameter(edge, qmin, qmax)
+    parameters.append(parameter)
+
+# ==========================================================================
 # Create loss function with soft goals
 # ==========================================================================
 
@@ -256,7 +267,7 @@ for config in sweep_configs:
     else:
         network = fofin_method(network,
                                optimizer=optimizer(),
-                               bounds=(qmin, qmax),
+                               parameters=parameters,
                                loss=loss,
                                constraints=config.get("constraints", []),
                                maxiter=maxiter)
@@ -266,11 +277,11 @@ for config in sweep_configs:
         networks[config["name"]] = network
 
     extra_stats = None
-
     if constraint_angles:
         model = EquilibriumModel(network)
-        q = np.array(network.edges_forcedensities())
-        eqstate = model(q)
+        params = [np.array(param) for param in network.parameters()]
+        # q = np.array(network.edges_forcedensities())
+        eqstate = model(*params)
         a = [constraint.constraint(eqstate, constraint.index_from_model(model)).item() for constraint in constraint_angles]
         extra_stats = {"Angles": a}
 

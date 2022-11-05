@@ -31,8 +31,9 @@ from jax_fdm.losses import SquaredError
 from jax_fdm.losses import Loss
 
 from jax_fdm.optimization import LBFGSB
-
 from jax_fdm.optimization import OptimizationRecorder
+
+from jax_fdm.parameters import EdgeForceDensityParameter
 
 from jax_fdm.visualization import LossPlotter
 from jax_fdm.visualization import Viewer
@@ -54,15 +55,12 @@ offset_distance = 0.01  # ring offset
 q0_ring = -2.0  # starting force density for ring (hoop) edges
 q0_cross = -0.5  # starting force density for the edges transversal to the rings
 pz = -0.1  # z component of the applied load
+qmin, qmax = None, None
 
 # optimization
 optimizer = LBFGSB
 maxiter = 10000
 tol = 1e-6  # 1e-6 for best results at the cost of a considerable speed decrease
-
-# parameter bounds
-qmin = None  # -200.0
-qmax = None  # -0.001
 
 # goal length
 length_target = 0.03
@@ -156,6 +154,15 @@ if export:
     print("Problem definition exported to", FILE_OUT)
 
 # ==========================================================================
+# Define parameters
+# ==========================================================================
+
+parameters = []
+for edge in network.edges():
+    parameter = EdgeForceDensityParameter(edge, qmin, qmax)
+    parameters.append(parameter)
+
+# ==========================================================================
 # Create goals
 # ==========================================================================
 
@@ -231,7 +238,7 @@ for config in sweep_configs:
 
         network = fofin_method(network,
                                optimizer=optimizer(),
-                               bounds=(qmin, qmax),
+                               parameters=parameters,
                                loss=loss,
                                constraints=config.get("constraints", []),
                                maxiter=maxiter,

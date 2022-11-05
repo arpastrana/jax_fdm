@@ -18,6 +18,8 @@ from jax_fdm.equilibrium import constrained_fdm
 from jax_fdm.optimization import TrustRegionConstrained
 from jax_fdm.optimization import OptimizationRecorder
 
+from jax_fdm.parameters import EdgeForceDensityParameter
+
 from jax_fdm.goals import NodeResidualForceGoal
 
 from jax_fdm.constraints import EdgeLengthConstraint
@@ -154,6 +156,15 @@ network0 = fdm(network0)
 network0.print_stats()
 
 # ==========================================================================
+# Define parameters
+# ==========================================================================
+
+parameters = []
+for edge in network0.edges():
+    parameter = EdgeForceDensityParameter(edge, qmin, qmax)
+    parameters.append(parameter)
+
+# ==========================================================================
 # Define goals
 # ==========================================================================
 
@@ -171,7 +182,6 @@ for key in network0.nodes_supports():
 
 constraints = None
 if add_constraints:
-
     constraints = []
     for edge in network0.edges():
         constraint = EdgeLengthConstraint(edge, bound_low=length_min, bound_up=length_max)
@@ -195,6 +205,7 @@ if record:
 network = constrained_fdm(network0,
                           optimizer=optimizer(),
                           loss=loss,
+                          parameters=parameters,
                           constraints=constraints,
                           maxiter=maxiter,
                           tol=tol,

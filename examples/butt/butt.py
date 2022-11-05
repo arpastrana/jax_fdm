@@ -16,6 +16,8 @@ from jax_fdm.equilibrium import constrained_fdm
 from jax_fdm.optimization import LBFGSB
 from jax_fdm.optimization import OptimizationRecorder
 
+from jax_fdm.parameters import EdgeForceDensityParameter
+
 from jax_fdm.goals import NodePointGoal
 
 from jax_fdm.losses import RootMeanSquaredError
@@ -38,7 +40,7 @@ qmin, qmax = -20.0, -0.0  # min and max force densities
 
 optimizer = LBFGSB  # the optimization algorithm
 maxiter = 1000  # optimizer maximum iterations
-tol = 1e-6  # optimizer tolerance
+tol = 1e-9  # optimizer tolerance
 
 record = False  # True to record optimization history of force densities
 export = False  # export result to JSON
@@ -76,6 +78,15 @@ if export:
     FILE_OUT = os.path.join(HERE, f"../data/../json/{name}_base.json")
     network.to_json(FILE_OUT)
     print("Problem definition exported to", FILE_OUT)
+
+# ==========================================================================
+# Define optimization parameters
+# ==========================================================================
+
+parameters = []
+for edge in network.edges():
+    parameter = EdgeForceDensityParameter(edge, qmin, qmax)
+    parameters.append(parameter)
 
 # ==========================================================================
 # Define goals
@@ -118,7 +129,7 @@ if record:
 network = constrained_fdm(network0,
                           optimizer=optimizer(),
                           loss=loss,
-                          bounds=(qmin, qmax),
+                          parameters=parameters,
                           maxiter=maxiter,
                           tol=tol,
                           callback=recorder)
@@ -182,7 +193,7 @@ viewer.view.camera.rotation[2] = 0.0  # set rotation around z axis to zero
 viewer.add(network,
            edgewidth=(0.1, 0.3),
            edgecolor="fd",
-           loadscale=2.0)
+           loadscale=5.0)
 
 # reference network
 viewer.add(network_target,

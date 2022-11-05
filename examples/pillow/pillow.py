@@ -57,10 +57,6 @@ optimizer = SLSQP
 maxiter = 1000
 tol = 1e-3
 
-# parameter bounds
-qmin = None
-qmax = None
-
 # goal horizontal projection
 add_horizontal_projection_goal = True
 weight_horizontal_projection = 1.0
@@ -227,13 +223,11 @@ networks["free"] = fdm(network)
 
 networks["uncstr_opt"] = constrained_fdm(network,
                                          optimizer=optimizer(),
-                                         bounds=(qmin, qmax),
                                          loss=loss,
                                          maxiter=maxiter)
 
 networks["cstr_opt"] = constrained_fdm(network,
                                        optimizer=optimizer(),
-                                       bounds=(qmin, qmax),
                                        loss=loss,
                                        constraints=constraints,
                                        maxiter=maxiter)
