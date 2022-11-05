@@ -2,11 +2,9 @@
 A gradient-based optimizer.
 """
 from time import time
-
 from itertools import groupby
 from functools import partial
 
-import jax.numpy as jnp
 from jax import jit
 from jax import grad
 from jax import jacobian
@@ -16,9 +14,8 @@ from scipy.optimize import minimize
 from scipy.optimize import Bounds
 from scipy.optimize import NonlinearConstraint
 
-from jax_fdm import DTYPE_JAX
-from jax_fdm.equilibrium import EquilibriumModel
-
+from jax_fdm.parameters import ParameterManager
+from jax_fdm.parameters import EdgeForceDensityParameter
 from jax_fdm.optimization import Collection
 
 
@@ -33,20 +30,20 @@ class Optimizer:
     def __init__(self, name, disp=True):
         self.name = name
         self.disp = disp
+        self.pm = None
 
-    def constraints(self, constraints, model, q):
+    def constraints(self, constraints, model, q, xyz_fixed, loads):
         """
         Returns the defined constraints in a format amenable to `scipy.minimize`.
         """
         if constraints:
             print(f"Warning! {self.name} does not support constraints. I am ignoring them.")
-        return ()
 
     def gradient(self, loss):
         """
         Compute the gradient function of a loss function.
         """
-        return jit(grad(loss))
+        return jit(grad(loss, argnums=0))
 
     def hessian(self, loss):
         """
@@ -54,75 +51,63 @@ class Optimizer:
         """
         return
 
-    def minimize(self, network, loss, bounds=(None, None), constraints=[], maxiter=100, tol=1e-6, verbose=True, callback=None):
+    def minimize(self, model, loss, parameters=None, constraints=None, maxiter=100, tol=1e-6, callback=None):
         """
         Minimize a loss function via some flavor of gradient descent.
         """
-        # array-ize parameters
-        q = jnp.asarray(network.edges_forcedensities(), dtype=DTYPE_JAX)
+        # optimization parameters
+        if not parameters:
+            parameters = [EdgeForceDensityParameter(edge) for edge in model.structure.edges]
+
+        self.pm = ParameterManager(model, parameters)
+        x = self.parameters_opt()
+
+        # parameter bounds
+        bounds = self.parameters_bounds()
+
+        assert x.size == self.pm.bounds_low.size
+        assert x.size == self.pm.bounds_up.size
 
         # message
-        print(f"\n***Constrained form finding***\nParameters: {len(q)} \tGoals: {loss.number_of_goals()} \tConstraints: {len(constraints)}")
-
-        # create an equilibrium model from a network
-        model = EquilibriumModel(network)
+        print(f"\n***Constrained form finding***\nParameters: {len(x)} \tGoals: {loss.number_of_goals()}")
 
         # build goal collections
         for term in loss.terms_error:
-
             goal_collections = self.collect_goals(term.goals)
             for goal_collection in goal_collections:
                 goal_collection.init(model)
             term.collections = goal_collections
         print(f"Goal collections: {loss.number_of_collections()}")
 
-        # constraints
-        start_time = time()
-        constraints = self.constraints(constraints, model, q)
-        print(f"Constraints warmup time: {round(time() - start_time, 4)} seconds")
-
         # loss matters
-        loss = partial(loss, model=model)
+        loss = partial(self.loss, loss=loss, model=model)
 
-        # warm up loss
         print("Warming up the pressure cooker...")
         start_time = time()
-        loss(q)
+        loss(x)
         print(f"Loss warmup time: {round(time() - start_time, 4)} seconds")
 
         # gradient of the loss function
         grad_loss = self.gradient(loss)  # w.r.t. first function argument
-
-        # warm up grad loss
-        if grad_loss:
-            start_time = time()
-            grad_loss(q)
-            print(f"Gradient warmup time: {round(time() - start_time, 4)} seconds")
+        start_time = time()
+        grad_loss(x)
+        print(f"Gradient warmup time: {round(time() - start_time, 4)} seconds")
 
         # gradient of the loss function
         hessian_loss = self.hessian(loss)  # w.r.t. first function argument
-
-        # warm up hessianloss
         if hessian_loss:
             start_time = time()
-            hessian_loss(q)
+            hessian_loss(x)
             print(f"Hessian warmup time: {round(time() - start_time, 4)} seconds")
 
-        # TODO: parameter bounds
-        # bounds makes a re-index from one count system to the other
-        # bounds = optimization_bounds(model, bounds)
-        lb, ub = bounds
-        if lb is None:
-            lb = -jnp.inf
-        if ub is None:
-            ub = +jnp.inf
-
-        bounds = Bounds(lb=lb, ub=ub)
-
-        if verbose:
-            print(f"Optimization with {self.name} started...")
+        # constraints
+        if constraints:
+            start_time = time()
+            constraints = self.constraints(constraints, model, x)
+            print(f"Constraints warmup time: {round(time() - start_time, 4)} seconds")
 
         # scipy optimization
+        print(f"Optimization with {self.name} started...")
         start_time = time()
 
         # minimize
@@ -130,19 +115,22 @@ class Optimizer:
                          jac=grad_loss,
                          hess=hessian_loss,
                          method=self.name,
-                         x0=q,
+                         x0=x,  # q
                          tol=tol,
                          bounds=bounds,
                          constraints=constraints,
                          callback=callback,
                          options={"maxiter": maxiter, "disp": self.disp})
-        # print out
-        if verbose:
-            print(res_q.message)
-            print(f"Final loss in {res_q.nit} iterations: {res_q.fun}")
-            print(f"Optimization elapsed time: {time() - start_time} seconds")
+
+        print(res_q.message)
+        print(f"Final loss in {res_q.nit} iterations: {res_q.fun}")
+        print(f"Optimization elapsed time: {time() - start_time} seconds")
 
         return res_q.x
+
+# ==========================================================================
+# Goals
+# ==========================================================================
 
     def collect_goals(self, goals):
         """
@@ -152,17 +140,57 @@ class Optimizer:
         groups = groupby(goals, lambda g: type(g))
 
         collections = []
-        for key, group in groups:
+        for _, group in groups:
             collection = Collection(list(group))
             collections.append(collection)
 
         return collections
 
+# ==========================================================================
+# Loss
+# ==========================================================================
+
+    @partial(jit, static_argnums=(0, 2, 3))
+    def loss(self, params_opt, loss, model):
+        """
+        The wrapper loss.
+        """
+        q, xyz_fixed, loads = self.parameters_fdm(params_opt)
+
+        return loss(q, xyz_fixed, loads, model)
+
+# ==========================================================================
+# Parameters
+# ==========================================================================
+
+    def parameters_bounds(self):
+        """
+        Return a tuple of arrays with the upper and the lower bounds of optimization parameters.
+        """
+        return Bounds(lb=self.pm.bounds_low, ub=self.pm.bounds_up)
+
+    def parameters_opt(self):
+        """
+        Return a flat array with the optimization parameters.
+        """
+        return self.pm.parameters_opt
+
+    def parameters_frozen(self):
+        """
+        Return a flat array with the parameters that must stay constant during optimization.
+        """
+        return self.pm.parameters_frozen
+
+    def parameters_fdm(self, params_opt):
+        """
+        Reconstruct the force density parameters from the optimization parameters.
+        """
+        return self.pm.parameters_fdm(params_opt)
+
 
 # ==========================================================================
 # Constrained optimizer
 # ==========================================================================
-
 
 class ConstrainedOptimizer(Optimizer):
     """
@@ -176,21 +204,21 @@ class ConstrainedOptimizer(Optimizer):
         groups = groupby(constraints, lambda g: type(g))
 
         collections = []
-        for key, group in groups:
+        for _, group in groups:
             collection = Collection(list(group))
             collections.append(collection)
 
         return collections
 
-    def constraints(self, constraints, model, q):
+    def constraints(self, constraints, model, params_opt):
         """
         Returns the defined constraints in a format amenable to `scipy.minimize`.
         """
         if not constraints:
             return
 
+        print(f"Constraints: {len(constraints)}")
         constraints = self.collect_constraints(constraints)
-
         print(f"Constraint colections: {len(constraints)}")
 
         clist = []
@@ -199,19 +227,29 @@ class ConstrainedOptimizer(Optimizer):
             constraint.init(model)
 
             # gather information for scipy constraint
-            fun = jit(partial(constraint, model=model))
+            fun = partial(self.constraint, constraint=constraint, model=model)
+
             jac = jit(jacobian(fun))
             lb = constraint.bound_low
             ub = constraint.bound_up
 
             # warm start
-            fun(q)
-            jac(q)
+            fun(params_opt)
+            jac(params_opt)
 
             # store non linear constraint
             clist.append(NonlinearConstraint(fun=fun, jac=jac, lb=lb, ub=ub))
 
         return clist
+
+    @partial(jit, static_argnums=(0, 2, 3))
+    def constraint(self, params_opt, constraint, model):
+        """
+        A wrapper around a constraint callable object.
+        """
+        q, xyz_fixed, loads = self.parameters_fdm(params_opt)
+
+        return constraint(q, xyz_fixed, loads, model)
 
 
 # ==========================================================================
@@ -226,12 +264,12 @@ class SecondOrderOptimizer(Optimizer):
         """
         Compute the hessian function of a loss function.
         """
-        return jit(hessian(loss))
+        return jit(hessian(loss, argnums=0))
+
 
 # ==========================================================================
 # Optimizers
 # ==========================================================================
-
 
 class BFGS(Optimizer):
     """
@@ -271,34 +309,3 @@ class SLSQP(ConstrainedOptimizer):
     """
     def __init__(self, **kwargs):
         super().__init__(name="SLSQP", **kwargs)
-
-    def constraints_dictionary(self, constraints, model):
-
-        def _constraint_eq(q, constraint, model):
-            return constraint.bound_up - constraint(q, model)
-
-        def _constraint_ineq(q, constraint, model):
-            return constraint(q, model) - constraint.bound_low
-
-        if not constraints:
-            return
-
-        clist = []
-        for constraint in constraints:
-
-            # fun = partial(constraint, model=model)
-            type = "eq"
-            cfuns = [partial(_constraint_eq, constraint=constraint, model=model)]
-
-            if constraint.bound_low != constraint.bound_up:
-                type = "ineq"
-                cfuns.append(partial(_constraint_ineq, constraint=constraint, model=model))
-
-            for cfun in cfuns:
-                cdict = dict()
-                cdict["type"] = type
-                cdict["fun"] = cfun
-                cdict["jac"] = jacobian(cfun)
-                clist.append(cdict)
-
-        return clist
