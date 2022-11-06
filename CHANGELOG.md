@@ -18,12 +18,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Created `parameters.NodeLoadZParameter`.
 - Implemented `EquilibriumStructure.nodes`.
 - Implemented `EquilibriumStructure.edges`.
+- Added `EquilibriumStructure.anchor_index`.
+- Implemented `ParameterManager.parameters_ordered` to fix order mismatch between optimization parameters and their bounds.
 
 ### Changed
 
 - `EquilibriumModel.__call__` tasks `q`, `xyz_fixed` and `loads` as arguments.
 - `FDNetwork.transform` only modifies node coordinates.
 - `FDNetworkViewerArtist` shifts a node load by the maximum edge width at the node.
+- `OptimizationRecorder.history` stores `q`, `xyz_fixed` and `loads`. 
+- `LossPlotter.plot` supports `q`, `xyz_fixed` and `loads` to be compatible with `OptimizationRecorder.history`.
 
 ### Removed
 
