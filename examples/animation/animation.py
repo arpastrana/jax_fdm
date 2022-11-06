@@ -149,7 +149,8 @@ for residual in residuals.values():
     viewer.add(residual, linewidth=4.0, color=Color.pink())
 
 # warm start model
-_ = model(np.array(recorder.history[0]))
+q, xyz_fixed, _loads = [np.asarray(p) for p in recorder.history[0]]
+_ = model(q, xyz_fixed, _loads)
 
 # decimate
 if decimate:
@@ -169,8 +170,8 @@ if animate:
     def wiggle(f):
 
         print(f"Current frame: {f + 1}/{len(recorder.history)}")
-        q = np.array(recorder.history[f])
-        eqstate = model(q)
+        params = (np.array(p) for p in recorder.history[f])
+        eqstate = model(*params)
 
         # update network
         network_update(network, eqstate)
@@ -187,12 +188,6 @@ if animate:
 
         if rotate_while_animate:
             viewer.view.camera.rotate(dx=1, dy=0)
-
-        # update all buffer objects in the view
-        # for artist in viewer.artists:
-        #   artist.update(network)
-        #   for obj in artist.objects:
-        #       obj.update()
 
 # show le crème
 viewer.show()
