@@ -24,10 +24,9 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - uses: conda-incubator/setup-miniconda@v2.1.1
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v2
         with:
-          miniconda-version: "latest"
-          channels: conda-forge
           python-version: ${{ matrix.python-version }}
 
       - uses: compas-dev/compas-actions.build@v1.1.1
