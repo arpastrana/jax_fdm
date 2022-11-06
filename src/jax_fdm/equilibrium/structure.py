@@ -27,6 +27,7 @@ class EquilibriumStructure:
 
         self._node_index = None
         self._edge_index = None
+        self._anchor_index = None
 
     @property
     def network(self):
@@ -60,6 +61,15 @@ class EquilibriumStructure:
         if not self._node_index:
             self._node_index = self.network.key_index()
         return self._node_index
+
+    @property
+    def anchor_index(self):
+        """
+        A dictionary between node anchor keys and their enumeration indices.
+        """
+        if not self._anchor_index:
+            self._anchor_index = {key: index for index, key in enumerate(self.network.nodes_anchors())}
+        return self._anchor_index
 
     @property
     def edge_index(self):

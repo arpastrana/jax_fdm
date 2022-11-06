@@ -16,13 +16,13 @@ class Parameter:
         The upper bound of this parameter for optimization.
         Defaults to `+inf`.
     """
-    def __init__(self, key, bound_low=None, bound_up=None):
+    def __init__(self, key, bound_low=-inf, bound_up=inf):
         """
         Initialize the parameter.
         """
         self.key = key
-        self.bound_low = bound_low or -inf
-        self.bound_up = bound_up or inf
+        self.bound_low = bound_low
+        self.bound_up = bound_up
         self.attr_name = None
 
     def index(self, model):
@@ -52,7 +52,7 @@ class NodeParameter(Parameter):
         """
         Get the current value of the node parameter.
         """
-        return model.network.node_attribute(self.key, name=self.attr_name)
+        return model.structure.network.node_attribute(self.key, name=self.attr_name)
 
 
 class EdgeParameter(Parameter):
@@ -69,7 +69,7 @@ class EdgeParameter(Parameter):
         """
         Get the current value of the edge parameter.
         """
-        return model.network.edge_attribute(self.key, name=self.attr_name)
+        return model.structure.network.edge_attribute(self.key, name=self.attr_name)
 
 
 class EdgeForceDensityParameter(EdgeParameter):
@@ -82,7 +82,14 @@ class EdgeForceDensityParameter(EdgeParameter):
 
 
 class NodeAnchorParameter(NodeParameter):
-    pass
+    """
+    A node anchor parameter.
+    """
+    def index(self, model):
+        """
+        Get the index of the key of the node parameter in the structure of a model.
+        """
+        return model.structure.anchor_index[self.key]
 
 
 class NodeLoadParameter(NodeParameter):
