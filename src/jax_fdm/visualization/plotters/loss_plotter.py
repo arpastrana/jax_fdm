@@ -15,24 +15,23 @@ class LossPlotter:
     def __init__(self, loss, network, *args, **kwargs):
         self.loss = loss
         self.network = network
-        self.model = EquilibriumModel(network)
         self.fig = plt.figure(**kwargs)
 
-    def plot(self, qs):
+    def plot(self, xs):
         """
         Plot the loss function on an array of force densities.
         """
-        xyz_fixed = np.asarray([self.network.node_coordinates(node) for node in self.network.nodes_fixed()], dtype=DTYPE_NP)
-        loads = np.asarray(list(self.network.nodes_loads()), dtype=DTYPE_NP)
+        model = EquilibriumModel(self.network)
 
         for loss_term in [self.loss] + list(self.loss.terms):
             errors = []
-            for q in qs:
-                eqstate = self.model(q, xyz_fixed, loads)
+            for x in xs:
+                q, xyz_fixed, loads = x
+                eqstate = model(q, xyz_fixed, loads)
                 try:
                     error = loss_term(eqstate)
                 except TypeError:
-                    error = loss_term(q, xyz_fixed, loads, self.model)
+                    error = loss_term(q, xyz_fixed, loads, model)
                 errors.append(error)
             plt.plot(errors, label=loss_term.name)
 

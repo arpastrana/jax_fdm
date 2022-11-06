@@ -62,14 +62,14 @@ class Optimizer:
         self.pm = ParameterManager(model, parameters)
         x = self.parameters_opt()
 
+        # message
+        print(f"\n***Constrained form finding***\nParameters: {len(x)} \tGoals: {loss.number_of_goals()}")
+
         # parameter bounds
         bounds = self.parameters_bounds()
 
         assert x.size == self.pm.bounds_low.size
         assert x.size == self.pm.bounds_up.size
-
-        # message
-        print(f"\n***Constrained form finding***\nParameters: {len(x)} \tGoals: {loss.number_of_goals()}")
 
         # build goal collections
         for term in loss.terms_error:
@@ -181,6 +181,7 @@ class Optimizer:
         """
         return self.pm.parameters_frozen
 
+    @partial(jit, static_argnums=0)
     def parameters_fdm(self, params_opt):
         """
         Reconstruct the force density parameters from the optimization parameters.

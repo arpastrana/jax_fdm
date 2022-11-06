@@ -50,9 +50,9 @@ class FDNetwork(Network):
 
     def number_of_anchors(self):
         """
-        The number of nodes with an anchor.
+        The number of anchored nodes.
         """
-        return len(list(self.nodes_fixed()))
+        return len(list(self.nodes_anchors()))
 
     def node_support(self, key):
         """
