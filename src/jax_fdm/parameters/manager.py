@@ -56,6 +56,7 @@ class ParameterManager:
         self._indices_xyzfixed = None
         self._indices_loads = None
 
+        self._parameters_ordered = None
         self._parameters_model = None
         self._parameters_opt = None
         self._parameters_frozen = None
@@ -182,6 +183,40 @@ class ParameterManager:
         return self._indices_fdm
 
 # ==========================================================================
+# Helpers
+# ==========================================================================
+
+    def _indices_type(self, cls):
+        """
+        Compute the parameter index if a parameter is an instance of a given type.
+        """
+        indices = []
+        for parameter in self.parameters:
+            if isinstance(parameter, cls):
+                indices.append(parameter.index(self.model))
+
+        return np.array(indices)
+
+    def _indices_shift(self, indices, shift):
+        """
+        Shift a collection of parameter indices by a given integer.
+        """
+        return [idx + shift for idx in indices]
+
+    def _shift_type(self, ptype):
+        """
+        The number of indices to shift of a collection of parameters of a given type.
+        """
+        if issubclass(ptype, EdgeParameter):
+            shift = self.network.number_of_edges()
+        elif issubclass(ptype, NodeAnchorParameter):
+            shift = self.network.number_of_anchors()
+        elif issubclass(ptype, NodeLoadParameter):
+            shift = self.network.number_of_nodes()
+
+        return shift
+
+# ==========================================================================
 # Bounds
 # ==========================================================================
 
@@ -191,7 +226,12 @@ class ParameterManager:
         Return an array with the lower bound of the optimization parameters.
         """
         if self._bounds_low is None:
-            self._bounds_low = np.array([param.bound_low for param in self.parameters])
+            bounds = []
+            for parameter in self.parameters_ordered:
+                bounds.append(parameter.bound_low)
+
+            self._bounds_low = np.array(bounds)
+
         return self._bounds_low
 
     @property
@@ -200,12 +240,32 @@ class ParameterManager:
         Return an array with the upper bound of the optimization parameters.
         """
         if self._bounds_up is None:
-            self._bounds_up = np.array([param.bound_up for param in self.parameters])
+            bounds = []
+            for parameter in self.parameters_ordered:
+                bounds.append(parameter.bound_up)
+
+            self._bounds_up = np.array(bounds)
+
         return self._bounds_up
 
 # ==========================================================================
 # Parameters
 # ==========================================================================
+
+    @property
+    def parameters_ordered(self):
+        """
+        The optimization parameter objects, sorted by type.
+        """
+        if self._parameters_ordered is None:
+            parameters = []
+            for ptype in self.parameter_types:
+                for parameter in self.parameters:
+                    if isinstance(parameter, ptype):
+                        parameters.append(parameter)
+            self._parameters_ordered = parameters
+
+        return self._parameters_ordered
 
     @property
     def parameters_model(self):
@@ -251,6 +311,7 @@ class ParameterManager:
         """
         mask = np.zeros_like(array, dtype=np.int64)
         mask[self.indices_opt] = 1
+
         return mask, np.logical_not(mask)
 
     def mask_fdm(self, array):
@@ -263,36 +324,3 @@ class ParameterManager:
             mask[indices] = 1
             yield mask
 
-# ==========================================================================
-# Helpers
-# ==========================================================================
-
-    def _indices_type(self, cls):
-        """
-        Compute the parameter index if a parameter is an instance of a given type.
-        """
-        indices = []
-        for parameter in self.parameters:
-            if isinstance(parameter, cls):
-                indices.append(parameter.index(self.model))
-
-        return np.array(indices)
-
-    def _indices_shift(self, indices, shift):
-        """
-        Shift a collection of parameter indices by a given integer.
-        """
-        return [idx + shift for idx in indices]
-
-    def _shift_type(self, ptype):
-        """
-        The number of indices to shift of a collection of parameters of a given type.
-        """
-        if issubclass(ptype, EdgeParameter):
-            shift = self.network.number_of_edges()
-        elif issubclass(ptype, NodeAnchorParameter):
-            shift = self.network.number_of_anchors()
-        elif issubclass(ptype, NodeLoadParameter):
-            shift = self.network.number_of_nodes()
-
-        return shift
