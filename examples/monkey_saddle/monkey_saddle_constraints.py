@@ -198,12 +198,12 @@ loss = Loss(squared_error)
 # Solve constrained form-finding problem
 # ==========================================================================
 
-recorder = None
-if record:
-    recorder = OptimizationRecorder()
+optimizer = optimizer()
+
+recorder = OptimizationRecorder(optimizer) if record else None
 
 network = constrained_fdm(network0,
-                          optimizer=optimizer(),
+                          optimizer=optimizer,
                           loss=loss,
                           parameters=parameters,
                           constraints=constraints,

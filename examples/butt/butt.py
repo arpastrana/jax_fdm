@@ -40,9 +40,9 @@ qmin, qmax = -20.0, -0.0  # min and max force densities
 
 optimizer = LBFGSB  # the optimization algorithm
 maxiter = 1000  # optimizer maximum iterations
-tol = 1e-9  # optimizer tolerance
+tol = 1e-6  # optimizer tolerance
 
-record = False  # True to record optimization history of force densities
+record = True  # True to record optimization history of force densities
 export = False  # export result to JSON
 
 # ==========================================================================
@@ -75,7 +75,7 @@ network.edges_forcedensities(q=q0)
 # ==========================================================================
 
 if export:
-    FILE_OUT = os.path.join(HERE, f"../data/../json/{name}_base.json")
+    FILE_OUT = os.path.join(HERE, f"../../data/json/{name}_base.json")
     network.to_json(FILE_OUT)
     print("Problem definition exported to", FILE_OUT)
 
@@ -122,12 +122,11 @@ print(f"Load path: {round(network.loadpath(), 3)}")
 # Solve constrained form-finding problem
 # ==========================================================================
 
-recorder = None
-if record:
-    recorder = OptimizationRecorder()
+optimizer = optimizer()
+recorder = OptimizationRecorder(optimizer) if record else None
 
 network = constrained_fdm(network0,
-                          optimizer=optimizer(),
+                          optimizer=optimizer,
                           loss=loss,
                           parameters=parameters,
                           maxiter=maxiter,

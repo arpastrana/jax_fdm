@@ -191,9 +191,7 @@ loss = Loss(squared_error_a, squared_error_b, squared_error_c)
 
 optimizer = SLSQP()
 
-recorder = None
-if record:
-    recorder = OptimizationRecorder(optimizer)
+recorder = OptimizationRecorder(optimizer) if record else None
 
 c_network = constrained_fdm(network,
                             optimizer=optimizer,

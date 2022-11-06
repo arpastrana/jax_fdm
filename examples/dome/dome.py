@@ -71,8 +71,8 @@ angle_base = 20.0  # angle constraint, lower bound
 angle_top = 30.0  # angle constraint, upper bound
 
 # io
+record = True
 export = False
-record = False
 
 HERE = os.path.dirname(__file__)
 
@@ -232,12 +232,12 @@ for config in sweep_configs:
     if fofin_method == fdm:
         network = fofin_method(network)
     else:
-        recorder = None
-        if config.get("record"):
-            recorder = OptimizationRecorder()
+        optimizer = optimizer()
+
+        recorder = OptimizationRecorder(optimizer) if config.get("record") else None
 
         network = fofin_method(network,
-                               optimizer=optimizer(),
+                               optimizer=optimizer,
                                parameters=parameters,
                                loss=loss,
                                constraints=config.get("constraints", []),

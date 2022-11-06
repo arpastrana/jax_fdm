@@ -203,12 +203,11 @@ print(f"Load path: {round(network0.loadpath(), 3)}")
 # Solve constrained form-finding problem
 # ==========================================================================
 
-recorder = None
-if record:
-    recorder = OptimizationRecorder()
+optimizer = optimizer()
+recorder = OptimizationRecorder(optimizer) if record else None
 
 network = constrained_fdm(network0,
-                          optimizer=optimizer(),
+                          optimizer=optimizer,
                           loss=loss,
                           parameters=parameters,
                           maxiter=maxiter,
