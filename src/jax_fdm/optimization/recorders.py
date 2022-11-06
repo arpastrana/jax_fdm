@@ -17,7 +17,7 @@ class OptimizationRecorder(Data):
     def record(self, value):
         self.history.append(value)
 
-    def __call__(self, xk):
+    def __call__(self, xk, *args, **kwargs):
         if self.optimizer:
             xk = self.optimizer.parameters_fdm(xk)
         self.record(xk)

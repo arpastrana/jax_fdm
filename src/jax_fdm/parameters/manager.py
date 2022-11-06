@@ -323,4 +323,3 @@ class ParameterManager:
             mask = np.zeros_like(array, dtype=np.int64)
             mask[indices] = 1
             yield mask
-
