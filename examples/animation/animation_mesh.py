@@ -81,7 +81,8 @@ viewer.add(network,
            )
 
 # warm start model
-_ = model(np.array(recorder.history[0]))
+q, xyz_fixed, _loads = [np.asarray(p) for p in recorder.history[0]]
+_ = model(q, xyz_fixed, _loads)
 
 # decimate
 if decimate:
@@ -101,8 +102,8 @@ if animate:
     def wiggle(f):
 
         print(f"Current frame: {f + 1}/{len(recorder.history)}")
-        q = np.array(recorder.history[f])
-        eqstate = model(q)
+        params = (np.array(p) for p in recorder.history[f])
+        eqstate = model(*params)
 
         # update network
         network_update(network, eqstate)

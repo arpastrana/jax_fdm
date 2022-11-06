@@ -189,12 +189,14 @@ loss = Loss(squared_error_a, squared_error_b, squared_error_c)
 # Solve constrained form-finding problem
 # ==========================================================================
 
+optimizer = SLSQP()
+
 recorder = None
 if record:
-    recorder = OptimizationRecorder()
+    recorder = OptimizationRecorder(optimizer)
 
 c_network = constrained_fdm(network,
-                            optimizer=SLSQP(),
+                            optimizer=optimizer,
                             loss=loss,
                             parameters=parameters,
                             maxiter=200,
