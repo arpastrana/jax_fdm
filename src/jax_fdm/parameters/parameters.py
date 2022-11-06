@@ -16,14 +16,44 @@ class Parameter:
         The upper bound of this parameter for optimization.
         Defaults to `+inf`.
     """
-    def __init__(self, key, bound_low=-inf, bound_up=inf):
+    def __init__(self, key, bound_low=None, bound_up=None):
         """
         Initialize the parameter.
         """
         self.key = key
-        self.bound_low = bound_low
-        self.bound_up = bound_up
         self.attr_name = None
+
+        self._bound_low = None
+        self.bound_low = bound_low
+
+        self._bound_up = None
+        self.bound_up = bound_up
+
+    @property
+    def bound_low(self):
+        """
+        The lower bound of the parameter.
+        """
+        return self._bound_low
+
+    @property
+    def bound_up(self):
+        """
+        The upper bound of the parameter.
+        """
+        return self._bound_up
+
+    @bound_low.setter
+    def bound_low(self, value):
+        if value is None:
+            value = -inf
+        self._bound_low = value
+
+    @bound_up.setter
+    def bound_up(self, value):
+        if value is None:
+            value = inf
+        self._bound_up = value
 
     def index(self, model):
         """
