@@ -50,7 +50,7 @@ network.edges_forcedensities(q_init, keys=network.edges())
 network.nodes_loads([0.0, 0.0, pz], keys=network.nodes_free())
 
 # ==========================================================================
-# Run thee force density method
+# Run the force density method
 # ==========================================================================
 
 eq_network = fdm(network)

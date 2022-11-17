@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 from jax_fdm.datastructures import FDNetwork
 from jax_fdm.equilibrium import fdm
 from jax_fdm.equilibrium import constrained_fdm
