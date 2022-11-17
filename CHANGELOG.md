@@ -21,7 +21,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Restructured `optimization.optimizers` into separate files.
 - Renamed `goals.edgegoal` submodule to `goals.edge`.
 - Renamed `goals.nodegoal` submodule to `goals.node`.
-- Renamed `goals.networrkgoal` submodule to `goals.network`.
+- Renamed `goals.networkgoal` submodule to `goals.network`.
 
 ### Removed
 
