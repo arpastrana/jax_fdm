@@ -26,8 +26,8 @@ from jax_fdm.goals import NodeLineGoal
 from jax_fdm.goals import NetworkLoadPathGoal
 
 from jax_fdm.constraints import NodeCurvatureConstraint
-from jax_fdm.constraints import NetworkEdgesLengthConstraint
-from jax_fdm.constraints import NetworkEdgesForceConstraint
+from jax_fdm.constraints import EdgeLengthConstraint
+from jax_fdm.constraints import EdgeForceConstraint
 
 from jax_fdm.losses import SquaredError
 from jax_fdm.losses import Loss
@@ -176,17 +176,22 @@ if add_edge_length_constraint:
     average_length = np.mean([network.edge_length(*edge) for edge in network.edges()])
     length_min = ratio_length_min * average_length
     length_max = ratio_length_max * average_length
-    constraint = NetworkEdgesLengthConstraint(bound_low=length_min,
-                                              bound_up=length_max)
-    constraints.append(constraint)
+
+    for edge in network.edges():
+        constraint = EdgeLengthConstraint(edge,
+                                          bound_low=length_min,
+                                          bound_up=length_max)
+        constraints.append(constraint)
 
     msg = "Edge length constraint between {} and {}"
     print(msg.format(round(length_min, 2), round(length_max, 2)))
 
 if add_edge_force_constraint:
-    constraint = NetworkEdgesForceConstraint(bound_low=force_min,
-                                             bound_up=force_max)
-    constraints.append(constraint)
+    for edge in network.edges():
+        constraint = EdgeForceConstraint(edge,
+                                         bound_low=force_min,
+                                         bound_up=force_max)
+        constraints.append(constraint)
 
     msg = "Edge force constraint between {} and {}"
     print(msg.format(round(force_min, 2), round(force_max, 2)))
@@ -267,7 +272,7 @@ viewer.add(network0,
            as_wireframe=True,
            show_points=False,
            linewidth=1.0,
-           color=Color.grey().darkened(i * 10))
+           color=Color.grey().darkened(10))
 
 # optimized network
 viewer.add(c_network,
