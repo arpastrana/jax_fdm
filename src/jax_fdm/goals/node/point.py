@@ -13,5 +13,3 @@ class NodePointGoal(VectorGoal, NodeGoal):
         The current xyz coordinates of the node in a network.
         """
         return eq_state.xyz[index, :]
-
-
