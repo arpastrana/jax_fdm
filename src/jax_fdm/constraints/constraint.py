@@ -1,12 +1,8 @@
-from functools import partial
-
 import numpy as np
 
-import jax.numpy as jnp
-
-from jax import jit
-
 from jax import vmap
+
+import jax.numpy as jnp
 
 
 class Constraint:
@@ -79,26 +75,27 @@ class Constraint:
                 bound = np.ravel(bound)
         self._bound_up = bound
 
+    def index_from_model(model):
+        """
+        Get the index in the model of the constraint key.
+        """
+        raise NotImplementedError
+
     def init(self, model):
         """
         Initialize the constraint with information from an equilibrium model.
         """
         self.index = self.index_from_model(model)
 
-    # def __call__(self, q, model):
-    #     """
-    #     The constraint function.
-    #     """
-    #     eqstate = model(q)
-    #     return self.constraint(eqstate, model)
-
-    @partial(jit, static_argnums=(0, 4))
     def __call__(self, q, xyz_fixed, loads, model):
         """
         The called constraint function.
         """
         eqstate = model(q, xyz_fixed, loads)
         constraint = vmap(self.constraint, in_axes=(None, 0))(eqstate, self.index)
+
+        assert jnp.ravel(constraint).shape == jnp.ravel(self.index).shape, f"Constraint shape: {constraint.shape} vs. index shape: {self.index.shape}"
+
         return jnp.ravel(constraint)
 
     def constraint(self, eqstate, index):

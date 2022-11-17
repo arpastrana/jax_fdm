@@ -9,9 +9,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Added `goals.NodePointZGoal`.
+- Added `goals.NodeZCoordinateGoal`.
+- Added `goals.NodeYCoordinateGoal`.
+- Added `goals.NodeXCoordinateGoal`.
+- Added `constraints.NodeZCoordinateConstraint`.
+- Added `constraints.NodeYCoordinateConstraint`.
+- Added `constraints.NodeXCoordinateConstraint`.
 
 ### Changed
+
+- Restructured `optimization.optimizers` into separate files.
+- Renamed `goals.edgegoal` submodule to `goals.edge`.
+- Renamed `goals.nodegoal` submodule to `goals.node`.
+- Renamed `goals.networrkgoal` submodule to `goals.network`.
 
 ### Removed
 
