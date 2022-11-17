@@ -1,7 +1,8 @@
 import jax.numpy as jnp
 
 from jax_fdm.goals import ScalarGoal
-from jax_fdm.goals.networkgoal import NetworkGoal
+
+from jax_fdm.goals.network import NetworkGoal
 
 
 class NetworkLoadPathGoal(ScalarGoal, NetworkGoal):

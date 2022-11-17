@@ -7,7 +7,7 @@ from jax_fdm.geometry import normalize_vector
 from jax_fdm.goals import ScalarGoal
 from jax_fdm.goals import VectorGoal
 
-from jax_fdm.goals.nodegoal import NodeGoal
+from jax_fdm.goals.node import NodeGoal
 
 
 class NodeResidualForceGoal(ScalarGoal, NodeGoal):

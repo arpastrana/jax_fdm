@@ -2,7 +2,7 @@ import numpy as np
 
 from jax_fdm.geometry import closest_point_on_plane
 
-from jax_fdm.goals.nodegoal import NodePointGoal
+from jax_fdm.goals.node import NodePointGoal
 
 
 class NodePlaneGoal(NodePointGoal):
@@ -12,7 +12,7 @@ class NodePlaneGoal(NodePointGoal):
     @property
     def target(self):
         """
-        The target to achieve
+        The target to achieve.
         """
         return self._target
 
@@ -23,5 +23,6 @@ class NodePlaneGoal(NodePointGoal):
     @staticmethod
     def goal(target, prediction):
         """
+        Calculate the closest point on the target plane given the current node coordinates.
         """
         return closest_point_on_plane(prediction, target)

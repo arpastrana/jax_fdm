@@ -1,5 +1,5 @@
 from jax_fdm.goals import ScalarGoal
-from jax_fdm.goals.edgegoal import EdgeGoal
+from jax_fdm.goals.edge import EdgeGoal
 
 
 class EdgeLengthGoal(ScalarGoal, EdgeGoal):

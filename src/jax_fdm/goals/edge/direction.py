@@ -1,7 +1,7 @@
 from jax_fdm.geometry import normalize_vector
 
 from jax_fdm.goals import VectorGoal
-from jax_fdm.goals.edgegoal import EdgeGoal
+from jax_fdm.goals.edge import EdgeGoal
 
 
 class EdgeDirectionGoal(VectorGoal, EdgeGoal):

@@ -2,7 +2,7 @@ import numpy as np
 
 from jax_fdm.geometry import closest_point_on_line
 
-from jax_fdm.goals.nodegoal import NodePointGoal
+from jax_fdm.goals.node import NodePointGoal
 
 
 class NodeLineGoal(NodePointGoal):
