@@ -29,7 +29,7 @@ from jax_fdm.constraints import EdgeForceConstraint
 from jax_fdm.losses import SquaredError
 from jax_fdm.losses import Loss
 
-from jax_fdm.optimization import TrustRegionConstrained
+from jax_fdm.optimization import SLSQP
 
 from jax_fdm.parameters import EdgeForceDensityParameter
 
@@ -53,7 +53,7 @@ q0_cross = -0.5  # starting force density for the edges transversal to the rings
 pz = -0.1  # z component of the applied load
 
 # optimization
-optimizer = TrustRegionConstrained
+optimizer = SLSQP
 maxiter = 10000
 tol = 1e-3
 
