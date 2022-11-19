@@ -1,10 +1,4 @@
-from functools import partial
-
-import jax
-
 import jax.numpy as jnp
-
-from jax import jit
 
 
 # ==========================================================================
@@ -12,6 +6,9 @@ from jax import jit
 # ==========================================================================
 
 class Error:
+    """
+    The base class for an error term in a loss function.
+    """
     def __init__(self, goals, alpha=1.0, name=None, *args, **kwargs):
         self.goals = goals
         self.alpha = alpha
@@ -26,14 +23,17 @@ class Error:
     def errors(gstate):
         raise NotImplementedError
 
-    @partial(jit, static_argnums=0)
     def __call__(self, eqstate):
-        func = partial(self._error_goal, eqstate=eqstate)
-        errors = jax.tree_map(func, self.collections)
-        return self.errors(jnp.array(errors)) * self.alpha
+        """
+        Return the current value of the error term.
+        """
+        errors = []
+        for goal_collection in self.collections:
+            gstate = goal_collection(eqstate)
+            error = self.error(gstate)
+            errors.append(error)
 
-    def _error_goal(self, goal, eqstate):
-        return self.error(goal(eqstate))
+        return self.errors(jnp.array(errors)) * self.alpha
 
     def number_of_goals(self):
         """
@@ -49,21 +49,20 @@ class Error:
 
 
 # ==========================================================================
-# Precooked error functions
+# Precooked error terms
 # ==========================================================================
 
 class SquaredError(Error):
     """
     The canonical squared error.
-    Measures the distance between the current and the target value of a goal.
+
+    It measures the distance between the current and the target value of a goal.
     """
     @staticmethod
-    @jit
     def error(gstate):
         return jnp.sum(gstate.weight * jnp.square(gstate.prediction - gstate.goal))
 
     @staticmethod
-    @jit
     def errors(errors):
         return jnp.sum(errors)
 
@@ -71,6 +70,7 @@ class SquaredError(Error):
 class MeanSquaredError(SquaredError):
     """
     The seminal mean squared error.
+
     Average out all errors because no single error is important enough.
     """
     def errors(self, errors):
