@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added `constraints.NodeZCoordinateConstraint`.
 - Added `constraints.NodeYCoordinateConstraint`.
 - Added `constraints.NodeXCoordinateConstraint`.
+- Added `IPOPT`, a second-order, constrained optimizer that wraps `cyipopt`, to the repertoire of optimizers.
 
 ### Changed
 
@@ -23,6 +24,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Renamed `goals.nodegoal` submodule to `goals.node`.
 - Renamed `goals.networkgoal` submodule to `goals.network`.
 - Enabled support for one-sided bounds in `constraint.Constraints`.
+- `NetworkLoadPathGoal` uses `jnp.multiply` instead of multipication operator `*`.
+- Broke down `Optimizer.minimize()` into `.problem()` and `.solve()`.
+- For efficiency, `SecondOrderOptimizer` calculates `hessian` as `jax.jacfwd(jax.jacrev)`.
+- Changed calculation of the scalar ouput of `Loss` using a compact loop. 
+- Changed calculation of the scalar ouput of `Error` using a compact loop. 
 
 ### Removed
 
