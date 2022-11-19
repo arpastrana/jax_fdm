@@ -22,6 +22,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Renamed `goals.edgegoal` submodule to `goals.edge`.
 - Renamed `goals.nodegoal` submodule to `goals.node`.
 - Renamed `goals.networkgoal` submodule to `goals.network`.
+- Enabled support for one-sided bounds in `constraint.Constraints`.
 
 ### Removed
 
