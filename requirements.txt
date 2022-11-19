@@ -2,3 +2,4 @@ jax[cpu]
 compas
 compas_singular
 scipy
+cyipopt

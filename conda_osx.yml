@@ -5,6 +5,7 @@ dependencies:
   - python
   - compas
   - compas_view2==0.7.0
+  - cyipopt
   - pip:
     - -r requirements.txt
     - -r requirements-dev.txt
