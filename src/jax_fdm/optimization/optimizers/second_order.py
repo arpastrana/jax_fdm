@@ -1,5 +1,6 @@
 from jax import jit
-from jax import hessian
+from jax import jacfwd
+from jax import jacrev
 
 from jax_fdm.optimization.optimizers import Optimizer
 
@@ -16,4 +17,6 @@ class SecondOrderOptimizer(Optimizer):
         """
         Compute the hessian function of a loss function.
         """
-        return jit(hessian(loss, argnums=0))
+        # NOTE: jacrev(jacfwd) is x3 slower than hessian. Why?
+        # NOTE: Ah, but jacfwd(jacrev) is as fast as hessian
+        return jit(jacfwd(jacrev(loss, argnums=0)))
