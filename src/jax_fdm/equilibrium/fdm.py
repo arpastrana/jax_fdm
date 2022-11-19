@@ -46,10 +46,11 @@ def constrained_fdm(network,
     """
     Generate a network in a constrained state of static equilibrium using the force density method.
     """
-    # optimizer works
     model = EquilibriumModel(network)
-    params_opt = optimizer.minimize(model, loss, parameters, constraints, maxiter, tol, callback)
-    q, xyz_fixed, loads = optimizer.parameters_fdm(params_opt)
+
+    opt_problem = optimizer.problem(model, loss, parameters, constraints, maxiter, tol, callback)
+    opt_params = optimizer.solve(opt_problem)
+    q, xyz_fixed, loads = optimizer.parameters_fdm(opt_params)
 
     return _fdm(network, q, xyz_fixed, loads)
 

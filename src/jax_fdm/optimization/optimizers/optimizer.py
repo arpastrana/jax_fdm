@@ -71,7 +71,7 @@ class Optimizer:
         Pre-process the goals in the loss function to accelerate computations.
         """
         for term in loss.terms_error:
-            goal_collections = collect_goals(term.goals)
+            goal_collections = self.collect_goals(term.goals)
             for goal_collection in goal_collections:
                 goal_collection.init(model)
             term.collections = goal_collections
@@ -80,16 +80,16 @@ class Optimizer:
 # Minimization
 # ==========================================================================
 
-    def minimize(self,
-                 model,
-                 loss,
-                 parameters=None,
-                 constraints=None,
-                 maxiter=100,
-                 tol=1e-6,
-                 callback=None):
+    def problem(self,
+                model,
+                loss,
+                parameters=None,
+                constraints=None,
+                maxiter=100,
+                tol=1e-6,
+                callback=None):
         """
-        Minimize a loss function via some flavor of gradient descent.
+        Set up an optimization problem.
         """
         # optimization parameters
         if not parameters:
@@ -109,56 +109,71 @@ class Optimizer:
 
         # build goal collections
         self.goals(loss, model)
-        print(f"Goal collections: {loss.number_of_collections()}")
+        print(f"\tGoal collections: {loss.number_of_collections()}")
 
         # loss matters
         loss = partial(self.loss, loss=loss, model=model)
 
         print("Warming up the pressure cooker...")
         start_time = time()
-        loss(x)
-        print(f"Loss warmup time: {round(time() - start_time, 4)} seconds")
+        _ = loss(x)
+        print(f"\tLoss warmup time: {(time() - start_time):.4} seconds")
 
         # gradient of the loss function
         grad_loss = self.gradient(loss)  # w.r.t. first function argument
         start_time = time()
-        grad_loss(x)
-        print(f"Gradient warmup time: {round(time() - start_time, 4)} seconds")
+        _ = grad_loss(x)
+        print(f"\tGradient warmup time: {(time() - start_time):.4} seconds")
 
         # gradient of the loss function
         hessian_loss = self.hessian(loss)  # w.r.t. first function argument
         if hessian_loss:
             start_time = time()
-            hessian_loss(x)
-            print(f"Hessian warmup time: {round(time() - start_time, 4)} seconds")
+            _ = hessian_loss(x)
+            print(f"\tHessian warmup time: {(time() - start_time):.4} seconds")
 
         # constraints
+        constraints = constraints or []
         if constraints:
             start_time = time()
             constraints = self.constraints(constraints, model, x)
-            print(f"Constraints warmup time: {round(time() - start_time, 4)} seconds")
+            print(f"\tConstraints warmup time: {round(time() - start_time, 4)} seconds")
 
-        # scipy optimization
+        opt_kwargs = {"fun": loss,
+                      "jac": grad_loss,
+                      "hess": hessian_loss,
+                      "method": self.name,
+                      "x0": x,
+                      "tol": tol,
+                      "bounds": bounds,
+                      "constraints": constraints,
+                      "callback": callback,
+                      "options": {"maxiter": maxiter, "disp": self.disp}}
+
+        return opt_kwargs
+
+    def solve(self, opt_problem):
+        """
+        Solve an optimization problem by minimizing a loss function via gradient descent.
+        """
         print(f"Optimization with {self.name} started...")
         start_time = time()
 
         # minimize
-        res_q = minimize(fun=loss,
-                         jac=grad_loss,
-                         hess=hessian_loss,
-                         method=self.name,
-                         x0=x,
-                         tol=tol,
-                         bounds=bounds,
-                         constraints=constraints,
-                         callback=callback,
-                         options={"maxiter": maxiter, "disp": self.disp})
+        res_q = self._minimize(opt_problem)
 
         print(res_q.message)
         print(f"Final loss in {res_q.nit} iterations: {res_q.fun}")
         print(f"Optimization elapsed time: {time() - start_time} seconds")
 
         return res_q.x
+
+    @staticmethod
+    def _minimize(opt_problem):
+        """
+        Scipy backend method to minimize a loss function.
+        """
+        return minimize(**opt_problem)
 
 # ==========================================================================
 # Parameters
@@ -188,21 +203,21 @@ class Optimizer:
         """
         return self.pm.parameters_fdm(params_opt)
 
-
 # ==========================================================================
 # Goal collections
 # ==========================================================================
 
-def collect_goals(goals):
-    """
-    Convert a list of goals into a list of goal collections.
-    """
-    goals = sorted(goals, key=lambda g: type(g).__name__)
-    groups = groupby(goals, lambda g: type(g))
+    @staticmethod
+    def collect_goals(goals):
+        """
+        Convert a list of goals into a list of goal collections.
+        """
+        goals = sorted(goals, key=lambda g: type(g).__name__)
+        groups = groupby(goals, lambda g: type(g))
 
-    collections = []
-    for _, group in groups:
-        collection = Collection(list(group))
-        collections.append(collection)
+        collections = []
+        for _, group in groups:
+            collection = Collection(list(group))
+            collections.append(collection)
 
-    return collections
+        return collections
