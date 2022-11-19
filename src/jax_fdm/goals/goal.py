@@ -1,8 +1,4 @@
-from functools import partial
-
 import numpy as np
-
-from jax import jit
 
 from jax import vmap
 
@@ -90,7 +86,6 @@ class Goal:
         """
         self.index = self.index_from_model(model)
 
-    @partial(jit, static_argnums=0)
     def __call__(self, eqstate):
         """
         Return the current goal state.
