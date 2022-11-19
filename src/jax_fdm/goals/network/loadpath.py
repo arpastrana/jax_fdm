@@ -17,6 +17,6 @@ class NetworkLoadPathGoal(ScalarGoal, NetworkGoal):
         """
         The current load path of the network.
         """
-        load_path = jnp.sum(jnp.abs(eq_state.lengths * eq_state.forces))
+        load_path = jnp.sum(jnp.abs(jnp.multiply(eq_state.lengths, eq_state.forces)))
 
         return jnp.atleast_1d(load_path)
