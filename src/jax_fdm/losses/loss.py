@@ -1,10 +1,6 @@
 from functools import partial
 
-import jax
-
 from jax import jit
-
-import jax.numpy as jnp
 
 from jax_fdm.losses import Error
 from jax_fdm.losses import Regularizer
@@ -28,14 +24,16 @@ class Loss:
 
     @partial(jit, static_argnums=(0, 4))
     def __call__(self, q, xyz_fixed, loads, model):
+        """
+        Compute the scalar output of the loss function.
+        """
         eqstate = model(q, xyz_fixed, loads)
-        func = partial(self._term_val, eqstate=eqstate)
-        return jnp.sum(jnp.array(jax.tree_map(func, self.terms)))
 
-    @staticmethod
-    @partial(jit, static_argnums=0)
-    def _term_val(term, eqstate):
-        return term(eqstate)
+        loss = 0.0
+        for error_term in self.terms:
+            loss = loss + error_term(eqstate)
+
+        return loss
 
     @property
     def terms_error(self):
