@@ -28,48 +28,55 @@ class EquilibriumModel:
         """
         return cls(EquilibriumStructure(network))
 
-    @partial(jit, static_argnums=0)
     def edges_vectors(self, xyz):
+        """
+        Calculate the unnormalized edge directions.
+        """
         return self.structure.connectivity @ xyz
 
-    @partial(jit, static_argnums=0)
     def edges_lengths(self, vectors):
+        """
+        Compute the length of the edges.
+        """
         return jnp.linalg.norm(vectors, axis=1, keepdims=True)
 
-    @partial(jit, static_argnums=0)
     def edges_forces(self, q, lengths):
+        """
+        Calculate the force in the edges.
+        """
         return jnp.reshape(q, (-1, 1)) * lengths
 
-    @partial(jit, static_argnums=0)
     def nodes_residuals(self, q, loads, vectors):
+        """
+        Compute the force at the anchor supports of the structure.
+        """
         connectivity = self.structure.connectivity
         return loads - np.transpose(connectivity) @ jnp.diag(q) @ vectors
 
-    @partial(jit, static_argnums=0)
     def nodes_free_positions(self, q, xyz_fixed, loads):
-        # convenience shorthands
+        """
+        Calculate the XYZ coordinates of the free nodes.
+        """
+        # shorthand
         free = self.structure.free_nodes
-        # loads = self.loads
-        # xyz_fixed = self.xyz_fixed
-
-        # connectivity
         c_fixed = self.structure.connectivity_fixed
         c_free = self.structure.connectivity_free
+
+        # connectivity
         c_free_t = np.transpose(c_free)
 
-        # Mutable stuff
-        q_matrix = jnp.diag(q)
-
         # solve equilibrium after solving a linear system of equations
+        q_matrix = jnp.diag(q)
         A = c_free_t @ q_matrix @ c_free
         b = loads[free, :] - c_free_t @ q_matrix @ c_fixed @ xyz_fixed
 
         return jnp.linalg.solve(A, b)
 
-    @partial(jit, static_argnums=0)
     def nodes_positions(self, xyz_free, xyz_fixed):
+        """
+        Concatenate in order the position of the free and the fixed nodes.
+        """
         # NOTE: free fixed indices sorted by enumeration
-        # xyz_fixed = self.xyz_fixed
         indices = self.structure.freefixed_nodes
         return jnp.concatenate((xyz_free, xyz_fixed))[indices, :]
 
