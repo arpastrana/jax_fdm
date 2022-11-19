@@ -10,12 +10,12 @@ from jax_fdm.optimization.optimizers import SecondOrderOptimizer
 # Optimizers
 # ==========================================================================
 
-class BFGS(Optimizer):
+class SLSQP(ConstrainedOptimizer):
     """
-    The Boyd-Fletcher-Floyd-Shannon optimizer.
+    The sequential least-squares programming optimizer.
     """
     def __init__(self, **kwargs):
-        super().__init__(name="BFGS", **kwargs)
+        super().__init__(name="SLSQP", **kwargs)
 
 
 class LBFGSB(Optimizer):
@@ -26,7 +26,15 @@ class LBFGSB(Optimizer):
         super().__init__(name="L-BFGS-B", disp=0, **kwargs)
 
 
-class TrustRegionConstrained(ConstrainedOptimizer):
+class BFGS(Optimizer):
+    """
+    The Boyd-Fletcher-Floyd-Shannon optimizer.
+    """
+    def __init__(self, **kwargs):
+        super().__init__(name="BFGS", **kwargs)
+
+
+class TrustRegionConstrained(ConstrainedOptimizer, SecondOrderOptimizer):
     """
     A trust-region algorithm for constrained optimization.
     """
@@ -36,15 +44,7 @@ class TrustRegionConstrained(ConstrainedOptimizer):
 
 class NewtonCG(SecondOrderOptimizer):
     """
-    A trust-region algorithm for constrained optimization.
+    The truncated Newton method. It uses a CG method to the compute the search direction.
     """
     def __init__(self, **kwargs):
         super().__init__(name="Newton-CG", **kwargs)
-
-
-class SLSQP(ConstrainedOptimizer):
-    """
-    The sequential least-squares programming optimizer.
-    """
-    def __init__(self, **kwargs):
-        super().__init__(name="SLSQP", **kwargs)
