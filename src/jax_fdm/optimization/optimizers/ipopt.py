@@ -1,7 +1,5 @@
 from functools import partial
 
-from cyipopt import minimize_ipopt
-
 import jax.numpy as jnp
 
 from jax import jit
@@ -10,6 +8,11 @@ from jax import jacfwd
 
 from jax_fdm.optimization.optimizers import SecondOrderOptimizer
 from jax_fdm.optimization.optimizers import ConstrainedOptimizer
+
+try:
+    from cyipopt import minimize_ipopt
+except (ImportError, ModuleNotFoundError):
+    pass
 
 
 # ==========================================================================
