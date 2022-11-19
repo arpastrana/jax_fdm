@@ -5,7 +5,7 @@ from .optimizers import *  # noqa F403
 
 try:
     from .ipopt import *  # noqa F403
-except ImportError:
+except (ImportError, ModuleNotFoundError):
     pass
 
 __all__ = [name for name in dir() if not name.startswith('_')]

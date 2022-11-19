@@ -55,7 +55,7 @@ conda activate jaxenv
 Next, install COMPAS and COMPAS VIEW2 via `conda`:
 
 ```bash
-conda install -c conda-forge compas compas_view2==0.7.0 cyipopt
+conda install -c conda-forge compas compas_view2==0.7.0 
 ```
 
 Finally, install JAX FDM with a one-liner via `pip`:
