@@ -14,6 +14,9 @@ try:
 except (ImportError, ModuleNotFoundError):
     pass
 
+from jax import vmap, grad, jacrev
+from jax import jvp, vjp
+
 
 # ==========================================================================
 # Constrained optimizer
@@ -67,6 +70,48 @@ class IPOPT(ConstrainedOptimizer, SecondOrderOptimizer):
         hessian = jacfwd(jacfwd(f))(x)
         return jnp.einsum("ijk,i->jk", hessian, v)
 
+    @staticmethod
+    def vhvp(x, v, f):
+        """
+        Calculate the product of the Hessian of the constraint function and a vector of Lagrange multipliers.
+        Vectorized.
+        """
+        print(f"x shape: {x.shape}, v shape: {v.shape}")
+
+        # y, vjp_fun = vjp(f, x)
+        # outs, = vmap(vjp_fun)(M)
+        # return outs
+
+        # y, vjp_fun = vjp(f, x)
+        # outs, = vmap(vjp_fun)(jacfwd(x))
+
+        # return vmap(jvp, in_axes=(0, None))(jacfwd(f), (x, ), (v, ))
+        # jacobian = jacfwd(f)(x)
+        thing = lambda s: jnp.dot(v, jacfwd(f)(s))
+        return jacfwd(thing)(x)
+
+        # one option
+        # _jvp = lambda s: jvp(jacfwd(f), (x, ), (s, ))[1]
+        # return vmap(_jvp, in_axes=(0, ))(v)
+
+        # _, tangents = jvp(jacfwd(f), (jacobian[:, 1], ), (v, ))
+        # _, vjp_fun = vjp(f, x)
+        # out = vjp_fun(v)
+
+        # return tangents
+        # hessian = jacfwd(jacfwd(f))(x)
+        # return jnp.einsum("ijk,i->jk", hessian, v)
+        return
+
+    @staticmethod
+    def hvp2(x, v, f):
+        """
+        Calculate the product of the Hessian of the constraint function and a vector of Lagrange multipliers.
+        Vectorized.
+        """
+        thing = lambda s: jnp.dot(v, jacfwd(f)(s))
+        return jacfwd(thing)(x)
+
     def parameters_bounds(self):
         """
         Return a tuple of arrays with the upper and the lower bounds of optimization parameters.
@@ -116,11 +161,41 @@ class IPOPT(ConstrainedOptimizer, SecondOrderOptimizer):
                 cfun = partial(fun, constraint=constraint, model=model)
                 jac = jit(jacfwd(cfun))
                 hvp = jit(partial(self.hvp, f=cfun))
+                vhvp = jit(partial(self.vhvp, f=cfun))
 
                 # warm start
                 c = cfun(params_opt)
                 _ = jac(params_opt)
-                _ = hvp(params_opt, jnp.ones_like(c))
+                h = hvp(params_opt, jnp.ones_like(c))
+
+                print("hvp shape",  h.shape)
+                vh = vhvp(params_opt, jnp.ones_like(c))
+                print()
+                print("vhvp shape", vh.shape)
+                assert jnp.allclose(h, vh)
+
+                n = 5
+                from time import time
+                times = []
+                for i in range(n):
+                    start_time = time()
+                    _ = hvp(params_opt, jnp.ones_like(c))
+                    times.append(time() - start_time)
+                    print(time() - start_time)
+                time_avg = sum(times) / n
+                print(f"Hessian vector product avg ex time: {time_avg:.4} seconds")
+
+                times = []
+                for i in range(n):
+                    start_time = time()
+                    _ = vhvp(params_opt, jnp.ones_like(c))
+                    times.append(time() - start_time)
+                    print(time() - start_time)
+                time_avg = sum(times) / n
+                print(f"Hessian vector product 2 avg ex time: {time_avg:.4} seconds")
+                #
+                raise
+
 
                 # store
                 cdict["type"] = ctype
