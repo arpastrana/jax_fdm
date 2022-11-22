@@ -3,7 +3,7 @@ from functools import partial
 import jax.numpy as jnp
 
 from jax import jit
-
+from jax import vjp
 from jax import jacfwd
 
 from jax_fdm.optimization.optimizers import SecondOrderOptimizer
@@ -13,9 +13,6 @@ try:
     from cyipopt import minimize_ipopt
 except (ImportError, ModuleNotFoundError):
     pass
-
-from jax import vmap, grad, jacrev
-from jax import jvp, vjp
 
 
 # ==========================================================================
@@ -63,28 +60,14 @@ class IPOPT(ConstrainedOptimizer, SecondOrderOptimizer):
         return self.constraint(params_opt, constraint, model) - constraint.bound_low
 
     @staticmethod
-    def hvp3(x, v, f):
-        """
-        Calculate the product of the second derivatives of the vector-valued constraint function and a vector of Lagrange multipliers.
-        """
-        hessian = jacfwd(jacfwd(f))(x)
-        return jnp.einsum("ijk,i->jk", hessian, v)
-
-    @staticmethod
-    def hvp2(x, v, f):
-        """
-        Calculate the product of the Hessian of the constraint function and a vector of Lagrange multipliers.
-        Vectorized.
-        """
-        thing = lambda s: jnp.dot(v, jacfwd(f)(s))
-        return jacfwd(thing)(x)
-
-    @staticmethod
     def hvp(x, v, f):
         """
         Calculate the product of the second derivatives of the vector-valued constraint function and a vector of Lagrange multipliers.
         """
-        _vjp = lambda s: vjp(f, s)[1](v)[0]
+        def _vjp(s):
+            _, vjp_fun = vjp(f, s)
+            return vjp_fun(v)[0]
+
         return jacfwd(_vjp)(x)
 
     def parameters_bounds(self):
@@ -101,7 +84,7 @@ class IPOPT(ConstrainedOptimizer, SecondOrderOptimizer):
             return []
 
         print(f"Constraints: {len(constraints)}")
-        # constraints = self.collect_constraints(constraints)
+        constraints = self.collect_constraints(constraints)
         print(f"\tConstraint colections: {len(constraints)}")
 
         clist = []
@@ -124,11 +107,11 @@ class IPOPT(ConstrainedOptimizer, SecondOrderOptimizer):
                 if not jnp.allclose(constraint.bound_up, jnp.inf):
                     print("\tAdding bound high inequality constraint")
                     funs.append(self.constraint_ineq_up)
-
             if len(funs) == 0:
                 print("\tNo constraints were processed. Check the constraint bounds!")
                 return clist
 
+            # format constraint functions in a dictionary
             for fun in funs:
 
                 cdict = {}
@@ -136,42 +119,11 @@ class IPOPT(ConstrainedOptimizer, SecondOrderOptimizer):
                 cfun = partial(fun, constraint=constraint, model=model)
                 jac = jit(jacfwd(cfun))
                 hvp = jit(partial(self.hvp, f=cfun))
-                # hvp = jit(partial(self.hvp2, f=cfun))
-                # hvp3 = jit(partial(self.hvp3, f=cfun))
 
                 # warm start
                 c = cfun(params_opt)
                 _ = jac(params_opt)
-                h = hvp(params_opt, jnp.ones_like(c))
-                print("hvp shape",  h.shape)
-
-                # h2 = hvp3(params_opt, jnp.ones_like(c))
-                # print()
-                # print("hvp2 shape", h2.shape)
-                # assert jnp.allclose(h, h2)
-
-                n = 5
-                from time import time
-                times = []
-                for i in range(n):
-                    start_time = time()
-                    _ = hvp(params_opt, jnp.ones_like(c))
-                    times.append(time() - start_time)
-                    print(time() - start_time)
-                time_avg = sum(times) / n
-                print(f"Hessian vector product avg ex time: {time_avg:.4} seconds")
-
-                # times = []
-                # for i in range(n):
-                #     start_time = time()
-                #     _ = hvp3(params_opt, jnp.ones_like(c))
-                #     times.append(time() - start_time)
-                #     print(time() - start_time)
-                # time_avg = sum(times) / n
-                # print(f"Hessian vector product 2 avg ex time: {time_avg:.4} seconds")
-
-                #
-                # raise
+                _ = hvp(params_opt, jnp.ones_like(c))
 
                 # store
                 cdict["type"] = ctype
