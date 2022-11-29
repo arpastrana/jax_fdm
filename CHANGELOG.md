@@ -11,6 +11,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Changed generator unpacking `*sarrays` in `parameters.split` unsupported in Python 3.7. 
+
 ### Removed
 
 

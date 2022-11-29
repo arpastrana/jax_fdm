@@ -172,7 +172,7 @@ class ParameterManager:
     @property
     def indices_optfrozen(self):
         if self._indices_optfrozen is None:
-            _, _, indices = split(self.parameters_model, func=self.mask_optimizable)
+            _, indices = split(self.parameters_model, func=self.mask_optimizable)
             self._indices_optfrozen = indices
         return self._indices_optfrozen
 
@@ -269,6 +269,9 @@ class ParameterManager:
 
     @property
     def parameters_model(self):
+        """
+        The model parameters.
+        """
         if self._parameters_model is None:
             param_arrays = []
             for param in self.network.parameters():
@@ -282,20 +285,29 @@ class ParameterManager:
 
     @property
     def parameters_opt(self):
+        """
+        The optimizable model parameters.
+        """
         if self._parameters_opt is None:
-            opt, _, _ = split(self.parameters_model, func=self.mask_optimizable)
+            parameters, _ = split(self.parameters_model, func=self.mask_optimizable)
+            opt, _ = parameters
             self._parameters_opt = opt
         return self._parameters_opt
 
     @property
     def parameters_frozen(self):
+        """
+        The non-optimizable model parameters.
+        """
         if self._parameters_frozen is None:
-            _, frozen, _ = split(self.parameters_model, func=self.mask_optimizable)
+            parameters, _ = split(self.parameters_model, func=self.mask_optimizable)
+            _, frozen = parameters
             self._parameters_frozen = frozen
         return self._parameters_frozen
 
     def parameters_fdm(self, params_opt):
         """
+        Reshape optimizable model parameters into fdm parameters.
         """
         params = combine(params_opt, self.parameters_frozen, adef=self.indices_optfrozen)
         q, xyz_fixed, loads = jnp.split(params, self.indices_fdm)

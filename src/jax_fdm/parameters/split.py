@@ -9,10 +9,10 @@ def split(parray, func):
     """
     masks = func(parray)
     indices = [np.flatnonzero(mask) for mask in masks]
-    sarrays = (parray[idx] for idx in indices)
+    sarrays = [parray[idx] for idx in indices]
     adef = np.argsort(np.concatenate(indices))
 
-    return *sarrays, adef
+    return sarrays, adef
 
 
 @jit
