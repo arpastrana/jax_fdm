@@ -24,6 +24,9 @@ class FDNetworkArtist(NetworkArtist):
     default_loadcolor = Color.from_rgb255(0, 150, 10)
     default_reactioncolor = Color.pink()
 
+    default_tensioncolor = Color.from_rgb255(227, 6, 75)
+    default_compressioncolor = Color.from_rgb255(12, 119, 184)
+
     default_fdcolormap = ColorMap.from_mpl("viridis")
     default_forcecolormap = ColorMap.from_three_colors(Color.from_rgb255(12, 119, 184),
                                                        Color.grey().lightened(50),
@@ -61,21 +64,21 @@ class FDNetworkArtist(NetworkArtist):
                          nodes=nodes,
                          edges=edges,
                          nodecolor=nodecolor,
-                         edgecolor=edgecolor,
                          *args,
                          **kwargs)
 
         self._default_loadcolor = None
         self._default_reactioncolor = None
         self._default_nodesupportcolor = None
-
-        self._default_fdcolormap = None
-        self._default_forcecolormap = None
+        self._default_tensioncolor = None
+        self._default_compressioncolor = None
 
         self._node_size = None
 
         self.node_size = nodesize
         self.edge_width = edgewidth
+
+        self.edge_color = edgecolor
 
         self.load_color = loadcolor or self.default_loadcolor
         self.reaction_color = reactioncolor or self.default_reactioncolor
@@ -254,35 +257,20 @@ class FDNetworkArtist(NetworkArtist):
                 except ZeroDivisionError:
                     ratios = [0.0] * len(self.edges)
 
+                self._edge_color = {edge: cmap(ratio) for edge, ratio in zip(self.edges, ratios)}
+
             elif color == "force":
                 cmap = self.default_forcecolormap
 
-                forces = []
-                compression = []
-                tension = []
+                edge_color = {}
                 for edge in self.edges:
                     force = network.edge_force(edge)
-                    forces.append(force)
+                    _color = self.default_tensioncolor
                     if force <= 0.0:
-                        compression.append(force)
-                    else:
-                        tension.append(force)
+                        _color = self.default_compressioncolor
+                    edge_color[edge] = _color
 
-                if compression:
-                    cmin = min(compression)
-
-                if tension:
-                    tmax = max(tension)
-
-                ratios = []
-                for force in forces:
-                    if force <= 0.0:
-                        ratio = remap_values([force], 0.0, 0.5, cmin, 0.0).pop()
-                    else:
-                        ratio = remap_values([force], 0.5, 1.0, 0.0, tmax).pop()
-                    ratios.append(ratio)
-
-            self._edge_color = {edge: cmap(ratio) for edge, ratio in zip(self.edges, ratios)}
+                self._edge_color = edge_color
 
     @property
     def node_color(self):
@@ -335,6 +323,6 @@ class FDNetworkArtist(NetworkArtist):
             try:
                 widths = remap_values(forces, width_min, width_max)
             except ZeroDivisionError:
-                widths = [self.default_edgewidth] * len(self.edges)
+                widths = [self.default_edgewidth][0] * len(self.edges)
 
             self._edge_width = {edge: width for edge, width in zip(self.edges, widths)}
