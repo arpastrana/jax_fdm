@@ -19,6 +19,7 @@ class LossPlotter:
         """
         Plot the loss function on an array of force densities.
         """
+        print("Plotting loss function...")
         model = EquilibriumModel(self.network)
 
         for loss_term in [self.loss] + list(self.loss.terms):
