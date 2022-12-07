@@ -320,9 +320,12 @@ class FDNetworkArtist(NetworkArtist):
             width_min, width_max = width
             forces = [fabs(self.network.edge_force(edge)) for edge in self.edges]
 
-            try:
-                widths = remap_values(forces, width_min, width_max)
-            except ZeroDivisionError:
-                widths = [self.default_edgewidth][0] * len(self.edges)
+            if min(forces) == max(forces):
+                widths = [width_max] * len(self.edges)
+            else:
+                try:
+                    widths = remap_values(forces, width_min, width_max)
+                except ZeroDivisionError:
+                    widths = [self.default_edgewidth][0] * len(self.edges)
 
             self._edge_width = {edge: width for edge, width in zip(self.edges, widths)}
