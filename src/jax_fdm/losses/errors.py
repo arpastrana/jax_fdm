@@ -1,5 +1,6 @@
 import jax.numpy as jnp
-
+from jax import jit
+from functools import partial
 
 # ==========================================================================
 # Error
@@ -23,6 +24,7 @@ class Error:
     def errors(gstate):
         raise NotImplementedError
 
+    @partial(jit, static_argnums=0)
     def __call__(self, eqstate):
         """
         Return the current value of the error term.
