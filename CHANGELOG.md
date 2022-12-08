@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Fixed bug in `edgewidth` sizing in `NetworkArtist` when all edges have the same force. 
+- Changed `angle_vectors` to return angle in radians by default.
 
 ### Removed
 
