@@ -3,15 +3,17 @@ import jax.numpy as jnp
 from jax.lax import cond
 
 
-def angle_vectors(u, v):
+def angle_vectors(u, v, deg=False):
     """
     Compute the smallest angle in degrees between two vectors.
     """
     L = length_vector(u) * length_vector(v)
-    cosim = (u @ v) / L
-    cosim = jnp.maximum(jnp.minimum(cosim, 1.0), -1.0)
+    cosim = jnp.maximum(jnp.minimum((u @ v) / L, 1.0), -1.0)
+    angle = jnp.arccos(cosim)
 
-    return jnp.degrees(jnp.arccos(cosim))
+    if deg:
+        return jnp.degrees(angle)
+    return angle
 
 
 def length_vector(u):

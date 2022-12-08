@@ -1,6 +1,9 @@
-import jax.numpy as jnp
-from jax import jit
 from functools import partial
+
+from jax import jit
+
+import jax.numpy as jnp
+
 
 # ==========================================================================
 # Error
