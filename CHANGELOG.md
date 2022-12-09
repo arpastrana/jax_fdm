@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Fixed bug in `edgewidth` sizing in `NetworkArtist` when all edges have the same force. 
 - Changed `angle_vectors` to return angle in radians by default.
+- Shifted loads start point in `plotters.NetworkArtist` for them to be incident to the nodes.
 
 ### Removed
 

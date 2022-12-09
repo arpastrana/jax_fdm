@@ -61,6 +61,7 @@ class FDNetworkPlotterArtist(FDNetworkArtist, NetworkArtist):
             return
 
         load = self.draw_vector(vector, start, scale)
+        start = add_vectors(start, scale_vector(load, -1.))
 
         return self.plotter.add(load, point=Point(*start), color=color)
 
