@@ -135,7 +135,7 @@ class NodeNormalAngleConstraint(NodeConstraint):
 
     def constraint(self, eqstate, index):
         """
-        Returns the curvature at a node based on the xyz coordinates of its one-hop neighborhood.
+        Returns the normal at a node based on the xyz coordinates of its one-hop neighborhood.
         """
         normal = self.node_normal(eqstate, index)
 
