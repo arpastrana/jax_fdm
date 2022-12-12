@@ -13,6 +13,7 @@ from jax_fdm.equilibrium import fdm
 
 from jax_fdm.visualization import Plotter
 
+
 # ==========================================================================
 # Initial parameters
 # ==========================================================================
@@ -20,7 +21,7 @@ from jax_fdm.visualization import Plotter
 arch_length = 5.0
 num_segments = 10
 q_init = -1
-py = pz = -0.2
+py = -0.2
 
 # ==========================================================================
 # Create the geometry of an arch
@@ -50,8 +51,7 @@ network.node_anchor(key=len(points) - 1)
 network.edges_forcedensities(q_init, keys=network.edges())
 
 # set initial point loads to all nodes of the network
-# network.nodes_loads([0.0, py, 0.0], keys=network.nodes_free())
-network.nodes_loads([0.0, 0.0, pz], keys=network.nodes_free())
+network.nodes_loads([0.0, py, 0.0], keys=network.nodes_free())
 
 # ==========================================================================
 # Run thee force density method
@@ -64,10 +64,6 @@ eq_network = fdm(network)
 # ==========================================================================
 
 plotter = Plotter(dpi=150)
-
-# equilibrated arch
-T = Rotation.from_axis_and_angle([1., 0., 0.], -pi / 2.0)
-eq_network = eq_network.transformed(T)
 
 plotter.add(eq_network,
             show_nodes=True,

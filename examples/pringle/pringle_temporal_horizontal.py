@@ -22,13 +22,13 @@ from compas.geometry import add_vectors
 from compas.geometry import Translation
 from compas.geometry import offset_line
 from compas.geometry import dot_vectors
-from compas.datastructures import network_transform
+from compas.datastructures import network_transform, network_find_cycles
 
 # compas
 from compas.datastructures import Mesh
 from compas.geometry import Line
 from compas.geometry import add_vectors
-from compas.geometry import subtract_vectors
+from compas.geometry import subtract_vectors, normalize_vector
 from compas.geometry import cross_vectors
 from compas.geometry import rotate_points
 from compas.geometry import scale_vector
@@ -36,6 +36,7 @@ from compas.geometry import Polygon
 from compas.geometry import offset_polygon
 from compas.geometry import offset_polyline
 from compas.geometry import Translation
+from compas.geometry import project_point_plane
 from compas.utilities import pairwise
 from compas.utilities import geometric_key
 
@@ -122,7 +123,7 @@ length_vault = 6.0
 course_width = 0.2
 
 num_segments = 11
-num_courses = 5
+num_courses = 4
 
 height_arch0 = 1.0
 
@@ -134,7 +135,7 @@ pz_3d = -0.1
 qmin = None  # -50.0 # -5
 qmax = 0.0  # -0.5
 
-include_supports_as_params = False
+include_supports_as_params = True
 xtol = 0.1
 ytol = xtol
 
@@ -143,7 +144,7 @@ optimizer = LBFGSB
 maxiter = 10000
 tol = 1e-14
 
-optimize_twice = True
+optimize_twice = False
 optimizer_2 = SLSQP
 maxiter_2 = 1000
 tol_2 = 1e-9
@@ -154,7 +155,7 @@ target_length_3d = course_width
 
 # goal vector, angle
 angle_vector = [0.0, 0.0, 1.0]  # reference vector to compute target angle
-angle_base = 20.0
+angle_base = 30.0
 angle_top = 40.0
 angle_linear_range = True
 
@@ -164,7 +165,7 @@ length_delta = 0.25
 edge_angle_low = 0.0
 edge_angle_up = 70.0
 
-record = False
+record = True
 export = False
 
 HERE = os.path.dirname(__file__)
@@ -409,8 +410,8 @@ for i in range(num_courses):
     goals_length = []
     for edge in cross_edges_set:
         u, v = edge
-        if u in anchors or v in anchors:
-            continue
+        # if u in anchors or v in anchors:
+            # continue
         goal = EdgeLengthGoal(edge, target=target_length_3d, weight=1.)
         goals_length.append(goal)
 
@@ -432,38 +433,43 @@ for i in range(num_courses):
         u, v = edge
         edges_middle.append(edge)
 
-        xu, yu, _ = network.node_coordinates(u)  # xyz of first node, assumes it is the lowermost
-        u_xyz = [xu, yu, 0.0]
+    # for u, v in cross_edges_set:
 
-        xv, yv, _ = network.node_coordinates(v)  # xyz of first node, assumes it is the lowermost
-        v_xyz = [xv, yv, 0.0]
+    #     if u in anchors and v in anchors:
+    #         continue
 
-        angle_rot = angle
-        vec = subtract_vectors(v_xyz, u_xyz)
-        if dot_vectors(vec, [1., 0., .0]) < 0.0:
-            angle_rot = -angle
+    #     xu, yu, _ = network.node_coordinates(u)  # xyz of first node, assumes it is the lowermost
+    #     u_xyz = [xu, yu, 0.0]
 
-        vecref = jnp.array([0.0, 0.0, 1.0])
+    #     xv, yv, _ = network.node_coordinates(v)  # xyz of first node, assumes it is the lowermost
+    #     v_xyz = [xv, yv, 0.0]
 
-        point = [0.0, 0.0, 1.0]
-        end = rotate_points([point], radians(angle_rot), axis=[0.0, 1.0, 0.0], origin=[0.0, 0.0, 0.0]).pop()
-        vector = subtract_vectors(end, [0.0, 0.0, 0.0])
+    #     angle_rot = angle
+    #     vec = subtract_vectors(v_xyz, u_xyz)
+    #     if dot_vectors(vec, [1., 0., .0]) < 0.0:
+    #         angle_rot = -angle
 
-        edge = (u, v)
-        goal = EdgeDirectionGoal(edge, target=vector, weight=1.)
-        goals_vector.append(goal)
-        vectors_edges.append((vector, edge))
+    #     vecref = jnp.array([0.0, 0.0, 1.0])
 
-    goals_angle = []
-    for u, v in cross_edges_set:
+    #     point = [0.0, 0.0, 1.0]
+    #     end = rotate_points([point], radians(angle_rot), axis=[0.0, 1.0, 0.0], origin=[0.0, 0.0, 0.0]).pop()
+    #     vector = subtract_vectors(end, [0.0, 0.0, 0.0])
 
-        if u in anchors and v in anchors:
-            continue
-        if (u, v) in edges_middle:
-            continue
+    #     edge = (u, v)
+    #     goal = EdgeDirectionGoal(edge, target=vector, weight=1.)
+    #     goals_vector.append(goal)
+    #     vectors_edges.append((vector, edge))
 
-        goal = EdgeAngleGoal((u, v), vector=[0.0, 0.0, 1.0], target=radians(angle))
-        goals_angle.append(goal)
+    # goals_angle = []
+    # for u, v in cross_edges_set:
+
+    #     if u in anchors and v in anchors:
+    #         continue
+    #     if (u, v) in edges_middle:
+    #         continue
+
+    #     goal = EdgeAngleGoal((u, v), vector=[0.0, 0.0, 1.0], target=radians(angle))
+    #     goals_angle.append(goal)
 
 # ==========================================================================
 # Define loss function with goals
@@ -472,7 +478,7 @@ for i in range(num_courses):
     loss = Loss(SquaredError(goals=goals_projection, name="ProjectionGoal", alpha=1.0),
                 SquaredError(goals=goals_point, name="PointGoal", alpha=1.0),
                 SquaredError(goals=goals_vector, name="EdgeDirectionGoal", alpha=1.0),
-                # SquaredError(goals=goals_length, name="LengthGoal", alpha=0.1),
+                SquaredError(goals=goals_length, name="LengthGoal", alpha=1.0),
                 # SquaredError(goals=goals_angle, name="EdgesAnglenGoal", alpha=1.0)
                 )
 
@@ -573,8 +579,14 @@ for i, network in networks.items():
         network_old = networks[i - 1]
         viewer.add(network_old.transformed(T), as_wireframe=True, show_points=False)
 
-        lines = [network.edge_coordinates(*edge) for edge in network.edges()]
-        mesh = Mesh.from_lines(lines, delete_boundary_face=True)
+        cycles = network_find_cycles(network)
+        vertices = {vkey: network.node_coordinates(vkey) for vkey in network.nodes()}
+        mesh = Mesh.from_vertices_and_faces(vertices, cycles)
+        mesh.delete_face(0)
+        mesh.cull_vertices()
+
+        # lines = [network.edge_coordinates(*edge) for edge in network.edges()]
+        # mesh = Mesh.from_lines(lines, delete_boundary_face=True)
         viewer.add(mesh, show_points=False, show_lines=False, opacity=0.5)
 
     # add target vectors
@@ -586,29 +598,52 @@ for i, network in networks.items():
     if i == num_courses - 1:
         angles_mesh = []
         tangent_angles_mesh = []
-        # network0_vertices = list(networks[-1].nodes())
+        network0_vertices = list(networks[-1].nodes())
         arrows = []
+        tangent_arrows = []
+        vkeys = []
         for vkey in mesh.vertices():
             xyz = mesh.vertex_coordinates(vkey)
             if xyz[2] < 0.1:
                 continue
-            # if vkey in network0_vertices:
-            #     continue
+            if vkey in network0_vertices:
+                continue
             normal = mesh.vertex_normal(vkey)
+
             normal = scale_vector(normal, 0.25)
-            angle = angle_vectors([0.0, 0.0, 1.0], normal, deg=True)
+            z_vector = [0., 0., 1.]
+            angle = angle_vectors(z_vector, normal, deg=True)
+
+            ppoint = project_point_plane(add_vectors(xyz, z_vector), (xyz, normal))
+            tangent_vector = normalize_vector(subtract_vectors(ppoint, xyz))
+            # ortho_vector = scale_vector(normalize_vector(cross_vectors(z_vector, normal)), 0.25)
+            # tangent_vector = rotate_points([ortho_vector], radians(90), axis=normal, origin=xyz).pop()
+            tangent_arrow = Arrow(xyz, scale_vector(tangent_vector, 0.25))
+            tangent_arrows.append(tangent_arrow)
+
+            vkeys.append(vkey)
+
+            # viewer.add(Arrow(xyz, ortho_vector), color=Color.black(), show_edges=False, opacity=0.25)
+            # viewer.add(Arrow(xyz, scale_vector(z_vector, 0.25)), color=Color.black(), show_edges=False, opacity=0.25)
+
             arrow = Arrow(xyz, normal)
+
             angles_mesh.append(angle)
-            tangent_angles_mesh.append(90.0 - angle)
+            # tangent_angles_mesh.append(90.0 - angle)
+            tangent_angles_mesh.append(angle_vectors(z_vector, tangent_vector, deg=True))
+
             arrows.append(arrow)
 
         cmap = ColorMap.from_mpl("plasma")
         min_angle = min(tangent_angles_mesh)
         max_angle = max(tangent_angles_mesh)
-        for vkey, angle, arrow in zip(mesh.vertices(), tangent_angles_mesh, arrows):
-            color = cmap(angle, minval=min_angle, maxval=max_angle)
-            viewer.add(arrow, facecolor=color, show_edges=False, opacity=0.8)
-            print(f"Node: {vkey}\tAngle: {angle:.2f}\tTangent angle: {90.-angle:.2f}")
+        print(f"\nTangent angle\tMin: {min_angle:.2f}\tMax: {max_angle:.2f}\tMean: {sum(tangent_angles_mesh)/len(tangent_angles_mesh):.2f}\n")
+
+        for vkey, angle, tangent_angle, arrow, tarrow in zip(vkeys, angles_mesh, tangent_angles_mesh, arrows, tangent_arrows):
+            color = cmap(tangent_angle, minval=min_angle, maxval=max_angle)
+            # viewer.add(arrow, facecolor=color, show_edges=False, opacity=0.8)
+            viewer.add(tarrow, facecolor=color, show_edges=False, opacity=0.8)
+            print(f"node: {vkey}\tangle: {angle:.2f}\ttangent angle: {tangent_angle:.2f}\ttangent angle 2: {90-angle:.2f}")
 
         # angles_network = []
         # gkey_key = mesh.gkey_key()
