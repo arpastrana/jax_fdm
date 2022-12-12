@@ -9,6 +9,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Implemented `NodeNormalAngleConstraint`
+- Added `EquilibriumStructure.connectivity_faces` to optimize for face-related quantities in an `FDNetwork`.
+
 ### Changed
 
 - Fixed bug in `edgewidth` sizing in `NetworkArtist` when all edges have the same force. 
