@@ -55,8 +55,11 @@ from jax_fdm.goals import EdgeDirectionGoal
 from jax_fdm.goals import EdgeAngleGoal
 from jax_fdm.goals import NodeXCoordinateGoal
 from jax_fdm.goals import NodeYCoordinateGoal
+from jax_fdm.goals import NodeNormalAngleGoal
+from jax_fdm.goals import NodeTangentAngleGoal
 
 from jax_fdm.constraints import NodeZCoordinateConstraint
+from jax_fdm.constraints import NodeTangentAngleConstraint
 
 from jax_fdm.losses import Loss
 from jax_fdm.losses import SquaredError
@@ -122,21 +125,21 @@ name = "pringle"
 length_vault = 6.0
 course_width = 0.2
 
-num_segments = 11
-num_courses = 4
+num_segments = 10
+num_courses = 5
 
 height_arch0 = 1.0
 
 q0_arch = -1.0
 q0_cross = -0.1
-pz = 0.0
 pz_3d = -0.1
 
-qmin = None  # -50.0 # -5
-qmax = 0.0  # -0.5
+# constrained form-finding, unconstrained optimization
+qmin = None
+qmax = 0.0
 
 include_supports_as_params = True
-xtol = 0.1
+xtol = 0.5
 ytol = xtol
 
 optimize = True
@@ -144,31 +147,26 @@ optimizer = LBFGSB
 maxiter = 10000
 tol = 1e-14
 
-optimize_twice = False
+# goal length
+target_length_2d = course_width * 0.5  # for middle cross edges in 2D projection
+target_length_3d = course_width # for middle cross edges in 3D
+
+# goal tangent angle and edge direction
+angle_vector = [0.0, 0.0, 1.0]  # reference vector to compute target angle
+angle_base = 20.0
+angle_top = 40.0
+angle_linear_range = True
+
+# constrained form-finding, unconstrained optimization
+add_constraints = False
+length_delta = 0.25
 optimizer_2 = SLSQP
 maxiter_2 = 1000
 tol_2 = 1e-9
 
-# goal length
-target_length = course_width * 0.6  # for middle cross edge in 2D projection
-target_length_3d = course_width
-
-# goal vector, angle
-angle_vector = [0.0, 0.0, 1.0]  # reference vector to compute target angle
-angle_base = 30.0
-angle_top = 40.0
-angle_linear_range = True
-
-# constraints
-add_constraints = True
-length_delta = 0.25
-edge_angle_low = 0.0
-edge_angle_up = 70.0
-
-record = True
+# I/O
+record = False
 export = False
-
-HERE = os.path.dirname(__file__)
 
 # ==========================================================================
 # Instantiate a force density network
@@ -177,7 +175,7 @@ HERE = os.path.dirname(__file__)
 network = FDNetwork()
 
 # ==========================================================================
-# Initial geometry
+# Initial 2D geometry
 # ==========================================================================
 
 xyz_origin = [0.0, 0.0, 0.0]
@@ -194,7 +192,7 @@ network.node_anchor(arch_nodes[-1])
 
 # assign loads
 for node in network.nodes_free():
-    network.node_load(node, [0.0, 0.0, pz])
+    network.node_load(node, [0.0, 0.0, 0.0])
 
 # assign force densities
 for edge in arch_edges:
@@ -205,7 +203,16 @@ network_3d = network.copy()
 for node in network.nodes_free():
     network_3d.node_load(node, [0.0, 0.0, pz_3d])
 
-# form find initial skeleton
+# ==========================================================================
+# Form-find initial arch skeleton
+# ==========================================================================
+
+network = fdm(network)
+
+# ==========================================================================
+# Constraint the height of the form-found arch skeleton
+# ==========================================================================
+
 goals = []
 constraints = []
 for node in network.nodes_free():
@@ -218,7 +225,6 @@ for node in network.nodes_free():
 loss = Loss(SquaredError(goals))
 
 print("Form-finding central spine...")
-network = fdm(network)
 
 network_3d = constrained_fdm(network_3d,
                              loss=loss,
@@ -227,12 +233,13 @@ network_3d = constrained_fdm(network_3d,
 
 print(f"Starting arch height: {max(network_3d.nodes_attribute(name='z'))}")
 
+# store data
 network_3d_old = network_3d.copy()
 networks = {-1: network_3d.copy()}
 networks_2d = {-1: network.copy()}
 
 # ==========================================================================
-# Define structural system
+# Sequential form-finding
 # ==========================================================================
 
 lines = [line] * 2
@@ -262,7 +269,7 @@ for i in range(num_courses):
         arch_nodes = arch_nodes_new
 
 # ==========================================================================
-# Define structural system
+# Define structural system of 2D pattern
 # ==========================================================================
 
         for edge in arch_edges:
@@ -272,14 +279,14 @@ for i in range(num_courses):
             network.edge_forcedensity(edge, q0_cross)
 
         for node in arch_nodes[1:-1]:
-            network.node_load(node, load=[0.0, 0.0, pz])
+            network.node_load(node, load=[0.0, 0.0, 0.0])
 
         # assign supports
         network.node_anchor(arch_nodes[0])
         network.node_anchor(arch_nodes[-1])
 
 # ==========================================================================
-# Define structural system
+# Store data
 # ==========================================================================
 
         arches_new.append(arch_nodes)
@@ -294,12 +301,11 @@ for i in range(num_courses):
 # Set new arches as old arches
 # ==========================================================================
 
-    # set new arches as old arches
     arches = arches_new
     lines = lines_new
 
 # ==========================================================================
-# Create goals
+# Constrained form-finding of 2D pattern - create goals
 # ==========================================================================
 
     anchors = list(network.nodes_anchors())
@@ -327,18 +333,16 @@ for i in range(num_courses):
     goals_length = []
     for side, _cedges in cross_edges_dict.items():
         edge = _cedges[int(num_segments / 2.)]
-        goal = EdgeLengthGoal(edge, target=target_length, weight=1.)
+        goal = EdgeLengthGoal(edge, target=target_length_2d, weight=1.)
         goals_length.append(goal)
 
 # ==========================================================================
-# Define loss function with goals
+# Constrained form-finding of 2D pattern - define loss function with goals
 # ==========================================================================
 
-    loss = Loss(
-                SquaredError(goals=goals_point, name="PointGoal"),
+    loss = Loss(SquaredError(goals=goals_point, name="PointGoal"),
                 SquaredError(goals=goals_plane, name="PlaneGoal", alpha=1.),
-                SquaredError(goals=goals_length, name="LengthGoal", alpha=1.),
-    )
+                SquaredError(goals=goals_length, name="LengthGoal", alpha=1.))
 
     network = constrained_fdm(network,
                               optimizer=optimizer(),
@@ -349,7 +353,7 @@ for i in range(num_courses):
     networks_2d[i] = network.copy()
 
 # ==========================================================================
-# Define parameters
+#  Constrained form-finding of 3D pattern - define structural system
 # ==========================================================================
 
     network_3d = network.copy()
@@ -361,13 +365,23 @@ for i in range(num_courses):
         q = network_3d_old.edge_forcedensity(edge)
         network_3d.edge_forcedensity(edge, q)
 
-    # copy over support positions
-    for node in network_3d_old.nodes_fixed():
+    # copy over support positions from old network 3d
+    for node in network_3d_old.nodes_supports():
         xyz = network_3d_old.node_coordinates(node)
         network_3d.node_attributes(node, names="xyz", values=xyz)
 
+    # new supports start at the same y coordinate of their old connected anchor
+    for node in network_3d.nodes_supports():
+        if node not in arch_nodes_set:
+            continue
+        for nbr in network_3d.neighbors(node):
+            if not network_3d.is_node_support(nbr):
+                continue
+            x, y, z = network_3d.node_coordinates(nbr)
+            network_3d.node_attribute(node, "y", y)
+
 # ==========================================================================
-# Define parameters
+#  Constrained form-finding of 3D pattern - set optimization parameters
 # ==========================================================================
 
     parameters = []
@@ -376,15 +390,17 @@ for i in range(num_courses):
         parameters.append(parameter)
 
     if include_supports_as_params:
-        for node in network.nodes_fixed():
-            if node not in arch_nodes_set:
-                continue
-            x, y, z = network_3d.node_coordinates(node)
-            parameters.append(NodeAnchorXParameter(node, x - xtol, x + xtol))
-            parameters.append(NodeAnchorYParameter(node, y - ytol, y + ytol))
+        print("Including new courses' support nodes XY coordinates as optimization parameters")
+        if i != (num_courses - 1 + 1):
+            for node in network.nodes_fixed():
+                if node not in arch_nodes_set:
+                    continue
+                x, y, z = network_3d.node_coordinates(node)
+                parameters.append(NodeAnchorXParameter(node, x - xtol, x + xtol))
+                parameters.append(NodeAnchorYParameter(node, y - ytol, y + ytol))
 
 # ==========================================================================
-# Define loss function with goals
+#  Constrained form-finding of 2D pattern - define goals
 # ==========================================================================
 
     # horizontal projection goal
@@ -409,9 +425,6 @@ for i in range(num_courses):
     # edge length goal
     goals_length = []
     for edge in cross_edges_set:
-        u, v = edge
-        # if u in anchors or v in anchors:
-            # continue
         goal = EdgeLengthGoal(edge, target=target_length_3d, weight=1.)
         goals_length.append(goal)
 
@@ -425,85 +438,54 @@ for i in range(num_courses):
         angle = next(angles_iter)
     print(f"Angle goal: {angle:.2f}")
 
-    goals_vector = []
-    vectors_edges = []
+    # node tangent goal
+    goals_tangent = []
+    for node in arch_nodes_set:
+        if node in anchors:
+            continue
+        goal = NodeTangentAngleGoal(node, vector=[0.0, 0.0, 1.0], target=radians(angle))
+        goals_tangent.append(goal)
+
+    goals_direction = []
     edges_middle = []
     for side, _cedges in cross_edges_dict.items():
         edge = _cedges[int(num_segments / 2.)]
         u, v = edge
         edges_middle.append(edge)
 
-    # for u, v in cross_edges_set:
+        xu, yu, _ = network.node_coordinates(u)  # xyz of first node, assumes it is the lowermost
+        u_xyz = [xu, yu, 0.0]
 
-    #     if u in anchors and v in anchors:
-    #         continue
+        xv, yv, _ = network.node_coordinates(v)  # xyz of first node, assumes it is the lowermost
+        v_xyz = [xv, yv, 0.0]
 
-    #     xu, yu, _ = network.node_coordinates(u)  # xyz of first node, assumes it is the lowermost
-    #     u_xyz = [xu, yu, 0.0]
+        angle_rot = angle
+        vec = subtract_vectors(v_xyz, u_xyz)
+        if dot_vectors(vec, [1., 0., .0]) < 0.0:
+            angle_rot = -angle
 
-    #     xv, yv, _ = network.node_coordinates(v)  # xyz of first node, assumes it is the lowermost
-    #     v_xyz = [xv, yv, 0.0]
+        vecref = jnp.array([0.0, 0.0, 1.0])
 
-    #     angle_rot = angle
-    #     vec = subtract_vectors(v_xyz, u_xyz)
-    #     if dot_vectors(vec, [1., 0., .0]) < 0.0:
-    #         angle_rot = -angle
+        point = [0.0, 0.0, 1.0]
+        end = rotate_points([point], radians(angle_rot), axis=[0.0, 1.0, 0.0], origin=[0.0, 0.0, 0.0]).pop()
+        vector = subtract_vectors(end, [0.0, 0.0, 0.0])
 
-    #     vecref = jnp.array([0.0, 0.0, 1.0])
-
-    #     point = [0.0, 0.0, 1.0]
-    #     end = rotate_points([point], radians(angle_rot), axis=[0.0, 1.0, 0.0], origin=[0.0, 0.0, 0.0]).pop()
-    #     vector = subtract_vectors(end, [0.0, 0.0, 0.0])
-
-    #     edge = (u, v)
-    #     goal = EdgeDirectionGoal(edge, target=vector, weight=1.)
-    #     goals_vector.append(goal)
-    #     vectors_edges.append((vector, edge))
-
-    # goals_angle = []
-    # for u, v in cross_edges_set:
-
-    #     if u in anchors and v in anchors:
-    #         continue
-    #     if (u, v) in edges_middle:
-    #         continue
-
-    #     goal = EdgeAngleGoal((u, v), vector=[0.0, 0.0, 1.0], target=radians(angle))
-    #     goals_angle.append(goal)
+        edge = (u, v)
+        goal = EdgeDirectionGoal(edge, target=vector, weight=1.)
+        goals_direction.append(goal)
 
 # ==========================================================================
-# Define loss function with goals
+#  Constrained form-finding of 2D pattern - set loss function with goals
 # ==========================================================================
 
-    loss = Loss(SquaredError(goals=goals_projection, name="ProjectionGoal", alpha=1.0),
-                SquaredError(goals=goals_point, name="PointGoal", alpha=1.0),
-                SquaredError(goals=goals_vector, name="EdgeDirectionGoal", alpha=1.0),
-                SquaredError(goals=goals_length, name="LengthGoal", alpha=1.0),
-                # SquaredError(goals=goals_angle, name="EdgesAnglenGoal", alpha=1.0)
-                )
+    loss = Loss(SquaredError(goals=goals_point, name="PointGoal", alpha=10.0),
+                SquaredError(goals=goals_projection, name="ProjectionGoal", alpha=1.0),
+                SquaredError(goals=goals_direction, name="EdgeDirectionGoal", alpha=10.0),
+                SquaredError(goals=goals_length, name="LengthGoal", alpha=0.1),
+                SquaredError(goals=goals_tangent, name="NodeTangentAngleGoal", alpha=1.0))
 
 # ==========================================================================
-# Constraints
-# ==========================================================================
-
-    constraints = []
-
-    if add_constraints:
-        for u, v in cross_edges_set:
-            if u in anchors and v in anchors:
-                continue
-            edge = (u, v)
-            constraint = EdgeLengthConstraint(edge, course_width * (1 - length_delta), course_width * (1 + length_delta))
-            constraints.append(constraint)
-
-            # constraint = EdgeAngleConstraint((u, v),
-            #                                  vector=[0.0, 0.0, 1.0],
-            #                                  bound_low=radians(edge_angle_low),
-            #                                  bound_up=radians(edge_angle_up))
-            # constraints.append(constraint)
-
-# ==========================================================================
-# Constrained form-finding
+# Solve constrained form-finding in 3D with unconstrained optimization
 # ==========================================================================
 
     opt = optimizer()
@@ -519,10 +501,23 @@ for i in range(num_courses):
                                      loss=loss,
                                      maxiter=maxiter,
                                      tol=tol,
-                                     constraints=constraints,
                                      callback=recorder)
 
-    if optimize and optimize_twice:
+# ==========================================================================
+# Solve again constrained form-finding in 3D with constrained optimization
+# ==========================================================================
+
+    constraints = []
+
+    if add_constraints:
+        for u, v in cross_edges_set:
+            if u in anchors and v in anchors:
+                continue
+            edge = (u, v)
+            constraint = EdgeLengthConstraint(edge, course_width * (1 - length_delta), course_width * (1 + length_delta))
+            constraints.append(constraint)
+
+    if optimize and add_constraints:
         network_3d = constrained_fdm(network_3d,
                                      optimizer=optimizer_2(),
                                      parameters=parameters,
@@ -530,7 +525,11 @@ for i in range(num_courses):
                                      maxiter=maxiter_2,
                                      constraints=constraints,
                                      tol=tol_2,
-                                     callback=recorder)
+                                     callback=None)
+# ==========================================================================
+# Log and save data
+# ==========================================================================
+
     # Report stats
     network_3d.print_stats()
 
@@ -541,7 +540,6 @@ for i in range(num_courses):
     for edge in cross_edges_set:
         lengths.append(network_3d.edge_length(*edge))
     print(f"Average edge length in cross edges: {sum(lengths) / len(lengths) }\tInitial course width: {course_width}")
-
 
 # ==========================================================================
 # Plot loss components
@@ -560,41 +558,33 @@ for i in range(num_courses):
 viewer = Viewer(width=1600, height=900, show_grid=False)
 
 for i, network in networks.items():
+    # 3d network
     T = Translation.from_vector([2.2 * i, 0.0, 0.0])
     network = network.transformed(T)
     viewer.add(network,
                edgewidth=(0.01, 0.05),
                loadscale=2.0,
                show_loads=False,
-               edgecolor="fd")
+               edgecolor="force")
 
+    # horizontal projection
     network_2d = networks_2d[i].transformed(T)
     viewer.add(network_2d, as_wireframe=True, show_points=False)
-
-    # for node in network.nodes_free():
-    #     line = Line(network.node_coordinates(node), network_2d.node_coordinates(node))
-    #     viewer.add(line)
 
     if i >= 0:
         network_old = networks[i - 1]
         viewer.add(network_old.transformed(T), as_wireframe=True, show_points=False)
 
+        # 3d mesh
         cycles = network_find_cycles(network)
         vertices = {vkey: network.node_coordinates(vkey) for vkey in network.nodes()}
         mesh = Mesh.from_vertices_and_faces(vertices, cycles)
         mesh.delete_face(0)
         mesh.cull_vertices()
 
-        # lines = [network.edge_coordinates(*edge) for edge in network.edges()]
-        # mesh = Mesh.from_lines(lines, delete_boundary_face=True)
         viewer.add(mesh, show_points=False, show_lines=False, opacity=0.5)
 
-    # add target vectors
-    # for vector, edge in vectors_edges:
-    #     u, v = edge
-    #     xyz = network.node_coordinates(u)
-    #     viewer.add(Line(xyz, add_vectors(xyz, scale_vector(vector, 0.5))))
-
+    # tangent arrows
     if i == num_courses - 1:
         angles_mesh = []
         tangent_angles_mesh = []
@@ -616,22 +606,15 @@ for i, network in networks.items():
 
             ppoint = project_point_plane(add_vectors(xyz, z_vector), (xyz, normal))
             tangent_vector = normalize_vector(subtract_vectors(ppoint, xyz))
-            # ortho_vector = scale_vector(normalize_vector(cross_vectors(z_vector, normal)), 0.25)
-            # tangent_vector = rotate_points([ortho_vector], radians(90), axis=normal, origin=xyz).pop()
             tangent_arrow = Arrow(xyz, scale_vector(tangent_vector, 0.25))
             tangent_arrows.append(tangent_arrow)
 
             vkeys.append(vkey)
 
-            # viewer.add(Arrow(xyz, ortho_vector), color=Color.black(), show_edges=False, opacity=0.25)
-            # viewer.add(Arrow(xyz, scale_vector(z_vector, 0.25)), color=Color.black(), show_edges=False, opacity=0.25)
-
-            arrow = Arrow(xyz, normal)
-
             angles_mesh.append(angle)
-            # tangent_angles_mesh.append(90.0 - angle)
             tangent_angles_mesh.append(angle_vectors(z_vector, tangent_vector, deg=True))
 
+            arrow = Arrow(xyz, normal)
             arrows.append(arrow)
 
         cmap = ColorMap.from_mpl("plasma")
@@ -641,34 +624,7 @@ for i, network in networks.items():
 
         for vkey, angle, tangent_angle, arrow, tarrow in zip(vkeys, angles_mesh, tangent_angles_mesh, arrows, tangent_arrows):
             color = cmap(tangent_angle, minval=min_angle, maxval=max_angle)
-            # viewer.add(arrow, facecolor=color, show_edges=False, opacity=0.8)
             viewer.add(tarrow, facecolor=color, show_edges=False, opacity=0.8)
             print(f"node: {vkey}\tangle: {angle:.2f}\ttangent angle: {tangent_angle:.2f}\ttangent angle 2: {90-angle:.2f}")
 
-        # angles_network = []
-        # gkey_key = mesh.gkey_key()
-        # for vkey in mesh.vertices():
-        #     xyz = mesh.vertex_coordinates(vkey)
-        #     if xyz[2] < 0.1:
-        #         continue
-        #     nbrs = mesh.vertex_neighbors(vkey, ordered=True)
-        #     polygon = jnp.array([mesh.vertex_coordinates(n) for n in nbrs])
-        #     normal = normal_polygon(polygon)
-        #     normal = scale_vector(normal, -0.25)  # NOTE: had to revert normal!
-        #     angle = angle_vectors(jnp.array([0., 0., 1.]), normal, deg=True)
-        #     angles_network.append(angle)
-
-        #     arrow = Arrow(xyz, normal)
-        #     viewer.add(arrow, facecolor=Color.red(), show_edges=False, opacity=0.5)
-
-        # for ana, anb in zip(angles_mesh, angles_network):
-        #     print(f"Angle mesh: {ana:.2f}\tAngle network: {anb:.2f}\tDifference: {ana - anb:.2f}")
-
-# # draw lines betwen subject and target nodes
-# # for node in c_network.nodes():
-# #     pt = c_network.node_coordinates(node)
-# #     target_pt = network.node_coordinates(node)
-# #     viewer.add(Line(target_pt, pt), linewidth=1.0, color=Color.grey().lightened())
-
-# # show le crème
 viewer.show()
