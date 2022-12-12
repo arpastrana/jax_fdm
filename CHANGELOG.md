@@ -9,7 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Implemented `NodeNormalAngleConstraint`
+- Implemented `NodeTangentAngleGoal`.
+- Implemented `NodeNormalAngleGoal`.
+- Implemented `NodeTangentAngleConstraint`.
+- Implemented `NodeNormalAngleConstraint`.
 - Added `EquilibriumStructure.connectivity_faces` to optimize for face-related quantities in an `FDNetwork`.
 
 ### Changed
