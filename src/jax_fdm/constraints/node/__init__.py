@@ -1,5 +1,6 @@
 from .node import *  # noqa F403
 from .coordinates import *  # noqa F403
+from .normal import *  # noqa F403
 from .curvature import *  # noqa F403
 
 
