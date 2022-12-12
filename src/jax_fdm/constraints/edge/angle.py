@@ -27,18 +27,21 @@ class EdgeAngleConstraint(EdgeConstraint):
     def vector(self, vector):
         self._vector = jnp.reshape(jnp.asarray(vector), (-1, 3))
 
+    def vectors(self):
+        """
+        Create a matrix of vectors.
+        """
+        matrix = np.zeros((max(self.index) + 1, 3))
+        for vec, idx in zip(self.vector, self.index):
+            matrix[idx, :] = vec
+        return matrix
+
     def init(self, model):
         """
         Initialize the constraint with information from an equilibrium model.
         """
         super().init(model)
-
-        # create matrix of vectors
-        vector = self.vector
-        vm = np.zeros((max(self.index) + 1, 3))
-        for v, idx in zip(vector, self.index):
-            vm[idx, :] = v
-        self.vector = vm
+        self.vector = self.vectors()
 
     def constraint(self, eqstate, index):
         """
