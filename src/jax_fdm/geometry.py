@@ -110,19 +110,21 @@ def distance_point_point_sqrd(u, v):
     return jnp.sum(jnp.square(vector))
 
 
-def normal_polygon(polygon):
+def normal_polygon(polygon, unitize=False):
     """
-    Computes the unit-length normal of a polygon defined by a sequence of points.
+    Computes the unit-length normal of a polygon that is defined as a sequence of points.
 
     A polygon must have at least two points.
     """
     centroid = jnp.mean(polygon, axis=0)
     op = polygon - centroid
-    op_off = jnp.roll(op, 1, axis=0)
-    ns = jnp.multiply(jnp.cross(op_off, op), 0.5)
+    op_shifted = jnp.roll(op, 1, axis=0)
+    ns = 0.5 * jnp.cross(op_shifted, op)
     n = jnp.sum(ns, axis=0)
 
-    return normalize_vector(n)
+    if unitize:
+        return normalize_vector(n)
+    return n
 
 
 def curvature_point_polygon(point, polygon):
@@ -153,7 +155,7 @@ if __name__ == "__main__":
     point_b = [2.5, 0.0, 0.0]
 
     segment = tuple([jnp.array(point) for point in (point_a, point_b)])
-
+    #
     test_points = [[2.0, 1.0, 0.0],
                    [-1.0, 0.0, 0.0],
                    [5.0, -1.0, 0.0]]

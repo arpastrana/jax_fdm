@@ -1,4 +1,5 @@
 import numpy as np
+
 import jax.numpy as jnp
 
 from jax_fdm.geometry import angle_vectors
