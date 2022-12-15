@@ -73,12 +73,6 @@ class Arrow(Shape):
         -------
         Arrow
             The constructed arrow.
-        Examples
-        --------
-        >>> from compas.geometry import Arrow
-        >>> from compas.geometry import Vector
-        >>> data = {'position': Vector(0, 0, 0), 'direction': Vector(0, 0, 1)}
-        >>> arrow = Arrow.from_data(data)
         """
         arrow = cls()
         arrow.data = data
