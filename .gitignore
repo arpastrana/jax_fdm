@@ -123,4 +123,5 @@ conda.recipe/
 !data/json/monkey_saddle.json
 !data/json/butt.json
 !data/json/butt_target.json
+!data/json/butt_mesh_target.json
 !data/json/arch.json
