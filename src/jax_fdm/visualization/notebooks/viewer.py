@@ -1,8 +1,6 @@
-from math import pi
 from math import radians
 
 from compas.artists import Artist
-from compas.geometry import Rotation
 
 from compas_notebook.app import App as NotebookApp
 
