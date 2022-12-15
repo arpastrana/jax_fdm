@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Implemented `LBFGSBS` to ensure compatibility of JAX gradients with scipy.
+
 ### Changed
 
 ### Removed
@@ -18,7 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Implemented `NotebookViewer` to visualizae networks in jupyter notebooks.
+- Implemented `NotebookViewer` to visualize networks in jupyter notebooks.
 - Added `FDNetworkNotebookArtist` to visualize networks in jupyter notebooks.
 - Added `noteboks.shapes.Arrow` to display force vectors as meshed arrows.
 
