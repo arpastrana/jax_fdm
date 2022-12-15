@@ -1,4 +1,5 @@
 jax[cpu]
 compas
 compas_singular
+compas-notebook
 scipy
