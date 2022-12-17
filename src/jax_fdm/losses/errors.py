@@ -20,12 +20,12 @@ class Error:
         self.collections = []
 
     @staticmethod
-    def error(errors):
+    def error(gstate):
         raise NotImplementedError
 
     @staticmethod
-    def errors(gstate):
-        raise NotImplementedError
+    def errors(errors):
+        return jnp.sum(errors)
 
     @partial(jit, static_argnums=0)
     def __call__(self, eqstate):
@@ -67,10 +67,6 @@ class SquaredError(Error):
     def error(gstate):
         return jnp.sum(gstate.weight * jnp.square(gstate.prediction - gstate.goal))
 
-    @staticmethod
-    def errors(errors):
-        return jnp.sum(errors)
-
 
 class MeanSquaredError(SquaredError):
     """
@@ -79,27 +75,24 @@ class MeanSquaredError(SquaredError):
     Average out all errors because no single error is important enough.
     """
     def errors(self, errors):
-        return super().errors(errors) / self.number_of_goals()
+        return super(MeanSquaredError, self).errors(errors) / self.number_of_goals()
 
 
 class RootMeanSquaredError(MeanSquaredError):
     """
     The root mean squared error.
-    Average out all errors because no single error is important enough.
     """
     def errors(self, errors):
-        error = super().errors(errors)
+        error = super(RootMeanSquaredError, self).errors(errors)
         return jnp.sqrt(error)
 
 
 class PredictionError(Error):
     """
+    The prediction error.
+
     You lose when you predict too much of something.
     """
     @staticmethod
     def error(gstate):
         return gstate.prediction
-
-    @staticmethod
-    def errors(errors):
-        return jnp.sum(errors)
