@@ -11,10 +11,11 @@ A differentiable, hardware-accelerated framework for constrained form-finding in
 
 > Crafted with care in the [Form-Finding Lab](http://formfindinglab.princeton.edu/) at [Princeton University](https://princeton.edu) ❤️🇺🇸
 
-![](images/monkey_saddle.png)
+![](images/fdm_header.gif)
 
 JAX FDM enables the solution of inverse form-finding problems for discrete force networks using the force density method (FDM) and gradient-based optimization.
 It streamlines the integration of form-finding simulations into deep learning models for machine learning research.
+print(topology.)
 
 ## Key features
 
