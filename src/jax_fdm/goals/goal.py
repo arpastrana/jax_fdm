@@ -27,6 +27,8 @@ class Goal:
         self.weight = weight
         self.target = target
 
+        self.is_collectible = True
+
     @property
     def key(self):
         """

@@ -3,7 +3,7 @@ from jax_fdm.goals import Goal
 
 class NetworkGoal(Goal):
     """
-    Base class for all goals that pertain to all the nodes and edgees of a network.
+    Base class for all goals that pertain to a subset of the nodes and edges of a network.
     """
     def __init__(self, key=-1, target=0.0, weight=1.0):
         super().__init__(key=key, target=target, weight=weight)

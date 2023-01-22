@@ -212,12 +212,26 @@ class Optimizer:
         """
         Convert a list of goals into a list of goal collections.
         """
-        goals = sorted(goals, key=lambda g: type(g).__name__)
-        groups = groupby(goals, lambda g: type(g))
+        goals_collectable = []
+        goals_uncollectable = []
+
+        for goal in goals:
+            if goal.is_collectible:
+                goals_collectable.append(goal)
+                continue
+            goals_uncollectable.append(goal)
 
         collections = []
-        for _, group in groups:
-            collection = Collection(list(group))
-            collections.append(collection)
+
+        if goals_collectable:
+            goals = sorted(goals_collectable, key=lambda g: type(g).__name__)
+            groups = groupby(goals_collectable, lambda g: type(g))
+
+            for _, group in groups:
+                collection = Collection(list(group))
+                collections.append(collection)
+
+        for goal in goals_uncollectable:
+            collections.append(Collection([goal]))
 
         return collections
