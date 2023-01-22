@@ -95,4 +95,4 @@ class PredictionError(Error):
     """
     @staticmethod
     def error(gstate):
-        return gstate.prediction
+        return gstate.prediction * gstate.weight
