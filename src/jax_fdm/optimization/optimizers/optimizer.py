@@ -218,20 +218,22 @@ class Optimizer:
         for goal in goals:
             if goal.is_collectible:
                 goals_collectable.append(goal)
-                continue
-            goals_uncollectable.append(goal)
+            else:
+                goals_uncollectable.append(goal)
 
         collections = []
 
         if goals_collectable:
-            goals = sorted(goals_collectable, key=lambda g: type(g).__name__)
-            groups = groupby(goals_collectable, lambda g: type(g))
+            goals_sorted = sorted(goals_collectable, key=lambda g: type(g).__name__)
+            groups = groupby(goals_sorted, lambda g: type(g))
 
             for _, group in groups:
+                group = list(group)
                 collection = Collection(list(group))
                 collections.append(collection)
 
-        for goal in goals_uncollectable:
-            collections.append(Collection([goal]))
+        if goals_uncollectable:
+            for goal in goals_uncollectable:
+                collections.append(Collection([goal]))
 
         return collections
