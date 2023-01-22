@@ -9,7 +9,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Added `Goal.is_collectible` flag to determine if a goal should form part of an optimization `Collection`.
+- Implemented `EdgesLengthEqualGoal`.
+
 ### Changed
+
+- Fixed omission of `gstate.weight` when computing `PredictionError`.
 
 ### Removed
 
