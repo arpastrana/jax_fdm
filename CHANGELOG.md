@@ -11,6 +11,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Added `Goal.is_collectible` flag to determine if a goal should form part of an optimization `Collection`.
 - Implemented `EdgesLengthEqualGoal`.
+- Added `AbsoluteError` term.
+- Added `MeanAbsoluteError` terms.
 
 ### Changed
 

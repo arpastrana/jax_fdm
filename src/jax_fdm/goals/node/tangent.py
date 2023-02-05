@@ -16,6 +16,9 @@ class NodeTangentAngleGoal(NodeNormalAngleGoal):
         """
         Returns the angle between the node tangent and the reference vector.
         """
-        normal = super().prediction(eqstate, index)
+        angle_normal = super().prediction(eqstate, index)
 
-        return np.pi * 0.5 - normal
+        # TODO: take absolute of value? import jnp?
+        angle_tangent = np.pi * 0.5 - angle_normal
+
+        return angle_tangent

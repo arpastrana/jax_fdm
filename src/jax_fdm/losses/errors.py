@@ -61,7 +61,7 @@ class SquaredError(Error):
     """
     The canonical squared error.
 
-    It measures the distance between the current and the target value of a goal.
+    It measures the L2 distance between the current and the target value of a goal.
     """
     @staticmethod
     def error(gstate):
@@ -91,8 +91,27 @@ class PredictionError(Error):
     """
     The prediction error.
 
-    You lose when you predict too much of something.
+    You lose when you get too much of something.
     """
     @staticmethod
     def error(gstate):
         return gstate.prediction * gstate.weight
+
+
+class AbsoluteError(Error):
+    """
+    The canonical absolute error.
+
+    It measures the absolute difference between the current and the target value of a goal.
+    """
+    @staticmethod
+    def error(gstate):
+        return jnp.sum(gstate.weight * jnp.abs(gstate.prediction - gstate.goal))
+
+
+class MeanAbsoluteError(AbsoluteError):
+    """
+    The canonical mean absolute error.
+    """
+    def errors(self, errors):
+        return super(MeanAbsoluteError, self).errors(errors) / self.number_of_goals()
