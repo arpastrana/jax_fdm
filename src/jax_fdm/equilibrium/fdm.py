@@ -26,9 +26,11 @@ def fdm(network):
     """
     Compute a network in a state of static equilibrium using the force density method.
     """
-    params = (np.array(p, dtype=DTYPE_NP) for p in network.parameters())
+    network_validate(network)
 
-    return _fdm(network, *params)
+    q, xyz_fixed, loads = (np.array(p, dtype=DTYPE_NP) for p in network.parameters())
+
+    return _fdm(network, q, xyz_fixed, loads)
 
 
 # ==========================================================================
@@ -46,6 +48,8 @@ def constrained_fdm(network,
     """
     Generate a network in a constrained state of static equilibrium using the force density method.
     """
+    network_validate(network)
+
     model = EquilibriumModel(network)
 
     opt_problem = optimizer.problem(model, loss, parameters, constraints, maxiter, tol, callback)
@@ -58,6 +62,15 @@ def constrained_fdm(network,
 # ==========================================================================
 # Helpers
 # ==========================================================================
+
+def network_validate(network):
+    """
+    Check that the network is healthy.
+    """
+    assert len(network.number_of_supports()) > 0, "The network has no supports"
+    assert len(network.number_of_edges()) > 0, "The network has no edges"
+    assert len(network.number_of_nodes()) > 0, "The network has no nodes"
+
 
 def network_updated(network, eq_state):
     """
