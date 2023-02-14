@@ -229,7 +229,7 @@ class Optimizer:
 
             for _, group in groups:
                 group = list(group)
-                collection = Collection(list(group))
+                collection = Collection(group)
                 collections.append(collection)
 
         if goals_uncollectable:
