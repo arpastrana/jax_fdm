@@ -67,9 +67,9 @@ def network_validate(network):
     """
     Check that the network is healthy.
     """
-    assert len(network.number_of_supports()) > 0, "The network has no supports"
-    assert len(network.number_of_edges()) > 0, "The network has no edges"
-    assert len(network.number_of_nodes()) > 0, "The network has no nodes"
+    assert network.number_of_supports() > 0, "The network has no supports"
+    assert network.number_of_edges() > 0, "The network has no edges"
+    assert network.number_of_nodes() > 0, "The network has no nodes"
 
 
 def network_updated(network, eq_state):
