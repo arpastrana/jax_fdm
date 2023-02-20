@@ -26,7 +26,7 @@ class EquilibriumModel:
         """
         Create an equilibrium model from a force density network.
         """
-        return cls(EquilibriumStructure(network))
+        return cls(network)
 
     def edges_vectors(self, xyz):
         """
