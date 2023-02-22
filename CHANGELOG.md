@@ -9,10 +9,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Implemented `area_polygon` in `jax_fdm.geometry`.
 - Added `FDNetwork.number_of_supports()` to count number of supported nodes in a network.
 - Added `network_validate` to check the validity of a network before equilibrium calculations.
 
 ### Changed
+
+- Fixed bug in `FDNetworkViewerArtist` that ocurred while plotting reaction forces on unconnected nodes.
+- Turned `TrustRegionConstrained` into a first order optimizer.
 
 ### Removed
 
