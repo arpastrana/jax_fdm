@@ -289,7 +289,11 @@ class FDNetworkViewerArtist(FDNetworkArtist):
             return
 
         # shift starting point if max force of connected edges is compressive
-        forces = [network.edge_force(e) for e in network.connected_edges(node)]
+        connected_edges = network.connected_edges(node)
+        if len(connected_edges) == 0:
+            return
+
+        forces = [network.edge_force(e) for e in connected_edges]
         max_force = max(forces, key=lambda f: fabs(f))
         if max_force < 0.0:
             start = add_vectors(start, scale_vector(vector, scale))
