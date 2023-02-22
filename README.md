@@ -112,7 +112,7 @@ from jax_fdm.losses import PredictionError
 from jax_fdm.losses import Loss
 
 
-loss = Loss(PredictionError(goals=[NetworkLoadPathGoal]))
+loss = Loss(PredictionError(goals=[NetworkLoadPathGoal()]))
 constraints = [EdgeLengthConstraint(edge, 0.75, 1.0) for edge in network.edges()]
 optimizer = SLSQP()
 

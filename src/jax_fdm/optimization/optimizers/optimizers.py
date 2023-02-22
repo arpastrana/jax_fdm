@@ -54,7 +54,7 @@ class BFGS(Optimizer):
         super().__init__(name="BFGS", **kwargs)
 
 
-class TrustRegionConstrained(ConstrainedOptimizer, SecondOrderOptimizer):
+class TrustRegionConstrained(ConstrainedOptimizer):
     """
     A trust-region algorithm for constrained optimization.
     """

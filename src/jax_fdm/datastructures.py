@@ -54,6 +54,12 @@ class FDNetwork(Network):
         """
         return len(list(self.nodes_anchors()))
 
+    def number_of_supports(self):
+        """
+        The number of supported nodes.
+        """
+        return len(list(self.nodes_supports()))
+
     def node_support(self, key):
         """
         Sets a node as a fixed anchor.

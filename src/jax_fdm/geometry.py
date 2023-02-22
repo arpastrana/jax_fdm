@@ -112,9 +112,10 @@ def distance_point_point_sqrd(u, v):
 
 def normal_polygon(polygon, unitize=False):
     """
-    Computes the unit-length normal of a polygon that is defined as a sequence of points.
+    Computes the unit-length normal of a polygon.
 
-    A polygon must have at least two points.
+    A polygon that is defined as a sequence of unique points.
+    A polygon must have at least three points.
     """
     centroid = jnp.mean(polygon, axis=0)
     op = polygon - centroid
@@ -125,6 +126,21 @@ def normal_polygon(polygon, unitize=False):
     if unitize:
         return normalize_vector(n)
     return n
+
+
+def area_polygon(polygon):
+    """
+    Computes the area of a polygon.
+
+    A polygon that is defined as a sequence of unique points.
+    A polygon must have at least three points.
+    """
+    # breakpoint()
+    polygon_shifted = jnp.roll(polygon, 1, axis=0)
+    ns = 0.5 * jnp.cross(polygon_shifted, polygon)
+    normal = jnp.sum(ns, axis=0)
+
+    return length_vector(normal)
 
 
 def curvature_point_polygon(point, polygon):
@@ -149,24 +165,44 @@ def curvature_point_polygon(point, polygon):
 
 
 if __name__ == "__main__":
-    from jax import jit
 
-    point_a = [1.0, 0.0, 0.0]
-    point_b = [2.5, 0.0, 0.0]
+    import numpy as np
+    from jax import vmap, jit
+    from math import pi
+    from compas.geometry import Polygon
+    from compas.geometry import Rotation
+    from compas.geometry import area_polygon as compas_area_polygon
 
-    segment = tuple([jnp.array(point) for point in (point_a, point_b)])
-    #
-    test_points = [[2.0, 1.0, 0.0],
-                   [-1.0, 0.0, 0.0],
-                   [5.0, -1.0, 0.0]]
+    radius = 2.0
+    num_angles = 100
 
-    result_points = [[2.0, 0.0, 0.0],
-                     [1.0, 0.0, 0.0],
-                     [2.5, 0.0, 0.0]
-                     ]
+    polygons = []
 
-    for tpoint, rpoint in zip(test_points, result_points):
-        cpoint = jit(closest_point_on_segment)(jnp.array(tpoint), segment)
-        assert jnp.allclose(cpoint, jnp.array(rpoint)), f"got {cpoint} wanted {rpoint}"
+    area_polygon = jit(area_polygon)
+    area_polygon(np.ones((5, 3)))
 
-    print("okay!")
+    for i in range(4, 5):
+        polygon = Polygon.from_sides_and_radius_xy(i, radius)
+
+        for j in range(1, num_angles):
+
+            polygon_old = polygon
+
+            angle = (j * (0.5 * pi / num_angles))
+            R1 = Rotation.from_axis_and_angle(axis=[1.0, 0.0, 0.0], angle=angle)
+            polygon = polygon.transformed(R1)
+            R2 = Rotation.from_axis_and_angle(axis=[0.0, 1.0, 0.0], angle=angle)
+            polygon = polygon.transformed(R2)
+            polygons.append(polygon)
+
+            assert not np.allclose(polygon, polygon_old)
+
+            area_compas = compas_area_polygon(polygon.points)
+
+            area = area_polygon(np.array(polygon.points))  # .item()
+
+            assert jnp.allclose(area_compas, area), f"Not equal: Jax fdm: {area:.2f} vs. Compas {area_compas:.2f}"
+
+    areas = vmap(area_polygon)(jnp.array(polygons))
+    print(areas.shape)
+    print("Okay")
