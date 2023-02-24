@@ -54,6 +54,22 @@ class BFGS(Optimizer):
         super().__init__(name="BFGS", **kwargs)
 
 
+class NewtonCG(SecondOrderOptimizer):
+    """
+    The truncated Newton method. It uses a CG method to the compute the search direction.
+    """
+    def __init__(self, **kwargs):
+        super().__init__(name="Newton-CG", **kwargs)
+
+
+class TruncatedNewton(Optimizer):
+    """
+    Minimize a scalar function of one or more variables using a truncated Newton (TNC) algorithm.
+    """
+    def __init__(self, **kwargs):
+        super().__init__(name="TNC", **kwargs)
+
+
 class TrustRegionConstrained(ConstrainedOptimizer):
     """
     A trust-region algorithm for constrained optimization.
@@ -62,9 +78,29 @@ class TrustRegionConstrained(ConstrainedOptimizer):
         super().__init__(name="trust-constr", **kwargs)
 
 
-class NewtonCG(SecondOrderOptimizer):
+class TrustRegionKrylov(SecondOrderOptimizer):
     """
-    The truncated Newton method. It uses a CG method to the compute the search direction.
+    A trust-region optimization algorithm.
+
+    It uses a nearly exact trust-region algorithm that only requires
+    matrix vector products with the hessian matrix.
     """
     def __init__(self, **kwargs):
-        super().__init__(name="Newton-CG", **kwargs)
+        super().__init__(name="trust-krylov", **kwargs)
+
+
+class TrustRegionNewton(SecondOrderOptimizer):
+    """
+    A Newton conjugate gradient trust-region algorithm.
+    A trust-region algorithm for unconstrained optimization.
+    """
+    def __init__(self, **kwargs):
+        super().__init__(name="trust-ncg", **kwargs)
+
+
+class TrustRegionExact(SecondOrderOptimizer):
+    """
+    A nearly exact trust-region optimization algorithm.
+    """
+    def __init__(self, **kwargs):
+        super().__init__(name="trust-exact", **kwargs)
