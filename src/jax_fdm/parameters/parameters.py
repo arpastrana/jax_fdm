@@ -1,6 +1,10 @@
 from jax.numpy import inf
 
 
+# ==========================================================================
+# Parameter
+# ==========================================================================
+
 class Parameter:
     """
     The base class for all parameters.
@@ -61,12 +65,10 @@ class Parameter:
         """
         raise NotImplementedError
 
-    def value(self, model):
-        """
-        Get the current value of the parameter.
-        """
-        raise NotImplementedError
 
+# ==========================================================================
+# Individual parameters
+# ==========================================================================
 
 class NodeParameter(Parameter):
     """
@@ -77,12 +79,6 @@ class NodeParameter(Parameter):
         Get the index of the key of the node parameter in the structure of a model.
         """
         return model.structure.node_index[self.key]
-
-    def value(self, model):
-        """
-        Get the current value of the node parameter.
-        """
-        return model.structure.network.node_attribute(self.key, name=self.attr_name)
 
 
 class EdgeParameter(Parameter):
@@ -95,12 +91,43 @@ class EdgeParameter(Parameter):
         """
         return model.structure.edge_index[self.key]
 
-    def value(self, model):
-        """
-        Get the current value of the edge parameter.
-        """
-        return model.structure.network.edge_attribute(self.key, name=self.attr_name)
 
+# ==========================================================================
+# Groups
+# ==========================================================================
+
+class ParameterGroup:
+    """
+    from jax_fdm.parameters import ParameterGroup
+    """
+    pass
+
+
+class NodesParameter(Parameter):
+    """
+    A single parameter applied to a group of nodes.
+    """
+    def index(self, model):
+        """
+        Get the indices of the keys of the parametrized nodes from the structure of a model.
+        """
+        return [model.structure.node_index[key] for key in self.key]
+
+
+class EdgesParameter(Parameter):
+    """
+    A single parameter applied to a group of edges.
+    """
+    def index(self, model):
+        """
+        Get the indices of the keys of the parametrized edges from the structure of a model.
+        """
+        return [model.structure.edge_index[key] for key in self.key]
+
+
+# ==========================================================================
+# Edge force densities
+# ==========================================================================
 
 class EdgeForceDensityParameter(EdgeParameter):
     """
@@ -111,6 +138,10 @@ class EdgeForceDensityParameter(EdgeParameter):
         self.attr_name = "q"
 
 
+# ==========================================================================
+# Node loads
+# ==========================================================================
+
 class NodeAnchorParameter(NodeParameter):
     """
     A node anchor parameter.
@@ -120,10 +151,6 @@ class NodeAnchorParameter(NodeParameter):
         Get the index of the key of the node parameter in the structure of a model.
         """
         return model.structure.anchor_index[self.key]
-
-
-class NodeLoadParameter(NodeParameter):
-    pass
 
 
 class NodeAnchorXParameter(NodeAnchorParameter):
@@ -151,6 +178,14 @@ class NodeAnchorZParameter(NodeAnchorParameter):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.attr_name = "z"
+
+
+# ==========================================================================
+# Node loads
+# ==========================================================================
+
+class NodeLoadParameter(NodeParameter):
+    pass
 
 
 class NodeLoadXParameter(NodeLoadParameter):

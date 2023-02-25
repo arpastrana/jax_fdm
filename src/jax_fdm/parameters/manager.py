@@ -77,6 +77,8 @@ class ParameterManager:
     def init(self):
         """
         Initialiaze the properties of this object so that it is static after this call.
+
+        TODO: This is fairly anti-pythonic. Please refactor me.
         """
         self.indices_fdm
         self.indices_optfrozen
@@ -189,6 +191,8 @@ class ParameterManager:
     def _indices_type(self, cls):
         """
         Compute the parameter index if a parameter is an instance of a given type.
+
+        TODO: modify here to enable groups.
         """
         indices = []
         for parameter in self.parameters:
@@ -270,7 +274,7 @@ class ParameterManager:
     @property
     def parameters_model(self):
         """
-        The model parameters.
+        The model parameters as a single array.
         """
         if self._parameters_model is None:
             param_arrays = []
@@ -309,6 +313,8 @@ class ParameterManager:
         """
         Reshape optimizable model parameters into fdm parameters.
         """
+        # TODO: combine should take care of taking the flat vector of params
+        # and then repeat and assign any group parameters to all their matching grouped elements.
         params = combine(params_opt, self.parameters_frozen, adef=self.indices_optfrozen)
         q, xyz_fixed, loads = jnp.split(params, self.indices_fdm)
 
