@@ -1,5 +1,11 @@
+from time import time
+
 import matplotlib.pyplot as plt
 
+from jax import vmap
+import jax.numpy as jnp
+
+from jax_fdm import DTYPE_JAX
 from jax_fdm.equilibrium import EquilibriumModel
 
 
@@ -12,34 +18,36 @@ class LossPlotter:
     """
     def __init__(self, loss, network, *args, **kwargs):
         self.loss = loss
-        self.network = network
+        self.model = EquilibriumModel(network)
         self.fig = plt.figure(**kwargs)
 
-    def plot(self, xs):
+    def plot(self, history):
         """
-        Plot the loss function on an array of force densities.
+        Plot the loss function and its error components on a list of fdm parameter arrays.
         """
-        print("Plotting loss function...")
-        model = EquilibriumModel(self.network)
+        print("\nPlotting loss function...")
+        start_time = time()
 
-        for loss_term in [self.loss] + list(self.loss.terms):
-            errors = []
-            for x in xs:
-                q, xyz_fixed, loads = x
-                eqstate = model(q, xyz_fixed, loads)
-                try:
-                    error = loss_term(eqstate)
-                except TypeError:
-                    error = loss_term(q, xyz_fixed, loads, model)
-                errors.append(error)
-            plt.plot(errors, label=loss_term.name)
+        q = jnp.asarray(history["q"], dtype=DTYPE_JAX)
+        xyz_fixed = jnp.asarray(history["xyz_fixed"], dtype=DTYPE_JAX)
+        loads = jnp.asarray(history["loads"], dtype=DTYPE_JAX)
+        eq_states = vmap(self.model)(q, xyz_fixed, loads)
+
+        errors_all = []
+        for error_term in self.loss.terms:
+            errors = vmap(error_term)(eq_states)
+            errors_all.append(errors)
+            plt.plot(errors, label=error_term.name)
+
+        losses = jnp.sum(jnp.asarray(errors_all, dtype=DTYPE_JAX), axis=0)
+        plt.plot(losses, label=self.loss.name)
 
         plt.xlabel("Optimization iterations")
         plt.ylabel("Loss")
         plt.yscale("log")
         plt.grid()
         plt.legend()
-        plt.show()
+        print(f"Plotting time: {(time() - start_time):.4} seconds")
 
     def show(self):
         """

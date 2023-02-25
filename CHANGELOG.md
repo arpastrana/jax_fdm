@@ -15,10 +15,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Vectorized error computations in `LossPlotter.plot()` to expedite method.
+- `OptimizationRecorder.record()` now stores history in a dictionary, not in a list. 
 - Fixed bug in `FDNetworkViewerArtist` that ocurred while plotting reaction forces on unconnected nodes.
 - Turned `TrustRegionConstrained` into a first order optimizer.
 
 ### Removed
+
+- Removed `LossPlotter.network` attribute.
 
 
 ## [0.4.5] 2023-02-04
