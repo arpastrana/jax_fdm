@@ -18,7 +18,8 @@ class EdgeLengthGoal(ScalarGoal, EdgeGoal):
 
 class EdgesLengthEqualGoal(ScalarGoal, EdgeGoal):
     """
-    Equalize the length of a selection of edges by minimizing the normalized variance of their lengths.
+    Equalize the length of a selection of edges by minimizing
+    the normalized variance of their lengths.
     """
     def __init__(self, key, weight=1.0):
         super().__init__(key=key, target=0.0, weight=weight)
@@ -33,7 +34,7 @@ class EdgesLengthEqualGoal(ScalarGoal, EdgeGoal):
     @staticmethod
     def prediction(eq_state, index):
         """
-        The normalized variance of the edges.
+        The normalized variance of the lengths of the edges.
         """
         lengths = eq_state.lengths[index]
 
