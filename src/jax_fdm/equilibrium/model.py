@@ -8,6 +8,7 @@ from jax_fdm.equilibrium.state import EquilibriumState
 from jax_fdm.equilibrium.structure import EquilibriumStructure
 
 from jax import jit
+from jax import vmap
 
 # ==========================================================================
 # Equilibrium model
@@ -51,7 +52,7 @@ class EquilibriumModel:
         Compute the force at the anchor supports of the structure.
         """
         connectivity = self.structure.connectivity
-        return loads - np.transpose(connectivity) @ jnp.diag(q) @ vectors
+        return loads - connectivity.T @ jnp.diag(q) @ vectors
 
     def nodes_free_positions(self, q, xyz_fixed, loads):
         """
@@ -62,13 +63,8 @@ class EquilibriumModel:
         c_fixed = self.structure.connectivity_fixed
         c_free = self.structure.connectivity_free
 
-        # connectivity
-        c_free_t = np.transpose(c_free)
-
-        # solve equilibrium after solving a linear system of equations
-        q_matrix = jnp.diag(q)
-        A = c_free_t @ q_matrix @ c_free
-        b = loads[free, :] - c_free_t @ q_matrix @ c_fixed @ xyz_fixed
+        A = c_free.T @ vmap(jnp.dot)(q, c_free)
+        b = loads[free, :] - c_free.T @ vmap(jnp.dot)(q, c_fixed @ xyz_fixed)
 
         return jnp.linalg.solve(A, b)
 
