@@ -10,6 +10,9 @@ from jax_fdm.parameters import EdgeParameter
 from jax_fdm.parameters import NodeAnchorParameter
 from jax_fdm.parameters import NodeLoadParameter
 
+from jax_fdm.parameters import ParameterGroup
+from jax_fdm.parameters import EdgesParameter
+
 from jax_fdm.parameters import EdgeForceDensityParameter
 from jax_fdm.parameters import NodeAnchorXParameter
 from jax_fdm.parameters import NodeAnchorYParameter
@@ -197,7 +200,10 @@ class ParameterManager:
         indices = []
         for parameter in self.parameters:
             if isinstance(parameter, cls):
-                indices.append(parameter.index(self.model))
+                if isinstance(parameter, ParameterGroup):
+                    indices.extend(parameter.index(self.model))
+                else:
+                    indices.append(parameter.index(self.model))
 
         return np.array(indices)
 
@@ -294,6 +300,8 @@ class ParameterManager:
         """
         if self._parameters_opt is None:
             parameters, _ = split(self.parameters_model, func=self.mask_optimizable)
+            # TODO: implement this
+            # parameters, _ = split(parameters, func=self.mask_optimizable_groups)
             opt, _ = parameters
             self._parameters_opt = opt
         return self._parameters_opt
@@ -311,10 +319,13 @@ class ParameterManager:
 
     def parameters_fdm(self, params_opt):
         """
+        NOTE: this is the one method used during optimization!
         Reshape optimizable model parameters into fdm parameters.
         """
         # TODO: combine should take care of taking the flat vector of params
         # and then repeat and assign any group parameters to all their matching grouped elements.
+        # params opt to params_opt_spread/distributed/groups
+        # params_opt = params_opt[self.indices_opt_groups]
         params = combine(params_opt, self.parameters_frozen, adef=self.indices_optfrozen)
         q, xyz_fixed, loads = jnp.split(params, self.indices_fdm)
 
