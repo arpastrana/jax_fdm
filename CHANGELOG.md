@@ -9,11 +9,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Added `EdgesForceEqualGoal` to goals.
 - Implemented parameter groups!
 - Added `EdgesForceDensityParameter`.
 - Added `NodesLoadXParameter`, `NodesLoadYParameter`, `NodesLoadZParameter`.
 - Added `NodesSupportXParameter`, `NodesSupportYParameter`, `NodesSupportZParameter`.
+- Added `EdgesForceEqualGoal` to goals.
 - Implemented `area_polygon` in `jax_fdm.geometry`.
 - Added `FDNetwork.number_of_supports()` to count number of supported nodes in a network.
 - Added `network_validate` to check the validity of a network before equilibrium calculations.
