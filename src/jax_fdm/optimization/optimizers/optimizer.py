@@ -96,7 +96,7 @@ class Optimizer:
             parameters = [EdgeForceDensityParameter(edge) for edge in model.structure.edges]
 
         self.pm = ParameterManager(model, parameters)
-        x = self.parameters_opt()
+        x = self.parameters_value()
 
         # message
         print(f"\n***Constrained form finding***\nParameters: {len(x)} \tGoals: {loss.number_of_goals()}")
@@ -185,17 +185,11 @@ class Optimizer:
         """
         return Bounds(lb=self.pm.bounds_low, ub=self.pm.bounds_up)
 
-    def parameters_opt(self):
+    def parameters_value(self):
         """
-        Return a flat array with the optimization parameters.
+        Return a flat array with the value of the optimization parameters.
         """
-        return self.pm.parameters_opt
-
-    def parameters_frozen(self):
-        """
-        Return a flat array with the parameters that must stay constant during optimization.
-        """
-        return self.pm.parameters_frozen
+        return self.pm.parameters_value 
 
     def parameters_fdm(self, params_opt):
         """
