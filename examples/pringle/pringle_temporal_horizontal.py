@@ -73,8 +73,8 @@ from jax_fdm.optimization import TrustRegionConstrained
 from jax_fdm.optimization import OptimizationRecorder
 
 from jax_fdm.parameters import EdgeForceDensityParameter
-from jax_fdm.parameters import NodeAnchorXParameter
-from jax_fdm.parameters import NodeAnchorYParameter
+from jax_fdm.parameters import NodeSupportXParameter
+from jax_fdm.parameters import NodeSupportYParameter
 
 from jax_fdm.constraints import EdgeLengthConstraint
 from jax_fdm.constraints import EdgeAngleConstraint
@@ -396,8 +396,8 @@ for i in range(num_courses):
                 if node not in arch_nodes_set:
                     continue
                 x, y, z = network_3d.node_coordinates(node)
-                parameters.append(NodeAnchorXParameter(node, x - xtol, x + xtol))
-                parameters.append(NodeAnchorYParameter(node, y - ytol, y + ytol))
+                parameters.append(NodeSupportXParameter(node, x - xtol, x + xtol))
+                parameters.append(NodeSupportYParameter(node, y - ytol, y + ytol))
 
 # ==========================================================================
 #  Constrained form-finding of 2D pattern - define goals
