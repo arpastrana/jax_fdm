@@ -6,17 +6,16 @@ from jax_fdm import DTYPE_JAX
 from jax_fdm.parameters import split
 from jax_fdm.parameters import combine
 
+from jax_fdm.parameters import ParameterGroup
+
 from jax_fdm.parameters import EdgeParameter
-from jax_fdm.parameters import NodeAnchorParameter
+from jax_fdm.parameters import NodeSupportParameter
 from jax_fdm.parameters import NodeLoadParameter
 
-from jax_fdm.parameters import ParameterGroup
-from jax_fdm.parameters import EdgesParameter
-
 from jax_fdm.parameters import EdgeForceDensityParameter
-from jax_fdm.parameters import NodeAnchorXParameter
-from jax_fdm.parameters import NodeAnchorYParameter
-from jax_fdm.parameters import NodeAnchorZParameter
+from jax_fdm.parameters import NodeSupportXParameter
+from jax_fdm.parameters import NodeSupportYParameter
+from jax_fdm.parameters import NodeSupportZParameter
 from jax_fdm.parameters import NodeLoadXParameter
 from jax_fdm.parameters import NodeLoadYParameter
 from jax_fdm.parameters import NodeLoadZParameter
@@ -34,9 +33,9 @@ class ParameterManager:
         A list of optimization parameters.
     """
     parameter_types = [EdgeForceDensityParameter,
-                       NodeAnchorXParameter,
-                       NodeAnchorYParameter,
-                       NodeAnchorZParameter,
+                       NodeSupportXParameter,
+                       NodeSupportYParameter,
+                       NodeSupportZParameter,
                        NodeLoadXParameter,
                        NodeLoadYParameter,
                        NodeLoadZParameter]
@@ -53,12 +52,14 @@ class ParameterManager:
         self._indices_opt = None
         self._indices_frozen = None
         self._indices_optfrozen = None
+        self._indices_groups = None
 
         self._indices_fdm = None
         self._indices_fd = None
         self._indices_xyzfixed = None
         self._indices_loads = None
 
+        self._parameters_value = None
         self._parameters_ordered = None
         self._parameters_model = None
         self._parameters_opt = None
@@ -85,9 +86,12 @@ class ParameterManager:
         """
         self.indices_fdm
         self.indices_optfrozen
+        self.parameters
         self.parameters_model
         self.parameters_opt
         self.parameters_frozen
+        self.parameters_ordered
+        self.indices_groups
 
 # ==========================================================================
 # Starting indices
@@ -158,6 +162,24 @@ class ParameterManager:
         return self._indices_loads
 
     @property
+    def indices_groups(self):
+        """
+        A list with indices distributions optimization parameters to parameter groups.
+        """
+        if self._indices_groups is None:
+            indices = []
+            for idx, parameter in enumerate(self.parameters_ordered):
+                if isinstance(parameter, ParameterGroup):
+                    for j in range(len(parameter.key)):
+                        indices.append(idx)
+                else:
+                    indices.append(idx)
+
+            self._indices_groups = np.array(indices, dtype=np.int64)
+
+        return self._indices_groups
+
+    @property
     def indices_opt(self):
         """
         The ordered indices of the optimization parameters.
@@ -165,9 +187,15 @@ class ParameterManager:
         if self._indices_opt is None:
             indices = []
             pshift = 0
+            # iterate over ordered parameter classes typed
             for ptype in self.parameter_types:
+                # get the indices of the all the parameters of this parameter class
                 itype = self._indices_type(ptype)
-                indices.extend(self._indices_shift(itype, pshift))
+                # shift class indices by class shift
+                itype_shifted = self._indices_shift(itype, pshift)
+                # store shifted class indices in indices list
+                indices.extend(itype_shifted)
+                # update class shift
                 pshift += self._shift_type(ptype)
 
             self._indices_opt = indices
@@ -194,8 +222,6 @@ class ParameterManager:
     def _indices_type(self, cls):
         """
         Compute the parameter index if a parameter is an instance of a given type.
-
-        TODO: modify here to enable groups.
         """
         indices = []
         for parameter in self.parameters:
@@ -205,7 +231,10 @@ class ParameterManager:
                 else:
                     indices.append(parameter.index(self.model))
 
-        return np.array(indices)
+        # assert len(indices) > 0, "Could not compute parameter indices per type. Are these valid parameters?"
+
+        # return np.array(indices, dtype=np.int64)
+        return indices
 
     def _indices_shift(self, indices, shift):
         """
@@ -219,7 +248,7 @@ class ParameterManager:
         """
         if issubclass(ptype, EdgeParameter):
             shift = self.network.number_of_edges()
-        elif issubclass(ptype, NodeAnchorParameter):
+        elif issubclass(ptype, NodeSupportParameter):
             shift = self.network.number_of_anchors()
         elif issubclass(ptype, NodeLoadParameter):
             shift = self.network.number_of_nodes()
@@ -258,6 +287,19 @@ class ParameterManager:
 
         return self._bounds_up
 
+    @property
+    def parameters_value(self):
+        """
+        Return an array with the intial value of the optimization parameters.
+        """
+        if self._parameters_value is None:
+            values = []
+            for parameter in self.parameters_ordered:
+                values.append(parameter.value(self.model))
+            self._parameters_value = jnp.array(values, dtype=DTYPE_JAX)
+
+        return self._parameters_value
+
 # ==========================================================================
 # Parameters
 # ==========================================================================
@@ -268,11 +310,16 @@ class ParameterManager:
         The optimization parameter objects, sorted by type.
         """
         if self._parameters_ordered is None:
+
             parameters = []
             for ptype in self.parameter_types:
+
                 for parameter in self.parameters:
                     if isinstance(parameter, ptype):
                         parameters.append(parameter)
+
+            assert len(parameters) > 0, "No valid optimization parameters defined!"
+
             self._parameters_ordered = parameters
 
         return self._parameters_ordered
@@ -300,8 +347,6 @@ class ParameterManager:
         """
         if self._parameters_opt is None:
             parameters, _ = split(self.parameters_model, func=self.mask_optimizable)
-            # TODO: implement this
-            # parameters, _ = split(parameters, func=self.mask_optimizable_groups)
             opt, _ = parameters
             self._parameters_opt = opt
         return self._parameters_opt
@@ -319,13 +364,9 @@ class ParameterManager:
 
     def parameters_fdm(self, params_opt):
         """
-        NOTE: this is the one method used during optimization!
-        Reshape optimizable model parameters into fdm parameters.
+        Convert optimization parameters into fdm parameters.
         """
-        # TODO: combine should take care of taking the flat vector of params
-        # and then repeat and assign any group parameters to all their matching grouped elements.
-        # params opt to params_opt_spread/distributed/groups
-        # params_opt = params_opt[self.indices_opt_groups]
+        params_opt = params_opt[self.indices_groups]
         params = combine(params_opt, self.parameters_frozen, adef=self.indices_optfrozen)
         q, xyz_fixed, loads = jnp.split(params, self.indices_fdm)
 
