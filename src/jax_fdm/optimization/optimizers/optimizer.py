@@ -189,7 +189,7 @@ class Optimizer:
         """
         Return a flat array with the value of the optimization parameters.
         """
-        return self.pm.parameters_value 
+        return self.pm.parameters_value
 
     def parameters_fdm(self, params_opt):
         """
