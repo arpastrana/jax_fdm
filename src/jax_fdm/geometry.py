@@ -135,7 +135,6 @@ def area_polygon(polygon):
     A polygon that is defined as a sequence of unique points.
     A polygon must have at least three points.
     """
-    # breakpoint()
     polygon_shifted = jnp.roll(polygon, 1, axis=0)
     ns = 0.5 * jnp.cross(polygon_shifted, polygon)
     normal = jnp.sum(ns, axis=0)
