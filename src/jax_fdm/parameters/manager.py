@@ -3,8 +3,8 @@ import jax.numpy as jnp
 
 from jax_fdm import DTYPE_JAX
 
-from jax_fdm.parameters import split
-from jax_fdm.parameters import combine
+from jax_fdm.parameters import split_parameters
+from jax_fdm.parameters import combine_parameters
 
 from jax_fdm.parameters import ParameterGroup
 
@@ -54,6 +54,9 @@ class ParameterManager:
         self._indices_optfrozen = None
         self._indices_groups = None
 
+        self._indices_opt_sort = None
+        self._indices_opt_unsort = None
+
         self._indices_fdm = None
         self._indices_fd = None
         self._indices_xyzfixed = None
@@ -80,7 +83,7 @@ class ParameterManager:
 
     def init(self):
         """
-        Initialiaze the properties of this object so that it is static after this call.
+        Initialiaze the properties of this object so that every property becomes static after this call.
 
         TODO: This is fairly anti-pythonic. Please refactor me.
         """
@@ -92,6 +95,7 @@ class ParameterManager:
         self.parameters_frozen
         self.parameters_ordered
         self.indices_groups
+        self.indices_opt_unsort
 
 # ==========================================================================
 # Starting indices
@@ -176,13 +180,14 @@ class ParameterManager:
                     indices.append(idx)
 
             self._indices_groups = np.array(indices, dtype=np.int64)
+            # self._indices_groups = tuple(indices)
 
         return self._indices_groups
 
     @property
     def indices_opt(self):
         """
-        The ordered indices of the optimization parameters.
+        The type-ordered indices of the optimization parameters.
         """
         if self._indices_opt is None:
             indices = []
@@ -199,13 +204,34 @@ class ParameterManager:
                 pshift += self._shift_type(ptype)
 
             self._indices_opt = indices
+            self._indices_opt = np.array(indices, dtype=np.int64)
 
         return self._indices_opt
 
     @property
+    def indices_opt_sort(self):
+        """
+        The indices that sort the index-based ordering of the type-sorted optimization parameters.
+        """
+        if self._indices_opt_sort is None:
+            indices = np.argsort(self.indices_opt)
+            self._indices_opt_sort = indices
+        return self._indices_opt_sort
+
+    @property
+    def indices_opt_unsort(self):
+        """
+        The indices that unsort the index-based ordering of the type-sorted optimization parameters.
+        """
+        if self._indices_opt_unsort is None:
+            indices = np.argsort(self.indices_opt_sort)
+            self._indices_opt_unsort = indices
+        return self._indices_opt_unsort
+
+    @property
     def indices_optfrozen(self):
         if self._indices_optfrozen is None:
-            _, indices = split(self.parameters_model, func=self.mask_optimizable)
+            _, indices = split_parameters(self.parameters_model, func=self.mask_optimizable)
             self._indices_optfrozen = indices
         return self._indices_optfrozen
 
@@ -230,8 +256,6 @@ class ParameterManager:
                     indices.extend(parameter.index(self.model))
                 else:
                     indices.append(parameter.index(self.model))
-
-        # assert len(indices) > 0, "Could not compute parameter indices per type. Are these valid parameters?"
 
         # return np.array(indices, dtype=np.int64)
         return indices
@@ -346,7 +370,7 @@ class ParameterManager:
         The optimizable model parameters.
         """
         if self._parameters_opt is None:
-            parameters, _ = split(self.parameters_model, func=self.mask_optimizable)
+            parameters, _ = split_parameters(self.parameters_model, func=self.mask_optimizable)
             opt, _ = parameters
             self._parameters_opt = opt
         return self._parameters_opt
@@ -357,7 +381,7 @@ class ParameterManager:
         The non-optimizable model parameters.
         """
         if self._parameters_frozen is None:
-            parameters, _ = split(self.parameters_model, func=self.mask_optimizable)
+            parameters, _ = split_parameters(self.parameters_model, func=self.mask_optimizable)
             _, frozen = parameters
             self._parameters_frozen = frozen
         return self._parameters_frozen
@@ -366,8 +390,10 @@ class ParameterManager:
         """
         Convert optimization parameters into fdm parameters.
         """
+        # unsort params opt
         params_opt = params_opt[self.indices_groups]
-        params = combine(params_opt, self.parameters_frozen, adef=self.indices_optfrozen)
+        params_opt = params_opt[self.indices_opt_sort]
+        params = combine_parameters((params_opt, self.parameters_frozen), adef=self.indices_optfrozen)
         q, xyz_fixed, loads = jnp.split(params, self.indices_fdm)
 
         return q, jnp.reshape(xyz_fixed, (-1, 3), order="F"), jnp.reshape(loads, (-1, 3), order="F")
@@ -378,6 +404,10 @@ class ParameterManager:
 
     def mask_optimizable(self, array):
         """
+        Returns two boolean masks.
+
+        One with ones denoting the optimizable parameters.
+        The second one denoting the frozen parameters.
         """
         mask = np.zeros_like(array, dtype=np.int64)
         mask[self.indices_opt] = 1
