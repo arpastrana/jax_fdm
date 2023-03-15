@@ -24,7 +24,7 @@ __author__ = ["Rafael Pastrana"]
 __copyright__ = "Rafael Pastrana"
 __license__ = "MIT License"
 __email__ = "arpastrana@princeton.edu"
-__version__ = "0.5.1"
+__version__ = "0.5.2"
 
 
 HERE = os.path.dirname(__file__)
