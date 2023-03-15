@@ -1,7 +1,7 @@
-from jax import jit
-import jax.numpy as jnp
 import numpy as np
-from jax_fdm import DTYPE_JAX
+import jax.numpy as jnp
+
+from jax import jit
 
 
 def split_parameters(parray, func):
@@ -16,15 +16,13 @@ def split_parameters(parray, func):
     return sarrays, adef
 
 
-@jit
 def combine_parameters(parrays, adef):
     """
     Combine a sequence of flat arrays given a filter function.
     """
-    return jnp.concatenate(parrays, dtype=DTYPE_JAX)[adef]
+    return jnp.concatenate(parrays)[adef]
 
 
-# @jit
 def reshape_parameters(sarrays, shapes):
     """
     Reshape a sequence of flat arrays.

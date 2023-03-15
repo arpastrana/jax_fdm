@@ -147,6 +147,8 @@ def curvature_point_polygon(point, polygon):
     Compute the discrete curvature at a point based on a polygon surrounding it.
     The discrete curvature of a node equals 2 * pi - sum(alphas).
 
+    TODO: divide return value by tributary area of point.
+
     Notes
     -----
     Alphas is the list of angles between each pair of successive edges as outward vectors from the node.
