@@ -1,8 +1,6 @@
 import numpy as np
 import jax.numpy as jnp
 
-from jax import jit
-
 
 def split_parameters(parray, func):
     """
