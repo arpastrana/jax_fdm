@@ -2,6 +2,7 @@
 A gradient-based optimizer.
 """
 from time import time
+from collections import namedtuple
 from itertools import groupby
 from functools import partial
 
@@ -72,9 +73,14 @@ class Optimizer:
         """
         for term in loss.terms_error:
             goal_collections = self.collect_goals(term.goals)
+            goal_collections_frozen = []
+
             for goal_collection in goal_collections:
                 goal_collection.init(model)
-            term.collections = goal_collections
+                goal_collection = self.freeze_goal(goal_collection)
+                goal_collections_frozen.append(goal_collection)
+
+            term.collections = goal_collections_frozen
 
 # ==========================================================================
 # Minimization
@@ -231,3 +237,19 @@ class Optimizer:
                 collections.append(Collection([goal]))
 
         return collections
+
+    @staticmethod
+    def freeze_goal(goal):
+        """
+        Convert a goal into an immutable object.
+        """
+        kwattrs = {}
+        for name, value in vars(goal).items():
+            if name[0] == "_":
+                name = name[1:]
+            kwattrs[name] = value
+
+        frozen_goal = namedtuple(goal.__class__.__name__, kwattrs.keys())
+        g = frozen_goal(**kwattrs)
+
+        return g
