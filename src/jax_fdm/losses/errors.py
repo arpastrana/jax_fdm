@@ -1,6 +1,7 @@
 from functools import partial
 
 from jax import jit
+from jax.lax import scan
 
 import jax.numpy as jnp
 
@@ -28,7 +29,7 @@ class Error:
         return jnp.sum(errors)
 
     @partial(jit, static_argnums=0)
-    def __call__(self, eqstate):
+    def __call2__(self, eqstate):
         """
         Return the current value of the error term.
         """
@@ -39,6 +40,19 @@ class Error:
             errors.append(error)
 
         return self.errors(jnp.array(errors)) * self.alpha
+
+    @partial(jit, static_argnums=0)
+    def __call__(self, eqstate):
+        """
+        Return the value of the error term.
+        """
+        def fn(carry, goal):
+            gstate = goal(eqstate)
+            return self.error(gstate)
+
+        _, errors = scan(fn, 0.0, self.collections)
+
+        return self.errors(errors) * self.alpha
 
     def number_of_goals(self):
         """
