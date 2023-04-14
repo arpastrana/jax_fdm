@@ -110,9 +110,26 @@ def distance_point_point_sqrd(u, v):
     return jnp.sum(jnp.square(vector))
 
 
+def normal_triangle(triangle, unitize=False):
+    """
+    Computes the normal vector of a triangle.
+
+    A triangle is defined as a set of exactly three points.
+    """
+    assert len(triangle) == 3, "A triangle is defined by exactly 3 points"
+
+    line_a, line_b = triangle[:-1, :] - triangle[1:, :]
+    normal = jnp.cross(line_a, line_b)
+
+    if unitize:
+        return normalize_vector(normal)
+
+    return normal
+
+
 def normal_polygon(polygon, unitize=False):
     """
-    Computes the unit-length normal of a polygon.
+    Computes the normal vector of a polygon.
 
     A polygon that is defined as a sequence of unique points.
     A polygon must have at least three points.
@@ -125,7 +142,21 @@ def normal_polygon(polygon, unitize=False):
 
     if unitize:
         return normalize_vector(n)
+
     return n
+
+
+def area_triangle(triangle):
+    """
+    Calculate the area of a triangle.
+
+    A triangle is defined as a set of exactly three points.
+    """
+    assert len(triangle) == 3, "A triangle is defined by exactly 3 points"
+
+    normal = normal_triangle(triangle)
+
+    return 0.5 * length_vector(normal)
 
 
 def area_polygon(polygon):
@@ -173,12 +204,13 @@ if __name__ == "__main__":
     from compas.geometry import Polygon
     from compas.geometry import Rotation
     from compas.geometry import area_polygon as compas_area_polygon
+    from compas.geometry import area_triangle as compas_area_triangle
 
     radius = 2.0
     num_angles = 100
 
+    # polygon area test
     polygons = []
-
     area_polygon = jit(area_polygon)
     area_polygon(np.ones((5, 3)))
 
@@ -206,4 +238,36 @@ if __name__ == "__main__":
 
     areas = vmap(area_polygon)(jnp.array(polygons))
     print(areas.shape)
-    print("Okay")
+    print("Polygon area is okay")
+
+
+    # test area triangles
+    triangles = []
+    area_triangle= jit(area_triangle)
+    area_triangle(np.ones((3, 3)))
+
+    polygon = Polygon.from_sides_and_radius_xy(3, radius)
+
+    for j in range(1, num_angles):
+
+        polygon_old = polygon
+
+        angle = (j * (0.5 * pi / num_angles))
+        R1 = Rotation.from_axis_and_angle(axis=[1.0, 0.0, 0.0], angle=angle)
+        polygon = polygon.transformed(R1)
+        R2 = Rotation.from_axis_and_angle(axis=[0.0, 1.0, 0.0], angle=angle)
+        polygon = polygon.transformed(R2)
+
+        triangles.append(polygon)
+
+        assert not np.allclose(polygon, polygon_old)
+
+        area_compas = compas_area_polygon(polygon.points)
+
+        area = area_polygon(np.array(polygon.points))  # .item()
+
+        assert jnp.allclose(area_compas, area), f"Not equal: Jax fdm: {area:.2f} vs. Compas {area_compas:.2f}"
+
+    areas = vmap(area_triangle)(jnp.array(triangles))
+    print(areas.shape)
+    print("Triangle area is okay")
