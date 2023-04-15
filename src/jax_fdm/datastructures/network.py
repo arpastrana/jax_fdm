@@ -28,7 +28,10 @@ class FDNetwork(Network):
 
         self.update_default_edge_attributes({"q": 0.0,
                                              "length": 0.0,
-                                             "force": 0.0})
+                                             "force": 0.0,
+                                             "px": 0.0,
+                                             "py": 0.0,
+                                             "pz": 0.0})
 
     def nodes_coordinates(self, keys=None, axes="xyz"):
         """
