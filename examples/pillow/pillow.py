@@ -17,6 +17,7 @@ from compas_singular.datastructures import CoarseQuadMesh
 
 # jax_fdm
 from jax_fdm.datastructures import FDNetwork
+from jax_fdm.datastructures import FDMesh
 
 from jax_fdm.equilibrium import fdm
 from jax_fdm.equilibrium import constrained_fdm
@@ -100,8 +101,9 @@ coarse.set_strips_density(divisions)
 coarse.densification()
 mesh = coarse.get_quad_mesh()
 
-vertices, _ = mesh.to_vertices_and_faces()
-network = FDNetwork.from_nodes_and_edges(vertices, mesh.edges())
+vertices, faces = mesh.to_vertices_and_faces()
+network = FDMesh.from_vertices_and_faces(vertices, faces)
+# network = FDNetwork.from_nodes_and_edges(vertices, mesh.edges())
 
 # ==========================================================================
 # Define structural system
@@ -110,7 +112,8 @@ network = FDNetwork.from_nodes_and_edges(vertices, mesh.edges())
 # define anchors
 for key in network.nodes():
     if mesh.is_vertex_on_boundary(key):
-        network.node_anchor(key)
+        # network.node_anchor(key)
+        network.vertex_support(key)
 
 # set initial q to all edges
 for edge in network.edges():
@@ -123,7 +126,7 @@ networks = {"input": network}
 # Initial form finding - no external loads
 # ==========================================================================
 
-networks["unloaded"] = fdm(network)
+networks["unloaded"] = fdm(network, tmax=0)
 
 # ==========================================================================
 # Initial form finding - loaded
@@ -131,10 +134,14 @@ networks["unloaded"] = fdm(network)
 
 # apply loads
 mesh_area = mesh.area()
-for key in network.nodes():
-    network.node_load(key, load=[0.0, 0.0, pz * mesh.vertex_area(key) / mesh_area])
+# for key in network.nodes():
+#     network.node_load(key, load=[0.0, 0.0, pz * mesh.vertex_area(key) / mesh_area])
+
+for fkey in network.faces():
+    network.face_load(fkey, load=[0.0, 0.0, pz / mesh_area])
 
 networks["loaded"] = fdm(network)
+
 
 # ==========================================================================
 # Create loss function with soft goals
@@ -145,7 +152,8 @@ goals = []
 # horizontal projection goal
 if add_horizontal_projection_goal:
     print("Horizontal projection goal")
-    for node in network.nodes_free():
+    # for node in network.nodes_free():
+    for node in network.vertices_free():
         xyz = network.node_coordinates(node)
         line = Line(xyz, add_vectors(xyz, [0.0, 0.0, 1.0]))
         goal = NodeLineGoal(node, target=line, weight=weight_horizontal_projection)
@@ -249,8 +257,16 @@ for network_name, network in networks.items():
 
     if export:
         HERE = os.path.dirname(__file__)
-        FILE_OUT = os.path.join(HERE, "../data/json/{}_{}.json".format(model_name, network_name))
+        FILE_OUT = os.path.join(HERE, "../../data/json/{}_{}.json".format(model_name, network_name))
         network.to_json(FILE_OUT)
+
+        FILE_OUT = os.path.join(HERE, "../../data/json/{}_{}_mesh.json".format(model_name, network_name))
+        _mesh = mesh.copy()
+        for vkey in _mesh.vertices():
+            _mesh.vertex_attributes(vkey, "xyz", network.node_coordinates(vkey))
+
+        _mesh.to_json(FILE_OUT)
+
         print("Design {} exported to".format(network_name), FILE_OUT)
 
 # ==========================================================================
