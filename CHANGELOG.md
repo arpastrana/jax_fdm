@@ -9,7 +9,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Added `normal_triangle` to `jax_fdm.geometry`
+- Added `area_triangle` to `jax_fdm.geometry`
+- Implemented `FDMesh`
+- Implemented `EquilibriumStructureMesh` to be compatible with `FDMesh`
+- Created `LoadFaces` calculator
+- Created `LoadEdges` calculator
+- Added `EquilibriumModel.nodes_load`
+- Added `EquilibriumModel.nodes_equilibrium`
+- Added `EquilibriumModel.equilibrium`
+- Added `EquilibriumModel.equilibrium_iterative`
+- Added `EquilibriumModel.equilibrium_state`
+- Enabled iterative equilibrium calculations in `EquilibriumModel`
+
 ### Changed
+
+- Changed `jacfwd` with `jacrev` in `Constraint.__call__` to be compatible with lax iterators
+- Enabled display of `FDMesh` in `jax_fdm.visualization` 
 
 ### Removed
 
