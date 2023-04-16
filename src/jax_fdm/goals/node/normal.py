@@ -18,8 +18,8 @@ class NodeNormalAngleGoal(ScalarGoal, NodeGoal):
     def __init__(self, key, vector, target, weight=1.0):
         super().__init__(key=key, target=target, weight=weight)
         self._vector = None
-        self.vector = vector
 
+        self.vector = vector
         self.index_faces = None
         self.mask_faces = None
 
@@ -93,14 +93,17 @@ class NodeNormalAngleGoal(ScalarGoal, NodeGoal):
         Return an iterable with the indices of the faces connected to a node.
         """
         connectivity = model.structure.connectivity_faces
+
         return np.flatnonzero(connectivity[:, index])
 
     def node_faces_indices(self, model, index):
         """
         Return an iterable with the indices of the nodes of the faces connected to a node.
         """
-        fidx = self.node_faces(model, index)
-        return [model.structure.face_node_index[idx] for idx in fidx]
+        fidxs = self.node_faces(model, index)
+        connectivity = model.structure.connectivity_faces
+
+        return [np.flatnonzero(connectivity[fidx, :]).tolist() for fidx in fidxs]
 
     @staticmethod
     def nan_normal_polygon(polygon):
