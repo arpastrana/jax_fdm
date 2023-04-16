@@ -18,7 +18,7 @@ class NodeMixins:
         """
         return self.vertices_where(condition)
 
-    def node_coordinates(self, node, axes):
+    def node_coordinates(self, node, axes="xyz"):
         """
         The vertex XYZ coordinates.
         """
@@ -41,3 +41,21 @@ class NodeMixins:
         Gets or sets a vertex attribute.
         """
         return self.vertices_attributes(names, values, keys)
+
+    def number_of_nodes(self):
+        """
+        The number of vertices.
+        """
+        return self.number_of_vertices()
+
+    def node_load(self, key, load=None):
+        """
+        The load on a vertex.
+        """
+        return self.vertex_load(key, load)
+
+    def node_reaction(self, key):
+        """
+        The reaction on a vertex.
+        """
+        return self.vertex_reaction(key)
