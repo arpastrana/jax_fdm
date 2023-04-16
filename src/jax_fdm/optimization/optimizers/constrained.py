@@ -6,7 +6,7 @@ from itertools import groupby
 from functools import partial
 
 from jax import jit
-from jax import jacfwd
+from jax import jacrev
 
 from scipy.optimize import NonlinearConstraint
 
@@ -22,7 +22,7 @@ class ConstrainedOptimizer(Optimizer):
     """
     A gradient-based optimizer that handles constraints.
     """
-    def constraints(self, constraints, model, params_opt):
+    def constraints(self, constraints, model, params_opt, tmax, eta):
         """
         Returns the defined constraints in a format amenable to `scipy.minimize`.
         """
@@ -40,8 +40,10 @@ class ConstrainedOptimizer(Optimizer):
             constraint.init(model)
 
             # gather information for scipy constraint
-            fun = partial(self.constraint, constraint=constraint, model=model)
-            jac = jit(jacfwd(fun))
+            fun = partial(self.constraint, constraint=constraint, model=model, tmax=tmax, eta=eta)
+            # Using jacrev as fori_loop or while_loop do not support forward mode AD!
+            # but jacrev turns out to be way slower than jacfwd!
+            jac = jit(jacrev(fun))
 
             lb = constraint.bound_low
             ub = constraint.bound_up
@@ -55,14 +57,14 @@ class ConstrainedOptimizer(Optimizer):
 
         return clist
 
-    @partial(jit, static_argnums=(0, 2, 3))
-    def constraint(self, params_opt, constraint, model):
+    @partial(jit, static_argnums=(0, 2, 3, 4, 5))
+    def constraint(self, params_opt, constraint, tmax, eta, model):
         """
         A wrapper around a constraint callable object.
         """
         q, xyz_fixed, loads = self.parameters_fdm(params_opt)
 
-        return constraint(q, xyz_fixed, loads, model)
+        return constraint(q, xyz_fixed, loads, tmax, eta, model)
 
     @staticmethod
     def collect_constraints(constraints):
