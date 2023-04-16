@@ -62,7 +62,7 @@ class FDMesh(Mesh, NodeMixins):
         """
         The number of anchored vertices.
         """
-        return len(list(self.vertices_anchors()))
+        return len(list(self.vertices_supports()))
 
     def number_of_supports(self):
         """
@@ -300,6 +300,13 @@ class FDMesh(Mesh, NodeMixins):
         """
         return dict(enumerate(self.edges()))
 
+    def uv_index(self):
+        """
+        Returns a dictionary that maps edge keys (i.e. pairs of vertex keys)
+        to the corresponding edge index in a list or array of edges.
+        """
+        return {(u, v): index for index, (u, v) in enumerate(self.edges())}
+
 
 if __name__ == "__main__":
 
@@ -315,14 +322,14 @@ if __name__ == "__main__":
 
     from jax_fdm.visualization import Viewer
 
-    mesh = FDMesh.from_meshgrid(dx=5, nx=5)
+    mesh = FDMesh.from_meshgrid(dx=10, nx=10)
 
     mesh.vertices_supports(mesh.vertices_on_boundary())
-    mesh.edges_forcedensities(-1.0)
-    # mesh.faces_loads([0.0, 0.0, -1.0])
-    mesh.vertices_loads([0.0, 0.0, -1.0])
+    mesh.edges_forcedensities(-2.0)
+    mesh.faces_loads([0.0, 0.0, -1.0])
+    mesh.vertices_loads([0.0, 0.0, -0.1])
 
-    mesh_eq = fdm(mesh)
+    mesh_eq = fdm(mesh, tmax=10)
 
     viewer = Viewer()
     viewer.add(mesh_eq)
