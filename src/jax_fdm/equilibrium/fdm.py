@@ -9,20 +9,20 @@ from jax_fdm.equilibrium import EquilibriumModel
 # Form-finding
 # ==========================================================================
 
-def _fdm(network, q, xyz_fixed, loads):
+def _fdm(network, q, xyz_fixed, loads, tmax, eta):
     """
     Compute a network in a state of static equilibrium using the force density method.
     """
     model = EquilibriumModel(network)
 
     # compute static equilibrium
-    eq_state = model(q, xyz_fixed, loads)
+    eq_state = model(q, xyz_fixed, loads, tmax, eta)
 
     # update equilibrium state in a copy of the network
     return network_updated(network, eq_state)
 
 
-def fdm(network):
+def fdm(network, tmax=100, eta=1e-6):
     """
     Compute a network in a state of static equilibrium using the force density method.
     """
@@ -30,7 +30,7 @@ def fdm(network):
 
     q, xyz_fixed, loads = (np.array(p, dtype=DTYPE_NP) for p in network.parameters())
 
-    return _fdm(network, q, xyz_fixed, loads)
+    return _fdm(network, q, xyz_fixed, loads, tmax, eta)
 
 
 # ==========================================================================
@@ -44,6 +44,8 @@ def constrained_fdm(network,
                     constraints=None,
                     maxiter=100,
                     tol=1e-6,
+                    tmax=100,
+                    eta=1e-6,
                     callback=None):
     """
     Generate a network in a constrained state of static equilibrium using the force density method.
@@ -52,11 +54,11 @@ def constrained_fdm(network,
 
     model = EquilibriumModel(network)
 
-    opt_problem = optimizer.problem(model, loss, parameters, constraints, maxiter, tol, callback)
+    opt_problem = optimizer.problem(model, loss, parameters, constraints, maxiter, tol, tmax, eta, callback)
     opt_params = optimizer.solve(opt_problem)
     q, xyz_fixed, loads = optimizer.parameters_fdm(opt_params)
 
-    return _fdm(network, q, xyz_fixed, loads)
+    return _fdm(network, q, xyz_fixed, loads, tmax, eta)
 
 
 # ==========================================================================
