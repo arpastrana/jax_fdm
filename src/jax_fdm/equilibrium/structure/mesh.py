@@ -15,6 +15,7 @@ class EquilibriumStructureMesh:
     """
     def __init__(self, mesh):
         self._datastruct = mesh
+        self.network = mesh
 
         self._connectivity = None
         self._connectivity_free = None
@@ -40,7 +41,7 @@ class EquilibriumStructureMesh:
     @property
     def datastruct(self):
         """
-        A COMPAS network.
+        A COMPAS datastructure.
         """
         return self._datastruct
 
@@ -84,7 +85,7 @@ class EquilibriumStructureMesh:
         Returns a list with the indices of the anchored nodes.
         """
         if not self._free_nodes:
-            self._free_nodes = [self.node_index[node] for node in self.network.nodes_free()]
+            self._free_nodes = [self.node_index[node] for node in self.datastruct.vertices_free()]
         return self._free_nodes
 
     @property
@@ -93,7 +94,7 @@ class EquilibriumStructureMesh:
         Returns a list with the indices of the anchored nodes.
         """
         if not self._fixed_nodes:
-            self._fixed_nodes = [self.node_index[node] for node in self.network.nodes_fixed()]
+            self._fixed_nodes = [self.node_index[node] for node in self.datastruct.vertices_fixed()]
         return self._fixed_nodes
 
     @property
@@ -131,7 +132,7 @@ class EquilibriumStructureMesh:
         A dictionary between edge keys and their enumeration indices.
         """
         if not self._edge_index:
-            self._edge_index = self.network.uv_index()
+            self._edge_index = self.datastruct.uv_index()
         return self._edge_index
 
     @property
@@ -140,7 +141,6 @@ class EquilibriumStructureMesh:
         A dictionary between face keys and their enumeration indices.
         """
         if not self._face_index:
-            # NOTE: self.faces should be replaced with something like self.mesh.faces()
             self._face_index = {face: idx for idx, face in enumerate(self.faces)}
         return self._face_index
 
@@ -174,11 +174,8 @@ class EquilibriumStructureMesh:
 
                 edges_faces.append(tuple(findices))
 
-            # face_nodes = [[node_idx[node] for node in face] for face in self.faces]
-            # self._adjacency_edges_faces = adjacency_matrix(edges, rtype="array")
             self._edges_faces = tuple(edges_faces)
 
-        # return self._adjacency_edges_faces
         return self._edges_faces
 
 # ==========================================================================

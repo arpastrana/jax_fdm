@@ -32,8 +32,8 @@ class EquilibriumStructure:
 
         self._node_index = None
         self._edge_index = None
+        self._face_index = None
         self._anchor_index = None
-        self._face_node_index = None
 
     @property
     def network(self):
@@ -69,18 +69,6 @@ class EquilibriumStructure:
         return self._faces
 
     @property
-    def face_node_index(self):
-        """
-        A list with the face keys of the structure.
-        """
-        if not self._face_node_index:
-            face_index = []
-            for face in self.faces:
-                face_index.append([self.node_index[node] for node in face])
-            self._face_node_index = face_index
-        return self._face_node_index
-
-    @property
     def node_index(self):
         """
         A dictionary between node keys and their enumeration indices.
@@ -108,6 +96,16 @@ class EquilibriumStructure:
         return self._edge_index
 
     @property
+    def face_index(self):
+        """
+        A dictionary between face keys and their enumeration indices.
+        """
+        if not self._face_index:
+            # NOTE: self.faces should be replaced with something like self.mesh.faces()
+            self._face_index = {idx: fkey for idx, fkey in enumerate(self.faces)}
+        return self._face_index
+
+    @property
     def connectivity(self):
         """
         The connectivity of the network encoded as an incidence matrix.
@@ -124,7 +122,8 @@ class EquilibriumStructure:
         The connectivity of the face cycles of a network encoded as as matrix.
         """
         if self._connectivity_faces is None:
-            self._connectivity_faces = face_matrix(self.face_node_index, rtype="array")
+            face_nodes = [[self.node_index[node] for node in face] for face in self.faces]
+            self._connectivity_faces = face_matrix(face_nodes, rtype="array")
         return self._connectivity_faces
 
     @property
