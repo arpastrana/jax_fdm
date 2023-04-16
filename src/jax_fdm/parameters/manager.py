@@ -125,7 +125,7 @@ class ParameterManager:
         The starting index of the xyz coordinates of the loads at the nodes of a network.
         """
         if not self._startindex_loads:
-            self._startindex_loads = self.network.number_of_anchors() * 3 + self.startindex_xyzfixed
+            self._startindex_loads = self.network.number_of_supports() * 3 + self.startindex_xyzfixed
         return self._startindex_loads
 
 # ==========================================================================
@@ -150,7 +150,7 @@ class ParameterManager:
         """
         if self._indices_xyzfixed is None:
             start = self.startindex_xyzfixed
-            stop = self.network.number_of_anchors() * 3 + start
+            stop = self.network.number_of_supports() * 3 + start
             self._indices_xyzfixed = np.array(range(start, stop))
         return self._indices_xyzfixed
 
@@ -273,7 +273,7 @@ class ParameterManager:
         if issubclass(ptype, EdgeParameter):
             shift = self.network.number_of_edges()
         elif issubclass(ptype, NodeSupportParameter):
-            shift = self.network.number_of_anchors()
+            shift = self.network.number_of_supports()
         elif issubclass(ptype, NodeLoadParameter):
             shift = self.network.number_of_nodes()
 
