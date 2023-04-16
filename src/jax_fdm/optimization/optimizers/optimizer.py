@@ -53,14 +53,14 @@ class Optimizer:
 # Loss
 # ==========================================================================
 
-    @partial(jit, static_argnums=(0, 2, 3))
-    def loss(self, params_opt, loss, model):
+    @partial(jit, static_argnums=(0, 2, 3, 4, 5))
+    def loss(self, params_opt, loss, model, tmax, eta):
         """
         The wrapper loss.
         """
         q, xyz_fixed, loads = self.parameters_fdm(params_opt)
 
-        return loss(q, xyz_fixed, loads, model)
+        return loss(q, xyz_fixed, loads, tmax, eta, model)
 
 # ==========================================================================
 # Goals
@@ -87,6 +87,8 @@ class Optimizer:
                 constraints=None,
                 maxiter=100,
                 tol=1e-6,
+                tmax=100,
+                eta=1e-6,
                 callback=None):
         """
         Set up an optimization problem.
@@ -112,7 +114,7 @@ class Optimizer:
         print(f"\tGoal collections: {loss.number_of_collections()}")
 
         # loss matters
-        loss = partial(self.loss, loss=loss, model=model)
+        loss = partial(self.loss, loss=loss, model=model, tmax=tmax, eta=eta)
 
         print("Warming up the pressure cooker...")
         start_time = time()
@@ -136,7 +138,7 @@ class Optimizer:
         constraints = constraints or []
         if constraints:
             start_time = time()
-            constraints = self.constraints(constraints, model, x)
+            constraints = self.constraints(constraints, model, x, tmax, eta)
             print(f"\tConstraints warmup time: {round(time() - start_time, 4)} seconds")
 
         opt_kwargs = {"fun": loss,
