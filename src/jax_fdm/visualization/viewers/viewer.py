@@ -7,6 +7,7 @@ except ImportError:
         pass
 
 from jax_fdm.datastructures import FDNetwork
+from jax_fdm.datastructures import FDMesh
 
 
 __all__ = ["Viewer"]
@@ -38,7 +39,7 @@ class Viewer(App):
         view_data :class:`compas_view2.objects.Object`
             A visualization object.
         """
-        if not isinstance(data, (FDNetwork)):
+        if not isinstance(data, (FDNetwork, FDMesh)):
             return super(Viewer, self).add(data, **kwargs)
 
         if kwargs.get("as_wireframe"):

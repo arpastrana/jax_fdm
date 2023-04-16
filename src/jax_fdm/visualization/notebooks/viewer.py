@@ -5,6 +5,7 @@ from compas.artists import Artist
 from compas_notebook.app import App as NotebookApp
 
 from jax_fdm.datastructures import FDNetwork
+from jax_fdm.datastructures import FDMesh
 
 
 __all__ = ["NotebookViewer"]
@@ -36,7 +37,7 @@ class NotebookViewer(NotebookApp):
         view_data :class:`compas_view2.objects.Object`
             A visualization object.
         """
-        if not isinstance(data, (FDNetwork)):
+        if not isinstance(data, (FDNetwork, FDMesh)):
             return super(NotebookViewer, self).add(data, **kwargs)
 
         if kwargs.get("as_wireframe"):

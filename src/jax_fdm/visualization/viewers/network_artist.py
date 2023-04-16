@@ -228,7 +228,13 @@ class FDNetworkViewerArtist(FDNetworkArtist):
         # shift start to make arrow head touch the node the load is applied to
         start = add_vectors(xyz, scale_vector(vector, -scale))
         # shift start to account for half size of edge thickness
-        widths = [self.edge_width[edge] for edge in self.network.connected_edges(node)]
+        try:
+            widths = [self.edge_width[edge] for edge in self.network.connected_edges(node)]
+        except AttributeError:
+            # NOTE: this is a hack to make the viewer work with the new mesh class
+            # TODO: refactor me!
+            widths = [self.edge_width[edge] for edge in self.network.vertex_edges(node)]
+
         start = add_vectors(start, scale_vector(vector, -max(widths)))
 
         return self.draw_vector(vector, start, scale)
@@ -289,7 +295,12 @@ class FDNetworkViewerArtist(FDNetworkArtist):
             return
 
         # shift starting point if max force of connected edges is compressive
-        connected_edges = network.connected_edges(node)
+        try:
+            connected_edges = network.connected_edges(node)
+        except AttributeError:
+            # NOTE: this is a hack to make the viewer work with the new mesh class
+            connected_edges = network.vertex_edges(node)
+            
         if len(connected_edges) == 0:
             return
 
