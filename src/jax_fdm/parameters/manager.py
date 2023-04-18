@@ -1,6 +1,9 @@
 import numpy as np
 import jax.numpy as jnp
 
+from jax.tree_util import tree_flatten
+from jax.tree_util import tree_unflatten
+
 from jax_fdm import DTYPE_JAX
 
 from jax_fdm.parameters import split_parameters
@@ -40,14 +43,16 @@ class ParameterManager:
                        NodeLoadYParameter,
                        NodeLoadZParameter]
 
-    def __init__(self, model, parameters):
+    def __init__(self, model, structure, parameters):
         """
         Initialize the manager.
         """
         self.model = model  # model.structure.network holds an FD network object.
-        self.structure = model.structure
-        self.network = model.structure.network
+        self.structure = structure
+        self.network = structure.network
         self.parameters = parameters
+
+        self._model_def = None
 
         self._indices_opt = None
         self._indices_frozen = None
@@ -96,6 +101,24 @@ class ParameterManager:
         self.parameters_ordered
         self.indices_groups
         self.indices_opt_unsort
+
+# ==========================================================================
+# Pytrees
+# ==========================================================================
+
+    @property
+    def model_def(self):
+        """
+        The pytree definition to reconstruct an equilibrium model.
+        """
+        return self._model_def
+
+    @model_def.setter
+    def model_def(self, model_def):
+        """
+        Set the pytree definition of an equilibrium model.
+        """
+        self._model_def = model_def
 
 # ==========================================================================
 # Starting indices
@@ -253,9 +276,9 @@ class ParameterManager:
         for parameter in self.parameters:
             if isinstance(parameter, cls):
                 if isinstance(parameter, ParameterGroup):
-                    indices.extend(parameter.index(self.model))
+                    indices.extend(parameter.index(self.model, self.structure))
                 else:
-                    indices.append(parameter.index(self.model))
+                    indices.append(parameter.index(self.model, self.structure))
 
         # return np.array(indices, dtype=np.int64)
         return indices
@@ -319,7 +342,7 @@ class ParameterManager:
         if self._parameters_value is None:
             values = []
             for parameter in self.parameters_ordered:
-                values.append(parameter.value(self.model))
+                values.append(parameter.value(self.model, self.structure))
             self._parameters_value = jnp.array(values, dtype=DTYPE_JAX)
 
         return self._parameters_value
@@ -354,14 +377,17 @@ class ParameterManager:
         The model parameters as a single array.
         """
         if self._parameters_model is None:
-            param_arrays = []
-            for param in self.network.parameters():
-                param_arrays.append(jnp.asarray(param, dtype=DTYPE_JAX))
+            # params = []
+            # for param in self.network.parameters():
+            #     params.append(jnp.asarray(param, dtype=DTYPE_JAX))
 
-            q, xyz_fixed, loads = param_arrays
+            params, model_def = tree_flatten(self.model)
+            q, xyz_fixed, loads = params
             self._parameters_model = jnp.concatenate((q,
                                                       jnp.ravel(xyz_fixed, order="F"),
                                                       jnp.ravel(loads, order="F")))
+            self.model_def = model_def
+
         return self._parameters_model
 
     @property
@@ -386,7 +412,7 @@ class ParameterManager:
             self._parameters_frozen = frozen
         return self._parameters_frozen
 
-    def parameters_fdm(self, params_opt):
+    def parameters_fdm2(self, params_opt):
         """
         Convert optimization parameters into fdm parameters.
         """
@@ -397,6 +423,19 @@ class ParameterManager:
         q, xyz_fixed, loads = jnp.split(params, self.indices_fdm)
 
         return q, jnp.reshape(xyz_fixed, (-1, 3), order="F"), jnp.reshape(loads, (-1, 3), order="F")
+
+    def parameters_fdm(self, params_opt):
+        """
+        Convert optimization parameters into fdm parameters.
+        """
+        params_opt = params_opt[self.indices_groups]
+        params_opt = params_opt[self.indices_opt_sort]
+        params = combine_parameters((params_opt, self.parameters_frozen), adef=self.indices_optfrozen)
+        q, xyz_fixed, loads = jnp.split(params, self.indices_fdm)
+        xyz_fixed = jnp.reshape(xyz_fixed, (-1, 3), order="F")
+        loads = jnp.reshape(loads, (-1, 3), order="F")
+
+        return tree_unflatten(self.model_def, [q, xyz_fixed, loads])
 
 # ==========================================================================
 # Masks
