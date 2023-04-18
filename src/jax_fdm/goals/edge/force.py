@@ -25,11 +25,11 @@ class EdgesForceEqualGoal(ScalarGoal, EdgeGoal):
         super().__init__(key=key, target=0.0, weight=weight)
         self.is_collectible = False
 
-    def init(self, model):
+    def init(self, model, structure):
         """
         Initialize the goal with information from an equilibrium model.
         """
-        self.index = [super().index_from_model(model)]
+        self.index = [super().index_from_model(model, structure)]
 
     @staticmethod
     def prediction(eq_state, index):
