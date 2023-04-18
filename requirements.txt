@@ -1,4 +1,5 @@
 jax[cpu]
+equinox
 compas
 compas_singular
 compas-notebook
