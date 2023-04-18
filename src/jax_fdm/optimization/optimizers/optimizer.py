@@ -41,7 +41,7 @@ class Optimizer:
         """
         Compute the gradient function of a loss function.
         """
-        return jit(grad(loss, argnums=0))
+        return grad(loss, argnums=0)
 
     def hessian(self, loss):
         """
@@ -53,27 +53,29 @@ class Optimizer:
 # Loss
 # ==========================================================================
 
-    @partial(jit, static_argnums=(0, 2, 3))
-    def loss(self, params_opt, loss, model):
+    # @partial(jit, static_argnums=(0, 2, 3))
+    def loss(self, params_opt, loss, structure):
         """
         The wrapper loss.
         """
-        q, xyz_fixed, loads = self.parameters_fdm(params_opt)
+        # q, xyz_fixed, loads = self.parameters_fdm(params_opt)
+        model = self.parameters_fdm(params_opt)
 
-        return loss(q, xyz_fixed, loads, model)
+        # return loss(q, xyz_fixed, loads, model)
+        return loss(model, structure)
 
 # ==========================================================================
 # Goals
 # ==========================================================================
 
-    def goals(self, loss, model):
+    def goals(self, loss, model, structure):
         """
         Pre-process the goals in the loss function to accelerate computations.
         """
         for term in loss.terms_error:
             goal_collections = self.collect_goals(term.goals)
             for goal_collection in goal_collections:
-                goal_collection.init(model)
+                goal_collection.init(model, structure)
             term.collections = goal_collections
 
 # ==========================================================================
@@ -82,6 +84,7 @@ class Optimizer:
 
     def problem(self,
                 model,
+                structure,
                 loss,
                 parameters=None,
                 constraints=None,
@@ -93,9 +96,9 @@ class Optimizer:
         """
         # optimization parameters
         if not parameters:
-            parameters = [EdgeForceDensityParameter(edge) for edge in model.structure.edges]
+            parameters = [EdgeForceDensityParameter(edge) for edge in structure.edges]
 
-        self.pm = ParameterManager(model, parameters)
+        self.pm = ParameterManager(model, structure, parameters)
         x = self.parameters_value()
 
         # message
@@ -108,11 +111,12 @@ class Optimizer:
         assert x.size == self.pm.bounds_up.size
 
         # build goal collections
-        self.goals(loss, model)
+        self.goals(loss, model, structure)
         print(f"\tGoal collections: {loss.number_of_collections()}")
 
         # loss matters
-        loss = partial(self.loss, loss=loss, model=model)
+        loss = partial(self.loss, loss=loss, structure=structure)
+        loss = jit(loss)
 
         print("Warming up the pressure cooker...")
         start_time = time()
@@ -121,6 +125,7 @@ class Optimizer:
 
         # gradient of the loss function
         grad_loss = self.gradient(loss)  # w.r.t. first function argument
+        grad_loss = jit(grad_loss)
         start_time = time()
         _ = grad_loss(x)
         print(f"\tGradient warmup time: {(time() - start_time):.4} seconds")
@@ -129,6 +134,7 @@ class Optimizer:
         hessian_loss = self.hessian(loss)  # w.r.t. first function argument
         if hessian_loss:
             start_time = time()
+            hessian_loss = jit(hessian_loss)
             _ = hessian_loss(x)
             print(f"\tHessian warmup time: {(time() - start_time):.4} seconds")
 
@@ -136,7 +142,7 @@ class Optimizer:
         constraints = constraints or []
         if constraints:
             start_time = time()
-            constraints = self.constraints(constraints, model, x)
+            constraints = self.constraints(constraints, model, structure, x)
             print(f"\tConstraints warmup time: {round(time() - start_time, 4)} seconds")
 
         opt_kwargs = {"fun": loss,
