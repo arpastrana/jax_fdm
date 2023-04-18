@@ -9,9 +9,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Added constructure method `EquilibriumStructure.from_network`
+- Listed `equinox` as a dependency
+
 ### Changed
 
+- Refactored `LossPlotter` to be compatible with pytree-ed `EquilibriumModel`
+- Refactored `OptimizationRecorder` to be compatible with pytree-ed `EquilibriumModel`
+- `Optimizer` and `ConstrainedOptimizer` know how to handle equinoxed `EquilibriumModel`
+- The `parameters.ParameterManager` treats `EquilibriumModel` as a pytree.
+- Converted `EquilibriumModel` into an `equinox.Module`
+- `Loss.__call__` now ingests an model and structure instead of q, xyz_fixed and loads 
+- `parameters.Parameter` is compatible with new `EquilibriumStructure` and `EquilibriumModel`
+- Modified signature of `Constraint` object to include `EquilibriumStructure`
+- Modified signature of `Goal` object to include `EquilibriumStructure`
+- Changed signature of `jax_fdm.equilibrium.fdm` to be compatible with equinoxed `EquilibriumModel` 
+
 ### Removed
+
+- Replaced `EquilibriumStructure.anchor_index` with `EquilibriumStructure.support_index`
 
 
 ## [0.5.2] 2023-03-15
