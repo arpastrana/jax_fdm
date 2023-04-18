@@ -3,34 +3,34 @@ import numpy as np
 from jax_fdm import DTYPE_NP
 
 from jax_fdm.equilibrium import EquilibriumModel
+from jax_fdm.equilibrium import EquilibriumStructure
 
 
 # ==========================================================================
 # Form-finding
 # ==========================================================================
 
-def _fdm(network, q, xyz_fixed, loads):
+def _fdm(model, structure):
     """
-    Compute a network in a state of static equilibrium using the force density method.
+    Generate a network in a state of static equilibrium using the force density method.
     """
-    model = EquilibriumModel(network)
-
     # compute static equilibrium
-    eq_state = model(q, xyz_fixed, loads)
+    eq_state = model(structure)
 
     # update equilibrium state in a copy of the network
-    return network_updated(network, eq_state)
+    return network_updated(structure.network, eq_state)
 
 
 def fdm(network):
     """
-    Compute a network in a state of static equilibrium using the force density method.
+    Generate a network in a state of static equilibrium using the force density method.
     """
     network_validate(network)
 
-    q, xyz_fixed, loads = (np.array(p, dtype=DTYPE_NP) for p in network.parameters())
+    model = EquilibriumModel.from_network(network)
+    structure = EquilibriumStructure.from_network(network)
 
-    return _fdm(network, q, xyz_fixed, loads)
+    return _fdm(model, structure)
 
 
 # ==========================================================================
@@ -50,13 +50,15 @@ def constrained_fdm(network,
     """
     network_validate(network)
 
-    model = EquilibriumModel(network)
+    model = EquilibriumModel.from_network(network)
+    structure = EquilibriumStructure.from_network(network)
 
-    opt_problem = optimizer.problem(model, loss, parameters, constraints, maxiter, tol, callback)
+    opt_problem = optimizer.problem(model, structure, loss, parameters, constraints, maxiter, tol, callback)
     opt_params = optimizer.solve(opt_problem)
-    q, xyz_fixed, loads = optimizer.parameters_fdm(opt_params)
+    # q, xyz_fixed, loads = optimizer.parameters_fdm(opt_params)
+    opt_model = optimizer.parameters_fdm(opt_params)
 
-    return _fdm(network, q, xyz_fixed, loads)
+    return _fdm(opt_model, structure)
 
 
 # ==========================================================================
