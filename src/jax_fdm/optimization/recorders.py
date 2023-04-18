@@ -19,11 +19,12 @@ class OptimizationRecorder(Data):
 
     def __call__(self, xk, *args, **kwargs):
         if self.optimizer:
-            xk = self.optimizer.parameters_fdm(xk)
-        self.record(xk)
+            model = self.optimizer.parameters_fdm(xk)
+        self.record(model)
 
-    def record(self, parameters):
-        for parameter, name in zip(parameters, self.history_names):
+    def record(self, model):
+        for name in self.history_names:
+            parameter = getattr(model, name)
             self.history[name].append(parameter)
 
     @property
