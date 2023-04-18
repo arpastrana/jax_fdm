@@ -59,13 +59,13 @@ class Parameter:
             value = inf
         self._bound_up = value
 
-    def index(self, model):
+    def index(self, model, structure):
         """
         Get the index of the parameter key in the structure of a model.
         """
         raise NotImplementedError
 
-    def value(self, model):
+    def value(self, model, structure):
         """
         Get the current value of a paramter from the structure of a model.
         """
@@ -80,34 +80,34 @@ class NodeParameter(Parameter):
     """
     A node parameter.
     """
-    def index(self, model):
+    def index(self, model, structure):
         """
         Get the index of the key of the node parameter in the structure of a model.
         """
-        return model.structure.node_index[self.key]
+        return structure.node_index[self.key]
 
-    def value(self, model):
+    def value(self, model, structure):
         """
         Get the current value of the node parameter.
         """
-        return model.structure.network.node_attribute(self.key, name=self.attr_name)
+        return structure.network.node_attribute(self.key, name=self.attr_name)
 
 
 class EdgeParameter(Parameter):
     """
     An edge parameter.
     """
-    def index(self, model):
+    def index(self, model, structure):
         """
         Get the index of the key of the edge parameter in the structure of a model.
         """
-        return model.structure.edge_index[self.key]
+        return structure.edge_index[self.key]
 
-    def value(self, model):
+    def value(self, model, structure):
         """
         Get the current value of the edge parameter.
         """
-        return model.structure.network.edge_attribute(self.key, name=self.attr_name)
+        return structure.network.edge_attribute(self.key, name=self.attr_name)
 
 
 # ==========================================================================
@@ -127,17 +127,17 @@ class NodesParameter(ParameterGroup):
     """
     A single parameter applied to a group of nodes.
     """
-    def index(self, model):
+    def index(self, model, structure):
         """
         Get the indices of the keys of the parametrized nodes from the structure of a model.
         """
-        return [model.structure.node_index[key] for key in self.key]
+        return [structure.node_index[key] for key in self.key]
 
-    def value(self, model):
+    def value(self, model, structure):
         """
         Get the current average value of the parameter of the grouped nodes.
         """
-        values = [model.structure.network.node_attribute(key, name=self.attr_name) for key in self.key]
+        values = [structure.network.node_attribute(key, name=self.attr_name) for key in self.key]
         return sum(values) / len(values)
 
 
@@ -145,17 +145,17 @@ class EdgesParameter(ParameterGroup):
     """
     A single parameter applied to a group of edges.
     """
-    def index(self, model):
+    def index(self, model, structure):
         """
         Get the indices of the keys of the parametrized edges from the structure of a model.
         """
-        return [model.structure.edge_index[key] for key in self.key]
+        return [structure.edge_index[key] for key in self.key]
 
-    def value(self, model):
+    def value(self, model, structure):
         """
         Get the current average value of the parameter of the grouped edges.
         """
-        values = [model.structure.network.edge_attribute(key, name=self.attr_name) for key in self.key]
+        values = [structure.network.edge_attribute(key, name=self.attr_name) for key in self.key]
         return sum(values) / len(values)
 
 
@@ -188,11 +188,11 @@ class NodeSupportParameter(NodeParameter):
     """
     A node support parameter.
     """
-    def index(self, model):
+    def index(self, model, structure):
         """
         Get the index of the key of the node support in the structure of a model.
         """
-        return model.structure.anchor_index[self.key]
+        return structure.support_index[self.key]
 
 
 class NodeSupportXParameter(NodeSupportParameter):
@@ -231,11 +231,11 @@ class NodesSupportParameter(NodesParameter):
     """
     Parametrize a group of support nodes.
     """
-    def index(self, model):
+    def index(self, model, structure):
         """
         Get the indices of the keys of the parametrized nodes from the structure of a model.
         """
-        return [model.structure.anchor_index[key] for key in self.key]
+        return [structure.support_index[key] for key in self.key]
 
 
 class NodesSupportXParameter(NodesSupportParameter, NodeSupportXParameter):
