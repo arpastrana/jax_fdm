@@ -32,8 +32,15 @@ class EquilibriumStructure:
 
         self._node_index = None
         self._edge_index = None
-        self._anchor_index = None
+        self._support_index = None
         self._face_node_index = None
+
+    @classmethod
+    def from_network(cls, network):
+        """
+        Create a structure based on a force density network.
+        """
+        return cls(network)
 
     @property
     def network(self):
@@ -90,13 +97,13 @@ class EquilibriumStructure:
         return self._node_index
 
     @property
-    def anchor_index(self):
+    def support_index(self):
         """
-        A dictionary between node anchor keys and their enumeration indices.
+        A dictionary between node support keys and their enumeration indices.
         """
-        if not self._anchor_index:
-            self._anchor_index = {key: index for index, key in enumerate(self.network.nodes_anchors())}
-        return self._anchor_index
+        if not self._support_index:
+            self._support_index = {key: index for index, key in enumerate(self.network.nodes_supports())}
+        return self._support_index
 
     @property
     def edge_index(self):
