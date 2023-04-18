@@ -84,23 +84,23 @@ class Constraint:
         self._bound_up = self._bound_setter(bound)
 
     @staticmethod
-    def index_from_model(model):
+    def index_from_model(model, structure):
         """
         Get the index in the model of the constraint key.
         """
         raise NotImplementedError
 
-    def init(self, model):
+    def init(self, model, structure):
         """
         Initialize the constraint with information from an equilibrium model.
         """
-        self.index = self.index_from_model(model)
+        self.index = self.index_from_model(model, structure)
 
-    def __call__(self, q, xyz_fixed, loads, model):
+    def __call__(self, model, structure):
         """
         The called constraint function.
         """
-        eqstate = model(q, xyz_fixed, loads)
+        eqstate = model(structure)
         constraint = vmap(self.constraint, in_axes=(None, 0))(eqstate, self.index)
 
         # assert jnp.ravel(constraint).shape == jnp.ravel(self.index).shape, f"Constraint shape: {constraint.shape} vs. index shape: {self.index.shape}"

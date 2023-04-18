@@ -16,14 +16,14 @@ class NodeCurvatureConstraint(NodeConstraint):
         self.polygon = polygon
         self.index_polygon = None
 
-    def init(self, model):
+    def init(self, model, structure):
         """
         Initialize the constraint with information from an equilibrium model.
         """
-        super().init(model)
-        self.index_polygon = self.polygon_indices(model)
+        super().init(model, structure)
+        self.index_polygon = self.polygon_indices(model, structure)
 
-    def polygon_indices(self, model):
+    def polygon_indices(self, model, structure):
         """
         Obtains the indices of the polygon from a model.
         """
@@ -31,7 +31,7 @@ class NodeCurvatureConstraint(NodeConstraint):
         polygon = np.atleast_2d(self.polygon)
         index_polygon = np.zeros((index_max, polygon.shape[1]))
         for p, idx in zip(polygon, self.index):
-            index_polygon[idx, :] = tuple([model.structure.node_index[nbr] for nbr in p])
+            index_polygon[idx, :] = tuple([structure.node_index[nbr] for nbr in p])
 
         return jnp.array(index_polygon, dtype=jnp.int64)
 

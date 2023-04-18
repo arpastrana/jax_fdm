@@ -8,7 +8,7 @@ class NetworkConstraint(Constraint):
     def __init__(self, bound_low, bound_up):
         super().__init__(key=-1, bound_low=bound_low, bound_up=bound_up)
 
-    def index_from_model(self, model):
+    def index_from_model(self, model, structure):
         """
         Method only for API compatibility.
         """
