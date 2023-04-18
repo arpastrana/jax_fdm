@@ -17,6 +17,7 @@ from jax_fdm.datastructures import FDNetwork
 from jax_fdm.equilibrium import fdm
 from jax_fdm.equilibrium import constrained_fdm
 from jax_fdm.equilibrium import EquilibriumModel
+from jax_fdm.equilibrium import EquilibriumStructure
 
 from jax_fdm.goals import EdgeAngleGoal
 from jax_fdm.goals import EdgeLengthGoal
@@ -278,11 +279,10 @@ for config in sweep_configs:
 
     extra_stats = None
     if constraint_angles:
-        model = EquilibriumModel(network)
-        params = [np.array(param) for param in network.parameters()]
-        # q = np.array(network.edges_forcedensities())
-        eqstate = model(*params)
-        a = [constraint.constraint(eqstate, constraint.index_from_model(model)).item() for constraint in constraint_angles]
+        model = EquilibriumModel.from_network(network)
+        structure = EquilibriumStructure.from_network(network)
+        eqstate = model(structure)
+        a = [constraint.constraint(eqstate, constraint.index_from_model(model, structure)).item() for constraint in constraint_angles]
         extra_stats = {"Angles": a}
 
     # Report stats
