@@ -125,3 +125,6 @@ conda.recipe/
 !data/json/butt_target.json
 !data/json/butt_mesh_target.json
 !data/json/arch.json
+
+*.png
+!images
