@@ -1,4 +1,5 @@
 import numpy as np
+from jax.experimental.sparse import BCOO
 
 from compas.datastructures import network_find_cycles
 
@@ -115,7 +116,8 @@ class EquilibriumStructure:
         if self._connectivity is None:
             node_idx = self.node_index
             edges = [(node_idx[u], node_idx[v]) for u, v in self.network.edges()]
-            self._connectivity = np.array(connectivity_matrix(edges, "list"), dtype=np.float64)
+            self._connectivity = connectivity_matrix(edges, "csc")  # We should get a CSC representation
+                                                                    # since we are interested in slicing columns
         return self._connectivity
 
     @property
