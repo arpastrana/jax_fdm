@@ -69,7 +69,7 @@ if __name__ == "__main__":
     if visualize:
         plotter = Plotter(figsize=(8, 5), dpi=200)
 
-    # generate arches of increasing
+    # generate arches of increasing number of segments
     for num_segments in range(2, 50):
 
         # create network
