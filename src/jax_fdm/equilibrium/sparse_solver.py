@@ -11,7 +11,7 @@ from jax.experimental.sparse import BCOO, CSC
 def force_densities_to_A(q, index_array, diag_indices, diags):
     """Computes the LHS matrix from a given vector of force densities."""
 
-    nondiags_data = -q[index_array.data]
+    nondiags_data = -q[index_array.data - 1]
     nondiags = CSC((nondiags_data, index_array.indices, index_array.indptr), shape=index_array.shape)
     diag_fd = diags.T @ q  # sum of force densities for each node
 

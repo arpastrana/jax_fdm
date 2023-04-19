@@ -47,7 +47,7 @@ class EquilibriumModel:
         c_free_csc = self.structure.connectivity_free
 
         force_density_modified_c_free_csc = c_free_csc.copy()
-        force_density_modified_c_free_csc.data *= np.take(np.arange(c_free_csc.shape[0]), c_free_csc.indices)
+        force_density_modified_c_free_csc.data *= np.take(np.arange(c_free_csc.shape[0]) + 1, c_free_csc.indices)
         index_array = -(c_free_csc.T @ force_density_modified_c_free_csc)
         # The diagonal entries should be set to 0 so that it indexes into a valid entry, but will later be overwritten.
         index_array.setdiag(0)
