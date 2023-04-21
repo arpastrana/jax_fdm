@@ -1,16 +1,13 @@
-from functools import partial
-
 import jax
 
 import equinox as eqx
 
+from jax import vmap
+
 import jax.numpy as jnp
 
 from jax_fdm.equilibrium.state import EquilibriumState
-from jax_fdm.equilibrium.structure import EquilibriumStructure
 
-from jax import jit
-from jax import vmap
 
 # ==========================================================================
 # Equilibrium model

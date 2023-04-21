@@ -33,7 +33,7 @@ class LossPlotter:
         xyz_fixed = jnp.asarray(history["xyz_fixed"], dtype=DTYPE_JAX)
         loads = jnp.asarray(history["loads"], dtype=DTYPE_JAX)
 
-        model = EquilibriumModel(q, xyz_fixed, loads) # NOTE: dummy parameters
+        model = EquilibriumModel(q, xyz_fixed, loads)  # NOTE: dummy parameters
         equilibrium_vmap = vmap(model.equilibrium, in_axes=(0, 0, 0, None))
         eq_states = equilibrium_vmap(q, xyz_fixed, loads, self.structure)
 

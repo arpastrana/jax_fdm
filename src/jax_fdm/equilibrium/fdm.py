@@ -1,7 +1,3 @@
-import numpy as np
-
-from jax_fdm import DTYPE_NP
-
 from jax_fdm.equilibrium import EquilibriumModel
 from jax_fdm.equilibrium import EquilibriumStructure
 
