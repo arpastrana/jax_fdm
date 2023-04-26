@@ -1,8 +1,13 @@
 from compas.geometry import Polyline
 from compas.geometry import add_vectors
 
+import jax
 from jax_fdm.datastructures import FDNetwork
 
+from functools import partial
+import time
+
+import pickle
 
 # ==========================================================================
 # Create the geometry of an arch
@@ -58,7 +63,7 @@ if __name__ == "__main__":
     q_val = 1.0
 
     # viz controls
-    visualize = True
+    visualize = False
     filepath = "arches.png"
     viz_options = {"show_loads": False,
                    "show_reactions": False,
@@ -70,8 +75,12 @@ if __name__ == "__main__":
         plotter = Plotter(figsize=(8, 5), dpi=200)
 
     # generate arches of increasing number of segments
-    for num_segments in range(2, 50):
+    num_segments = 10
+    num_reps = 5
+    multiple = 2.0
 
+    info = []
+    for i in range(10):
         # create network
         polyline = create_arch_polyline(arch_length, num_segments)
         network = create_arch_network(polyline, q_val * sqrt(num_segments), line_py)
@@ -83,7 +92,45 @@ if __name__ == "__main__":
         q, xyz_fixed, loads = (jnp.asarray(p, dtype=jnp.float64) for p in network.parameters())
 
         # linear solve we are interested in timing
-        xyz_free = model.nodes_free_positions(q, xyz_fixed, loads)
+        sparse_fn = jax.jit(partial(model.nodes_free_positions, sparsesolve=True))
+        no_sparse_fn = jax.jit(partial(model.nodes_free_positions, sparsesolve=False))
+        # JIT the functions first
+
+        jit_start = time.time()
+        sparse_fn(q, xyz_fixed, loads)
+        jit_end = time.time()
+        sparse_jit_time = jit_end - jit_start
+
+        jit_start = time.time()
+        no_sparse_fn(q, xyz_fixed, loads)
+        jit_end = time.time()
+        no_sparse_jit_time = jit_end - jit_start
+
+        sparse_times = []
+        for j in range(num_reps):
+            start = time.time()
+            xyz_free = sparse_fn(q, xyz_fixed, loads)
+            end = time.time()
+            sparse_times.append(end - start)
+
+        no_sparse_times = []
+        for j in range(num_reps):
+            dense_start = time.time()
+            xyz_free = no_sparse_fn(q, xyz_fixed, loads)
+            dense_end = time.time()
+            no_sparse_times.append(dense_end - dense_start)
+
+        info.append({"num_segments": num_segments,
+                     "sparse_jit_time": sparse_jit_time,
+                     "no_sparse_jit_time": no_sparse_jit_time,
+                     "sparse_times": sparse_times,
+                     "no_sparse_times": no_sparse_times})
+
+        print(f"number of segments: {num_segments} "
+              f"sparse mean time: {sum(sparse_times) / num_reps} "
+              f"dense mean time: {sum(no_sparse_times) / num_reps} "
+              f"sparse jit: {sparse_jit_time} "
+              f"dense jit: {no_sparse_jit_time}")
 
         # visualization (optional)
         if visualize:
@@ -91,6 +138,10 @@ if __name__ == "__main__":
             network_eq = fdm(network)
             # add network in equilibrium to plotter
             plotter.add(network_eq, **viz_options)
+
+        num_segments = int(num_segments * multiple)
+
+    pickle.dump(info, open("arches_info.pkl", "wb"))
 
     # save visualization plot
     if visualize:
