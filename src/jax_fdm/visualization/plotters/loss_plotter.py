@@ -1,4 +1,5 @@
 from time import time
+from functools import partial
 
 import matplotlib.pyplot as plt
 
@@ -31,7 +32,8 @@ class LossPlotter:
         q = jnp.asarray(history["q"], dtype=DTYPE_JAX)
         xyz_fixed = jnp.asarray(history["xyz_fixed"], dtype=DTYPE_JAX)
         loads = jnp.asarray(history["loads"], dtype=DTYPE_JAX)
-        eq_states = vmap(self.model)(q, xyz_fixed, loads)
+        model_dense = partial(self.model, sparsesolve=False)
+        eq_states = vmap(model_dense)(q, xyz_fixed, loads)
 
         errors_all = []
         for error_term in self.loss.terms:
@@ -47,6 +49,7 @@ class LossPlotter:
         plt.yscale("log")
         plt.grid()
         plt.legend()
+
         print(f"Plotting time: {(time() - start_time):.4} seconds")
 
     def show(self):

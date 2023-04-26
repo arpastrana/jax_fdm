@@ -1,16 +1,18 @@
 from functools import partial
 
-import jax.numpy as jnp
 import numpy as np
+import jax.numpy as jnp
+
+from jax import jit
+
+from jax.experimental.sparse import BCOO
+from jax.experimental.sparse import CSC
 
 from jax_fdm.equilibrium.state import EquilibriumState
 from jax_fdm.equilibrium.structure import EquilibriumStructure
-from jax_fdm.equilibrium.sparse_solver import linear_solve, get_sparse_diag_indices
-from jax.experimental.sparse import BCOO, CSC
+from jax_fdm.equilibrium.sparse_solver import linear_solve
+from jax_fdm.equilibrium.sparse_solver import get_sparse_diag_indices
 
-import jax
-from jax import jit
-from jax import vmap
 
 # ==========================================================================
 # Equilibrium model
@@ -121,7 +123,7 @@ class EquilibriumModel:
         return jnp.concatenate((xyz_free, xyz_fixed))[indices, :]
 
     @partial(jit, static_argnums=(0, 4))
-    def __call__(self, q, xyz_fixed, loads, sparsesolve=False):
+    def __call__(self, q, xyz_fixed, loads, sparsesolve=True):
         """
         Compute an equilibrium state using the force density method.
         """
