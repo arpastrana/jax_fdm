@@ -17,30 +17,27 @@ from jax.experimental.sparse.linalg import spsolve as spsolve_jax
 # Register sparse linear solvers
 # ==========================================================================
 
+def spsolve_gpu2(data, indices, indptr, b):
+    """
+    A wrapper around cuda sparse linear solver that is GPU friendly.
+    """
+    # TODO: probably needs transformation of data, indices and indptr from CSC to CSR format.
+    # TODO: what would happen if we pass CSC data, indices and indptr to CUDA sparse solve?
+    # TODO: is csrlsvqr the CUDA sparse solver we actually need? what about csrlsvchol?
+    # csr = csc_matrix((data, indices, indptr)).tocsr()
+
+    # NOTE: we can pass csc indices directly because we can!
+    # Just kidding. This is because the matrix A is symmetric :)
+    return spsolve_jax(data, indices, indptr, b[:, 0])
+
+
 def spsolve_gpu(data, indices, indptr, b):
     """
     A wrapper around cuda sparse linear solver that is GPU friendly.
     """
-    # TODO: probably needs transformation of data, indices and indptr from CSC to CSR format.
-    # TODO: what would happen if we pass CSC data, indices and indptr to CUDA sparse solve?
-    # TODO: is csrlsvqr the CUDA sparse solver we actually need? what about csrlsvchol?
-    csr = csc_matrix((data, indices, indptr)).tocsr()
-
-    return spsolve_jax(csr.data, csr.indices, csr.indptr, b[:, 0])
-
-
-def spsolve_gpu_2(data, indices, indptr, b):
-    """
-    A wrapper around cuda sparse linear solver that is GPU friendly.
-    """
-    # TODO: probably needs transformation of data, indices and indptr from CSC to CSR format.
-    # TODO: what would happen if we pass CSC data, indices and indptr to CUDA sparse solve?
-    # TODO: is csrlsvqr the CUDA sparse solver we actually need? what about csrlsvchol?
-    csr = csc_matrix((data, indices, indptr)).tocsr()
-
-    x = spsolve_jax(csr.data, csr.indices, csr.indptr, b[:, 0])
-    y = spsolve_jax(csr.data, csr.indices, csr.indptr, b[:, 1])
-    z = spsolve_jax(csr.data, csr.indices, csr.indptr, b[:, 2])
+    x = spsolve_jax(data, indices, indptr, b[:, 0])
+    y = spsolve_jax(data, indices, indptr, b[:, 1])
+    z = spsolve_jax(data, indices, indptr, b[:, 2])
 
     return jnp.concatenate((x, y, z))
 
@@ -68,7 +65,7 @@ def register_sparse_solver(solvers):
 
 
 solvers = {"cpu": spsolve_cpu,
-           "gpu": spsolve_gpu}  # NOTE: gpu or cuda?
+           "gpu": spsolve_gpu}
 
 sparse_solver = register_sparse_solver(solvers)
 
@@ -92,9 +89,12 @@ def linear_solve(q, xyz_fixed, loads, free, c_free, c_fixed, index_array, diag_i
     A = force_densities_to_A(q, index_array, diag_indices, diags)
     b = loads[free, :] - c_free.T @ (q[:, None] * (c_fixed @ xyz_fixed))
 
+    # NOTE: GPU sparse solver does not need pure callback
     xk = jax.pure_callback(linear_solve_callback,
                            b,  # return type is b
                            A.data, A.indices, A.indptr, b)  # input arguments
+
+    xk = spsolve_gpu(...)  # GPU variant
 
     return xk
 
@@ -163,17 +163,15 @@ def force_densities_to_A(q, index_array, diag_indices, diags):
     return nondiags
 
 
-def get_sparse_diag_indices(csr):
+def get_sparse_diag_indices(csc):
     """
-    Given a CSR matrix, get indices into `data` that access diagonal elements in order.
-
-    TODO: CSR or CRC?
+    Given a CSC matrix, get indices into `data` that access diagonal elements in order.
     """
     all_indices = []
-    for i in range(csr.shape[0]):
-        index_range = csr.indices[csr.indptr[i]:csr.indptr[i + 1]]
+    for i in range(csc.shape[1]):
+        index_range = csc.indices[csc.indptr[i]:csc.indptr[i + 1]]
         ind_loc = jnp.where(index_range == i)[0]
-        all_indices.append(ind_loc + csr.indptr[i])
+        all_indices.append(ind_loc + csc.indptr[i])
 
     return jnp.concatenate(all_indices)
 
