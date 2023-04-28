@@ -22,7 +22,9 @@ def spsolve_gpu(data, indices, indptr, b):
     A wrapper around scipy sparse linear solver.
     """
     # TODO: probably needs transformation of data, indices and indptr from CSC to CSR format.
-    return spsolve_jax(data, indices, indptr, b)
+    csr = csc_matrix((data, indices, indptr)).tocsr()
+
+    return spsolve_jax(csr.data, csr.indices, csr.indptr, b)
 
 
 def spsolve_cpu(data, indices, indptr, b):
