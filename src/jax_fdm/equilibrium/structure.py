@@ -6,7 +6,6 @@ from compas.numerical import connectivity_matrix
 from compas.numerical import face_matrix
 
 from jax.experimental.sparse import BCOO
-from jax.experimental.sparse import CSC
 
 
 # ==========================================================================
