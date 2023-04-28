@@ -19,12 +19,30 @@ from jax.experimental.sparse.linalg import spsolve as spsolve_jax
 
 def spsolve_gpu(data, indices, indptr, b):
     """
-    A wrapper around scipy sparse linear solver.
+    A wrapper around cuda sparse linear solver that is GPU friendly.
     """
     # TODO: probably needs transformation of data, indices and indptr from CSC to CSR format.
+    # TODO: what would happen if we pass CSC data, indices and indptr to CUDA sparse solve?
+    # TODO: is csrlsvqr the CUDA sparse solver we actually need? what about csrlsvchol?
     csr = csc_matrix((data, indices, indptr)).tocsr()
 
     return spsolve_jax(csr.data, csr.indices, csr.indptr, b[:, 0])
+
+
+def spsolve_gpu_2(data, indices, indptr, b):
+    """
+    A wrapper around cuda sparse linear solver that is GPU friendly.
+    """
+    # TODO: probably needs transformation of data, indices and indptr from CSC to CSR format.
+    # TODO: what would happen if we pass CSC data, indices and indptr to CUDA sparse solve?
+    # TODO: is csrlsvqr the CUDA sparse solver we actually need? what about csrlsvchol?
+    csr = csc_matrix((data, indices, indptr)).tocsr()
+
+    x = spsolve_jax(csr.data, csr.indices, csr.indptr, b[:, 0])
+    y = spsolve_jax(csr.data, csr.indices, csr.indptr, b[:, 1])
+    z = spsolve_jax(csr.data, csr.indices, csr.indptr, b[:, 2])
+
+    return jnp.concatenate((x, y, z))
 
 
 def spsolve_cpu(data, indices, indptr, b):
