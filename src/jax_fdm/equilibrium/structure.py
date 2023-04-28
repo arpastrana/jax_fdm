@@ -1,7 +1,12 @@
+import jax.numpy as jnp
+
 from compas.datastructures import network_find_cycles
 
 from compas.numerical import connectivity_matrix
 from compas.numerical import face_matrix
+
+from jax.experimental.sparse import BCOO
+from jax.experimental.sparse import CSC
 
 
 # ==========================================================================
@@ -19,6 +24,8 @@ class EquilibriumStructure:
         self._connectivity_free = None
         self._connectivity_fixed = None
         self._connectivity_faces = None
+
+        self._connectivity_scipy = None
 
         self._edges = None
         self._nodes = None
@@ -108,14 +115,54 @@ class EquilibriumStructure:
     @property
     def connectivity(self):
         """
-        The connectivity of the network encoded as an incidence matrix.
+        The connectivity of the network encoded as an ncidence matrix.
         """
         if self._connectivity is None:
             node_idx = self.node_index
             edges = [(node_idx[u], node_idx[v]) for u, v in self.network.edges()]
-            # We should get a CSC representation since we are interested in slicing columns
-            self._connectivity = connectivity_matrix(edges, "csc")
+
+            # NOTE: Dense array
+            # Currently there is a JAX bug that prevents us from using the sparse format with the connectivity matrix.
+            # When `todense()` is removed from the next line, we get the following error:
+            # TypeError: Value Zero(ShapedArray(float64[193,3])) with type <class 'jax._src.ad_util.Zero'> is not a valid JAX type
+
+            con = connectivity_matrix(edges, "array")
+            self._connectivity = jnp.asarray(con)
+
         return self._connectivity
+
+    @property
+    def connectivity_scipy(self):
+        """
+        The connectivity of the network encoded as an incidence matrix in CSC format.
+        """
+        if self._connectivity_scipy is None:
+            node_idx = self.node_index
+            edges = [(node_idx[u], node_idx[v]) for u, v in self.network.edges()]
+            # We should get a CSC representation since we are interested in slicing columns
+            self._connectivity_scipy = connectivity_matrix(edges, "csc")
+
+        return self._connectivity_scipy
+
+    @property
+    def connectivity_fixed(self):
+        """
+        The connectivity of the fixed nodes of the network.
+        """
+        if self._connectivity_fixed is None:
+            self._connectivity_fixed = self.connectivity[:, self.fixed_nodes]
+
+        return self._connectivity_fixed
+
+    @property
+    def connectivity_free(self):
+        """
+        The connectivity of the free nodes of the network.
+        """
+        if self._connectivity_free is None:
+            self._connectivity_free = self.connectivity[:, self.free_nodes]
+
+        return self._connectivity_free
 
     @property
     def connectivity_faces(self):
@@ -125,26 +172,6 @@ class EquilibriumStructure:
         if self._connectivity_faces is None:
             self._connectivity_faces = face_matrix(self.face_node_index, rtype="array")
         return self._connectivity_faces
-
-    @property
-    def connectivity_fixed(self):
-        """
-        The connectivity of the fixed nodes of the network.
-        """
-        if self._connectivity_fixed is None:
-            fixed_nodes = self.fixed_nodes
-            self._connectivity_fixed = self.connectivity[:, fixed_nodes]
-        return self._connectivity_fixed
-
-    @property
-    def connectivity_free(self):
-        """
-        The connectivity of the free nodes of the network.
-        """
-        if self._connectivity_free is None:
-            free_nodes = self.free_nodes
-            self._connectivity_free = self.connectivity[:, free_nodes]
-        return self._connectivity_free
 
     @property
     def free_nodes(self):
@@ -168,10 +195,10 @@ class EquilibriumStructure:
     def freefixed_nodes(self):
         """
         A list with the node keys of all the nodes sorted by their node index.
-        TODO: this method must be refactored to be more transparent.
         """
+        # TODO: this method must be refactored to be more transparent.
         if not self._freefixed_nodes:
-            freefixed_nodes = self.free_nodes + self._fixed_nodes
+            freefixed_nodes = self.free_nodes + self.fixed_nodes
             indices = {node: index for index, node in enumerate(freefixed_nodes)}
             sorted_indices = []
             for _, index in sorted(indices.items(), key=lambda item: item[0]):
@@ -179,3 +206,52 @@ class EquilibriumStructure:
             self._freefixed_nodes = tuple(sorted_indices)
 
         return self._freefixed_nodes
+
+
+# ==========================================================================
+# Structure
+# ==========================================================================
+
+class SparseEquilibriumStructure(EquilibriumStructure):
+    """
+    An equilibrium structure.
+    """
+    def __init__(self, network):
+        super().__init__(network)
+        self.init()
+
+    def init(self):
+        """
+        Warm start properties.
+
+        Otherwise we get a leakage error:
+
+        jax._src.errors.UnexpectedTracerError: Encountered an unexpected tracer.
+        A function transformed by JAX had a side effect, allowing for a reference to an
+        intermediate value with type float64[611] wrapped in a DynamicJaxprTracer
+        to escape the scope of the transformation.
+        """
+        self.connectivity_free
+        self.connectivity_fixed
+
+    @property
+    def connectivity_fixed(self):
+        """
+        The connectivity of the fixed nodes of the network.
+        """
+        if self._connectivity_fixed is None:
+            con_fixed = BCOO.from_scipy_sparse(self.connectivity_scipy[:, self.fixed_nodes])
+            self._connectivity_fixed = con_fixed
+
+        return self._connectivity_fixed
+
+    @property
+    def connectivity_free(self):
+        """
+        The connectivity of the free nodes of the network.
+        """
+        if self._connectivity_free is None:
+            con_free = BCOO.from_scipy_sparse(self.connectivity_scipy[:, self.free_nodes])
+            self._connectivity_free = con_free
+
+        return self._connectivity_free
