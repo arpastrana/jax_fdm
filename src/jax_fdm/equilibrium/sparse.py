@@ -1,8 +1,10 @@
+"""
+NOTE: Sparse solver does not support forward mode auto-differentiation yet.
+"""
 from functools import partial
 
 import jax
-
-import numpy as np
+import jax.numpy as jnp
 
 from scipy.sparse import csc_matrix
 from scipy.sparse.linalg import spsolve as spsolve_scipy
@@ -146,15 +148,14 @@ def get_sparse_diag_indices(csr):
     Given a CSR matrix, get indices into `data` that access diagonal elements in order.
 
     TODO: CSR or CRC?
-    TODO: Replace np with jnp?
     """
     all_indices = []
     for i in range(csr.shape[0]):
         index_range = csr.indices[csr.indptr[i]:csr.indptr[i + 1]]
-        ind_loc = np.where(index_range == i)[0]
+        ind_loc = jnp.where(index_range == i)[0]
         all_indices.append(ind_loc + csr.indptr[i])
 
-    return np.concatenate(all_indices)
+    return jnp.concatenate(all_indices)
 
 
 # ==========================================================================
