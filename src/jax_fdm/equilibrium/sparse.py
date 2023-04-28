@@ -1,24 +1,65 @@
 from functools import partial
 
 import jax
+
 import numpy as np
 
-import scipy.sparse
-import scipy.sparse.linalg
+from scipy.sparse import csc_matrix
+from scipy.sparse.linalg import spsolve as spsolve_scipy
 
 from jax.experimental.sparse import CSC
+from jax.experimental.sparse.linalg import spsolve as spsolve_jax
 
 
 # ==========================================================================
-# Sparse linear solver
+# Register sparse linear solvers
+# ==========================================================================
+
+def spsolve_gpu(data, indices, indptr, b):
+    """
+    A wrapper around scipy sparse linear solver.
+    """
+    # TODO: probably needs transformation of data, indices and indptr from CSC to CSR format.
+    return spsolve_jax(data, indices, indptr, b)
+
+
+def spsolve_cpu(data, indices, indptr, b):
+    """
+    A wrapper around scipy sparse linear solver.
+    """
+    csc = csc_matrix((data, indices, indptr))
+
+    return spsolve_scipy(csc, b)
+
+
+def register_sparse_solver(solvers):
+    """
+    Register the sparse solver used by the FDM model based on JAX default backend.
+    """
+    backend = jax.default_backend()
+    sparse_solver = solvers.get(backend)
+
+    if not sparse_solver:
+        raise ValueError(f"Default backend {backend} does not support a sparse solver")
+
+    return sparse_solver
+
+
+solvers = {"cpu": spsolve_cpu,
+           "gpu": spsolve_gpu}  # NOTE: gpu or cuda?
+
+sparse_solver = register_sparse_solver(solvers)
+
+
+# ==========================================================================
+# Define sparse linear solver
 # ==========================================================================
 
 def linear_solve_callback(data, indices, indptr, b):
     """
     The linear solve callback.
     """
-    csc_matrix = scipy.sparse.csc_matrix((data, indices, indptr))
-    return scipy.sparse.linalg.spsolve(csc_matrix, b)
+    return sparse_solver(data, indices, indptr, b)
 
 
 @partial(jax.custom_vjp, nondiff_argnums=(3, 4, 5, 6, 7, 8))
@@ -35,6 +76,10 @@ def linear_solve(q, xyz_fixed, loads, free, c_free, c_fixed, index_array, diag_i
 
     return xk
 
+
+# ==========================================================================
+# Forward and backward passes
+# ==========================================================================
 
 def linear_solve_fwd(q, xyz_fixed, loads, free, c_free, c_fixed, index_array, diag_indices, diags):
     """
@@ -55,7 +100,7 @@ def linear_solve_bwd(free, c_free, c_fixed, index_array, diag_indices, diags, re
     """
     xk, q, xyz_fixed, loads = res
 
-    # function that translates parameters into lhs matrix in CSC format
+    # function that translates parameters into LHS matrix in CSC format
     A = force_densities_to_A(q, index_array, diag_indices, diags)
 
     # Solve adjoint system
@@ -85,7 +130,7 @@ def linear_solve_bwd(free, c_free, c_fixed, index_array, diag_indices, diags, re
 
 def force_densities_to_A(q, index_array, diag_indices, diags):
     """
-    Computes the LHS matrix from a given vector of force densities.
+    Computes the LHS matrix in CSC format from a given vector of force densities.
     """
     nondiags_data = -q[index_array.data - 1]
     nondiags = CSC((nondiags_data, index_array.indices, index_array.indptr), shape=index_array.shape)
@@ -99,6 +144,9 @@ def force_densities_to_A(q, index_array, diag_indices, diags):
 def get_sparse_diag_indices(csr):
     """
     Given a CSR matrix, get indices into `data` that access diagonal elements in order.
+
+    TODO: CSR or CRC?
+    TODO: Replace np with jnp?
     """
     all_indices = []
     for i in range(csr.shape[0]):

@@ -10,14 +10,15 @@ from jax.experimental.sparse import CSC
 
 from jax_fdm.equilibrium.state import EquilibriumState
 from jax_fdm.equilibrium.structure import EquilibriumStructure
-from jax_fdm.equilibrium.sparse_solver import linear_solve
-from jax_fdm.equilibrium.sparse_solver import get_sparse_diag_indices
+from jax_fdm.equilibrium.sparse import linear_solve
+from jax_fdm.equilibrium.sparse import get_sparse_diag_indices
 
 
 # ==========================================================================
 # Equilibrium model
 # ==========================================================================
 
+# TODO: Split EquilibriumModel into EquilibriumModelDense and EquilibriumModelSparse
 
 class EquilibriumModel:
     """
@@ -133,6 +134,7 @@ class EquilibriumModel:
         residuals = self.nodes_residuals(q, loads, vectors)
         lengths = self.edges_lengths(vectors)
         forces = self.edges_forces(q, lengths)
+
         return EquilibriumState(xyz=xyz_all,
                                 residuals=residuals,
                                 lengths=lengths,
