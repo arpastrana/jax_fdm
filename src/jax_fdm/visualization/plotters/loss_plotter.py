@@ -32,7 +32,7 @@ class LossPlotter:
         q = jnp.asarray(history["q"], dtype=DTYPE_JAX)
         xyz_fixed = jnp.asarray(history["xyz_fixed"], dtype=DTYPE_JAX)
         loads = jnp.asarray(history["loads"], dtype=DTYPE_JAX)
-        model_dense = partial(self.model, sparsesolve=False)
+        model_dense = partial(self.model)
         eq_states = vmap(model_dense)(q, xyz_fixed, loads)
 
         errors_all = []
