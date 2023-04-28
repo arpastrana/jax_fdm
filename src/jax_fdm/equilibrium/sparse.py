@@ -24,7 +24,7 @@ def spsolve_gpu(data, indices, indptr, b):
     # TODO: probably needs transformation of data, indices and indptr from CSC to CSR format.
     csr = csc_matrix((data, indices, indptr)).tocsr()
 
-    return spsolve_jax(csr.data, csr.indices, csr.indptr, b)
+    return spsolve_jax(csr.data, csr.indices, csr.indptr, b[:, 0])
 
 
 def spsolve_cpu(data, indices, indptr, b):
