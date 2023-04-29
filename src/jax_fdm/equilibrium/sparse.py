@@ -17,7 +17,7 @@ from jax.experimental.sparse.linalg import spsolve as spsolve_jax
 # Register sparse linear solvers
 # ==========================================================================
 
-def spsolve_gpu(data, indices, indptr, b):
+def spsolve_gpu(A, b):
     """
     A wrapper around cuda sparse linear solver that is GPU friendly.
 
@@ -36,9 +36,9 @@ def spsolve_gpu(data, indices, indptr, b):
     # NOTE: we can pass csc indices directly because we can!
     # Just kidding. This is because the matrix A is symmetric :)
     # TODO: Ravel and unravel this!
-    x = spsolve_jax(data, indices, indptr, b[:, 0])
-    y = spsolve_jax(data, indices, indptr, b[:, 1])
-    z = spsolve_jax(data, indices, indptr, b[:, 2])
+    x = spsolve_jax(A.data, A.indices, A.indptr, b[:, 0])
+    y = spsolve_jax(A.data, A.indices, A.indptr, b[:, 1])
+    z = spsolve_jax(A.data, A.indices, A.indptr, b[:, 2])
 
     return jnp.concatenate((x, y, z))
 
