@@ -40,7 +40,7 @@ def spsolve_gpu(A, b):
     y = spsolve_jax(A.data, A.indices, A.indptr, b[:, 1])
     z = spsolve_jax(A.data, A.indices, A.indptr, b[:, 2])
 
-    return jnp.concatenate((x, y, z))
+    return jnp.hstack((x, y, z))
 
 
 def spsolve_cpu(A, b):
