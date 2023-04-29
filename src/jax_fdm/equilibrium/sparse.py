@@ -35,12 +35,13 @@ def spsolve_gpu(A, b):
     """
     # NOTE: we can pass csc indices directly because we can!
     # Just kidding. This is because the matrix A is symmetric :)
+
     # TODO: Ravel and unravel this!
     x = spsolve_jax(A.data, A.indices, A.indptr, b[:, 0])
     y = spsolve_jax(A.data, A.indices, A.indptr, b[:, 1])
     z = spsolve_jax(A.data, A.indices, A.indptr, b[:, 2])
 
-    return jnp.hstack((x, y, z))
+    return jnp.stack((x, y, z), axis=1)
 
 
 def spsolve_cpu(A, b):
@@ -57,7 +58,6 @@ def spsolve_cpu(A, b):
                            A.indices,
                            A.indptr,
                            b)
-
     return xk
 
 
