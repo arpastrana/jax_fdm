@@ -9,7 +9,7 @@ from jax.experimental.sparse import CSC
 
 from jax_fdm.equilibrium.state import EquilibriumState
 from jax_fdm.equilibrium.structure import EquilibriumStructure
-from jax_fdm.equilibrium.structure import SparseEquilibriumStructure
+from jax_fdm.equilibrium.structure import EquilibriumStructureSparse
 
 from jax_fdm.equilibrium.sparse import sparse_solve
 
@@ -109,12 +109,12 @@ class EquilibriumModel:
 # Sparse equilibrium model
 # ==========================================================================
 
-class SparseEquilibriumModel(EquilibriumModel):
+class EquilibriumModelSparse(EquilibriumModel):
     """
-    The equilibrium solver. But sparse.
+    The equilibrium solver. Sparse.
     """
     def __init__(self, network):
-        self.structure = SparseEquilibriumStructure(network)
+        self.structure = EquilibriumStructureSparse(network)
 
         # Do some precomputation to be able to construct the lhs matrix through indexing
         c_free_csc = self.structure.connectivity_scipy[:, self.structure.free_nodes]

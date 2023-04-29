@@ -211,7 +211,7 @@ class EquilibriumStructure:
 # Structure
 # ==========================================================================
 
-class SparseEquilibriumStructure(EquilibriumStructure):
+class EquilibriumStructureSparse(EquilibriumStructure):
     """
     An equilibrium structure.
     """

@@ -3,7 +3,7 @@ import numpy as np
 from jax_fdm import DTYPE_NP
 
 from jax_fdm.equilibrium import EquilibriumModel
-from jax_fdm.equilibrium import SparseEquilibriumModel
+from jax_fdm.equilibrium import EquilibriumModelSparse
 
 
 # ==========================================================================
@@ -44,8 +44,8 @@ def constrained_fdm(network,
                     constraints=None,
                     maxiter=100,
                     tol=1e-6,
-                    sparse=True,
-                    callback=None):
+                    callback=None,
+                    sparse=True):
     """
     Generate a network in a constrained state of static equilibrium using the force density method.
     """
@@ -74,7 +74,7 @@ def model_from_network(network, sparse):
     """
     model = EquilibriumModel
     if sparse:
-        model = SparseEquilibriumModel
+        model = EquilibriumModelSparse
 
     return model.from_network(network)
 
