@@ -90,7 +90,7 @@ def sparse_solve(q, xyz_fixed, loads, free, c_free, c_fixed, index_array, diag_i
     The sparse linear solver.
     """
     A = force_densities_to_A(q, index_array, diag_indices, diags)
-    b = loads[free, :] - c_free.T @ (q[:, None] * (c_fixed @ xyz_fixed))
+    b = force_densities_to_b(q, loads, xyz_fixed, c_free, c_fixed, free)
 
     return spsolve(A, b)
 
@@ -126,8 +126,8 @@ def sparse_solve_bwd(free, c_free, c_fixed, index_array, diag_indices, diags, re
     # the implicit constraint function for implicit differentiation
     def residual_fn(params):
         q, xyz_fixed, loads = params
-        b = loads[free, :] - c_free.T @ (q[:, None] * (c_fixed @ xyz_fixed))
         A = force_densities_to_A(q, index_array, diag_indices, diags)
+        b = force_densities_to_b(q, loads, xyz_fixed, c_free, c_fixed, free)
         return b - A @ xk
 
     params = (q, xyz_fixed, loads)
@@ -144,7 +144,7 @@ def sparse_solve_bwd(free, c_free, c_fixed, index_array, diag_indices, diags, re
 
 def force_densities_to_A(q, index_array, diag_indices, diags):
     """
-    Computes the LHS matrix in CSC format from a given vector of force densities.
+    Computes the LHS matrix in CSC format from a vector of force densities.
     """
     nondiags_data = -q[index_array.data - 1]
     nondiags = CSC((nondiags_data, index_array.indices, index_array.indptr), shape=index_array.shape)
@@ -153,6 +153,15 @@ def force_densities_to_A(q, index_array, diag_indices, diags):
     nondiags.data = nondiags.data.at[diag_indices].set(diag_fd)
 
     return nondiags
+
+
+def force_densities_to_b(q, loads, xyz_fixed, c_free, c_fixed, free):
+    """
+    Computes the RHS matrix in dense format from a vector of force densities.
+    """
+    b = loads[free, :] - c_free.T @ (q[:, None] * (c_fixed @ xyz_fixed))
+
+    return b
 
 
 # ==========================================================================
