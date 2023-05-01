@@ -3,18 +3,17 @@ import numpy as np
 from jax_fdm import DTYPE_NP
 
 from jax_fdm.equilibrium import EquilibriumModel
+from jax_fdm.equilibrium import EquilibriumModelSparse
 
 
 # ==========================================================================
 # Form-finding
 # ==========================================================================
 
-def _fdm(network, q, xyz_fixed, loads):
+def _fdm(q, xyz_fixed, loads, model, network):
     """
     Compute a network in a state of static equilibrium using the force density method.
     """
-    model = EquilibriumModel(network)
-
     # compute static equilibrium
     eq_state = model(q, xyz_fixed, loads)
 
@@ -22,15 +21,16 @@ def _fdm(network, q, xyz_fixed, loads):
     return network_updated(network, eq_state)
 
 
-def fdm(network):
+def fdm(network, sparse=True):
     """
     Compute a network in a state of static equilibrium using the force density method.
     """
     network_validate(network)
 
+    model = model_from_network(network, sparse)
     q, xyz_fixed, loads = (np.array(p, dtype=DTYPE_NP) for p in network.parameters())
 
-    return _fdm(network, q, xyz_fixed, loads)
+    return _fdm(q, xyz_fixed, loads, model, network)
 
 
 # ==========================================================================
@@ -44,24 +44,40 @@ def constrained_fdm(network,
                     constraints=None,
                     maxiter=100,
                     tol=1e-6,
-                    callback=None):
+                    callback=None,
+                    sparse=True):
     """
     Generate a network in a constrained state of static equilibrium using the force density method.
     """
     network_validate(network)
 
-    model = EquilibriumModel(network)
+    if constraints and sparse:
+        print("Constraints are not supported yet for sparse inputs. Switching to dense.")
+        sparse = False
+
+    model = model_from_network(network, sparse)
 
     opt_problem = optimizer.problem(model, loss, parameters, constraints, maxiter, tol, callback)
     opt_params = optimizer.solve(opt_problem)
     q, xyz_fixed, loads = optimizer.parameters_fdm(opt_params)
 
-    return _fdm(network, q, xyz_fixed, loads)
+    return _fdm(q, xyz_fixed, loads, model, network)
 
 
 # ==========================================================================
 # Helpers
 # ==========================================================================
+
+def model_from_network(network, sparse):
+    """
+    Create an equilibrium model from a network.
+    """
+    model = EquilibriumModel
+    if sparse:
+        model = EquilibriumModelSparse
+
+    return model.from_network(network)
+
 
 def network_validate(network):
     """
