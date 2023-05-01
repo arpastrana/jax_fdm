@@ -10,6 +10,11 @@ from compas.utilities import pairwise
 from compas.utilities import remap_values
 
 from jax_fdm.datastructures import FDNetwork
+from functools import partial
+import time
+
+import pickle
+import jax
 
 
 # ==========================================================================
@@ -147,7 +152,7 @@ if __name__ == "__main__":
     ratio_radial_vertical = 0.5
 
     # viz controls
-    visualize = True
+    visualize = False
     use_viewer = False
     filepath = "towers.png"
     viz_options = {"show_loads": False}
@@ -159,9 +164,12 @@ if __name__ == "__main__":
         if use_viewer:
             viewer = Viewer(width=1600, height=900, show_grid=False)
 
+    info = []
+    num_reps = 5
+
     # generate towers of increasing number of side segments
     # NOTE: only odd numbers of segments
-    for i, num_segments in enumerate([4, 8, 16]):
+    for i, num_segments in enumerate([4, 8, 16, 32, 64]):
 
         assert num_segments % 2 == 0, "Only even number of segments"
 
@@ -181,7 +189,46 @@ if __name__ == "__main__":
         q, xyz_fixed, loads = (jnp.asarray(p, dtype=jnp.float64) for p in network.parameters())
 
         # linear solve we are interested in timing
-        xyz_free = model.nodes_free_positions(q, xyz_fixed, loads)
+        sparse_fn = jax.jit(partial(model.nodes_free_positions, sparsesolve=True))
+        no_sparse_fn = jax.jit(partial(model.nodes_free_positions, sparsesolve=False))
+        # JIT the functions first
+
+
+        jit_start = time.time()
+        sparse_fn(q, xyz_fixed, loads)
+        jit_end = time.time()
+        sparse_jit_time = jit_end - jit_start
+
+        jit_start = time.time()
+        no_sparse_fn(q, xyz_fixed, loads)
+        jit_end = time.time()
+        no_sparse_jit_time = jit_end - jit_start
+
+        sparse_times = []
+        for j in range(num_reps):
+            start = time.time()
+            xyz_free = sparse_fn(q, xyz_fixed, loads)
+            end = time.time()
+            sparse_times.append(end - start)
+
+        no_sparse_times = []
+        for j in range(num_reps):
+            dense_start = time.time()
+            xyz_free = no_sparse_fn(q, xyz_fixed, loads)
+            dense_end = time.time()
+            no_sparse_times.append(dense_end - dense_start)
+
+        info.append({"num_segments": num_segments,
+                     "sparse_jit_time": sparse_jit_time,
+                     "no_sparse_jit_time": no_sparse_jit_time,
+                     "sparse_times": sparse_times,
+                     "no_sparse_times": no_sparse_times})
+
+        print(f"number of segments: {num_segments} "
+              f"sparse mean time: {sum(sparse_times) / num_reps} "
+              f"dense mean time: {sum(no_sparse_times) / num_reps} "
+              f"sparse jit: {sparse_jit_time} "
+              f"dense jit: {no_sparse_jit_time}")
 
         # visualization (optional)
         if visualize:
@@ -205,6 +252,7 @@ if __name__ == "__main__":
                            reactionscale=0.3,
                            edgewidth=(0.01, 0.1),
                            **viz_options)
+    pickle.dump(info, open("tower_info.pkl", "wb"))
 
     # save visualization plot
     if visualize:
