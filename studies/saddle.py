@@ -166,9 +166,8 @@ if __name__ == "__main__":
         # linear solve we are interested in timing
         sparse_fn = jax.jit(partial(model.nodes_free_positions, sparsesolve=True))
         no_sparse_fn = jax.jit(partial(model.nodes_free_positions, sparsesolve=False))
+
         # JIT the functions first
-
-
         jit_start = time.time()
         sparse_fn(q, xyz_fixed, loads)
         jit_end = time.time()
