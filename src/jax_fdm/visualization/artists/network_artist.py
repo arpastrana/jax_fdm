@@ -81,6 +81,9 @@ class FDNetworkArtist(NetworkArtist):
         self.edge_color = edgecolor
 
         self.load_color = loadcolor or self.default_loadcolor
+
+        if edgecolor == "force":
+            self.default_reactioncolor = Color.from_rgb255(0, 150, 10)
         self.reaction_color = reactioncolor or self.default_reactioncolor
 
         self.load_scale = loadscale or self.default_loadscale

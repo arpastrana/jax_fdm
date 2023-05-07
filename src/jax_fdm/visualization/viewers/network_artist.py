@@ -318,7 +318,7 @@ class FDNetworkViewerArtist(FDNetworkArtist):
         reactions = {}
 
         for node, arrow in self.collection_reactions.items():
-            obj = self.add_reaction(arrow, self.default_reactioncolor)
+            obj = self.add_reaction(arrow, self.reaction_color)
             reactions[node] = obj
 
         return reactions

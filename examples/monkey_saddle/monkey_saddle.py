@@ -39,14 +39,15 @@ from jax_fdm.visualization import Viewer
 
 name = "monkey_saddle"
 
-n = 4  # densification of coarse mesh
+n = 6  # 4, densification of coarse mesh
 
-q0 = -2.0
+q0 = -5.0  # -2.0
 px, py, pz = 0.0, 0.0, -1.0  # loads at each node
 qmin, qmax = -20.0, -0.01  # min and max force densities
-rmin, rmax = 2.0, 10.0  # min and max reaction forces
-r_exp = 0.5  # reaction force variation exponent
+rmin, rmax = 3.0, 9.0  # 2.0, 10.0 min and max reaction forces
+r_exp = 0.5  # 0.5  # reaction force variation exponent
 
+length_factor = 0.5
 weight_length = 1.0  # weight for edge length goal in optimisation
 weight_residual = 10.0  # weight for residual force goal in optimisation
 
@@ -57,8 +58,8 @@ optimizer = LBFGSB  # optimization algorithm
 maxiter = 500  # optimizer maximum iterations
 tol = 1e-3  # optimizer tolerance
 
-record = True  # True to record optimization history of force densities
-export = True  # export result to JSON
+record = False  # True to record optimization history of force densities
+export = False  # export result to JSON
 
 # ==========================================================================
 # Import coarse mesh
@@ -164,7 +165,7 @@ for edge in network0.edges():
 goals_a = []
 for edge in network0.edges():
     length = network0.edge_length(*edge)
-    goal = EdgeLengthGoal(edge, length, weight=weight_length)
+    goal = EdgeLengthGoal(edge, length * length_factor, weight=weight_length)
     goals_a.append(goal)
 
 # reaction forces
@@ -259,16 +260,24 @@ viewer.view.camera.rotation[2] = 0.0  # set rotation around z axis to zero
 
 # optimized network
 viewer.add(network,
+           show_loads=False,
            edgewidth=(0.05, 0.25),
-           reactionscale=0.75,
-           edgecolor="fd")
+           reactionscale=0.5,
+           edgecolor="force")
+
+# mesh
+for vkey in mesh.vertices():
+    xyz = network.node_coordinates(vkey)
+    mesh.vertex_attributes(vkey, "xyz", xyz)
+
+viewer.add(mesh, opacity=0.5, show_points=False)
 
 # reference network
-viewer.add(network0,
-           as_wireframe=True,
-           show_points=False,
-           linewidth=1.0,
-           color=Color.grey().darkened())
+# viewer.add(network0,
+#            as_wireframe=True,
+#            show_points=False,
+#            linewidth=1.0,
+#            color=Color.grey().darkened())
 
 # show le crème
 viewer.show()

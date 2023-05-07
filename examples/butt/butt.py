@@ -1,11 +1,18 @@
 # the essentials
 import os
+from random import random
+from random import choice
+from math import radians
 import numpy as np
+from math import fabs
 from scipy.spatial.distance import directed_hausdorff
 
 # compas
 from compas.colors import Color
 from compas.geometry import Line
+from compas.geometry import dot_vectors
+from compas.datastructures import Mesh
+from compas.datastructures import network_find_cycles
 
 # jax fdm
 from jax_fdm.datastructures import FDNetwork
@@ -20,8 +27,10 @@ from jax_fdm.parameters import EdgeForceDensityParameter
 
 from jax_fdm.goals import NodePointGoal
 
-from jax_fdm.losses import RootMeanSquaredError
+from jax_fdm.losses import MeanSquaredError
+from jax_fdm.losses import SquaredError
 from jax_fdm.losses import Loss
+from jax_fdm.losses import L2Regularizer
 
 from jax_fdm.visualization import LossPlotter
 from jax_fdm.visualization import Viewer
@@ -34,15 +43,17 @@ from jax_fdm.visualization import Viewer
 name = "butt"
 name_target = "butt_target"
 
-q0 = -2.0
+q0 = 0.4  # -2
 px, py, pz = 0.0, 0.0, -0.2  # loads at each node
-qmin, qmax = -20.0, -0.0  # min and max force densities
+qmin, qmax = -50.0, 0.0  # min and max force densities
 
+alpha_reg = 7e-6  # 7e-6  # 1e-5
+error = MeanSquaredError
 optimizer = LBFGSB  # the optimization algorithm
-maxiter = 1000  # optimizer maximum iterations
-tol = 1e-6  # optimizer tolerance
+maxiter = 10000  # optimizer maximum iterations
+tol = 1e-9  # optimizer tolerance
 
-record = True  # True to record optimization history of force densities
+record = False  # True to record optimization history of force densities
 export = False  # export result to JSON
 
 # ==========================================================================
@@ -65,10 +76,34 @@ network_target = FDNetwork.from_json(FILE_IN)
 # ==========================================================================
 
 # data
-anchors = [node for node in network.nodes() if network.is_leaf(node)]
-network.nodes_anchors(anchors)
-network.nodes_loads([px, py, pz], keys=network.nodes_free())
+supports = [node for node in network.nodes() if network_target.node_attribute(node, "z") <= 0.35]
+network.nodes_supports(supports)
+# network.nodes_loads([px, py, pz], keys=network.nodes_free())
+
+# single q
 network.edges_forcedensities(q=q0)
+
+# random q
+# for edge in network.edges():
+    # network.edge_forcedensity(edge, q=q0*random()*1.2)# *choice((-1.0, 1.0)))
+
+# q depending on orientation
+# for edge in network.edges():
+#     factor = fabs(dot_vectors(network.edge_vector(*edge), [0.0, 1.0, 0.0]))
+#     if factor <= 0.1:
+#         _q = q0 / 10.0
+#     else:
+#         _q = q0
+#     network.edge_forcedensity(edge, q=_q)
+
+# mesh for loads
+vertices = {node: network.node_coordinates(node) for node in network.nodes()}
+faces = network_find_cycles(network)[1:]
+mesh = Mesh.from_vertices_and_faces(vertices, faces)
+
+for node in network.nodes():
+    area = mesh.vertex_area(node)
+    network.node_load(node, [px * area, py * area, pz * area])
 
 # ==========================================================================
 # Export FD network with problem definition
@@ -95,8 +130,6 @@ for edge in network.edges():
 # edge lengths
 goals = []
 for node in network.nodes():
-    if node in anchors:
-        continue
     xyz = network_target.node_coordinates(node)
     goal = NodePointGoal(node, xyz)
     goals.append(goal)
@@ -105,15 +138,15 @@ for node in network.nodes():
 # Combine error functions and regularizer into custom loss function
 # ==========================================================================
 
-squared_error = RootMeanSquaredError(goals, alpha=1.0)
-loss = Loss(squared_error)
+squared_error = error(goals, alpha=1.0)
+loss = Loss(squared_error, L2Regularizer(alpha_reg))
 
 # ==========================================================================
 # Form-find network
 # ==========================================================================
 
 network0 = network.copy()
-network = fdm(network)
+network = fdm(network, sparse=False)
 network_fd = network.copy()
 
 print(f"Load path: {round(network.loadpath(), 3)}")
@@ -125,13 +158,13 @@ print(f"Load path: {round(network.loadpath(), 3)}")
 optimizer = optimizer()
 recorder = OptimizationRecorder(optimizer) if record else None
 
-network = constrained_fdm(network0,
-                          optimizer=optimizer,
-                          loss=loss,
-                          parameters=parameters,
-                          maxiter=maxiter,
-                          tol=tol,
-                          callback=recorder)
+# network = constrained_fdm(network0,
+#                           optimizer=optimizer,
+#                           loss=loss,
+#                           parameters=parameters,
+#                           maxiter=maxiter,
+#                           tol=tol,
+#                           callback=recorder)
 
 # ==========================================================================
 # Export optimization history
@@ -179,33 +212,60 @@ print(f"Hausdorff distances: Directed U: {directed_u}\tDirected V: {directed_v}\
 network.print_stats()
 
 # ==========================================================================
+# Mesh
+# ==========================================================================
+
+network = network_fd
+vertices = {node: network.node_coordinates(node) for node in network.nodes()}
+faces = network_find_cycles(network)[1:]
+mesh = Mesh.from_vertices_and_faces(vertices, faces)
+
+# ==========================================================================
 # Visualization
 # ==========================================================================
 
 viewer = Viewer(width=1600, height=900, show_grid=False)
 
 # modify view
-viewer.view.camera.zoom(-35)  # number of steps, negative to zoom out
-viewer.view.camera.rotation[2] = 0.0  # set rotation around z axis to zero
+# viewer.view.camera.zoom(-80)  # number of steps, negative to zoom out
+# viewer.view.camera.rotation[2] = 0.8  # set rotation around z axis to zero
+
+viewer.view.camera.position = (35.338, -28.023, 32.489)
+viewer.view.camera.target = (-0.125, -0.157, -1.006)
+viewer.view.camera.distance = 50.0
+
+# initial network
+# viewer.add(network0,
+#            edgewidth=0.1,
+#            edgecolor=Color.grey().darkened(10),
+#            show_nodes=True,
+#            nodesize=0.3,  # 0.3, 0.4
+#            show_reactions=False,
+#            show_loads=True,
+#            loadscale=2.0)  # 2.0, 1.0
 
 # optimized network
 viewer.add(network,
-           edgewidth=(0.1, 0.3),
-           edgecolor="fd",
-           loadscale=5.0)
+           edgewidth=(0.05, 0.4),
+           edgecolor="force",
+           reactionscale=0.4,  # 0.15
+           show_loads=True,
+           loadscale=1.0)
 
-# reference network
-viewer.add(network_target,
-           as_wireframe=True,
-           show_points=False,
-           linewidth=1.0,
-           color=Color.grey().darkened())
+viewer.add(mesh, show_points=False, show_edges=False, opacity=0.5)  # 0.5
 
-# draw lines to target
-for node in network.nodes():
-    pt = network.node_coordinates(node)
-    line = Line(pt, network_target.node_coordinates(node))
-    viewer.add(line, color=Color.grey())
+# # reference network
+# viewer.add(network_target,
+#            as_wireframe=True,
+#            show_points=False,
+#            linewidth=1.0,
+#            color=Color.grey().darkened())
+
+# # draw lines to target
+# for node in network.nodes():
+#     pt = network.node_coordinates(node)
+#     line = Line(pt, network_target.node_coordinates(node))
+#     viewer.add(line, color=Color.grey())
 
 # show le crème
 viewer.show()

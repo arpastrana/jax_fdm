@@ -117,6 +117,7 @@ class Optimizer:
         print("Warming up the pressure cooker...")
         start_time = time()
         _ = loss(x)
+        print("initial loss", _)
         print(f"\tLoss warmup time: {(time() - start_time):.4} seconds")
 
         # gradient of the loss function
