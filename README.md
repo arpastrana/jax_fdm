@@ -7,7 +7,7 @@
 [![PyPI - Python Version](https://img.shields.io/pypi/pyversions/jax-fdm.svg)](https://pypi.python.org/project/jax-fdm)
 <!-- [![GitHub - License](https://img.shields.io/github/license/arpastrana/jax_fdm.svg)](https://github.com/arpastrana/jax_fdm) -->
 
-A differentiable, hardware-accelerated framework for constrained form-finding in structural design.
+A differentiable, hardware-accelerated framework for inverse form-finding in structural design.
 
 > Crafted with care in the [Form-Finding Lab](http://formfindinglab.princeton.edu/) at [Princeton University](https://princeton.edu) ❤️🇺🇸
 
@@ -175,7 +175,9 @@ This work has been supported by the **U.S. National Science Foundation** under g
 
 ## See also
 
-[COMPAS CEM](https://github.com/arpastrana/compas_cem): Inverse design of 3D trusses with the extended Combinatorial Equilibrium Modeling framework.
+[COMPAS CEM](https://github.com/arpastrana/compas_cem): Inverse design of 3D trusses with the extended combinatorial equilibrium modeling (CEM) framework.
+
+[JAX CEM](https://github.com/arpastrana/jax_cem): The combinatorial equilibrium modeling (CEM) framework in JAX.
 
 [JAX](https://github.com/google/jax): Composable transformations of Python+NumPy programs.
 
