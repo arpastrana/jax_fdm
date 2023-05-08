@@ -1,5 +1,4 @@
 from time import time
-from functools import partial
 
 import matplotlib.pyplot as plt
 
