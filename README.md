@@ -162,8 +162,8 @@ If you found this library to be useful in academic or industry work, please cons
 
 ```bibtex
 @software{pastrana_jaxfdm,
-          title={{JAX~FDM}: Auto-differentiable and hardware-accelerated force density method},
-          author={Rafael Pastrana and Deniz Oktay and Ryan Adams and Sigrid Adriaenssens},
+          title={{JAX~FDM}: {A}uto-differentiable and hardware-accelerated force density method},
+          author={Rafael Pastrana and Deniz Oktay and Ryan P. Adams and Sigrid Adriaenssens},
           year={2023},
           doi={10.5281/zenodo.7258292},
           url={https://github.com/arpastrana/jax\_fdm}}
