@@ -31,8 +31,8 @@ from jax_fdm.visualization import Viewer
 # Parameters
 # ==========================================================================
 
-name = "butt"
-name_target = "butt_target"
+name = "creased_vault"
+name_target = "creased_vault_target"
 
 q0 = -2.0
 px, py, pz = 0.0, 0.0, -0.2  # loads at each node
