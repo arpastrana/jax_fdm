@@ -11,7 +11,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Fixed signature bug in constraint initialization in `ConstrainedOptimizer.constraints` 
+
 ### Removed
+
+- Removed implicit `partial(jit)` decorator on `ConstrainedOptimizer.constraint`. Jitting now takes place explicitly in `ConstrainedOptimizer.constraints`.
 
 
 ## [0.7.0] 2023-05-08
