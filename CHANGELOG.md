@@ -8,11 +8,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## Unreleased
 
 ### Added
+ 
+- Added `EquilibriumStructure.init` as a quick fix to warm start properties.
 
 ### Changed
 
+- Changed signature of equilibrium model to be `EquilibriumModel(params, structure)`.
+- The `init` function in goals, constraints and parameter takes `(model, structure)` as arguments.
+- Removed `connectivity` related operations from `EquilibriumModel` and inserted them into `EquilibriumStructure`.
+- Fixed bug in `EquilibriumStructure.nodes` that led to a recursive timeout error.
+- Renamed example file `butt.py` to `vault.py`/
+- Renamed file `optimizers.py` to `scipy.py` in `jax_fdm.optimization`.
+
 ### Removed
 
+- Removed `structure` attribute from `EquilibriumModel` en route to equinox modules. 
 
 ## [0.6.0] 2023-04-30
 
