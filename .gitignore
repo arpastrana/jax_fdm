@@ -121,9 +121,9 @@ conda.recipe/
 
 *.json
 !data/json/monkey_saddle.json
-!data/json/creased_vault.json
-!data/json/creased_vault_target.json
-!data/json/creased_vault_mesh_target.json
+!data/json/vault.json
+!data/json/vault_target.json
+!data/json/vault_mesh_target.json
 !data/json/arch.json
 
 *.png
