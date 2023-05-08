@@ -74,7 +74,7 @@ class EquilibriumStructure:
         """
         A list with the node keys of the structure.
         """
-        if not self.nodes:
+        if not self._nodes:
             self._nodes = list(self.network.nodes())
         return self._nodes
 
@@ -285,8 +285,12 @@ class EquilibriumStructureSparse(EquilibriumStructure):
         intermediate value with type float64[611] wrapped in a DynamicJaxprTracer
         to escape the scope of the transformation.
         """
+        self.connectivity
         self.connectivity_free
         self.connectivity_fixed
+        self.free_nodes
+        self.fixed_nodes
+        self.freefixed_nodes
 
     @property
     def connectivity_fixed(self):
