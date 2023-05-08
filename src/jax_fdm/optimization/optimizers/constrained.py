@@ -22,7 +22,7 @@ class ConstrainedOptimizer(Optimizer):
     """
     A gradient-based optimizer that handles constraints.
     """
-    def constraints(self, constraints, model, params_opt):
+    def constraints(self, constraints, model, structure, params_opt):
         """
         Returns the defined constraints in a format amenable to `scipy.minimize`.
         """
@@ -37,10 +37,11 @@ class ConstrainedOptimizer(Optimizer):
         for constraint in constraints:
 
             # initialize constraint
-            constraint.init(model)
+            constraint.init(model, structure)
 
             # gather information for scipy constraint
-            fun = partial(self.constraint, constraint=constraint, model=model)
+            fun = partial(self.constraint, constraint=constraint, model=model, structure=structure)
+            fun = jit(fun)
             jac = jit(jacfwd(fun))
 
             lb = constraint.bound_low
@@ -55,14 +56,13 @@ class ConstrainedOptimizer(Optimizer):
 
         return clist
 
-    @partial(jit, static_argnums=(0, 2, 3))
-    def constraint(self, params_opt, constraint, model):
+    def constraint(self, params_opt, constraint, model, structure):
         """
         A wrapper around a constraint callable object.
         """
-        q, xyz_fixed, loads = self.parameters_fdm(params_opt)
+        params = self.parameters_fdm(params_opt)
 
-        return constraint(q, xyz_fixed, loads, model)
+        return constraint(params, model, structure)
 
     @staticmethod
     def collect_constraints(constraints):
