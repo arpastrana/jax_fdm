@@ -46,6 +46,26 @@ class EquilibriumStructure:
         self._anchor_index = None
         self._face_node_index = None
 
+        self.init()
+
+    def init(self):
+        """
+        Warm start properties.
+
+        Otherwise we get a leakage error:
+
+        jax._src.errors.UnexpectedTracerError: Encountered an unexpected tracer.
+        A function transformed by JAX had a side effect, allowing for a reference to an
+        intermediate value with type float64[611] wrapped in a DynamicJaxprTracer
+        to escape the scope of the transformation.
+        """
+        self.connectivity
+        self.connectivity_free
+        self.connectivity_fixed
+        self.free_nodes
+        self.fixed_nodes
+        self.freefixed_nodes
+
     @classmethod
     def from_network(cls, network):
         """
@@ -271,26 +291,6 @@ class EquilibriumStructureSparse(EquilibriumStructure):
 
         # Prepare the array D st when D.T @ q we get the diagonal elements of matrix.
         self.diags = self._get_sparse_diag_data(c_free_csc)
-
-        self.init()
-
-    def init(self):
-        """
-        Warm start properties.
-
-        Otherwise we get a leakage error:
-
-        jax._src.errors.UnexpectedTracerError: Encountered an unexpected tracer.
-        A function transformed by JAX had a side effect, allowing for a reference to an
-        intermediate value with type float64[611] wrapped in a DynamicJaxprTracer
-        to escape the scope of the transformation.
-        """
-        self.connectivity
-        self.connectivity_free
-        self.connectivity_fixed
-        self.free_nodes
-        self.fixed_nodes
-        self.freefixed_nodes
 
     @property
     def connectivity_fixed(self):
