@@ -40,13 +40,13 @@ class ParameterManager:
                        NodeLoadYParameter,
                        NodeLoadZParameter]
 
-    def __init__(self, model, parameters):
+    def __init__(self, model, structure, parameters):
         """
         Initialize the manager.
         """
         self.model = model  # model.structure.network holds an FD network object.
-        self.structure = model.structure
-        self.network = model.structure.network
+        self.structure = structure
+        self.network = structure.network
         self.parameters = parameters
 
         self._indices_opt = None
@@ -253,9 +253,9 @@ class ParameterManager:
         for parameter in self.parameters:
             if isinstance(parameter, cls):
                 if isinstance(parameter, ParameterGroup):
-                    indices.extend(parameter.index(self.model))
+                    indices.extend(parameter.index(self.model, self.structure))
                 else:
-                    indices.append(parameter.index(self.model))
+                    indices.append(parameter.index(self.model, self.structure))
 
         # return np.array(indices, dtype=np.int64)
         return indices
@@ -319,7 +319,7 @@ class ParameterManager:
         if self._parameters_value is None:
             values = []
             for parameter in self.parameters_ordered:
-                values.append(parameter.value(self.model))
+                values.append(parameter.value(self.model, self.structure))
             self._parameters_value = jnp.array(values, dtype=DTYPE_JAX)
 
         return self._parameters_value

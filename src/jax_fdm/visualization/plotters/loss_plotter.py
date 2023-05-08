@@ -8,6 +8,7 @@ import jax.numpy as jnp
 
 from jax_fdm import DTYPE_JAX
 from jax_fdm.equilibrium import EquilibriumModel
+from jax_fdm.equilibrium import EquilibriumStructure
 
 
 __all__ = ["LossPlotter"]
@@ -19,7 +20,7 @@ class LossPlotter:
     """
     def __init__(self, loss, network, *args, **kwargs):
         self.loss = loss
-        self.model = EquilibriumModel(network)
+        self.structure = EquilibriumStructure.from_network(network)
         self.fig = plt.figure(**kwargs)
 
     def plot(self, history):
@@ -32,8 +33,10 @@ class LossPlotter:
         q = jnp.asarray(history["q"], dtype=DTYPE_JAX)
         xyz_fixed = jnp.asarray(history["xyz_fixed"], dtype=DTYPE_JAX)
         loads = jnp.asarray(history["loads"], dtype=DTYPE_JAX)
-        model_dense = partial(self.model)
-        eq_states = vmap(model_dense)(q, xyz_fixed, loads)
+
+        model = EquilibriumModel()
+        equilibrium_vmap = vmap(model, in_axes=(0, None))
+        eq_states = equilibrium_vmap((q, xyz_fixed, loads), self.structure)
 
         errors_all = []
         for error_term in self.loss.terms:

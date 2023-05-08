@@ -22,16 +22,16 @@ class Loss:
         self.terms_regularization = args
         self.name = name or self.__class__.__name__
 
-    @partial(jit, static_argnums=(0, 4))
-    def __call__(self, q, xyz_fixed, loads, model):
+    @partial(jit, static_argnums=(0, 2, 3))
+    def __call__(self, params, model, structure):
         """
         Compute the scalar output of the loss function.
         """
-        eqstate = model(q, xyz_fixed, loads)
+        eq_state = model(params, structure)
 
         loss = 0.0
         for error_term in self.terms:
-            loss = loss + error_term(eqstate)
+            loss = loss + error_term(eq_state)
 
         return loss
 

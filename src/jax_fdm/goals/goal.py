@@ -82,11 +82,11 @@ class Goal:
         """
         return target
 
-    def init(self, model):
+    def init(self, model, structure):
         """
         Initialize the goal with information from an equilibrium model.
         """
-        self.index = self.index_from_model(model)
+        self.index = self.index_from_model(model, structure)
 
     def __call__(self, eqstate):
         """

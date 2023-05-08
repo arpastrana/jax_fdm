@@ -5,17 +5,20 @@ from jax_fdm import DTYPE_NP
 from jax_fdm.equilibrium import EquilibriumModel
 from jax_fdm.equilibrium import EquilibriumModelSparse
 
+from jax_fdm.equilibrium import EquilibriumStructure
+from jax_fdm.equilibrium import EquilibriumStructureSparse
+
 
 # ==========================================================================
 # Form-finding
 # ==========================================================================
 
-def _fdm(q, xyz_fixed, loads, model, network):
+def _fdm(model, params, structure, network):
     """
     Compute a network in a state of static equilibrium using the force density method.
     """
     # compute static equilibrium
-    eq_state = model(q, xyz_fixed, loads)
+    eq_state = model(params, structure)
 
     # update equilibrium state in a copy of the network
     return network_updated(network, eq_state)
@@ -28,9 +31,11 @@ def fdm(network, sparse=True):
     network_validate(network)
 
     model = model_from_network(network, sparse)
-    q, xyz_fixed, loads = (np.array(p, dtype=DTYPE_NP) for p in network.parameters())
+    structure = structure_from_network(network, sparse)
 
-    return _fdm(q, xyz_fixed, loads, model, network)
+    params = [np.array(p, dtype=DTYPE_NP) for p in network.parameters()]
+
+    return _fdm(model, params, structure, network)
 
 
 # ==========================================================================
@@ -56,12 +61,13 @@ def constrained_fdm(network,
         sparse = False
 
     model = model_from_network(network, sparse)
+    structure = structure_from_network(network, sparse)
 
-    opt_problem = optimizer.problem(model, loss, parameters, constraints, maxiter, tol, callback)
+    opt_problem = optimizer.problem(model, structure, loss, parameters, constraints, maxiter, tol, callback)
     opt_params = optimizer.solve(opt_problem)
-    q, xyz_fixed, loads = optimizer.parameters_fdm(opt_params)
+    params = optimizer.parameters_fdm(opt_params)
 
-    return _fdm(q, xyz_fixed, loads, model, network)
+    return _fdm(model, params, structure, network)
 
 
 # ==========================================================================
@@ -77,6 +83,17 @@ def model_from_network(network, sparse):
         model = EquilibriumModelSparse
 
     return model.from_network(network)
+
+
+def structure_from_network(network, sparse):
+    """
+    Create a structure from a network.
+    """
+    structure = EquilibriumStructure
+    if sparse:
+        structure = EquilibriumStructureSparse
+
+    return structure.from_network(network)
 
 
 def network_validate(network):

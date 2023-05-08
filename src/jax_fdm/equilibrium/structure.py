@@ -1,3 +1,5 @@
+import numpy as np
+
 import jax.numpy as jnp
 
 from compas.datastructures import network_find_cycles
@@ -6,6 +8,7 @@ from compas.numerical import connectivity_matrix
 from compas.numerical import face_matrix
 
 from jax.experimental.sparse import BCOO
+from jax.experimental.sparse import CSC
 
 
 # ==========================================================================
@@ -30,6 +33,10 @@ class EquilibriumStructure:
         self._nodes = None
         self._faces = None
 
+        self._num_nodes = None
+        self._num_edges = None
+        self._num_faces = None
+
         self._free_nodes = None
         self._fixed_nodes = None
         self._freefixed_nodes = None
@@ -38,6 +45,13 @@ class EquilibriumStructure:
         self._edge_index = None
         self._anchor_index = None
         self._face_node_index = None
+
+    @classmethod
+    def from_network(cls, network):
+        """
+        Create a structure from a network.
+        """
+        return cls(network)
 
     @property
     def network(self):
@@ -62,6 +76,7 @@ class EquilibriumStructure:
         """
         if not self.nodes:
             self._nodes = list(self.network.nodes())
+        return self._nodes
 
     @property
     def faces(self):
@@ -71,6 +86,33 @@ class EquilibriumStructure:
         if not self._faces:
             self._faces = [cycle[:-1] for cycle in network_find_cycles(self.network)[1:]]
         return self._faces
+
+    @property
+    def num_edges(self):
+        """
+        A list with the edge keys of the structure.
+        """
+        if not self._num_edges:
+            self._num_edges = len(self.edges)
+        return self._num_edges
+
+    @property
+    def num_nodes(self):
+        """
+        A list with the node keys of the structure.
+        """
+        if not self._num_nodes:
+            self._num_nodes = len(self.nodes)
+        return self._num_nodes
+
+    @property
+    def num_faces(self):
+        """
+        A list with the face keys of the structure.
+        """
+        if not self._num_faces:
+            self._num_faces = len(self.faces)
+        return self._num_faces
 
     @property
     def face_node_index(self):
@@ -217,6 +259,19 @@ class EquilibriumStructureSparse(EquilibriumStructure):
     """
     def __init__(self, network):
         super().__init__(network)
+
+        # Do some precomputation to be able to construct the lhs matrix through indexing
+        c_free_csc = self.connectivity_scipy[:, self.free_nodes]
+        index_array = self._get_sparse_index_array(c_free_csc)
+        self.index_array = index_array
+
+        # Indices of data corresponding to diagonal.
+        # With this array we can just index directly into the CSC.data array to refer to the diagonal entries.
+        self.diag_indices = self._get_sparse_diag_indices(index_array)
+
+        # Prepare the array D st when D.T @ q we get the diagonal elements of matrix.
+        self.diags = self._get_sparse_diag_data(c_free_csc)
+
         self.init()
 
     def init(self):
@@ -254,3 +309,46 @@ class EquilibriumStructureSparse(EquilibriumStructure):
             self._connectivity_free = con_free
 
         return self._connectivity_free
+
+    @staticmethod
+    def _get_sparse_index_array(c_free_csc):
+        """
+        Create an index array such that the off-diagonals can index into the force density vector.
+
+        This array is used to create the off-diagonal entries of the lhs matrix.
+        """
+        force_density_modified_c_free_csc = c_free_csc.copy()
+        force_density_modified_c_free_csc.data *= np.take(np.arange(c_free_csc.shape[0]) + 1, c_free_csc.indices)
+        index_array = -(c_free_csc.T @ force_density_modified_c_free_csc)
+
+        # The diagonal entries should be set to 0 so that it indexes
+        # into a valid entry, but will later be overwritten.
+        index_array.setdiag(0)
+
+        return index_array.astype(int)
+
+    @staticmethod
+    def _get_sparse_diag_data(c_free_csc):
+        """
+        The diagonal of the lhs matrix is the sum of force densities for
+        each outgoing/incoming edge on the node.
+
+        We create the `diags` matrix such that when we multiply it with the
+        force density vector we get the diagonal.
+        """
+        diags_data = jnp.ones_like(c_free_csc.data)
+
+        return CSC((diags_data, c_free_csc.indices, c_free_csc.indptr), shape=c_free_csc.shape)
+
+    @staticmethod
+    def _get_sparse_diag_indices(csc):
+        """
+        Given a CSC matrix, get indices into `data` that access diagonal elements in order.
+        """
+        all_indices = []
+        for i in range(csc.shape[0]):
+            index_range = csc.indices[csc.indptr[i]:csc.indptr[i + 1]]
+            ind_loc = jnp.where(index_range == i)[0]
+            all_indices.append(ind_loc + csc.indptr[i])
+
+        return jnp.concatenate(all_indices)

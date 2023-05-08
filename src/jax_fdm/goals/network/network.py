@@ -8,7 +8,7 @@ class NetworkGoal(Goal):
     def __init__(self, key=-1, target=0.0, weight=1.0):
         super().__init__(key=key, target=target, weight=weight)
 
-    def index_from_model(self, model):
+    def index_from_model(self, model, structure):
         """
         The index of the goal key in a structure.
         """

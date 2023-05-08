@@ -8,11 +8,11 @@ class NodeGoal(Goal):
     def __init__(self, key, target, weight=1.0):
         super().__init__(key=key, target=target, weight=weight)
 
-    def index_from_model(self, model):
+    def index_from_model(self, model, structure):
         """
         The index of the edge in a structure.
         """
         try:
-            return model.structure.node_index[self.key]
+            return structure.node_index[self.key]
         except TypeError:
-            return tuple([model.structure.node_index[k] for k in self.key])
+            return tuple([structure.node_index[k] for k in self.key])

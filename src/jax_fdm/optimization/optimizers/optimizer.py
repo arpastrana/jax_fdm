@@ -53,27 +53,27 @@ class Optimizer:
 # Loss
 # ==========================================================================
 
-    @partial(jit, static_argnums=(0, 2, 3))
-    def loss(self, params_opt, loss, model):
+    # @partial(jit, static_argnums=(0, 2, 3))
+    def loss(self, params_opt, loss, model, structure):
         """
         The wrapper loss.
         """
-        q, xyz_fixed, loads = self.parameters_fdm(params_opt)
+        params = self.parameters_fdm(params_opt)
 
-        return loss(q, xyz_fixed, loads, model)
+        return loss(params, model, structure)
 
 # ==========================================================================
 # Goals
 # ==========================================================================
 
-    def goals(self, loss, model):
+    def goals(self, loss, model, structure):
         """
         Pre-process the goals in the loss function to accelerate computations.
         """
         for term in loss.terms_error:
             goal_collections = self.collect_goals(term.goals)
             for goal_collection in goal_collections:
-                goal_collection.init(model)
+                goal_collection.init(model, structure)
             term.collections = goal_collections
 
 # ==========================================================================
@@ -82,6 +82,7 @@ class Optimizer:
 
     def problem(self,
                 model,
+                structure,
                 loss,
                 parameters=None,
                 constraints=None,
@@ -93,9 +94,9 @@ class Optimizer:
         """
         # optimization parameters
         if not parameters:
-            parameters = [EdgeForceDensityParameter(edge) for edge in model.structure.edges]
+            parameters = [EdgeForceDensityParameter(edge) for edge in structure.edges]
 
-        self.pm = ParameterManager(model, parameters)
+        self.pm = ParameterManager(model, structure, parameters)
         x = self.parameters_value()
 
         # message
@@ -108,15 +109,17 @@ class Optimizer:
         assert x.size == self.pm.bounds_up.size
 
         # build goal collections
-        self.goals(loss, model)
+        self.goals(loss, model, structure)
         print(f"\tGoal collections: {loss.number_of_collections()}")
 
         # loss matters
-        loss = partial(self.loss, loss=loss, model=model)
+        loss = partial(self.loss, loss=loss, model=model, structure=structure)
+        loss = jit(loss)
 
         print("Warming up the pressure cooker...")
         start_time = time()
-        _ = loss(x)
+        loss_val = loss(x)
+        print(f"\tInitial loss value: {loss_val:.4}")
         print(f"\tLoss warmup time: {(time() - start_time):.4} seconds")
 
         # gradient of the loss function
@@ -136,8 +139,8 @@ class Optimizer:
         constraints = constraints or []
         if constraints:
             start_time = time()
-            constraints = self.constraints(constraints, model, x)
-            print(f"\tConstraints warmup time: {round(time() - start_time, 4)} seconds")
+            constraints = self.constraints(constraints, model, structure, x)
+            print(f"\tConstraints warmup time: {(time() - start_time):.4} seconds")
 
         opt_kwargs = {"fun": loss,
                       "jac": grad_loss,
@@ -163,7 +166,7 @@ class Optimizer:
         res_q = self._minimize(opt_problem)
 
         print(res_q.message)
-        print(f"Final loss in {res_q.nit} iterations: {res_q.fun}")
+        print(f"Final loss in {res_q.nit} iterations: {res_q.fun:.4}")
         print(f"Optimization elapsed time: {time() - start_time} seconds")
 
         return res_q.x

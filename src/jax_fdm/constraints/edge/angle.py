@@ -36,11 +36,11 @@ class EdgeAngleConstraint(EdgeConstraint):
             matrix[idx, :] = vec
         return matrix
 
-    def init(self, model):
+    def init(self, model, structure):
         """
         Initialize the constraint with information from an equilibrium model.
         """
-        super().init(model)
+        super().init(model, structure)
         self.vector = self.vectors()
 
     def constraint(self, eqstate, index):

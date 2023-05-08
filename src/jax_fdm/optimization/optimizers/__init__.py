@@ -1,7 +1,7 @@
 from .optimizer import *  # noqa F403
 from .constrained import *  # noqa F403
 from .second_order import *  # noqa F403
-from .optimizers import *  # noqa F403
+from .scipy import *  # noqa F403
 from .ipopt import *  # noqa F403
 
 

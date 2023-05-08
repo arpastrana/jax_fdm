@@ -28,11 +28,11 @@ class EdgeAngleGoal(ScalarGoal, EdgeGoal):
     def vector(self, vector):
         self._vector = jnp.reshape(jnp.asarray(vector), (-1, 3))
 
-    def init(self, model):
+    def init(self, model, structure):
         """
         Initialize the goal with information from an equilibrium model.
         """
-        super().init(model)
+        super().init(model, structure)
 
         # create matrix of vectors
         vector = self.vector

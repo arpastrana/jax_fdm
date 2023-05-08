@@ -43,15 +43,15 @@ class NodeNormalAngleGoal(ScalarGoal, NodeGoal):
             matrix[idx, :] = vec
         return matrix
 
-    def init(self, model):
+    def init(self, model, structure):
         """
         Initialize the constraint with information from an equilibrium model.
         """
-        super().init(model)
+        super().init(model, structure)
         self.vector = self.vectors()
-        self.index_faces, self.mask_faces = self.faces_indices(model)
+        self.index_faces, self.mask_faces = self.faces_indices(model, structure)
 
-    def faces_indices(self, model):
+    def faces_indices(self, model, structure):
         """
         Get the node indices of the faces connected to a node.
 
@@ -62,10 +62,10 @@ class NodeNormalAngleGoal(ScalarGoal, NodeGoal):
         num_nodes_max = -1
         num_faces_max = -1
         for idx in self.index:
-            num_faces = len(self.node_faces(model, idx))
+            num_faces = len(self.node_faces(model, structure, idx))
             if num_faces > num_faces_max:
                 num_faces_max = num_faces
-            num_nodes = len(max(self.node_faces_indices(model, idx), key=lambda x: len(x)))
+            num_nodes = len(max(self.node_faces_indices(model, structure, idx), key=lambda x: len(x)))
             if num_nodes > num_nodes_max:
                 num_nodes_max = num_nodes
 
@@ -73,7 +73,7 @@ class NodeNormalAngleGoal(ScalarGoal, NodeGoal):
         mask_faces = np.zeros((index_max, num_faces_max, num_nodes_max + 1))
 
         for idx in self.index:
-            nfn = self.node_faces_indices(model, idx)
+            nfn = self.node_faces_indices(model, structure, idx)
             for i, face_nodes in enumerate(nfn):
                 index_faces[idx, i, :len(face_nodes)] = face_nodes
                 mask_faces[idx, i, :len(face_nodes)] = [1] * len(face_nodes)
@@ -88,19 +88,19 @@ class NodeNormalAngleGoal(ScalarGoal, NodeGoal):
         return index_faces, mask_faces
 
     @staticmethod
-    def node_faces(model, index):
+    def node_faces(model, structure, index):
         """
         Return an iterable with the indices of the faces connected to a node.
         """
-        connectivity = model.structure.connectivity_faces
+        connectivity = structure.connectivity_faces
         return np.flatnonzero(connectivity[:, index])
 
-    def node_faces_indices(self, model, index):
+    def node_faces_indices(self, model, structure, index):
         """
         Return an iterable with the indices of the nodes of the faces connected to a node.
         """
-        fidx = self.node_faces(model, index)
-        return [model.structure.face_node_index[idx] for idx in fidx]
+        fidx = self.node_faces(model, structure, index)
+        return [structure.face_node_index[idx] for idx in fidx]
 
     @staticmethod
     def nan_normal_polygon(polygon):
