@@ -175,7 +175,7 @@ This work has been supported by the **U.S. National Science Foundation** under g
 
 ## See also
 
-[COMPAS CEM](https://github.com/arpastrana/compas_cem): Inverse design of 3D trusses with the extended combinatorial equilibrium modeling (CEM) framework.
+[COMPAS CEM](https://github.com/arpastrana/compas_cem): Inverse design of 3D trusses with the combinatorial equilibrium modeling (CEM) framework.
 
 [JAX CEM](https://github.com/arpastrana/jax_cem): The combinatorial equilibrium modeling (CEM) framework in JAX.
 
