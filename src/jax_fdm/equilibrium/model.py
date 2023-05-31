@@ -27,7 +27,7 @@ class EquilibriumModel:
     @staticmethod
     def edges_vectors(xyz, connectivity):
         """
-        Calculate the unnormalized edge directions.
+        Calculate the unnormalized edge directions (nodal coordinate differences).
         """
         return connectivity @ xyz
 
@@ -48,7 +48,7 @@ class EquilibriumModel:
     @staticmethod
     def nodes_residuals(q, loads, vectors, connectivity):
         """
-        Compute the force at the anchor supports of the structure.
+        Compute the residual forces on the nodes of the structure.
         """
         return loads - connectivity.T @ (q[:, None] * vectors)
 
