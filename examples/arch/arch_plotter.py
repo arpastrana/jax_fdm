@@ -1,10 +1,6 @@
-# math is always a good idea
-from math import pi
-
 # compas
 from compas.geometry import add_vectors
 from compas.geometry import Polyline
-from compas.geometry import Rotation
 
 # static equilibrium
 from jax_fdm.datastructures import FDNetwork
