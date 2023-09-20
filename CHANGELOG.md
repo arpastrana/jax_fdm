@@ -11,6 +11,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Fixed bug with the coloring of reaction forces in `viewers/network_artist.py`.
+- Fixed bug with the coloring of reaction forces in `artists/network_artist.py`.
+
 ### Removed
 
 
