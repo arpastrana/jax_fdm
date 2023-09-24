@@ -38,9 +38,11 @@ class LossPlotter:
         eq_states = equilibrium_vmap((q, xyz_fixed, loads), self.structure)
 
         errors_all = []
+        print("\nLoss breakdown")
         for error_term in self.loss.terms:
             errors = vmap(error_term)(eq_states)
             errors_all.append(errors)
+            self._print_error_stats(error_term, errors)
             plt.plot(errors, label=error_term.name)
 
         losses = jnp.sum(jnp.asarray(errors_all, dtype=DTYPE_JAX), axis=0)
@@ -59,3 +61,21 @@ class LossPlotter:
         Display the plot.
         """
         plt.show()
+
+    @staticmethod
+    def _print_error_stats(error_term, errors):
+        """
+        Print error statistics
+        """
+        stats = {"name": error_term.name,
+                 "first_val": errors[0],
+                 "last_val": errors[-1],
+                 "min_val": jnp.min(errors),
+                 "max_val": jnp.max(errors)}
+
+        for key, val in stats.items():
+            if isinstance(val, str):
+                continue
+            stats[key] = round(val, 4)
+
+        print("\t{name}\tFirst:{first_val}\tLast:{last_val}\tMin:{min_val}\tMax:{max_val}\n".format(**stats))
