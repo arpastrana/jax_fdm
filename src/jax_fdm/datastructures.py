@@ -80,9 +80,15 @@ class FDNetwork(Network):
 
     def is_edge_supported(self, key):
         """
-        Test if any of the two nodes connected the edge is a fixed anchor.
+        Test if any of the two nodes connected by the edge is a support.
         """
         return any(self.is_node_support(node) for node in key)
+
+    def is_edge_fully_supported(self, key):
+        """
+        Test if the two nodes connected the edge are a support.
+        """
+        return all(self.is_node_support(node) for node in key)
 
     def nodes_supports(self, keys=None):
         """

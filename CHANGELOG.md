@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Added `FDNetwork.is_edge_fully_supported`. 
+
 ### Changed
 
 - Fixed bug with the coloring of reaction forces in `viewers/network_artist.py`.
