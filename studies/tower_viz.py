@@ -145,7 +145,8 @@ if __name__ == "__main__":
     # experiment settings
     num_reps = 1  # 5
     num_segments = [4, 8, 16, 32, 64][:4]
-    # num_segments = [i for i in range(4, 21) if i % 2 == 0]
+    num_segments = [i for i in range(4, 21) if i % 2 == 0]
+    num_segments = [10]
 
     # script parameters
     radius_bottom = 10.0
@@ -157,11 +158,12 @@ if __name__ == "__main__":
     # viz controls
     use_viewer = False
     plot_save = True
-    filepath = "towers.pdf"
-    viz_options = {"edgecolor": "force", "show_loads": False}
+    filepath = "tower.pdf"
+    viz_options = {"edgecolor": "force",
+                   "show_loads": False}
 
     # instantiate a plotter (only for visualization, optional)
-    plotter = Plotter(figsize=(8, 5), dpi=200)
+    plotter = Plotter(figsize=(8, 5), dpi=300)
 
     if use_viewer:
         viewer = Viewer(width=1600, height=900, show_grid=False)
@@ -182,7 +184,7 @@ if __name__ == "__main__":
                                                  num_rings)
         network = create_tower_network(rings, diagonals, q_val, ratio_radial_vertical)
 
-        print(f"# nodes: {network.number_of_nodes()}")
+        print(f"Num segments:{num_segments}\t# nodes: {network.number_of_nodes()}")
 
         network_eq = fdm(network)
 
@@ -191,9 +193,9 @@ if __name__ == "__main__":
         R = Rotation.from_euler_angles((radians(-60.0), 0.0, 0.0))
         plotter.add(network_eq.transformed(R).transformed(T),
                     show_reactions=False,
-                    edgewidth=(0.12, 1.2),
+                    edgewidth=(0.4, 3.0),  # (0.12, 1.2)
                     show_nodes=True,
-                    nodesize=3,
+                    nodesize=12,
                     **viz_options)
 
         if use_viewer:
@@ -210,5 +212,6 @@ if __name__ == "__main__":
 
     plotter.zoom_extents()
     if plot_save:
-        plotter.save(filepath, dpi=300, bbox_inches=0.0, transparent=True)
+        print("Saving")
+        plotter.save(filepath, dpi=300, bbox_inches="tight", transparent=True)
     plotter.show()

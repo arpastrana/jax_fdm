@@ -128,6 +128,7 @@ if __name__ == "__main__":
     num_reps = 1  # 5
     num_segments = [4, 8, 16, 32, 64][:2]
     num_segments = list(range(1, 12))
+    num_segments = [7]
 
     # script parameters
     length_side = 10.
@@ -136,10 +137,12 @@ if __name__ == "__main__":
 
     # viz controls
     use_viewer = False
-    plot_save = False
-    filepath = "saddles.png"
+    plot_save = True
+    filepath = "saddle.pdf"
     viz_options = {"show_loads": False,
-                   "show_nodes": False,
+                   "show_nodes": True,
+                   "nodesize": 10,
+                   "edgecolor": "force",
                    }
 
     # instantiate a plotter (only for visualization, optional)
@@ -164,7 +167,7 @@ if __name__ == "__main__":
         # add network in equilibrium to plotter
         T = Translation.from_vector([i * length_side * 1.2, 0., 0.0])
         network_eq = network_eq.transformed(T)
-        plotter.add(network_eq, show_reactions=False, edgewidth=(0.2, 2.0), **viz_options)
+        plotter.add(network_eq, show_reactions=False, edgewidth=(0.4, 4.0), **viz_options)
 
         if use_viewer:
             if viz_options.get("edgewidth"):
@@ -177,5 +180,5 @@ if __name__ == "__main__":
 
     plotter.zoom_extents()
     if plot_save:
-        plotter.save(filepath, dpi=300)
+        plotter.save(filepath, dpi=300, transparent=True, bbox_inches="tight")
     plotter.show()
