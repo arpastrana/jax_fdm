@@ -118,18 +118,16 @@ def create_saddle_network(mesh, q):
 # ==========================================================================
 
 if __name__ == "__main__":
-    import jax.numpy as jnp
-
     from compas.geometry import Translation
 
-    from jax_fdm.equilibrium import EquilibriumModel
-    from jax_fdm.equilibrium import EquilibriumModelSparse
     from jax_fdm.equilibrium import fdm
     from jax_fdm.visualization import Plotter
     from jax_fdm.visualization import Viewer
 
     # experiment settings
-    num_reps = 1
+    num_reps = 1  # 5
+    num_segments = [4, 8, 16, 32, 64][:2]
+    num_segments = list(range(1, 12))
 
     # script parameters
     length_side = 10.
@@ -137,98 +135,47 @@ if __name__ == "__main__":
     q_val = 1.
 
     # viz controls
-    visualize = False
-    use_viewer = True
+    use_viewer = False
+    plot_save = False
     filepath = "saddles.png"
     viz_options = {"show_loads": False,
                    "show_nodes": False,
                    }
 
     # instantiate a plotter (only for visualization, optional)
-    if visualize:
-        plotter = Plotter(figsize=(8, 5), dpi=200)
+    plotter = Plotter(figsize=(8, 5), dpi=200)
 
-        if use_viewer:
-            viewer = Viewer(width=1600, height=900, show_grid=False)
+    if use_viewer:
+        viewer = Viewer(width=1600, height=900, show_grid=False)
 
     # generate saddles of increasing number of side segments
     info = []
 
-    for i, num_segments in enumerate([4, 8, 16, 32, 64]):
+    for i, num_segments in enumerate(num_segments):
 
         # create network
         dmesh = create_saddle_geometry(length_side, num_segments, height_corner)
         network = create_saddle_network(dmesh, q_val)
 
-        # create equiilibrium model from network
-        model = EquilibriumModel(network)
-        sparse_model = EquilibriumModelSparse(network)
+        print(f"# nodes: {network.number_of_nodes()}")
 
-        # extract fdm parameters from network
-        q, xyz_fixed, loads = (jnp.asarray(p, dtype=jnp.float64) for p in network.parameters())
+        network_eq = fdm(network)
 
-        # linear solve we are interested in timing
-        sparse_fn = jax.jit(partial(sparse_model.nodes_free_positions))
-        no_sparse_fn = jax.jit(partial(model.nodes_free_positions))
+        # add network in equilibrium to plotter
+        T = Translation.from_vector([i * length_side * 1.2, 0., 0.0])
+        network_eq = network_eq.transformed(T)
+        plotter.add(network_eq, show_reactions=False, edgewidth=(0.2, 2.0), **viz_options)
 
-        # JIT the functions first
-        jit_start = time.time()
-        sparse_fn(q, xyz_fixed, loads)
-        jit_end = time.time()
-        sparse_jit_time = jit_end - jit_start
-
-        jit_start = time.time()
-        no_sparse_fn(q, xyz_fixed, loads)
-        jit_end = time.time()
-        no_sparse_jit_time = jit_end - jit_start
-
-        sparse_times = []
-        for j in range(num_reps):
-            start = time.time()
-            xyz_free = sparse_fn(q, xyz_fixed, loads)
-            end = time.time()
-            sparse_times.append(end - start)
-
-        no_sparse_times = []
-        for j in range(num_reps):
-            dense_start = time.time()
-            xyz_free = no_sparse_fn(q, xyz_fixed, loads)
-            dense_end = time.time()
-            no_sparse_times.append(dense_end - dense_start)
-
-        info.append({"num_segments": num_segments,
-                     "sparse_jit_time": sparse_jit_time,
-                     "no_sparse_jit_time": no_sparse_jit_time,
-                     "sparse_times": sparse_times,
-                     "no_sparse_times": no_sparse_times})
-
-        print(f"number of segments: {num_segments} "
-              f"sparse mean time: {sum(sparse_times) / num_reps} "
-              f"dense mean time: {sum(no_sparse_times) / num_reps} "
-              f"sparse jit: {sparse_jit_time} "
-              f"dense jit: {no_sparse_jit_time}")
-
-        # visualization (optional)
-        if visualize:
-            # run fdm (again) to get an FD network in static equilibrium
-            network_eq = fdm(network)
-            # add network in equilibrium to plotter
-            T = Translation.from_vector([i * length_side * 1.2, 0., 0.0])
-            network_eq = network_eq.transformed(T)
-            plotter.add(network_eq, show_reactions=False, edgewidth=(0.2, 2.0), **viz_options)
-
-            if use_viewer:
-                if viz_options.get("edgewidth"):
-                    del viz_options["edgewidth"]
-                viewer.add(network_eq, show_reactions=True, edgewidth=(0.03, 0.3), **viz_options)
-
-    # pickle.dump(info, open("saddle_info.pkl", "wb"))
+        if use_viewer:
+            if viz_options.get("edgewidth"):
+                del viz_options["edgewidth"]
+            viewer.add(network_eq, show_reactions=True, edgewidth=(0.03, 0.3), **viz_options)
 
     # save visualization plot
-    if visualize:
-        if use_viewer:
-            viewer.show()
+    if use_viewer:
+        viewer.show()
 
-        plotter.zoom_extents()
-        # plotter.save(filepath, dpi=300)
-        plotter.show()
+    plotter.zoom_extents()
+    if plot_save:
+        plotter.save(filepath, dpi=300)
+    plotter.show()
