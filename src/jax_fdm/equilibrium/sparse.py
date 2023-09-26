@@ -33,7 +33,8 @@ def spsolve_gpu(A, b):
     This limitation with CUDA might make a GPU sparse solve more expensive
     than a CPU sparse solve. So use this method with a pinch of salt.
     """
-    # NOTE: we can pass csc indices directly because we can!
+    # NOTE: JAX requires a csr matrix as input,
+    # but we can pass csc indices directly because we can!
     # Just kidding. This is because the matrix A is symmetric :)
 
     # TODO: Ravel and unravel this!
