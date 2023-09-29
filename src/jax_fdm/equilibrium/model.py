@@ -112,12 +112,4 @@ class EquilibriumModelSparse(EquilibriumModel):
         """
         Calculate the XYZ coordinates of the free nodes.
         """
-        return sparse_solve(q,  # differentiable parameters
-                            xyz_fixed,
-                            loads,
-                            structure.free_nodes,  # connectivity (non-differentiable)
-                            structure.connectivity_free,
-                            structure.connectivity_fixed,
-                            structure.index_array,  # precomputed data (non-differentiable)
-                            structure.diag_indices,
-                            structure.diags)
+        return sparse_solve(q, xyz_fixed, loads, structure)
