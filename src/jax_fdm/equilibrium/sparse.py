@@ -152,7 +152,7 @@ def sparse_solve_fwd(q, xyz_fixed, loads, structure):
     return xk, (xk, q, xyz_fixed, loads, structure)
 
 
-def sparse_solve_bwd(free, c_free, c_fixed, index_array, diag_indices, diags, res, g):
+def sparse_solve_bwd(res, g):
     """
     Backward pass of the sparse linear solver.
     """

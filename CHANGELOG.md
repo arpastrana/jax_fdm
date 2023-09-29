@@ -9,11 +9,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Set `spsolve_gpu_ravel` as the default sparse solver on GPUs (`spsolve_gpu`).
+- Added `spsolve_gpu_ravel` to solve the FDM linear system all at once on GPUs.
+- Implemented helper function `sparse_blockdiag_matrix` to `spsolve_gpu_ravel`.
 - Implemented `LossPlotter._print_error_stats` to report loss breakdown of error terms.
 - Added `FDNetwork.is_edge_fully_supported`. 
 
 ### Changed
 
+- Condensed signature of sparse linear solver `sparse_solve` to take a structure `EquilibriumStructure` as input, instead of explicit attributes of a structure.
+- Changed signature of `sparse_solve_bwd` to take only two arguments, where the first is the "residual" values produced on the forward pass by ``fwd``, and the second is the output cotangent with the same structure as the primal function output (`sparse_solve`).
+- Condensed signature of helper functions `sparse_solve_fwd`, `force_densities_to_A`, `force_densities_to_b` to take a structure `EquilibriumStructure` as input, instead of explicit attributes of a structure.
+- Renamed previous verison of `spsolve_gpu` to `spsolve_gpu_stack`.
 - Fixed bug with the coloring of reaction forces in `viewers/network_artist.py`.
 - Fixed bug with the coloring of reaction forces in `artists/network_artist.py`.
 
@@ -26,7 +33,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- Fixed signature bug in constraint initialization in `ConstrainedOptimizer.constraints` 
+- Fixed signature bug in constraint initialization in `ConstrainedOptimizer.constraints`.
 
 ### Removed
 
