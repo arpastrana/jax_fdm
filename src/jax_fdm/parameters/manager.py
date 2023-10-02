@@ -40,13 +40,13 @@ class ParameterManager:
                        NodeLoadYParameter,
                        NodeLoadZParameter]
 
-    def __init__(self, model, structure, parameters):
+    def __init__(self, model, parameters, structure, network):
         """
         Initialize the manager.
         """
         self.model = model  # model.structure.network holds an FD network object.
+        self.network = network
         self.structure = structure
-        self.network = structure.network
         self.parameters = parameters
 
         self._indices_opt = None
@@ -116,7 +116,7 @@ class ParameterManager:
         The starting index of the xyz coordinates of the anchor nodes of a network.
         """
         if not self._startindex_xyzfixed:
-            self._startindex_xyzfixed = self.network.number_of_edges()
+            self._startindex_xyzfixed = self.structure.num_edges
         return self._startindex_xyzfixed
 
     @property
@@ -125,7 +125,7 @@ class ParameterManager:
         The starting index of the xyz coordinates of the loads at the nodes of a network.
         """
         if not self._startindex_loads:
-            self._startindex_loads = self.network.number_of_anchors() * 3 + self.startindex_xyzfixed
+            self._startindex_loads = self.structure.num_supports * 3 + self.startindex_xyzfixed
         return self._startindex_loads
 
 # ==========================================================================
@@ -139,7 +139,7 @@ class ParameterManager:
         """
         if self._indices_fd is None:
             start = self.startindex_fd
-            stop = self.network.number_of_edges()
+            stop = self.structure.num_edges
             self._indices_fd = np.array(range(start, start + stop))
         return self._indices_fd
 
@@ -150,7 +150,7 @@ class ParameterManager:
         """
         if self._indices_xyzfixed is None:
             start = self.startindex_xyzfixed
-            stop = self.network.number_of_anchors() * 3 + start
+            stop = self.structure.num_supports * 3 + start
             self._indices_xyzfixed = np.array(range(start, stop))
         return self._indices_xyzfixed
 
@@ -161,7 +161,7 @@ class ParameterManager:
         """
         if self._indices_loads is None:
             start = self.startindex_loads
-            stop = self.network.number_of_nodes() * 3 + start
+            stop = self.structure.num_nodes * 3 + start
             self._indices_loads = np.array(range(start, stop))
         return self._indices_loads
 
@@ -271,11 +271,11 @@ class ParameterManager:
         The number of indices to shift of a collection of parameters of a given type.
         """
         if issubclass(ptype, EdgeParameter):
-            shift = self.network.number_of_edges()
+            shift = self.structure.num_edges
         elif issubclass(ptype, NodeSupportParameter):
-            shift = self.network.number_of_anchors()
+            shift = self.structure.num_supports
         elif issubclass(ptype, NodeLoadParameter):
-            shift = self.network.number_of_nodes()
+            shift = self.structure.num_nodes
 
         return shift
 
@@ -319,7 +319,7 @@ class ParameterManager:
         if self._parameters_value is None:
             values = []
             for parameter in self.parameters_ordered:
-                values.append(parameter.value(self.model, self.structure))
+                values.append(parameter.value(self.model, self.network))
             self._parameters_value = jnp.array(values, dtype=DTYPE_JAX)
 
         return self._parameters_value
@@ -354,11 +354,7 @@ class ParameterManager:
         The model parameters as a single array.
         """
         if self._parameters_model is None:
-            param_arrays = []
-            for param in self.network.parameters():
-                param_arrays.append(jnp.asarray(param, dtype=DTYPE_JAX))
-
-            q, xyz_fixed, loads = param_arrays
+            q, xyz_fixed, loads = [jnp.asarray(p, dtype=DTYPE_JAX) for p in self.network.parameters()]
             self._parameters_model = jnp.concatenate((q,
                                                       jnp.ravel(xyz_fixed, order="F"),
                                                       jnp.ravel(loads, order="F")))
@@ -393,7 +389,8 @@ class ParameterManager:
         # unsort params opt
         params_opt = params_opt[self.indices_groups]
         params_opt = params_opt[self.indices_opt_sort]
-        params = combine_parameters((params_opt, self.parameters_frozen), adef=self.indices_optfrozen)
+        params = combine_parameters((params_opt, self.parameters_frozen),
+                                    adef=self.indices_optfrozen)
         q, xyz_fixed, loads = jnp.split(params, self.indices_fdm)
 
         return q, jnp.reshape(xyz_fixed, (-1, 3), order="F"), jnp.reshape(loads, (-1, 3), order="F")
