@@ -1,348 +1,305 @@
 import numpy as np
 
+import jax
 import jax.numpy as jnp
 
-from compas.datastructures import network_find_cycles
+import equinox as eqx
 
 from compas.numerical import connectivity_matrix
-from compas.numerical import face_matrix
 
 from jax.experimental.sparse import BCOO
 from jax.experimental.sparse import CSC
 
+from jax_fdm import DTYPE_INT_JAX
+from jax_fdm import DTYPE_INT_NP
+
 
 # ==========================================================================
-# Structure
+# Mixins
 # ==========================================================================
 
-class EquilibriumStructure:
-    """
-    An equilibrium structure.
-    """
-    def __init__(self, network):
-        self._network = network
-
-        self._connectivity = None
-        self._connectivity_free = None
-        self._connectivity_fixed = None
-        self._connectivity_faces = None
-
-        self._connectivity_scipy = None
-
-        self._edges = None
-        self._nodes = None
-        self._faces = None
-
-        self._num_nodes = None
-        self._num_edges = None
-        self._num_faces = None
-
-        self._free_nodes = None
-        self._fixed_nodes = None
-        self._freefixed_nodes = None
-
-        self._node_index = None
-        self._edge_index = None
-        self._anchor_index = None
-        self._face_node_index = None
-
-        self.init()
-
-    def init(self):
-        """
-        Warm start properties.
-
-        Otherwise we get a leakage error:
-
-        jax._src.errors.UnexpectedTracerError: Encountered an unexpected tracer.
-        A function transformed by JAX had a side effect, allowing for a reference to an
-        intermediate value with type float64[611] wrapped in a DynamicJaxprTracer
-        to escape the scope of the transformation.
-        """
-        self.connectivity
-        self.connectivity_free
-        self.connectivity_fixed
-        self.free_nodes
-        self.fixed_nodes
-        self.freefixed_nodes
-
-    @classmethod
-    def from_network(cls, network):
-        """
-        Create a structure from a network.
-        """
-        return cls(network)
-
-    @property
-    def network(self):
-        """
-        A COMPAS network.
-        """
-        return self._network
-
-    @property
-    def edges(self):
-        """
-        A list with the edge keys of the structure.
-        """
-        if not self._edges:
-            self._edges = list(self.network.edges())
-        return self._edges
-
-    @property
-    def nodes(self):
-        """
-        A list with the node keys of the structure.
-        """
-        if not self._nodes:
-            self._nodes = list(self.network.nodes())
-        return self._nodes
-
-    @property
-    def faces(self):
-        """
-        A list with the face keys of the structure.
-        """
-        if not self._faces:
-            self._faces = [cycle[:-1] for cycle in network_find_cycles(self.network)[1:]]
-        return self._faces
-
-    @property
-    def num_edges(self):
-        """
-        A list with the edge keys of the structure.
-        """
-        if not self._num_edges:
-            self._num_edges = len(self.edges)
-        return self._num_edges
-
-    @property
-    def num_nodes(self):
-        """
-        A list with the node keys of the structure.
-        """
-        if not self._num_nodes:
-            self._num_nodes = len(self.nodes)
-        return self._num_nodes
-
-    @property
-    def num_faces(self):
-        """
-        A list with the face keys of the structure.
-        """
-        if not self._num_faces:
-            self._num_faces = len(self.faces)
-        return self._num_faces
-
-    @property
-    def face_node_index(self):
-        """
-        A list with the face keys of the structure.
-        """
-        if not self._face_node_index:
-            face_index = []
-            for face in self.faces:
-                face_index.append([self.node_index[node] for node in face])
-            self._face_node_index = face_index
-        return self._face_node_index
-
+class IndexingMixins:
     @property
     def node_index(self):
         """
         A dictionary between node keys and their enumeration indices.
         """
-        if not self._node_index:
-            self._node_index = self.network.key_index()
-        return self._node_index
-
-    @property
-    def anchor_index(self):
-        """
-        A dictionary between node anchor keys and their enumeration indices.
-        """
-        if not self._anchor_index:
-            self._anchor_index = {key: index for index, key in enumerate(self.network.nodes_anchors())}
-        return self._anchor_index
+        return {node.item(): index for index, node in enumerate(self.nodes)}
 
     @property
     def edge_index(self):
         """
         A dictionary between edge keys and their enumeration indices.
         """
-        if not self._edge_index:
-            self._edge_index = self.network.uv_index()
-        return self._edge_index
+        return {(u.item(), v.item()): index for index, (u, v) in enumerate(self.edges)}
 
     @property
-    def connectivity(self):
+    def edges_indexed(self):
         """
-        The connectivity of the network encoded as an ncidence matrix.
+        An iterable with the edge pointing to the indices of the node keys.
         """
-        if self._connectivity is None:
-            node_idx = self.node_index
-            edges = [(node_idx[u], node_idx[v]) for u, v in self.network.edges()]
+        node_index = self.node_index
 
-            # NOTE: Dense array
-            # Currently there is a JAX bug that prevents us from using the sparse format with the connectivity matrix.
-            # When `todense()` is removed from the next line, we get the following error:
-            # TypeError: Value Zero(ShapedArray(float64[193,3])) with type <class 'jax._src.ad_util.Zero'> is not a valid JAX type
+        for u, v in self.edges:
+            yield node_index[u.item()], node_index[v.item()]
 
-            con = connectivity_matrix(edges, "array")
-            self._connectivity = jnp.asarray(con)
 
-        return self._connectivity
+# ==========================================================================
+# Graphs
+# ==========================================================================
+
+class Graph(eqx.Module, IndexingMixins):
+    """
+    A graph.
+    """
+    nodes: np.ndarray
+    edges: np.ndarray
+    connectivity: jax.Array
+
+    def __init__(self, nodes, edges):
+        self.nodes = nodes
+        self.edges = edges
+        self.connectivity = self._connectivity_matrix()
+
+    @property
+    def num_nodes(self):
+        """
+        The number of nodes.
+        """
+        return self.nodes.size
+
+    @property
+    def num_edges(self):
+        """
+        The number of edges.
+        """
+        return self.edges.shape[0]
+
+    def _connectivity_matrix(self):
+        """
+        The connectivity matrix between edges and nodes.
+        """
+        edges_indexed = list(self.edges_indexed)
+
+        return jnp.asarray(connectivity_matrix(edges_indexed, "array"))
+
+
+class GraphSparse(Graph):
+    """
+    A sparse graph.
+    """
+    def _connectivity_matrix(self):
+        """
+        The connectivity matrix between edges and nodes in JAX format.
+
+        Notes
+        -----
+        This currently is a dense array, but it should be a sparse one.
+
+        How come?
+
+        Currently there is a JAX bug that prevents us from using the
+        sparse format with the connectivity matrix:
+
+          C =  BCOO.from_scipy_sparse(self.connectivity_scipy)
+
+        When not using a dense array from the next line, we get the
+        following error:
+
+          TypeError: float() argument must be a string or a number, not 'Zero'
+
+        Therefore, we use the connectivity matrix method from the parent
+        class, which outputs a dense array.
+
+        However, submatrices connectivity_free and connectivity_fixed
+        are correctly initialized and used as sparse matrices.
+        """
+        return super()._connectivity_matrix()
 
     @property
     def connectivity_scipy(self):
         """
-        The connectivity of the network encoded as an incidence matrix in CSC format.
+        The connectivity matrix between edges and nodes in SciPy CSC format.
         """
-        if self._connectivity_scipy is None:
-            node_idx = self.node_index
-            edges = [(node_idx[u], node_idx[v]) for u, v in self.network.edges()]
-            # We should get a CSC representation since we are interested in slicing columns
-            self._connectivity_scipy = connectivity_matrix(edges, "csc")
+        # TODO: Refactor GraphSparse to return a JAX sparse matrix instead
+        edges_indexed = list(self.edges_indexed)
 
-        return self._connectivity_scipy
-
-    @property
-    def connectivity_fixed(self):
-        """
-        The connectivity of the fixed nodes of the network.
-        """
-        if self._connectivity_fixed is None:
-            self._connectivity_fixed = self.connectivity[:, self.fixed_nodes]
-
-        return self._connectivity_fixed
-
-    @property
-    def connectivity_free(self):
-        """
-        The connectivity of the free nodes of the network.
-        """
-        if self._connectivity_free is None:
-            self._connectivity_free = self.connectivity[:, self.free_nodes]
-
-        return self._connectivity_free
-
-    @property
-    def connectivity_faces(self):
-        """
-        The connectivity of the face cycles of a network encoded as as matrix.
-        """
-        if self._connectivity_faces is None:
-            self._connectivity_faces = face_matrix(self.face_node_index, rtype="array")
-        return self._connectivity_faces
-
-    @property
-    def free_nodes(self):
-        """
-        Returns a list with the indices of the anchored nodes.
-        """
-        if not self._free_nodes:
-            self._free_nodes = [self.node_index[node] for node in self.network.nodes_free()]
-        return self._free_nodes
-
-    @property
-    def fixed_nodes(self):
-        """
-        Returns a list with the indices of the anchored nodes.
-        """
-        if not self._fixed_nodes:
-            self._fixed_nodes = [self.node_index[node] for node in self.network.nodes_fixed()]
-        return self._fixed_nodes
-
-    @property
-    def freefixed_nodes(self):
-        """
-        A list with the node keys of all the nodes sorted by their node index.
-        """
-        # TODO: this method must be refactored to be more transparent.
-        if not self._freefixed_nodes:
-            freefixed_nodes = self.free_nodes + self.fixed_nodes
-            indices = {node: index for index, node in enumerate(freefixed_nodes)}
-            sorted_indices = []
-            for _, index in sorted(indices.items(), key=lambda item: item[0]):
-                sorted_indices.append(index)
-            self._freefixed_nodes = tuple(sorted_indices)
-
-        return self._freefixed_nodes
+        return connectivity_matrix(edges_indexed, "csc")
 
 
 # ==========================================================================
 # Structure
 # ==========================================================================
 
-class EquilibriumStructureSparse(EquilibriumStructure):
+class EquilibriumStructure(Graph):
     """
-    An equilibrium structure.
+    A structure.
     """
-    def __init__(self, network):
-        super().__init__(network)
+    supports: np.ndarray
 
-        # Do some precomputation to be able to construct the lhs matrix through indexing
-        c_free_csc = self.connectivity_scipy[:, self.free_nodes]
+    connectivity_free: jax.Array
+    connectivity_fixed: jax.Array
+
+    nodes_indices_free: jax.Array
+    nodes_indices_fixed: jax.Array
+    nodes_indices_freefixed: jax.Array
+
+    def __init__(self, nodes, edges, supports):
+        super().__init__(nodes, edges)
+
+        self.supports = supports
+
+        self.nodes_indices_free = self._nodes_indices_free()
+        self.nodes_indices_fixed = self._nodes_indices_fixed()
+        self.nodes_indices_freefixed = self._nodes_indices_freefixed()
+
+        self.connectivity_free = self._connectivity_free()
+        self.connectivity_fixed = self._connectivity_fixed()
+
+    @classmethod
+    def from_network(cls, network):
+        """
+        Create a structure from a force density network.
+        """
+        nodes = list(network.nodes())
+        edges = list(network.edges())
+
+        supports = []
+        for node in nodes:
+            flag = 0.0
+            if network.is_node_support(node):
+                flag = 1.0
+            supports.append(flag)
+
+        nodes = np.asarray(nodes, dtype=DTYPE_INT_NP)
+        edges = np.asarray(edges, dtype=DTYPE_INT_NP)
+        supports = np.asarray(supports, dtype=DTYPE_INT_NP)
+
+        return cls(nodes, edges, supports)
+
+    @property
+    def num_supports(self):
+        """
+        The number of supports.
+        """
+        return jnp.count_nonzero(self.supports)
+
+    @property
+    def num_free(self):
+        """
+        The number of supports.
+        """
+        return self.num_nodes - self.num_supports
+
+    def _connectivity_free(self):
+        """
+        The connectivity matrix between edges and nodes.
+        """
+        return self.connectivity[:, self.nodes_indices_free]
+
+    def _connectivity_fixed(self):
+        """
+        The connectivity matrix between edges and nodes.
+        """
+        return self.connectivity[:, self.nodes_indices_fixed]
+
+    def _nodes_indices_free(self):
+        """
+        The indices of the unsupported nodes in the structure.
+        """
+        indices = jnp.flatnonzero(self.supports == 0, size=self.num_free)
+
+        return indices
+
+    def _nodes_indices_fixed(self):
+        """
+        The indices of the unsupported nodes in the structure.
+        """
+        indices = jnp.flatnonzero(self.supports, size=self.num_supports)
+
+        return indices
+
+    def _nodes_indices_freefixed(self):
+        """
+        A list with the node keys of all the nodes sorted by their node index.
+        """
+        # TODO: this method must be refactored to be more transparent.
+        freefixed_indices = jnp.concatenate([self.nodes_indices_free,
+                                             self.nodes_indices_fixed])
+
+        indices = {node.item(): index for index, node in enumerate(freefixed_indices)}
+        sorted_indices = []
+        for _, index in sorted(indices.items(), key=lambda item: item[0]):
+            sorted_indices.append(index)
+
+        return jnp.asarray(sorted_indices, dtype=DTYPE_INT_JAX)
+
+
+# ==========================================================================
+# Sparse structure
+# ==========================================================================
+
+class EquilibriumStructureSparse(EquilibriumStructure, GraphSparse):
+    """
+    A sparse structure.
+    """
+    index_array: jax.Array
+    diag_indices: jax.Array
+    diags: jax.Array
+
+    def __init__(self, nodes, edges, supports):
+        super().__init__(nodes, edges, supports)
+
+        # Do some precomputation to be able to construct
+        # the lhs matrix through indexing
+        c_free_csc = self.connectivity_scipy[:, self.nodes_indices_free]
         index_array = self._get_sparse_index_array(c_free_csc)
         self.index_array = index_array
 
         # Indices of data corresponding to diagonal.
-        # With this array we can just index directly into the CSC.data array to refer to the diagonal entries.
+        # With this array we can just index directly into the
+        # CSC.data array to refer to the diagonal entries.
         self.diag_indices = self._get_sparse_diag_indices(index_array)
 
-        # Prepare the array D st when D.T @ q we get the diagonal elements of matrix.
+        # Prepare the array D st when D.T @ q we get the diagonal elements of matrix
         self.diags = self._get_sparse_diag_data(c_free_csc)
 
-    @property
-    def connectivity_fixed(self):
+    # @property
+    def _connectivity_free(self):
         """
-        The connectivity of the fixed nodes of the network.
+        The connectivity matrix between edges and nodes.
         """
-        if self._connectivity_fixed is None:
-            con_fixed = BCOO.from_scipy_sparse(self.connectivity_scipy[:, self.fixed_nodes])
-            self._connectivity_fixed = con_fixed
+        return BCOO.from_scipy_sparse(self.connectivity_scipy[:, self.nodes_indices_free])
 
-        return self._connectivity_fixed
-
-    @property
-    def connectivity_free(self):
+    # @property
+    def _connectivity_fixed(self):
         """
-        The connectivity of the free nodes of the network.
+        The connectivity matrix between edges and nodes.
         """
-        if self._connectivity_free is None:
-            con_free = BCOO.from_scipy_sparse(self.connectivity_scipy[:, self.free_nodes])
-            self._connectivity_free = con_free
-
-        return self._connectivity_free
+        return BCOO.from_scipy_sparse(self.connectivity_scipy[:, self.nodes_indices_fixed])
 
     @staticmethod
     def _get_sparse_index_array(c_free_csc):
         """
-        Create an index array such that the off-diagonals can index into the force density vector.
+        Create an index array such that the off-diagonals can index into the
+        force density vector.
 
         This array is used to create the off-diagonal entries of the lhs matrix.
+
+        # NOTE: The input matrix must be a scipy sparse array!
         """
-        force_density_modified_c_free_csc = c_free_csc.copy()
-        force_density_modified_c_free_csc.data *= np.take(np.arange(c_free_csc.shape[0]) + 1, c_free_csc.indices)
-        index_array = -(c_free_csc.T @ force_density_modified_c_free_csc)
+        fd_mod_c_free_csc = c_free_csc.copy()
+        fd_mod_c_free_csc.data *= np.take(np.arange(c_free_csc.shape[0]) + 1,
+                                          c_free_csc.indices)
+        index_array = -(c_free_csc.T @ fd_mod_c_free_csc)
 
         # The diagonal entries should be set to 0 so that it indexes
         # into a valid entry, but will later be overwritten.
         index_array.setdiag(0)
+        index_array = index_array.astype(int)
 
-        return index_array.astype(int)
-
-    @staticmethod
-    def _get_sparse_diag_data(c_free_csc):
-        """
-        The diagonal of the lhs matrix is the sum of force densities for
-        each outgoing/incoming edge on the node.
-
-        We create the `diags` matrix such that when we multiply it with the
-        force density vector we get the diagonal.
-        """
-        diags_data = jnp.ones_like(c_free_csc.data)
-
-        return CSC((diags_data, c_free_csc.indices, c_free_csc.indptr), shape=c_free_csc.shape)
+        return CSC((index_array.data, index_array.indices, index_array.indptr),
+                   shape=index_array.shape)
 
     @staticmethod
     def _get_sparse_diag_indices(csc):
@@ -356,3 +313,173 @@ class EquilibriumStructureSparse(EquilibriumStructure):
             all_indices.append(ind_loc + csc.indptr[i])
 
         return jnp.concatenate(all_indices)
+
+    @staticmethod
+    def _get_sparse_diag_data(c_free_csc):
+        """
+        The diagonal of the lhs matrix is the sum of force densities for
+        each outgoing/incoming edge on the node.
+
+        We create the `diags` matrix such that when we multiply it with the
+        force density vector we get the diagonal.
+        """
+        diags_data = jnp.ones_like(c_free_csc.data)
+
+        return CSC((diags_data, c_free_csc.indices, c_free_csc.indptr),
+                   shape=c_free_csc.shape)
+
+
+# ==========================================================================
+# Mesh
+# ==========================================================================
+
+# class Mesh(Graph):
+#     nodes: jax.Array
+#     faces: jax.Array
+#     edges: jax.Array
+
+#     def __init__(self, nodes, faces, edges):
+#         self.nodes = nodes
+#         self.faces = faces
+#         self.edges = edges
+#         # self.edges = self._edges_from_faces(faces)
+
+#     @property
+#     def num_faces(self):
+#         """
+#         The number of faces.
+#         """
+#         return self.faces.shape[0]
+
+#     @property
+#     def face_matrix(self):
+#         """
+#         The connectivity matrix between faces and nodes.
+#         """
+#         return jnp.asarray(face_matrix(self.faces, "array"), dtype=DTYPE_JAX)
+
+#     @staticmethod
+#     def _edges_from_faces(faces):
+#         """
+#         The the edges of the mesh.
+
+#         Edges have no topological meaning on a mesh and are used only to
+#         store data.
+#         The edges are calculated by first looking at all the halfedges of the
+#         faces of the mesh, and then only storing the unique halfedges.
+#         """
+#         # NOTE: This method is producing results that do not match COMPAS'
+#         halfedges = []
+#         for face_vertices in faces:
+#             for u, v in pairwise(face_vertices + face_vertices[:1]):
+#                 halfedge = (u.item(), v.item())
+#                 halfedges.append(halfedge)
+
+#         edges = []
+#         visited = set()
+#         for u, v in halfedges:
+#             if (u, v) in visited or (v, u) in visited:
+#                 continue
+#             edge = (u, v)
+#             visited.add(edge)
+#             edges.append(list(edge))
+
+#         return jnp.asarray(edges, dtype=DTYPE_INT_JAX)
+
+
+# class MeshSparse(Mesh):
+#     @property
+#     def face_matrix(self):
+#         """
+#         The connectivity matrix between faces and nodes.
+#         """
+#         F = connectivity_matrix(self.faces, "csc")
+
+#         return BCOO.from_scipy_sparse(F)
+
+
+# ==========================================================================
+# Main
+# ==========================================================================
+
+if __name__ == "__main__":
+
+    from compas.datastructures import Network as CNetwork
+    from compas.datastructures import Mesh as CMesh
+    from compas.utilities import pairwise
+    from jax import grad
+
+
+    num_nodes = 5
+    nodes = list(range(num_nodes))
+    edges = [edge for edge in pairwise(nodes)]
+
+    nodes = jnp.array(nodes, dtype=jnp.int64)
+    edges = jnp.array(edges, dtype=jnp.int64)
+
+    graph = Graph(nodes, edges)
+    supports = np.zeros_like(nodes)
+    print(nodes)
+    print(supports)
+    supports[0] = 1
+    supports[-1] = 1
+    supports = jnp.asarray(supports)
+    print(supports)
+    structure = EquilibriumStructure(nodes,
+                                     edges,
+                                     supports)
+    print(structure)
+    print(structure.supports)
+    assert structure.num_supports == 2
+    print(structure.nodes_free)
+    print(structure.nodes_fixed)
+    print(structure.nodes_freefixed)
+
+    # print(graph.nodes)
+    # print(graph.edges)
+    # print(graph.num_nodes)
+    # print(graph.num_edges)
+    # print(graph.connectivity_matrix)
+
+    graph_sparse = GraphSparse(nodes, edges)
+
+    # print(graph_sparse.nodes)
+    # print(graph_sparse.edges)
+    # print(graph_sparse.num_nodes)
+    # print(graph_sparse.num_edges)
+
+    assert jnp.allclose(graph_sparse.connectivity_matrix.todense(),
+                        graph.connectivity_matrix)
+
+    # cmesh = CMesh.from_meshgrid(2.0, 2)
+    # print(cmesh)
+
+    # cmesh_faces = [cmesh.face_vertices(fkey) for fkey in cmesh.faces()]
+    # cmesh_faces[0].append(-1)
+    # mesh = Mesh(jnp.asarray(list(cmesh.vertices())),
+    #             jnp.asarray(cmesh_faces),
+    #             jnp.asarray(list(cmesh.edges())))
+
+    # print(mesh)
+
+    # print(mesh.edges)
+    # print(list(cmesh.edges()))
+
+
+    # def f(g):
+    #     return jnp.sum(jnp.square(g.nodes - 1.0))
+
+    # y = f(graph)
+    # print(y)
+
+    # from jax import jit
+    # jf = jit(f)
+    # z = jf(graph)
+    # assert y == z
+    # print(y, z)
+
+    # gjf = jit(grad(f))
+    # w = gjf(graph)
+    # print("w", w)
+
+    print("All good, cowboy!")
