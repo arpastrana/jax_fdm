@@ -10,7 +10,6 @@ from scipy.sparse import csc_matrix
 from scipy.sparse.linalg import spsolve as spsolve_scipy
 
 from jax.experimental.sparse import CSC
-from jax.experimental.sparse import CSR
 from jax.experimental.sparse.linalg import spsolve as spsolve_jax
 
 
@@ -36,7 +35,7 @@ def spsolve_gpu_ravel(A, b):
     This limitation with CUDA might make a GPU sparse solve more expensive
     than a CPU sparse solve. So use this method with a pinch of salt.
     """
-    # NOTE: we can pass CSC indices directly because we can!
+    # NOTE: we can pass CSC indices directly to the JAX solver because we can!
     # Just kidding. This is because the matrix A is symmetric :)
     A = sparse_blockdiag_matrix(A, 3)
     b = jnp.ravel(b, "F")
@@ -149,14 +148,14 @@ def sparse_solve_fwd(q, xyz_fixed, loads, structure):
     """
     xk = sparse_solve(q, xyz_fixed, loads, structure)
 
-    return xk, (xk, q, xyz_fixed, loads, structure)
+    return xk, (xk, q, xyz_fixed, loads)
 
 
-def sparse_solve_bwd(res, g):
+def sparse_solve_bwd(structure, res, g):
     """
     Backward pass of the sparse linear solver.
     """
-    xk, q, xyz_fixed, loads, structure = res
+    xk, q, xyz_fixed, loads = res
 
     # function that translates parameters into LHS matrix in CSC format
     A = force_densities_to_A(q, structure)
@@ -167,12 +166,12 @@ def sparse_solve_bwd(res, g):
 
     # the implicit constraint function for implicit differentiation
     def residual_fn(params):
-        q, xyz_fixed, loads, structure = params
+        q, xyz_fixed, loads = params
         A = force_densities_to_A(q, structure)
         b = force_densities_to_b(q, loads, xyz_fixed, structure)
         return b - A @ xk
 
-    params = (q, xyz_fixed, loads, structure)
+    params = (q, xyz_fixed, loads)
 
     # Call vjp of residual_fn to compute gradient wrt params
     params_bar = jax.vjp(residual_fn, params)[1](lam)[0]
@@ -208,7 +207,7 @@ def force_densities_to_b(q, loads, xyz_fixed, structure):
     """
     c_free = structure.connectivity_free
     c_fixed = structure.connectivity_fixed
-    free = structure.free_nodes
+    free = structure.nodes_indices_free
 
     b = loads[free, :] - c_free.T @ (q[:, None] * (c_fixed @ xyz_fixed))
 
