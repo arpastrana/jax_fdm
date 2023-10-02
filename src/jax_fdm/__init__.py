@@ -41,6 +41,9 @@ __all__ = ["HOME", "DATA", "DOCS", "TEMP"]
 DTYPE_NP = np.float64
 DTYPE_JAX = jnp.float64
 
+DTYPE_INT_NP = jnp.int32
+DTYPE_INT_JAX = jnp.int32
+
 # this only works on startup!
 if DTYPE_JAX == jnp.float64 or DTYPE_NP == np.float64:
     from jax.config import config
