@@ -160,13 +160,25 @@ The length of the arch segments also varies within the prescribe bounds to minim
 
 If you found this library to be useful in academic or industry work, please consider 1) starring the project on Github, and 2) citing it:
 
+``` bibtex
+@inproceedings{
+pastrana_jaxfdm_2023,
+title={{JAX}~{FDM}: A differentiable solver for inverse form-finding},
+author={Rafael Pastrana and Deniz Oktay and Ryan P. Adams and Sigrid Adriaenssens},
+booktitle={ICML 2023 Workshop on Differentiable Almost Everything: Differentiable Relaxations, Algorithms, Operators, and Simulators},
+year={2023},
+url={https://openreview.net/forum?id=Uu9OPgh24d}
+}
+```
+
 ```bibtex
-@software{pastrana_jaxfdm,
-          title={{JAX~FDM}: {A}uto-differentiable and hardware-accelerated force density method},
-          author={Rafael Pastrana and Deniz Oktay and Ryan P. Adams and Sigrid Adriaenssens},
-          year={2023},
-          doi={10.5281/zenodo.7258292},
-          url={https://github.com/arpastrana/jax\_fdm}}
+@software{
+pastrana_jaxfdm_software_2023,
+title={{JAX~FDM}: {A}uto-differentiable and hardware-accelerated force density method},
+author={Rafael Pastrana and Deniz Oktay and Ryan P. Adams and Sigrid Adriaenssens},
+year={2023},
+doi={10.5281/zenodo.7258292},
+url={https://github.com/arpastrana/jax\_fdm}}
 ```
 
 ## Acknowledgements
