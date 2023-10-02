@@ -83,6 +83,7 @@ class Optimizer:
     def problem(self,
                 model,
                 structure,
+                network,
                 loss,
                 parameters=None,
                 constraints=None,
@@ -94,9 +95,9 @@ class Optimizer:
         """
         # optimization parameters
         if not parameters:
-            parameters = [EdgeForceDensityParameter(edge) for edge in structure.edges]
+            parameters = [EdgeForceDensityParameter(edge) for edge in network.edges()]
 
-        self.pm = ParameterManager(model, structure, parameters)
+        self.pm = ParameterManager(model, parameters, structure, network)
         x = self.parameters_value()
 
         # message
