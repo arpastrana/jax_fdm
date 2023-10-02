@@ -3,3 +3,4 @@ compas
 compas_singular
 compas-notebook
 scipy
+equinox
