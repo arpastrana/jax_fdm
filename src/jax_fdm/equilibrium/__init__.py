@@ -1,6 +1,7 @@
 from .state import *  # noqa F403
 from .structure import *  # noqa F403
 from .model import *  # noqa F403
+from .sparse import *  # noqa F403
 from .fdm import *  # noqa F403
 
 

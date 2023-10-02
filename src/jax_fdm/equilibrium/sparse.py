@@ -1,8 +1,6 @@
 """
 NOTE: Sparse solver does not support forward mode auto-differentiation yet.
 """
-from functools import partial
-
 import jax
 import jax.numpy as jnp
 
@@ -37,7 +35,7 @@ def spsolve_gpu_ravel(A, b):
     """
     # NOTE: we can pass CSC indices directly to the JAX solver because we can!
     # Just kidding. This is because the matrix A is symmetric :)
-    A = sparse_blockdiag_matrix(A, 3)
+    A = blockdiag_matrix_sparse(A, 3)
     b = jnp.ravel(b, "F")
     X = spsolve_jax(A.data, A.indices, A.indptr, b)
 
@@ -124,15 +122,11 @@ spsolve = register_sparse_solver(solvers)
 # Define sparse linear solver
 # ==========================================================================
 
-# @jax.custom_vjp
-@partial(jax.custom_vjp, nondiff_argnums=(3,))
-def sparse_solve(q, xyz_fixed, loads, structure):
+@jax.custom_vjp
+def sparse_solve(A, b):
     """
     The sparse linear solver.
     """
-    A = force_densities_to_A(q, structure)
-    b = force_densities_to_b(q, loads, xyz_fixed, structure)
-
     return spsolve(A, b)
 
 
@@ -140,25 +134,22 @@ def sparse_solve(q, xyz_fixed, loads, structure):
 # Forward and backward passes
 # ==========================================================================
 
-def sparse_solve_fwd(q, xyz_fixed, loads, structure):
+def sparse_solve_fwd(A, b):
     """
     Forward pass of the sparse linear solver.
 
     Call the linear solve and save parameters and solution for the backward pass.
     """
-    xk = sparse_solve(q, xyz_fixed, loads, structure)
+    xk = sparse_solve(A, b)
 
-    return xk, (xk, q, xyz_fixed, loads)
+    return xk, (xk, A, b)
 
 
-def sparse_solve_bwd(structure, res, g):
+def sparse_solve_bwd(res, g):
     """
     Backward pass of the sparse linear solver.
     """
-    xk, q, xyz_fixed, loads = res
-
-    # function that translates parameters into LHS matrix in CSC format
-    A = force_densities_to_A(q, structure)
+    xk, A, b = res
 
     # Solve adjoint system
     # A.T @ xk_bar = -g
@@ -166,12 +157,10 @@ def sparse_solve_bwd(structure, res, g):
 
     # the implicit constraint function for implicit differentiation
     def residual_fn(params):
-        q, xyz_fixed, loads = params
-        A = force_densities_to_A(q, structure)
-        b = force_densities_to_b(q, loads, xyz_fixed, structure)
+        A, b = params
         return b - A @ xk
 
-    params = (q, xyz_fixed, loads)
+    params = (A, b)
 
     # Call vjp of residual_fn to compute gradient wrt params
     params_bar = jax.vjp(residual_fn, params)[1](lam)[0]
@@ -180,45 +169,10 @@ def sparse_solve_bwd(structure, res, g):
 
 
 # ==========================================================================
-# Force density helpers
-# ==========================================================================
-
-def force_densities_to_A(q, structure):
-    """
-    Computes the LHS matrix in CSC format from a vector of force densities.
-    """
-    index_array = structure.index_array
-    diag_indices = structure.diag_indices
-    diags = structure.diags
-
-    nondiags_data = -q[index_array.data - 1]
-    nondiags = CSC((nondiags_data, index_array.indices, index_array.indptr),
-                   shape=index_array.shape)
-    diag_fd = diags.T @ q  # sum of force densities for each node
-
-    nondiags.data = nondiags.data.at[diag_indices].set(diag_fd)
-
-    return nondiags
-
-
-def force_densities_to_b(q, loads, xyz_fixed, structure):
-    """
-    Computes the RHS matrix in dense format from a vector of force densities.
-    """
-    c_free = structure.connectivity_free
-    c_fixed = structure.connectivity_fixed
-    free = structure.nodes_indices_free
-
-    b = loads[free, :] - c_free.T @ (q[:, None] * (c_fixed @ xyz_fixed))
-
-    return b
-
-
-# ==========================================================================
 # Sparse matrix helpers
 # ==========================================================================
 
-def sparse_blockdiag_matrix(A, num=2, format=CSC):
+def blockdiag_matrix_sparse(A, num=2, format=CSC):
     """
     Build a block diagonal sparse matrix in the input format by repeating
     a square sparse matrix a prescribed number of times.
