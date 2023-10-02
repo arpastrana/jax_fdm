@@ -1,5 +1,7 @@
 import numpy as np
+import jax.numpy as jnp
 
+from jax_fdm import DTYPE_JAX
 from jax_fdm import DTYPE_NP
 
 from jax_fdm.equilibrium import EquilibriumModel
@@ -63,7 +65,15 @@ def constrained_fdm(network,
     model = model_from_network(network, sparse)
     structure = structure_from_network(network, sparse)
 
-    opt_problem = optimizer.problem(model, structure, loss, parameters, constraints, maxiter, tol, callback)
+    opt_problem = optimizer.problem(model,
+                                    structure,
+                                    network,
+                                    loss,
+                                    parameters,
+                                    constraints,
+                                    maxiter,
+                                    tol,
+                                    callback)
     opt_params = optimizer.solve(opt_problem)
     params = optimizer.parameters_fdm(opt_params)
 
@@ -118,10 +128,10 @@ def network_updated(network, eq_state):
 def network_update(network, eq_state):
     """
     Update in-place the attributes of a network with an equilibrium state.
-
-    TODO: to be extra sure, the node-index and edge-index mappings should be handled
-    by EquilibriumModel/EquilibriumStructure
     """
+    # TODO: to be extra sure, the node-index and edge-index mappings should
+    # be handled by EquilibriumModel/EquilibriumStructure
+
     xyz = eq_state.xyz.tolist()
     lengths = eq_state.lengths.tolist()
     residuals = eq_state.residuals.tolist()
