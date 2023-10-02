@@ -9,6 +9,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Implemented `EquilibriumModelSparse.stiffness_matrix`.
+- Implemented `EquilibriumModel.force_matrix`.
+- Implemented `EquilibriumModel.stiffness_matrix`.
+- Implemented `jax_fdm.equilibrium.Graph`.
+- Implemented `jax_fdm.equilibrium.GraphSparse`.
+- Added explicit array integer types in `__init__`: `DTYPE_INT_NP` and `DTYPE_INT_JAX`
 - Set `spsolve_gpu_ravel` as the default sparse solver on GPUs (`spsolve_gpu`).
 - Added `spsolve_gpu_ravel` to solve the FDM linear system all at once on GPUs.
 - Implemented helper function `sparse_blockdiag_matrix` to `spsolve_gpu_ravel`.
@@ -17,14 +23,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Decoupled `sparse_solver` from any force density calculations. Now, it is a simpler solver that only takes as inputs the LHS matrix `A` and the RHS matrix `b`, and thus, it could be used to potentially solve any sparse linear system of equations. Its signature now is analogous to that of `jax.numpy.linalg.solve`.
+- Overhauled `EquilibriumStructure` and `EquilibirumStructureSparse`. They are subclasses `equinox.Module`, and now they have little idea of what an `FDNetwork` is.
+- `Optimizer.problem` takes an `FDNetwork` as input.
+- Changed `ParameterManager` to require an `FDNetwork` as argument at initialization.
+- Changed `Parameter.value` signature. Gets value from `network` directly, not from `structure.network`
 - Condensed signature of sparse linear solver `sparse_solve` to take a structure `EquilibriumStructure` as input, instead of explicit attributes of a structure.
-- Changed signature of `sparse_solve_bwd` to take only two arguments, where the first is the "residual" values produced on the forward pass by ``fwd``, and the second is the output cotangent with the same structure as the primal function output (`sparse_solve`).
-- Condensed signature of helper functions `sparse_solve_fwd`, `force_densities_to_A`, `force_densities_to_b` to take a structure `EquilibriumStructure` as input, instead of explicit attributes of a structure.
+- Changed signature of `sparse_solve_bwd` to take two arguments, where the first is the "residual" values produced on the forward pass by ``fwd``, and the second is the output cotangent with the same structure as the primal function output (`sparse_solve`).
+- Condensed signature of helper functions `sparse_solve_fwd` to take matrices `A` and `b` as inputs, instead of explicit attributes of the FDM and of a `EquilibriumStructure`.
 - Renamed previous verison of `spsolve_gpu` to `spsolve_gpu_stack`.
 - Fixed bug with the coloring of reaction forces in `viewers/network_artist.py`.
 - Fixed bug with the coloring of reaction forces in `artists/network_artist.py`.
 
 ### Removed
+
+- Removed `sparse.force_densities_to_A`. Superseded by `EquilibriumModelSparse.stiffness_matrix`. 
+- Removed `sparse.force_densities_to_b`. Superseded by `EquilibriumModel.force_matrix`.
+- Removed partial jitting from `Loss.__call__`
 
 
 ## [0.7.1] 2023-05-08
