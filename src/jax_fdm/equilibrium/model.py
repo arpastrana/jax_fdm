@@ -1,8 +1,4 @@
-from functools import partial
-
 import jax.numpy as jnp
-
-from jax import jit
 
 from jax_fdm.equilibrium.state import EquilibriumState
 
@@ -21,6 +17,8 @@ class EquilibriumModel:
     def from_network(cls, network):
         """
         Create an equilibrium model from a force density network.
+
+        This method exists primarily for compatibility with older versions of the library.
         """
         return cls()
 
@@ -65,7 +63,7 @@ class EquilibriumModel:
         Calculate the XYZ coordinates of the free nodes.
         """
         # shorthand
-        free = structure.free_nodes
+        free = structure.nodes_indices_free
         c_fixed = structure.connectivity_fixed
         c_free = structure.connectivity_free
 
@@ -74,14 +72,13 @@ class EquilibriumModel:
 
         return jnp.linalg.solve(A, b)
 
-    @partial(jit, static_argnums=(0, 2))
     def __call__(self, params, structure):
         """
         Compute an equilibrium state using the force density method.
         """
         q, xyz_fixed, loads = params
-        connectivity = structure.connectivity  # dense jax matrix now. BCOO, better?
-        indices = structure.freefixed_nodes  # tuple
+        connectivity = structure.connectivity
+        indices = structure.nodes_indices_freefixed
 
         xyz_free = self.nodes_free_positions(q, xyz_fixed, loads, structure)
         xyz_all = self.nodes_positions(xyz_free, xyz_fixed, indices)

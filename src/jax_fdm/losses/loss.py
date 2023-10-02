@@ -22,7 +22,6 @@ class Loss:
         self.terms_regularization = args
         self.name = name or self.__class__.__name__
 
-    @partial(jit, static_argnums=(0, 2, 3))
     def __call__(self, params, model, structure):
         """
         Compute the scalar output of the loss function.
