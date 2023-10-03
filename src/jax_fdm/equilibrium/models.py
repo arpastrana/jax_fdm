@@ -93,7 +93,7 @@ class EquilibriumModel:
         Compute an equilibrium state using the force density method.
         """
         q, xyz_fixed, loads = params
-        indices = structure.nodes_indices_freefixed
+        indices = structure.indices_freefixed
 
         xyz_free = self.nodes_free_positions(q, xyz_fixed, loads, structure)
         xyz = self.nodes_positions(xyz_free, xyz_fixed, indices)
@@ -145,7 +145,7 @@ class EquilibriumModel:
         # shorthands
         c_free = structure.connectivity_free
         c_fixed = structure.connectivity_fixed
-        free = structure.nodes_indices_free
+        free = structure.indices_free
 
         return loads[free, :] - c_free.T @ (q[:, None] * (c_fixed @ xyz_fixed))
 
