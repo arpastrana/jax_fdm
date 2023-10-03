@@ -178,7 +178,8 @@ title={{JAX~FDM}: {A}uto-differentiable and hardware-accelerated force density m
 author={Rafael Pastrana and Deniz Oktay and Ryan P. Adams and Sigrid Adriaenssens},
 year={2023},
 doi={10.5281/zenodo.7258292},
-url={https://github.com/arpastrana/jax\_fdm}}
+url={https://github.com/arpastrana/jax\_fdm}
+}
 ```
 
 ## Acknowledgements
