@@ -15,9 +15,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Implemented `EquilibriumModel.stiffness_matrix`.
 
 #### Datastructures
-- Implemented `jax_fdm.equilibrium.Graph`.
-- Implemented `jax_fdm.equilibrium.GraphSparse`.
+- Added `datastructures.FDMesh`.
+- Added `datastructures.Datastructure`.
+- Implemented `structures.EquilibriumStructureMeshSparse`.
+- Implemented `structures.EquilibriumStructureMesh`.
+- Implemented `structures.Mesh`.
+- Implemented `structures.MeshSparse`.
+- Implemented `structures.Graph`.
+- Implemented `structures.GraphSparse`.
 - Added `FDNetwork.is_edge_fully_supported`. 
+
+#### Parameters
+- Added support for mesh vertex parameters.
 
 #### Numerical
 - Added explicit array integer types in `__init__`: `DTYPE_INT_NP` and `DTYPE_INT_JAX`
@@ -32,6 +41,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+#### Equilibrium
+
+- The functions `fdm` and `constrained_fdm` can take an `FDMesh` as input, in addition to `FDNetwork`.
+
 #### Sparse solver
 - Decoupled `sparse_solver` from any force density calculations. Now, it is a simpler solver that only takes as inputs the LHS matrix `A` and the RHS matrix `b`, and thus, it could be used to potentially solve any sparse linear system of equations. Its signature now is analogous to that of `jax.numpy.linalg.solve`.
 - Condensed signature of sparse linear solver `sparse_solve` to take a structure `EquilibriumStructure` as input, instead of explicit attributes of a structure.
@@ -40,7 +53,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Renamed previous verison of `spsolve_gpu` to `spsolve_gpu_stack`.
 
 #### Datastructures 
-- Overhauled `EquilibriumStructure` and `EquilibirumStructureSparse`. They are subclasses `equinox.Module`, and now they have little idea of what an `FDNetwork` is.
+- Overhauled `EquilibriumStructure` and `EquilibirumStructureSparse`. They are subclasses `equinox.Module`, and now they are meant to be immutable. They also have little idea of what an `FDNetwork` is.
 
 #### Optimization
 - `Optimizer.problem` takes an `FDNetwork` as input.

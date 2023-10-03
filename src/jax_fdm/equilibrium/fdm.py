@@ -1,50 +1,53 @@
 import numpy as np
-import jax.numpy as jnp
 
-from jax_fdm import DTYPE_JAX
 from jax_fdm import DTYPE_NP
+
+from jax_fdm.datastructures import FDNetwork
+from jax_fdm.datastructures import FDMesh
 
 from jax_fdm.equilibrium import EquilibriumModel
 from jax_fdm.equilibrium import EquilibriumModelSparse
 
 from jax_fdm.equilibrium import EquilibriumStructure
+from jax_fdm.equilibrium import EquilibriumMeshStructure
 from jax_fdm.equilibrium import EquilibriumStructureSparse
+from jax_fdm.equilibrium import EquilibriumMeshStructureSparse
 
 
 # ==========================================================================
 # Form-finding
 # ==========================================================================
 
-def _fdm(model, params, structure, network):
+def _fdm(model, params, structure, datastructure):
     """
-    Compute a network in a state of static equilibrium using the force density method.
+    Compute a datastructure in a state of static equilibrium using the force density method.
     """
     # compute static equilibrium
     eq_state = model(params, structure)
 
-    # update equilibrium state in a copy of the network
-    return network_updated(network, eq_state)
+    # update equilibrium state in a copy of the datastructure
+    return datastructure_updated(datastructure, eq_state)
 
 
-def fdm(network, sparse=True):
+def fdm(datastructure, sparse=True):
     """
-    Compute a network in a state of static equilibrium using the force density method.
+    Compute a datastructure in a state of static equilibrium using the force density method.
     """
-    network_validate(network)
+    datastructure_validate(datastructure)
 
-    model = model_from_network(network, sparse)
-    structure = structure_from_network(network, sparse)
+    model = model_from_sparsity(sparse)
+    structure = structure_from_datastructure(datastructure, sparse)
 
-    params = [np.array(p, dtype=DTYPE_NP) for p in network.parameters()]
+    params = [np.array(p, dtype=DTYPE_NP) for p in datastructure.parameters()]
 
-    return _fdm(model, params, structure, network)
+    return _fdm(model, params, structure, datastructure)
 
 
 # ==========================================================================
 # Constrained form-finding
 # ==========================================================================
 
-def constrained_fdm(network,
+def constrained_fdm(datastructure,
                     optimizer,
                     loss,
                     parameters=None,
@@ -56,43 +59,59 @@ def constrained_fdm(network,
     """
     Generate a network in a constrained state of static equilibrium using the force density method.
     """
-    network_validate(network)
+    datastructure_validate(datastructure)
 
     if constraints and sparse:
         print("Constraints are not supported yet for sparse inputs. Switching to dense.")
         sparse = False
 
-    model = model_from_network(network, sparse)
-    structure = structure_from_network(network, sparse)
+    model = model_from_sparsity(sparse)
+    structure = structure_from_datastructure(datastructure, sparse)
 
     opt_problem = optimizer.problem(model,
                                     structure,
-                                    network,
+                                    datastructure,
                                     loss,
                                     parameters,
                                     constraints,
                                     maxiter,
                                     tol,
                                     callback)
+
     opt_params = optimizer.solve(opt_problem)
     params = optimizer.parameters_fdm(opt_params)
 
-    return _fdm(model, params, structure, network)
+    return _fdm(model, params, structure, datastructure)
 
 
 # ==========================================================================
 # Helpers
 # ==========================================================================
 
-def model_from_network(network, sparse):
+def model_from_sparsity(sparse):
     """
-    Create an equilibrium model from a network.
+    Create an equilibrium model from a sparsity flag.
     """
-    model = EquilibriumModel
+    model = EquilibriumModel()
     if sparse:
-        model = EquilibriumModelSparse
+        model = EquilibriumModelSparse()
 
-    return model.from_network(network)
+    return model
+
+
+def structure_from_datastructure(datastructure, sparse):
+    """
+    Create a structure from a force density datastructure.
+    """
+    print(type(datastructure))
+    if isinstance(datastructure, FDNetwork):
+        structure_factory = structure_from_network
+    elif isinstance(datastructure, FDMesh):
+        structure_factory = structure_from_mesh
+    else:
+        raise ValueError(f"Input datastructure {datastructure} is invalid")
+
+    return structure_factory(datastructure, sparse)
 
 
 def structure_from_network(network, sparse):
@@ -106,32 +125,45 @@ def structure_from_network(network, sparse):
     return structure.from_network(network)
 
 
-def network_validate(network):
+def structure_from_mesh(mesh, sparse):
+    """
+    Create a structure from a mesh.
+    """
+    structure = EquilibriumMeshStructure
+    if sparse:
+        structure = EquilibriumMeshStructureSparse
+
+    return structure.from_mesh(mesh)
+
+
+def datastructure_validate(datastructure):
     """
     Check that the network is healthy.
     """
-    assert network.number_of_supports() > 0, "The network has no supports"
-    assert network.number_of_edges() > 0, "The network has no edges"
-    assert network.number_of_nodes() > 0, "The network has no nodes"
+    assert datastructure.number_of_supports() > 0, "The datastructure has no supports"
+    assert datastructure.number_of_edges() > 0, "The datastructure has no edges"
+
+    try:
+        assert datastructure.number_of_nodes() > 0, "The datastructure has no nodes"
+    except AttributeError:
+        assert datastructure.number_of_vertices() > 0, "The datastructure has no nodes"
 
 
-def network_updated(network, eq_state):
+def datastructure_updated(datastructure, eq_state):
     """
-    Return a copy of a network whose attributes are updated with an equilibrium state.
+    Return a copy of a datastructure whose attributes are updated with an equilibrium state.
     """
-    network = network.copy()
-    network_update(network, eq_state)
+    datastructure = datastructure.copy()
+    datastructure_update(datastructure, eq_state)
 
-    return network
+    return datastructure
 
 
-def network_update(network, eq_state):
+def datastructure_update(datastructure, eq_state):
     """
-    Update in-place the attributes of a network with an equilibrium state.
+    Update in-place the attributes of a datastructure with an equilibrium state.
     """
-    # TODO: to be extra sure, the node-index and edge-index mappings should
-    # be handled by EquilibriumModel/EquilibriumStructure
-
+    # unpack equilibrium state
     xyz = eq_state.xyz.tolist()
     lengths = eq_state.lengths.tolist()
     residuals = eq_state.residuals.tolist()
@@ -139,19 +171,47 @@ def network_update(network, eq_state):
     forcedensities = eq_state.force_densities.tolist()
     loads = eq_state.loads.tolist()
 
-    # update q values and lengths on edges
-    for idx, edge in network.index_uv().items():
-        network.edge_attribute(edge, name="length", value=lengths[idx].pop())
-        network.edge_attribute(edge, name="force", value=forces[idx].pop())
-        network.edge_attribute(edge, name="q", value=forcedensities[idx])
+    # update edges
+    datastructure_edges_update(datastructure,
+                               (lengths, forces, forcedensities))
 
-    # update residuals on nodes
-    for idx, node in network.index_key().items():
+    # update nodes / vertices
+    datastructure_nodes_update(datastructure,
+                               (xyz, residuals, loads))
+
+
+def datastructure_edges_update(datastructure, eqstate_edges):
+    """
+    Update the edge attributes of a datastructure.
+    """
+    lengths, forces, forcedensities = eqstate_edges
+
+    for idx, edge in datastructure.index_uv().items():
+        datastructure.edge_attribute(edge, name="length", value=lengths[idx].pop())
+        datastructure.edge_attribute(edge, name="force", value=forces[idx].pop())
+        datastructure.edge_attribute(edge, name="q", value=forcedensities[idx])
+
+
+def datastructure_nodes_update(datastructure, eqstate_nodes):
+    """
+    Update the nodes or vertex attributes of a datastructure.
+    """
+    xyz, residuals, loads = eqstate_nodes
+
+    if isinstance(datastructure, FDNetwork):
+        nodevertex_updater = datastructure.node_attribute
+    elif isinstance(datastructure, FDMesh):
+        nodevertex_updater = datastructure.vertex_attribute
+    else:
+        raise ValueError(f"Input datastructure {datastructure} is invalid")
+
+    for idx, key in datastructure.index_key().items():
+
         for name, value in zip("xyz", xyz[idx]):
-            network.node_attribute(node, name=name, value=value)
+            nodevertex_updater(key, name=name, value=value)
 
         for name, value in zip(["rx", "ry", "rz"], residuals[idx]):
-            network.node_attribute(node, name=name, value=value)
+            nodevertex_updater(key, name=name, value=value)
 
         for name, value in zip(["px", "py", "pz"], loads[idx]):
-            network.node_attribute(node, name=name, value=value)
+            nodevertex_updater(key, name=name, value=value)
