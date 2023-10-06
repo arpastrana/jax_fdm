@@ -1,9 +1,13 @@
 """
 A force density mesh.
 """
+import numpy as np
+
 from compas.datastructures import Mesh
 
 from jax_fdm.datastructures import FDDatastructure
+
+from jax_fdm.geometry import polygon_lcs
 
 
 class FDMesh(Mesh, FDDatastructure):
@@ -153,6 +157,12 @@ class FDMesh(Mesh, FDDatastructure):
     # Faces
     # ----------------------------------------------------------------------
 
+    def face_lcs(self, key):
+        """
+        Calculate the local coordinate system (LCS) of this face.
+        """
+        return polygon_lcs(np.asarray(self.face_coordinates(key))).tolist()
+
     def face_load(self, key, load=None):
         """
         Gets or sets a load on a face.
@@ -210,7 +220,9 @@ class FDMesh(Mesh, FDDatastructure):
 
 
 if __name__ == "__main__":
+    from compas.colors import Color
 
+    from jax_fdm.datastructures import FDNetwork
     from jax_fdm.datastructures import FDMesh
 
     from jax_fdm.equilibrium import fdm
@@ -220,13 +232,36 @@ if __name__ == "__main__":
     mesh = FDMesh.from_meshgrid(dx=10, nx=10)
 
     mesh.vertices_supports(mesh.vertices_on_boundary())
-    mesh.edges_forcedensities(-2.0)
-    # mesh.faces_loads([0.0, 0.0, -1.0])
-    mesh.vertices_loads([0.0, 0.0, -1.0])
+    mesh.edges_forcedensities(-3.0)
 
-    # mesh_eq = fdm(mesh, tmax=10)
-    mesh_eq = fdm(mesh)
+    # mesh.edges_loads([0.0, 0.0, 0.5])
+    mesh.faces_loads([0.0, 0.0, -1.0])
+    mesh.vertices_loads([0.0, 0.0, -0.5])
 
+    print("Fofin")
+    mesh_eq = fdm(mesh, tmax=2)
+    mesh_eq_iter = fdm(mesh, tmax=100)
+
+    print("LCS")
+    for fkey in mesh.faces():
+        lcs = mesh_eq.face_lcs(fkey)
+        # print(lcs)
+
+    print("Viz")
     viewer = Viewer(show_grid=False, viewmode="lighted", width=1600, height=900)
-    viewer.add(mesh_eq)
+    viewer.add(FDNetwork.from_mesh(mesh_eq), as_wireframe=True, linecolor=Color.blue())
+    viewer.add(FDNetwork.from_mesh(mesh_eq_iter), show_loads=True)
+
+    # viewer.add(mesh_eq, show_lines=True)
+
+    # nodes = list(mesh_eq.vertices_coordinates())
+    # network = FDNetwork.from_nodes_and_edges(nodes, list(mesh.edges()))
+    # viewer.add(network, as_wireframe=True)
+
+    # mesh_eq_2 = fdm(mesh, sparse=True, tmax=100)
+    # nodes = list(mesh_eq_2.vertices_coordinates())
+    # network2 = FDNetwork.from_nodes_and_edges(nodes, list(mesh.edges()))
+    # viewer.add(network_eq_2, as_wireframe=True, linecolor=Color.blue())
+    # viewer.add(mesh_eq_2, show_lines=True)
+
     viewer.show()

@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Implemented `EquilibriumModel.stiffness_matrix`.
 
 #### Datastructures
+- Added `FDMesh.face_lcs` to calculate the local coordinaty system of a mesh face.
 - Added `datastructures.FDMesh`.
 - Added `datastructures.Datastructure`.
 - Implemented `structures.EquilibriumStructureMeshSparse`.
@@ -24,6 +25,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Implemented `structures.Graph`.
 - Implemented `structures.GraphSparse`.
 - Added `FDNetwork.is_edge_fully_supported`. 
+
+#### Geometry
+
+- Added `polygon_lcs` to compute the local coordinate system of a closed polygon.
+- Added `line_lcs` to compute the local coordinate system of a line.
 
 #### Parameters
 - Added support for mesh vertex parameters.
@@ -66,6 +72,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Removed
 
+- Removed `EquilibriumModel.from_network`.
 - Removed `sparse.force_densities_to_A`. Superseded by `EquilibriumModelSparse.stiffness_matrix`. 
 - Removed `sparse.force_densities_to_b`. Superseded by `EquilibriumModel.force_matrix`.
 - Removed partial jitting from `Loss.__call__`
