@@ -10,12 +10,33 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 #### Models
+- Added support for efficient reverse-mode AD of the calculation of equilibrium states in the presence of shape-dependent loads, via implicit differentiation. Forward-mode AD is pending.
+- Added `EquilibriumModel.equilibrium_iterative` to compute equilibrium states that have shape-dependent edge and face loads using fixed point iteration.
+- Added `EquiibriumModel.edges_load` and `EquiibriumModel.faces_load` to allow computation of edge and face loads
 - Implemented `EquilibriumModelSparse.stiffness_matrix`.
-- Implemented `EquilibriumModel.force_matrix`.
 - Implemented `EquilibriumModel.stiffness_matrix`.
+- Implemented `EquilibriumModel.force_matrix`.
+- Implemented `EquilibriumModel.force_fixed_matrix`.
+
+#### Equilibrium
+- Implemented `equilibrium.states.LoadState`
+- Implemented `equilibrium.states.EquilibriumParametersState`
+
+#### Solvers
+- Defined a `jax.custom_vjp` for `fixed_point`, an interface function that solves for fixed points of a function for different root-finding solver types: `solver_fixedpoint`, `solver_forward`, and `solver_newton`. 
+- Implemented `solver_fixedpoint`, a function that wraps `jaxopt.FixedPointIterator` to calculate static equilibrium iteratively.
+- Implemented `solver_forward`, to find fixed points of a function using an `equinox.while_loop`.
+- Implemented `solver_netwon`, to find fixed points of a function using Newton's method.
+
+#### Loads
+- Added `equilibrium.loads` module to enable support for edge and face-loads, which correspond to line and area loads, respectively.
+These two load types can be optionally become follower loads setting the `is_local` input flag to `True`. A follower load will update its direction iteratively, according to the local coordinate system of an edge or a face at an iteration. The two main functions that enable this feature are `loads.nodes_load_from_faces` and `loads.nodes_load_from_edges`. These functions are wrapped by `EquilibriumModel` under `EquiibriumModel.edges_load` and `EquiibriumModel.faces_load`. 
+- Implemented `equilibrium.loads.nodes_`
 
 #### Datastructures
+- Added constructor method `FDNetwork.from_mesh`.
 - Added `FDMesh.face_lcs` to calculate the local coordinaty system of a mesh face.
+- Added `datastructures.FDDatastructure.edges_loads`.
 - Added `datastructures.FDMesh`.
 - Added `datastructures.Datastructure`.
 - Implemented `structures.EquilibriumStructureMeshSparse`.
@@ -26,8 +47,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Implemented `structures.GraphSparse`.
 - Added `FDNetwork.is_edge_fully_supported`. 
 
-#### Geometry
+#### Optimization
+- Added `optimization.Optimizer.loads_static` attribute to store edge and face loads during optimization. 
 
+#### Geometry
 - Added `polygon_lcs` to compute the local coordinate system of a closed polygon.
 - Added `line_lcs` to compute the local coordinate system of a line.
 
@@ -47,8 +70,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-#### Equilibrium
+#### Models
 
+#### Equilibrium
 - The functions `fdm` and `constrained_fdm` can take an `FDMesh` as input, in addition to `FDNetwork`.
 
 #### Sparse solver
@@ -57,6 +81,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Changed signature of `sparse_solve_bwd` to take two arguments, where the first is the "residual" values produced on the forward pass by ``fwd``, and the second is the output cotangent with the same structure as the primal function output (`sparse_solve`).
 - Condensed signature of helper functions `sparse_solve_fwd` to take matrices `A` and `b` as inputs, instead of explicit attributes of the FDM and of a `EquilibriumStructure`.
 - Renamed previous verison of `spsolve_gpu` to `spsolve_gpu_stack`.
+
+#### Geometry
+- Added support for `jnp.nan` inputs in the calculations of `geometry.normal_polygon`. 
+
+#### Losses
+- Changed signature of `Regularizer.__call__` to take in parameters instead of equilibirum state. 
 
 #### Datastructures 
 - Overhauled `EquilibriumStructure` and `EquilibirumStructureSparse`. They are subclasses `equinox.Module`, and now they are meant to be immutable. They also have little idea of what an `FDNetwork` is.
