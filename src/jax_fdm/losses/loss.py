@@ -29,8 +29,11 @@ class Loss:
         eq_state = model(params, structure)
 
         loss = 0.0
-        for error_term in self.terms:
+        for error_term in self.terms_error:
             loss = loss + error_term(eq_state)
+
+        for reg_term in self.terms_regularization:
+            loss = loss + reg_term(params)
 
         return loss
 
