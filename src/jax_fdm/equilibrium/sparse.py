@@ -153,7 +153,7 @@ def sparse_solve_bwd(res, g):
 
     # Solve adjoint system
     # A.T @ xk_bar = -g
-    lam = spsolve(A, g)
+    lam = sparse_solve(A, g)
 
     # the implicit constraint function for implicit differentiation
     def residual_fn(params):

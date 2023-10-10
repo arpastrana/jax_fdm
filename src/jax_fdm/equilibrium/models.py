@@ -1,12 +1,18 @@
-from functools import partial
+from equinox import is_array
 
-from jax import jit
 import jax.numpy as jnp
 
 from jax.experimental.sparse import CSC
 
-from jax_fdm.equilibrium.state import EquilibriumState
-from jax_fdm.equilibrium.sparse import sparse_solve
+from jax_fdm.equilibrium.states import EquilibriumState
+
+from jax_fdm.equilibrium.sparse import sparse_solve as spsolve
+
+from jax_fdm.equilibrium.iterative import fixed_point
+from jax_fdm.equilibrium.iterative import solver_fixedpoint
+
+from jax_fdm.equilibrium.loads import nodes_load_from_faces
+from jax_fdm.equilibrium.loads import nodes_load_from_edges
 
 
 # ==========================================================================
@@ -17,19 +23,12 @@ class EquilibriumModel:
     """
     The equilibrium model.
     """
-    # ----------------------------------------------------------------------
-    # Constructors
-    # ----------------------------------------------------------------------
+    def __init__(self, tmax=100, eta=1e-6, is_load_local=False):
+        self.tmax = tmax
+        self.eta = eta
+        self.is_load_local = is_load_local
 
-    @classmethod
-    def from_network(cls, network):
-        """
-        Create an equilibrium model from a force density network.
-
-        This method exists primarily for compatibility with older versions of the library.
-        Otherwise, it just returns a model that is unaware of the input network.
-        """
-        return cls()
+        self.linearsolve_func = jnp.linalg.solve
 
     # ----------------------------------------------------------------------
     # Edges
@@ -81,28 +80,138 @@ class EquilibriumModel:
         A = self.stiffness_matrix(q, structure)
         b = self.force_matrix(q, xyz_fixed, loads, structure)
 
-        return jnp.linalg.solve(A, b)
+        return self.linearsolve_func(A, b)
+
+    def nodes_equilibrium(self, q, xyz_fixed, loads_nodes, structure):
+        """
+        Calculate static equilibrium on the nodes of a structure.
+        """
+        indices = structure.indices_freefixed
+        xyz_free = self.nodes_free_positions(q, xyz_fixed, loads_nodes, structure)
+
+        return self.nodes_positions(xyz_free, xyz_fixed, indices)
 
     # --------------------------------------------------------------------
+    #  Load it up!
+    # --------------------------------------------------------------------
+
+    def nodes_load(self, xyz, loads, structure):
+        """
+        Calculate the loads applied to the nodes of the structure.
+        """
+        nodes_load, edges_load, faces_load = loads
+
+        if is_array(edges_load):
+            if edges_load.size > 1:
+                edges_load_ = self.edges_load(xyz, edges_load, structure, self.is_load_local)
+                nodes_load = nodes_load + edges_load_
+
+        if is_array(faces_load):
+            if faces_load.size > 1:
+                faces_load_ = self.faces_load(xyz, faces_load, structure, self.is_load_local)
+                nodes_load = nodes_load + faces_load_
+
+        return nodes_load
+
+    @staticmethod
+    def faces_load(xyz, faces_load, structure, is_local=False):
+        """
+        Calculate the tributary face loads aplied to the nodes of a structure.
+        """
+        return nodes_load_from_faces(xyz, faces_load, structure, is_local)
+
+    @staticmethod
+    def edges_load(xyz, edges_load, structure, is_local=False):
+        """
+        Calculate the tributary edge loads aplied to the nodes of a structure.
+        """
+        return nodes_load_from_edges(xyz, edges_load, structure, is_local)
+
+    # ------------------------------------------------------------------------------
     #  Call me, maybe
-    # --------------------------------------------------------------------
+    # ------------------------------------------------------------------------------
 
-    @partial(jit, static_argnums=(0, ))
     def __call__(self, params, structure):
         """
-        Compute an equilibrium state using the force density method.
+        Compute an equilibrium state using the force density method (FDM).
         """
         q, xyz_fixed, loads = params
-        indices = structure.indices_freefixed
+        loads_nodes = loads.nodes
 
-        xyz_free = self.nodes_free_positions(q, xyz_fixed, loads, structure)
-        xyz = self.nodes_positions(xyz_free, xyz_fixed, indices)
+        tmax = self.tmax
+        eta = self.eta
 
-        return self.equilibrium_state(q, xyz, loads, structure)
+        xyz = self.equilibrium(q, xyz_fixed, loads_nodes, structure)
+
+        if tmax > 1:
+            xyz = self.equilibrium_iterative(q,
+                                             xyz_fixed,
+                                             loads,
+                                             structure,
+                                             tmax,
+                                             eta,
+                                             verbose=False)
+
+        # activating this function raises a Zero error in sparse mode. Why?
+        loads_nodes = self.nodes_load(xyz, loads, structure)
+
+        return self.equilibrium_state(q, xyz, loads_nodes, structure)
 
     # ------------------------------------------------------------------------------
-    #  Equilibrium state
+    #  Equilibrium modes
     # ------------------------------------------------------------------------------
+
+    def equilibrium(self, q, xyz_fixed, loads_nodes, structure):
+        """
+        Calculate static equilibrium on a structure.
+        """
+        return self.nodes_equilibrium(q, xyz_fixed, loads_nodes, structure)
+
+    def equilibrium_iterative(self, q, xyz_fixed, loads, structure, tmax=100, eta=1e-6, solver=None, implicit_diff=True, verbose=False):
+        """
+        Calculate static equilibrium on a structure iteratively.
+
+        Notes
+        -----
+        This function only supports reverse mode auto-differentiation.
+        To support forward-mode, we should define a custom jvp using implicit differentiation.
+        """
+        def equilibrium_iterative_fn(params, xyz_init):
+            """
+            This closure function avoids re-computing A and f_fixed throughout iterations
+            because these two matrices remain constant during the fixed point search.
+
+            TODO: Extract closure into function shared with the other nodes equilibrium function?
+            """
+            A, f_fixed, xyz_fixed, loads = params
+
+            free = structure.indices_free
+            freefixed = structure.indices_freefixed
+
+            loads_nodes = self.nodes_load(xyz_init, loads, structure)
+            b = loads_nodes[free, :] - f_fixed
+            xyz_free = self.linearsolve_func(A, b)
+
+            return self.nodes_positions(xyz_free, xyz_fixed, freefixed)
+
+        xyz_init = self.equilibrium(q, xyz_fixed, loads.nodes, structure)
+        A = self.stiffness_matrix(q, structure)
+        f_fixed = self.force_fixed_matrix(q, xyz_fixed, structure)
+
+        solver = solver or solver_fixedpoint
+        solver_kwargs = {"solver_config": {"tmax": tmax, "eta": eta},
+                         "f": equilibrium_iterative_fn,
+                         "a": (A, f_fixed, xyz_fixed, loads),
+                         "x_init": xyz_init}
+
+        if implicit_diff:
+            return fixed_point(solver, **solver_kwargs)
+
+        return solver(**solver_kwargs)
+
+    # ----------------------------------------------------------------------
+    # Equilibrium state
+    # ----------------------------------------------------------------------
 
     def equilibrium_state(self, q, xyz, loads, structure):
         """
@@ -119,9 +228,7 @@ class EquilibriumModel:
                                 residuals=residuals,
                                 lengths=lengths,
                                 forces=forces,
-                                vectors=vectors,
-                                loads=loads,
-                                force_densities=q)
+                                loads=loads)
 
     # ----------------------------------------------------------------------
     # Matrices
@@ -137,17 +244,25 @@ class EquilibriumModel:
 
         return c_free.T @ (q[:, None] * c_free)
 
-    @staticmethod
-    def force_matrix(q, xyz_fixed, loads, structure):
+    def force_matrix(self, q, xyz_fixed, loads, structure):
         """
         The force residual matrix of the structure.
+        """
+        # shorthand
+        free = structure.indices_free
+
+        return loads[free, :] - self.force_fixed_matrix(q, xyz_fixed, structure)
+
+    @staticmethod
+    def force_fixed_matrix(q, xyz_fixed, structure):
+        """
+        The force matrix block of the residual forces at the fixed nodes.
         """
         # shorthands
         c_free = structure.connectivity_free
         c_fixed = structure.connectivity_fixed
-        free = structure.indices_free
 
-        return loads[free, :] - c_free.T @ (q[:, None] * (c_fixed @ xyz_fixed))
+        return c_free.T @ (q[:, None] * (c_fixed @ xyz_fixed))
 
 
 # ==========================================================================
@@ -158,14 +273,9 @@ class EquilibriumModelSparse(EquilibriumModel):
     """
     The equilibrium model. Sparse.
     """
-    def nodes_free_positions(self, q, xyz_fixed, loads, structure):
-        """
-        Calculate the XYZ coordinates of the free nodes.
-        """
-        A = self.stiffness_matrix(q, structure)
-        b = self.force_matrix(q, xyz_fixed, loads, structure)
-
-        return sparse_solve(A, b)
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.linearsolve_func = spsolve
 
     @staticmethod
     def stiffness_matrix(q, structure):
