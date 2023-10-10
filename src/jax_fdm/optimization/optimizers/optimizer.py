@@ -11,6 +11,9 @@ from jax import grad
 from scipy.optimize import minimize
 from scipy.optimize import Bounds
 
+from jax_fdm.equilibrium import LoadState
+from jax_fdm.equilibrium import EquilibriumParametersState
+
 from jax_fdm.parameters import ParameterManager
 from jax_fdm.parameters import EdgeForceDensityParameter
 
@@ -29,6 +32,7 @@ class Optimizer:
         self.name = name
         self.disp = disp
         self.pm = None
+        self.loads_static = None
 
     def constraints(self, constraints, model, params_opt):
         """
@@ -53,7 +57,6 @@ class Optimizer:
 # Loss
 # ==========================================================================
 
-    # @partial(jit, static_argnums=(0, 2, 3))
     def loss(self, params_opt, loss, model, structure):
         """
         The wrapper loss.
@@ -113,6 +116,10 @@ class Optimizer:
         self.goals(loss, model, structure)
         print(f"\tGoal collections: {loss.number_of_collections()}")
 
+        # load matters
+        loads = LoadState.from_datastructure(network)
+        self.loads_static = loads.edges, loads.faces
+
         # loss matters
         loss = partial(self.loss, loss=loss, model=model, structure=structure)
         loss = jit(loss)
@@ -124,7 +131,9 @@ class Optimizer:
         print(f"\tLoss warmup time: {(time() - start_time):.4} seconds")
 
         # gradient of the loss function
+        # TODO: reactivate below
         grad_loss = self.gradient(loss)  # w.r.t. first function argument
+        # grad_loss = grad(loss)
         start_time = time()
         _ = grad_loss(x)
         print(f"\tGradient warmup time: {(time() - start_time):.4} seconds")
@@ -199,7 +208,18 @@ class Optimizer:
         """
         Reconstruct the force density parameters from the optimization parameters.
         """
-        return self.pm.parameters_fdm(params_opt)
+        params = self.pm.parameters_fdm(params_opt)
+
+        q, xyz_fixed, loads_nodes = params
+        loads_edges, loads_faces = self.loads_static
+
+        loads = LoadState(nodes=loads_nodes,
+                          edges=loads_edges,
+                          faces=loads_faces)
+
+        return EquilibriumParametersState(q=q,
+                                          xyz_fixed=xyz_fixed,
+                                          loads=loads)
 
 # ==========================================================================
 # Goal collections

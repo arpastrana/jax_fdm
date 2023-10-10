@@ -40,7 +40,11 @@ class ConstrainedOptimizer(Optimizer):
             constraint.init(model, structure)
 
             # gather information for scipy constraint
-            fun = partial(self.constraint, constraint=constraint, model=model, structure=structure)
+            fun = partial(self.constraint,
+                          constraint=constraint,
+                          model=model,
+                          structure=structure)
+
             fun = jit(fun)
             jac = jit(jacfwd(fun))
 
