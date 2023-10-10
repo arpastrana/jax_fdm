@@ -229,28 +229,34 @@ if __name__ == "__main__":
 
     from jax_fdm.visualization import Viewer
 
+    # mesh = FDMesh.from_meshgrid(dx=10, nx=10)
     mesh = FDMesh.from_meshgrid(dx=10, nx=10)
 
     mesh.vertices_supports(mesh.vertices_on_boundary())
-    mesh.edges_forcedensities(-3.0)
 
+    mesh.edges_forcedensities(2.0)
+
+    mesh.faces_loads([0.0, 0.0, 0.7])
+    mesh.vertices_loads([0.0, 0.0, 0.25])
     # mesh.edges_loads([0.0, 0.0, 0.5])
-    mesh.faces_loads([0.0, 0.0, -1.0])
-    mesh.vertices_loads([0.0, 0.0, -0.5])
 
-    print("Fofin")
-    mesh_eq = fdm(mesh, tmax=2)
-    mesh_eq_iter = fdm(mesh, tmax=100)
+    # print(f"{mesh.number_of_edges()=}")
+    # raise
+    # print("Fofin")
+    mesh_eq = fdm(mesh, tmax=100, is_load_local=False)
+    # mesh_eq_iter = mesh_eq
+    mesh_eq_iter = fdm(mesh, tmax=100, is_load_local=True)
 
-    print("LCS")
-    for fkey in mesh.faces():
-        lcs = mesh_eq.face_lcs(fkey)
-        # print(lcs)
+    # print("LCS")
+    # for fkey in mesh.faces():
+    #    lcs = mesh_eq.face_lcs(fkey)
+    #    print(lcs)
 
     print("Viz")
     viewer = Viewer(show_grid=False, viewmode="lighted", width=1600, height=900)
     viewer.add(FDNetwork.from_mesh(mesh_eq), as_wireframe=True, linecolor=Color.blue())
-    viewer.add(FDNetwork.from_mesh(mesh_eq_iter), show_loads=True)
+    viewer.add(FDNetwork.from_mesh(mesh_eq_iter), edgecolor="force", show_loads=True, show_reactions=True, reactionscale=0.5)
+    viewer.show()
 
     # viewer.add(mesh_eq, show_lines=True)
 
@@ -263,5 +269,3 @@ if __name__ == "__main__":
     # network2 = FDNetwork.from_nodes_and_edges(nodes, list(mesh.edges()))
     # viewer.add(network_eq_2, as_wireframe=True, linecolor=Color.blue())
     # viewer.add(mesh_eq_2, show_lines=True)
-
-    viewer.show()

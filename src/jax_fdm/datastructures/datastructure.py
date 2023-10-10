@@ -58,6 +58,12 @@ class FDDatastructure(Datastructure):
         """
         return self.edges_attribute(keys=keys, name="length")
 
+    def edges_loads(self, load=None, keys=None):
+        """
+        Gets or sets a load to the edges of the datastructure.
+        """
+        return self.edges_attributes(names=("px", "py", "pz"), values=load, keys=keys)
+
     def edges_loadpaths(self, keys=None):
         """
         Gets the load path on the edges of the network.
@@ -87,7 +93,7 @@ class FDDatastructure(Datastructure):
         other_stats = other_stats or {}
         stats.update(other_stats)
 
-        print("\n***Network stats***")
+        print(f"\n***{self.__class__.__name__} stats***")
         print(f"Load path: {round(self.loadpath(), 3)}")
 
         for name, vals in stats.items():

@@ -33,6 +33,28 @@ class FDNetwork(Network, FDDatastructure):
                                              "is_support": False})
 
     # ----------------------------------------------------------------------
+    # Constructors
+    # ----------------------------------------------------------------------
+
+    @classmethod
+    def from_mesh(cls, mesh):
+        """
+        Create a force density network from a mesh.
+        """
+        nodes = {vkey: mesh.vertex_coordinates(vkey) for vkey in mesh.vertices()}
+        network = cls.from_nodes_and_edges(nodes, mesh.edges())
+
+        for node in network.nodes():
+            attrs = mesh.vertex_attributes(node)
+            network.node_attributes(node, names=attrs.keys(), values=attrs.values())
+
+        for edge in network.edges():
+            attrs = mesh.edge_attributes(edge)
+            network.edge_attributes(edge, names=attrs.keys(), values=attrs.values())
+
+        return network
+
+    # ----------------------------------------------------------------------
     # Nodes
     # ----------------------------------------------------------------------
 
