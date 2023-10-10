@@ -158,12 +158,14 @@ def normal_polygon(polygon, unitized=True):
 
     A polygon that is defined as a sequence of unique points and must be
     defined by at least 3 points.
+
+    This function ignores nan values if any in the input polygon.
     """
     assert len(polygon) >= 3, "A polygon must be defined by at least 3 points"
 
     polygon_shifted = jnp.roll(polygon, 1, axis=0)
     ns = 0.5 * jnp.cross(polygon_shifted, polygon)
-    normal = jnp.sum(ns, axis=0)
+    normal = jnp.nansum(ns, axis=0)
 
     if unitized:
         return normalize_vector(normal)
@@ -177,6 +179,8 @@ def area_polygon(polygon):
 
     A polygon that is defined as a sequence of unique points and must be
     defined by at least 3 points.
+
+    This function ignores nan values if any in the input polygon.
     """
     return length_vector(normal_polygon(polygon, False))
 
@@ -207,7 +211,11 @@ def area_triangle(triangle):
     return 0.5 * length_vector(normal_triangle(triangle))
 
 
-def curvature_point_polygon(point, polygon):
+def _curvature_point_polygon(point, polygon):
+    raise NotImplementedError
+
+
+def _curvature_point_polygon(point, polygon):
     """
     Compute the discrete curvature at a point based on a polygon surrounding it.
     The discrete curvature of a node equals 2 * pi - sum(alphas).
@@ -349,7 +357,6 @@ if __name__ == "__main__":
     line = jnp.array(line)
     lcs = line_lcs(line)
 
-    # lcs_target = jnp.array([[0.0, 1.0, 0.0], [1.0, 0.0, 0.0], [0.0, 0.0, -1.0]])
     lcs_target = jnp.array([[0.0, 1.0, 0.0], [-1.0, 0.0, 0.0], [0.0, 0.0, 1.0]])
     assert jnp.allclose(lcs, lcs_target), f"lcs:\n{lcs}\nlcs_target:\n{lcs_target}"
 
@@ -368,6 +375,7 @@ if __name__ == "__main__":
     from compas.geometry import Polygon
     from compas.geometry import Rotation
     from compas.geometry import area_polygon as compas_area_polygon
+    from compas.geometry import normal_polygon as compas_normal_polygon
 
     radius = 2.0
     num_angles = 100
@@ -394,11 +402,22 @@ if __name__ == "__main__":
             assert not np.allclose(polygon, polygon_old)
 
             area_compas = compas_area_polygon(polygon.points)
-
             area = area_polygon(np.array(polygon.points))  # .item()
 
-            assert jnp.allclose(area_compas, area), f"Not equal: Jax fdm: {area:.2f} vs. Compas {area_compas:.2f}"
+            assert jnp.allclose(area_compas, area), f"Not equal: JAX: {area:.2f} vs. COMPAS: {area_compas:.2f}"
+
+            normal_compas = compas_normal_polygon(polygon.points)
+            normal = normal_polygon(np.array(polygon.points))  # .item()
+            assert jnp.allclose(np.array(normal_compas), normal), f"Not equal: JAX: {normal:.2f} vs. COMPAS: {normal_compas:.2f}"
+
+            points_nan = np.reshape(np.array([np.nan] * 6), (-1, 3))
+            polygon_nan = np.vstack((points_nan, np.array(polygon.points), points_nan))
+            normal_nan = normal_polygon(polygon_nan)
+
+            assert jnp.allclose(np.array(normal_compas), normal_nan), f"Not equal: JAX: {normal_nan:.2f} vs. COMPAS: {normal_compas:.2f}"
 
     areas = vmap(area_polygon)(jnp.array(polygons))
+    normal = vmap(normal_polygon)(jnp.array(polygons))
+
     print(f"{areas.shape=}")
     print("All good!")
