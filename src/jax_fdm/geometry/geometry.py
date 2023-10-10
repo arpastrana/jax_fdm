@@ -211,7 +211,7 @@ def area_triangle(triangle):
     return 0.5 * length_vector(normal_triangle(triangle))
 
 
-def _curvature_point_polygon(point, polygon):
+def curvature_point_polygon(point, polygon):
     raise NotImplementedError
 
 

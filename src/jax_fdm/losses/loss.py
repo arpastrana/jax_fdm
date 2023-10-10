@@ -1,7 +1,3 @@
-from functools import partial
-
-from jax import jit
-
 from jax_fdm.losses import Error
 from jax_fdm.losses import Regularizer
 
