@@ -2,12 +2,17 @@ from time import time
 
 import matplotlib.pyplot as plt
 
+import numpy as np
+
 from jax import vmap
+
 import jax.numpy as jnp
+import jax.tree_util as jtu
 
 from jax_fdm import DTYPE_JAX
+
 from jax_fdm.equilibrium import EquilibriumModel
-from jax_fdm.equilibrium import EquilibriumStructure
+from jax_fdm.equilibrium import structure_from_datastructure
 
 
 __all__ = ["LossPlotter"]
@@ -17,33 +22,49 @@ class LossPlotter:
     """
     Plot a loss function.
     """
-    def __init__(self, loss, network, *args, **kwargs):
+    def __init__(self, loss, datastructure, *args, **kwargs):
         self.loss = loss
-        self.structure = EquilibriumStructure.from_network(network)
+        self.structure = structure_from_datastructure(datastructure, sparse=False)
         self.fig = plt.figure(**kwargs)
 
-    def plot(self, history):
+    def plot(self, history, print_breakdown=True):
         """
-        Plot the loss function and its error components on a list of fdm parameter arrays.
+        Plot the loss function and its error components on a list of fdm parameter states.
         """
         print("\nPlotting loss function...")
         start_time = time()
 
-        q = jnp.asarray(history["q"], dtype=DTYPE_JAX)
-        xyz_fixed = jnp.asarray(history["xyz_fixed"], dtype=DTYPE_JAX)
-        loads = jnp.asarray(history["loads"], dtype=DTYPE_JAX)
+        # Create batched parameter state
+        params = jtu.tree_map(lambda leaf: jnp.asarray(leaf, dtype=DTYPE_JAX),
+                              history,
+                              is_leaf=lambda y: isinstance(y, list))
 
-        model = EquilibriumModel()
+        # Model is dense because it dense supports vmapping and sparse does not
+        model = EquilibriumModel(tmax=1)
+
         equilibrium_vmap = vmap(model, in_axes=(0, None))
-        eq_states = equilibrium_vmap((q, xyz_fixed, loads), self.structure)
+        eq_states = equilibrium_vmap(params, self.structure)
+
+        if print_breakdown:
+            print("\n***Error breakdown***")
 
         errors_all = []
-        print("\nLoss breakdown")
-        for error_term in self.loss.terms:
+        for error_term in self.loss.terms_error:
             errors = vmap(error_term)(eq_states)
             errors_all.append(errors)
-            self._print_error_stats(error_term, errors)
             plt.plot(errors, label=error_term.name)
+
+            if print_breakdown:
+                self.print_error_stats(error_term, errors)
+
+        for reg_term in self.loss.terms_regularization:
+            errors = vmap(reg_term)(params)
+            errors_all.append(errors)
+            plt.plot(errors, label=error_term.name)
+
+            if print_breakdown:
+                self.print_error_stats(reg_term, errors)
+                print()
 
         losses = jnp.sum(jnp.asarray(errors_all, dtype=DTYPE_JAX), axis=0)
         plt.plot(losses, label=self.loss.name)
@@ -63,19 +84,15 @@ class LossPlotter:
         plt.show()
 
     @staticmethod
-    def _print_error_stats(error_term, errors):
+    def print_error_stats(error_term, errors):
         """
         Print error statistics
         """
-        stats = {"name": error_term.name,
-                 "first_val": errors[0],
-                 "last_val": errors[-1],
-                 "min_val": jnp.min(errors),
-                 "max_val": jnp.max(errors)}
+        stats = {"first": errors[0],
+                 "last": errors[-1],
+                 "min": np.min(errors),
+                 "max": np.max(errors)}
 
-        for key, val in stats.items():
-            if isinstance(val, str):
-                continue
-            stats[key] = round(val, 4)
-
-        print("\t{name}\tFirst:{first_val}\tLast:{last_val}\tMin:{min_val}\tMax:{max_val}\n".format(**stats))
+        name_string = "{:<18}\t".format(error_term.name)
+        values_string = "  ".join(["{}: {:>12.4f}".format(key.capitalize(), value) for key, value in stats.items()])
+        print(name_string + values_string)

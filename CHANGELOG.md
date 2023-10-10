@@ -48,7 +48,7 @@ These two load types can be optionally become follower loads setting the `is_loc
 - Added `FDNetwork.is_edge_fully_supported`. 
 
 #### Optimization
-- Added `optimization.Optimizer.loads_static` attribute to store edge and face loads during optimization. 
+- Added `optimization.Optimizer.loads_static` attribute to store edge and face loads during optimization.
 
 #### Geometry
 - Added `polygon_lcs` to compute the local coordinate system of a closed polygon.
@@ -95,10 +95,13 @@ These two load types can be optionally become follower loads setting the `is_loc
 - `Optimizer.problem` takes an `FDNetwork` as input.
 - Changed `ParameterManager` to require an `FDNetwork` as argument at initialization.
 - Changed `Parameter.value` signature. Gets value from `network` directly, not from `structure.network`
+- `optimization.OptimizationRecorder` has support to store, export and import named tuple parameters.
 
 #### Visualization
 - Fixed bug with the coloring of reaction forces in `viewers/network_artist.py`.
 - Fixed bug with the coloring of reaction forces in `artists/network_artist.py`.
+- `LossPlotter` has support to plot named tuple parameters.
+
 
 ### Removed
 
