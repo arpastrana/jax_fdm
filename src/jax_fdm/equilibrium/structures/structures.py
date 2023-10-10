@@ -176,14 +176,12 @@ class EquilibriumStructureSparse(EquilibriumStructure, GraphSparse):
         # Prepare the array D st when D.T @ q we get the diagonal elements of matrix
         self.diags = self._get_sparse_diag_data(c_free_csc)
 
-    # @property
     def _connectivity_free(self):
         """
         The connectivity matrix between edges and nodes.
         """
         return BCOO.from_scipy_sparse(self.connectivity_scipy[:, self.indices_free])
 
-    # @property
     def _connectivity_fixed(self):
         """
         The connectivity matrix between edges and nodes.

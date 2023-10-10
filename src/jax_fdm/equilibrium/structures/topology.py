@@ -12,6 +12,7 @@ from compas.utilities import pairwise
 from jax.experimental.sparse import BCOO
 
 from jax_fdm import DTYPE_INT_NP
+from jax_fdm import DTYPE_JAX
 
 from jax_fdm.equilibrium.structures.mixins import IndexingMixins
 from jax_fdm.equilibrium.structures.mixins import MeshIndexingMixins
@@ -27,12 +28,16 @@ class Graph(eqx.Module, IndexingMixins):
     """
     nodes: np.ndarray
     edges: np.ndarray
+    edges_indexed: jax.Array
     connectivity: jax.Array
 
     def __init__(self, nodes, edges):
         self.nodes = nodes
+
         assert edges.shape[1] == 2, "Edges in graph must connect exactly 2 nodes"
         self.edges = edges
+        self.edges_indexed = self._edges_indexed()
+
         self.connectivity = self._connectivity_matrix()
 
     @property
@@ -53,9 +58,9 @@ class Graph(eqx.Module, IndexingMixins):
         """
         The connectivity matrix between edges and nodes.
         """
-        edges_indexed = list(self.edges_indexed)
+        edges_indexed = self.edges_indexed
 
-        return jnp.asarray(connectivity_matrix(edges_indexed, "array"))
+        return jnp.array(connectivity_matrix(edges_indexed, "array"), dtype=DTYPE_JAX)
 
 
 class GraphSparse(Graph):
@@ -88,6 +93,16 @@ class GraphSparse(Graph):
         However, submatrices connectivity_free and connectivity_fixed
         are correctly initialized and used as sparse matrices.
         """
+        # C = super()._connectivity_matrix()
+        # return BCOO.fromdense(C).astype(DTYPE_JAX)
+
+        # C = self.connectivity_scipy
+        # return BCOO.from_scipy_sparse(C)[:, :]
+
+        # C = self.connectivity_scipy
+        # args = (C.data, C.indices, C.indptr)
+        # return CSC(args, shape=C.shape)
+
         return super()._connectivity_matrix()
 
     @property
@@ -96,7 +111,7 @@ class GraphSparse(Graph):
         The connectivity matrix between edges and nodes in SciPy CSC format.
         """
         # TODO: Refactor GraphSparse to return a JAX sparse matrix instead
-        edges_indexed = list(self.edges_indexed)
+        edges_indexed = self.edges_indexed
 
         return connectivity_matrix(edges_indexed, "csc")
 
@@ -113,7 +128,9 @@ class Mesh(Graph, MeshIndexingMixins):
     # Using a tuple instead of an array?
     vertices: np.ndarray
     faces: np.ndarray
-    connectivity_faces: jax.Array
+    faces_indexed: jax.Array
+    connectivity_faces_vertices: jax.Array
+    connectivity_edges_faces: jax.Array
 
     def __init__(self, vertices, faces, edges=None, **kwargs):
 
@@ -124,9 +141,12 @@ class Mesh(Graph, MeshIndexingMixins):
         assert faces.shape[1] > 2, "Mesh faces must connect at least 3 vertices"
 
         self.faces = faces
-        self.connectivity_faces = self._connectivity_faces_matrix()
+        self.faces_indexed = self._faces_indexed()
+        self.connectivity_faces_vertices = self._connectivity_faces_matrix()
 
         super().__init__(vertices, edges)
+
+        self.connectivity_edges_faces = self._connectivity_edges_faces_matrix()
 
     @property
     def num_vertices(self):
@@ -142,6 +162,43 @@ class Mesh(Graph, MeshIndexingMixins):
         """
         return self.faces.shape[0]
 
+    def _connectivity_edges_faces_matrix(self):
+        """
+        The connectivity matrix between edges and faces of a mesh.
+        """
+        C = np.zeros((self.num_edges, self.num_faces))
+
+        for eindex, findex in enumerate(self._edges_faces()):
+            C[eindex, findex] = 1.
+
+        return jnp.asarray(C)
+
+    def _edges_faces(self):
+        """
+        The connectivity matrix of the edges and the faces of a mesh.
+        """
+        edges_faces = []
+        for u, v in self.edges:
+
+            edge = (int(u), int(v))
+            findices = []
+
+            for findex, face in enumerate(self.faces):
+                face_loop = np.concatenate((face, face[:1]))
+                for u, v in pairwise(face_loop):
+                    # iterate one time up, one time clockwise, another counter-clockwise
+                    halfedge1 = (int(u), int(v))
+                    halfedge2 = (int(v), int(u))
+
+                    if edge == halfedge1 or edge == halfedge2:
+                        findices.append(findex)
+
+            assert len(findices) <= 2
+
+            edges_faces.append(tuple(findices))
+
+        return tuple(edges_faces)
+
     @staticmethod
     def _edges_from_faces(faces):
         """
@@ -154,8 +211,9 @@ class Mesh(Graph, MeshIndexingMixins):
         faces of the mesh, and then only storing the unique halfedges.
         """
         halfedges = []
-        for face_vertices in faces:
-            for u, v in pairwise(np.concatenate((face_vertices, face_vertices[:1]))):
+        for face in faces:
+            face_loop = np.concatenate((face, face[:1]))
+            for u, v in pairwise(face_loop):
                 halfedge = (int(u), int(v))
                 halfedges.append(halfedge)
 
@@ -174,8 +232,7 @@ class Mesh(Graph, MeshIndexingMixins):
         """
         The connectivity matrix between faces and nodes.
         """
-        faces_indexed = list(self.faces_indexed)
-        F = face_matrix(faces_indexed, "array")
+        F = face_matrix(self.faces_indexed, "array", normalize=True)
 
         return jnp.asarray(F)
 
@@ -183,27 +240,87 @@ class Mesh(Graph, MeshIndexingMixins):
 class MeshSparse(Mesh, GraphSparse):
     """
     A sparse mesh.
+
+    Notes
+    -----
+    The connectivity matrices are currently dense matrices instead of sparse
+    (as they should be) because I have encountered issues with the gradient
+    computation via backpropagation if I leave them as sparse matrices.
+
+    The error I see is the following:
+    "TypeError: float() argument must be a string or a number, not 'Zero'"
+
+    Which presumably arises upon calling bcoo._bcoo_dot_general_transpose.
     """
     def _connectivity_faces_matrix(self):
         """
         The connectivity matrix between faces and nodes in sparse format.
         """
-        faces_indexed = list(self.faces_indexed)
-        F = face_matrix(faces_indexed, "csc")
+        F = face_matrix(self.faces_indexed, "csc", normalize=True)
 
-        return BCOO.from_scipy_sparse(F)
+        return BCOO.from_scipy_sparse(F).todense()
+
+    def _connectivity_edges_faces_matrix(self):
+        """
+        The connectivity matrix between edges and faces of a mesh.
+        """
+        C = np.zeros((self.num_edges, self.num_faces))
+
+        for eindex, findex in enumerate(self._edges_faces()):
+            C[eindex, findex] = 1.
+
+        return jnp.asarray(C)
 
 
 # ==========================================================================
 # Main
 # ==========================================================================
 
+def mesh_edges_faces(mesh):
+    """
+    The connectivity matrix of the edges and the faces of a mesh.
+    """
+    face_index = {fkey: idx for idx, fkey in enumerate(mesh.faces())}
+
+    edges_faces = []
+    for u, v in mesh.edges():
+
+        findices = []
+        for fkey in mesh.edge_faces(u, v):
+
+            if fkey is None:
+                continue
+
+            findex = face_index[fkey]
+            findices.append(findex)
+
+        assert len(findices) <= 2
+
+        edges_faces.append(tuple(findices))
+
+    return edges_faces
+
+
+def mesh_connectivity_edges_faces(mesh):
+    """
+    The connectivity matrix between edges and faces of a mesh.
+    """
+    num_edges = len(list(mesh.edges()))
+    num_faces = mesh.number_of_faces()
+
+    connectivity = np.zeros((num_edges, num_faces))
+
+    edges_faces = mesh_edges_faces(mesh)
+
+    for eindex, findex in enumerate(edges_faces):
+        connectivity[eindex, findex] = 1.
+
+    return connectivity
+
+
 if __name__ == "__main__":
 
-    from compas.datastructures import Network as CNetwork
     from compas.datastructures import Mesh as CMesh
-    from compas.utilities import pairwise
-    from jax import grad
 
     num_nodes = 5
     nodes = list(range(num_nodes))
@@ -244,17 +361,16 @@ if __name__ == "__main__":
     cmesh = CMesh.from_meshgrid(2.0, 2)
     print(cmesh)
 
+    C = mesh_connectivity_edges_faces(cmesh)
     cmesh_faces = [cmesh.face_vertices(fkey) for fkey in cmesh.faces()]
     # cmesh_faces[0].append(-1)
 
-    # print("Compas mesh faces")
-    # print(cmesh_faces)
-    # print("Compas mesh edges")
-    # print(list(cmesh.edges()))
-
     vertices_array = np.asarray(list(cmesh.vertices()))
     faces_array = np.asarray(cmesh_faces)
+    edges_array = np.asarray(list(cmesh.edges()))
+    mesh = MeshSparse(vertices_array, faces_array, edges_array)
 
+    jnp.allclose(C, mesh.connectivity_edges_faces.todense())
     # def f(g):
     #     return jnp.sum(jnp.square(g.nodes - 1.0))
 

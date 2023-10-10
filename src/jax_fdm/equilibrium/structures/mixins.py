@@ -1,3 +1,7 @@
+import numpy as np
+import jax.numpy as jnp
+
+
 # ==========================================================================
 # Mixins
 # ==========================================================================
@@ -17,15 +21,18 @@ class IndexingMixins:
         """
         return {(int(u), int(v)): index for index, (u, v) in enumerate(self.edges)}
 
-    @property
-    def edges_indexed(self):
+    def _edges_indexed(self):
         """
         An iterable with the edges pointing to the indices of the node keys.
         """
         node_index = self.node_index
 
+        edges_indexed = []
         for u, v in self.edges:
-            yield node_index[int(u)], node_index[int(v)]
+            edge = node_index[int(u)], node_index[int(v)]
+            edges_indexed.append(edge)
+
+        return jnp.array(edges_indexed)
 
 
 class MeshIndexingMixins:
@@ -36,12 +43,24 @@ class MeshIndexingMixins:
         """
         return {int(node): index for index, node in enumerate(self.vertices)}
 
-    @property
-    def faces_indexed(self):
+    def _faces_indexed(self):
         """
-        An iterable with the faces pointing to the indices of the node keys.
+        An array of the faces pointing to the indices of the node keys.
         """
         vertex_index = self.vertex_index
 
+        findexed = []
         for face in self.faces:
-            yield tuple(vertex_index[int(u)] for u in face)
+            face_indices = []
+
+            for vertex in face:
+                u = int(vertex)
+                if u >= 0:
+                    index = vertex_index[u]
+                else:
+                    index = u
+                face_indices.append(index)
+
+            findexed.append(tuple(face_indices))
+
+        return jnp.array(findexed)
