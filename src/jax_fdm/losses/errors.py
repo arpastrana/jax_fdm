@@ -27,7 +27,6 @@ class Error:
     def errors(errors):
         return jnp.sum(errors)
 
-    @partial(jit, static_argnums=0)
     def __call__(self, eqstate):
         """
         Return the current value of the error term.
