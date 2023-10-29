@@ -27,7 +27,7 @@ class FDNetworkPlotterArtist(FDNetworkArtist, NetworkArtist):
         """
         return NetworkArtist.draw_edges(self)
 
-    def draw_reaction(self, node, scale, color):
+    def draw_reaction(self, node, scale, color, *args, **kwargs):
         """
         Draw a reaction vector at a node.
         """
@@ -50,16 +50,16 @@ class FDNetworkPlotterArtist(FDNetworkArtist, NetworkArtist):
 
         return self.plotter.add(reaction, point=Point(*start), color=color)
 
-    def draw_load(self, node, scale, color):
+    def draw_load(self, node, scale, color, *args, **kwargs):
         """
         Draw a load vector at a node.
         """
         vector = self.network.node_load(node)
-        start = self.network.node_coordinates(node)
 
         if length_vector(vector) < self.load_tol:
             return
 
+        start = self.network.node_coordinates(node)
         load = self.draw_vector(vector, start, scale)
         start = add_vectors(start, scale_vector(load, -1.))
 
@@ -73,4 +73,13 @@ class FDNetworkPlotterArtist(FDNetworkArtist, NetworkArtist):
         vector_scaled = scale_vector(vector, scale)
         end = add_vectors(start, vector_scaled)
 
-        return Vector.from_start_end(start, end)
+        return FDVector.from_start_end(start, end)
+
+
+class FDVector(Vector):
+    """
+    A wrapper around a compas.geometry.Vector artist.
+    The goal if this artist to override how vectors are drawn in a plotter.
+    """
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)

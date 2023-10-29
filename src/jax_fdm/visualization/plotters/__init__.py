@@ -1,5 +1,6 @@
 from .loss_plotter import *  # noqa F403
 from .network_artist import *  # noqa F403
+from .vector_artist import *  # noqa F403
 from .plotter import *  # noqa F403
 from .register import register_artists
 
