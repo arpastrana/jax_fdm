@@ -17,7 +17,11 @@ class Viewer(App):
     A thin wrapper on :class:`compas_view2.app.App`.
     """
     def __init__(self, *args, **kwargs):
+        kwargs = kwargs or {}
+        if "viewmode" not in kwargs:
+            kwargs["viewmode"] = "lighted"
         super().__init__(*args, **kwargs)
+
         self.artists = []
 
     def add(self, data, **kwargs):
