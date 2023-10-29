@@ -160,8 +160,8 @@ def fixed_point_bwd(solver, solver_config, fn, res, x_star_bar):
         _, vjp_x = vjp(lambda x: fn(a, x), x_star)
         return x_star_bar + vjp_x(u)[0]
 
-    solver_config = {k: v for k, v in solver_config.items()}
-    solver_config["eta"] = 1e-3
+    # solver_config = {k: v for k, v in solver_config.items()}
+    # solver_config["eta"] = 1e-3
     partial_func = solver(rev_iter,
                           (a, x_star, x_star_bar),
                           x_star_bar,
