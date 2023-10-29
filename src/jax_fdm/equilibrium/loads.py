@@ -36,21 +36,7 @@ def calculate_faces_load(xyz, faces, faces_load, is_local):
         return faces_load
 
     faces_load_lcs = vmap(face_load_lcs, in_axes=(None, 0, 0))
-
-    # def for_grad_loads(xyz, faces, faces_load):
-    #     _loads = faces_load_lcs(xyz, faces, faces_load)
-    #     return jnp.sum(_loads)
-
-    # _faces = faces[-15:, :]
-    # _faces_load = faces_load[-15:, :]
-    # g = grad(for_grad_loads)(xyz, _faces, _faces_load)
-    # jax.debug.print("grad of face loads lcs\n{}", g)
-
     loads = faces_load_lcs(xyz, faces, faces_load)
-
-    # jax.debug.print("faces\n{}", faces[-15:, :])
-    # jax.debug.print("face loads\n{}", loads[-15:, :])
-    # jax.debug.print("face loads\n{}", loads)
 
     return loads
 
@@ -59,49 +45,30 @@ def face_load_lcs(xyz, face, face_load):
     """
     Transform the load vector applied to the face to a vector in its local coordinate system.
     """
-    # return zero cos nop if plane normal is zero
-    # may raise nans, use double where trick
-    # is_zero_normal = jnp.allclose(normal, 0.0)
-    # normal = jnp.where(is_zero_normal, jnp.ones_like(normal), normal)
-    # cos_nop = jnp.where(is_zero_normal, 0.0, normal @ (origin - xyz))
-
-    # # return zero length if residual is zero
-    # # may raise nans, use double where trick
-    # is_zero_res = jnp.allclose(residual, 0.0)
-    # residual = jnp.where(is_zero_res, jnp.ones_like(residual), residual)
-    # length = jnp.where(is_zero_res, 0.0, cos_nop / (normal @ vector_normalized(residual)))
-
     def face_xyz(xyz, face):
-        # Replace -1 with first entry to avoid nans in gradient computation
-        # This was a pesky bug, since using nans as replacement did not cause
-        # issues with the forward computation of normals, but it does for
-        # the backward pass.
-        # face = jnp.reshape(face, (-1, 1))
+        """
+        Get this face XYZ coordinates from XYZ vertices array.
+        """
         face = jnp.ravel(face)
 
         xyz_face = xyz[face, :]
         xyz_repl = xyz_face[0, :]
+
+        # NOTE: Replace -1 with first entry to avoid nans in gradient computation
+        # This was a pesky bug, since using nans as replacement did not cause
+        # issues with the forward computation of normals, but it does for
+        # the backward pass.
         xyz_face = vmap(jnp.where, in_axes=(0, 0, None))(face >= 0, xyz_face, xyz_repl)
-        # xyz_face = jnp.where(face >= 0, xyz_face, xyz_repl)
-        # print(xyz_face.shape)
-        # jax.debug.print("{}\n{}", face, xyz_face)
+
         return xyz_face
 
     fxyz = face_xyz(xyz, face)
 
     normal = normal_polygon(fxyz)
     is_zero_normal = jnp.allclose(normal, 0.0)
-    # is_finite_normal = jnp.isfinite(normal)
-    # jax.debug.print("is finite normal {} {}", is_finite_normal.shape, is_finite_normal)
-    # lcs = jnp.where(is_finite_normal, polygon_lcs(fxyz), jnp.eye(3))
-    # jax.debug.print("lcs {} {}", lcs.shape, lcs)
     lcs = jnp.where(is_zero_normal, jnp.eye(3), polygon_lcs(fxyz))
-    # lcs = polygon_lcs(fxyz)
 
     load = face_load @ lcs
-
-    # is_zero_load = jnp.allclose(load, 0.0)
-    # load = jnp.where(is_zero_load, jnp.zeros_like(load), load)
 
     return load
 
@@ -131,7 +98,7 @@ def edge_tributary_faces_load(c_edge_nodes, c_edge_faces, xyz, faces_load, face_
 
     centroids = face_centroids[findices, :]
 
-    # correct loads if negative face indices exist (e.g. faces on boundary)
+    # NOTE: correct loads if negative face indices exist (e.g. faces on boundary)
     areas = vmap(edge_tributary_face_area, in_axes=(None, 0))(line, centroids)
     areas = jnp.where(findices >= 0, areas.ravel(), 0.0)
 
