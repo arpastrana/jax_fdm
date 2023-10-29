@@ -7,6 +7,7 @@ from compas.geometry import Cylinder
 from compas.geometry import Point
 from compas.geometry import Vector
 from compas.geometry import scale_vector
+from compas.geometry import normalize_vector
 from compas.geometry import add_vectors
 from compas.geometry import length_vector
 
@@ -225,11 +226,13 @@ class FDNetworkViewerArtist(FDNetworkArtist):
             return
 
         xyz = self.network.node_coordinates(node)
+
         # shift start to make arrow head touch the node the load is applied to
         start = add_vectors(xyz, scale_vector(vector, -scale))
+
         # shift start to account for half size of edge thickness
         widths = [self.edge_width[edge] for edge in self.network.connected_edges(node)]
-        start = add_vectors(start, scale_vector(vector, -max(widths)))
+        start = add_vectors(start, scale_vector(normalize_vector(vector), -max(widths)))
 
         return self.draw_vector(vector, start, scale)
 
