@@ -2,6 +2,7 @@
 A force density mesh.
 """
 from math import fabs
+from statistics import stdev
 
 from compas.datastructures import Datastructure
 
@@ -101,5 +102,6 @@ class FDDatastructure(Datastructure):
             minv = round(min(vals), 3)
             maxv = round(max(vals), 3)
             meanv = round(sum(vals) / len(vals), 3)
+            stdv = round(stdev(vals), 3)
 
-            print(f"{name}\t\tMin: {minv}\tMax: {maxv}\tMean: {meanv}")
+            print(f"{name}\t\tMin: {minv}\tMax: {maxv}\tMean: {meanv}\tStDev: {stdv}")
