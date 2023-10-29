@@ -15,9 +15,6 @@ from jax_fdm.equilibrium import EquilibriumModel
 from jax_fdm.equilibrium import structure_from_datastructure
 
 
-__all__ = ["LossPlotter"]
-
-
 class LossPlotter:
     """
     Plot a loss function.
@@ -49,6 +46,7 @@ class LossPlotter:
             print("\n***Error breakdown***")
 
         errors_all = []
+
         for error_term in self.loss.terms_error:
             errors = vmap(error_term)(eq_states)
             errors_all.append(errors)
@@ -60,13 +58,14 @@ class LossPlotter:
         for reg_term in self.loss.terms_regularization:
             errors = vmap(reg_term)(params)
             errors_all.append(errors)
-            plt.plot(errors, label=error_term.name)
+            plt.plot(errors, label=reg_term.name)
 
             if print_breakdown:
                 self.print_error_stats(reg_term, errors)
                 print()
 
         losses = jnp.sum(jnp.asarray(errors_all, dtype=DTYPE_JAX), axis=0)
+
         plt.plot(losses, label=self.loss.name)
 
         plt.xlabel("Optimization iterations")
