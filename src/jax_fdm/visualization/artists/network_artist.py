@@ -88,6 +88,7 @@ class FDNetworkArtist(NetworkArtist):
 
         self.load_scale = loadscale or self.default_loadscale
         self.load_tol = loadtol or self.default_loadtol
+
         self.reaction_scale = reactionscale or self.default_reactionscale
         self.reaction_tol = reactiontol or self.default_reactiontol
 
@@ -253,8 +254,7 @@ class FDNetworkArtist(NetworkArtist):
 
             if color == "fd":
                 cmap = self.default_fdcolormap
-                values = [fabs(network.edge_forcedensity(edge)) for edge in self.edges]
-
+                values = [network.edge_forcedensity(edge) for edge in self.edges]
                 try:
                     ratios = remap_values(values)
                 except ZeroDivisionError:
