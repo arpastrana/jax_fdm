@@ -1,4 +1,3 @@
-from jax import jit
 from jax import jacfwd
 from jax import jacrev
 
@@ -19,4 +18,4 @@ class SecondOrderOptimizer(Optimizer):
         """
         # NOTE: jacrev(jacfwd) is x3 slower than hessian. Why?
         # NOTE: Ah, but jacfwd(jacrev) is as fast as hessian
-        return jit(jacfwd(jacrev(loss, argnums=0)))
+        return jacfwd(jacrev(loss, argnums=0))

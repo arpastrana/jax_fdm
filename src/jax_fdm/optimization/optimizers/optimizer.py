@@ -5,6 +5,8 @@ from time import time
 from itertools import groupby
 from functools import partial
 
+import jax.numpy as jnp
+
 from jax import jit
 from jax import grad
 
@@ -92,7 +94,8 @@ class Optimizer:
                 constraints=None,
                 maxiter=100,
                 tol=1e-6,
-                callback=None):
+                callback=None,
+                jit_fn=True):
         """
         Set up an optimization problem.
         """
@@ -114,7 +117,7 @@ class Optimizer:
 
         # build goal collections
         self.goals(loss, model, structure)
-        print(f"\tGoal collections: {loss.number_of_collections()}")
+        print(f"\tGoal collections: {loss.number_of_collections()}\tRegularizers: {loss.number_of_regularizers()}")
 
         # load matters
         loads = LoadState.from_datastructure(network)
@@ -122,7 +125,8 @@ class Optimizer:
 
         # loss matters
         loss = partial(self.loss, loss=loss, model=model, structure=structure)
-        loss = jit(loss)
+        if jit_fn:
+            loss = jit(loss)
 
         print("Warming up the pressure cooker...")
         start_time = time()
@@ -131,16 +135,22 @@ class Optimizer:
         print(f"\tLoss warmup time: {(time() - start_time):.4} seconds")
 
         # gradient of the loss function
-        # TODO: reactivate below
-        grad_loss = self.gradient(loss)  # w.r.t. first function argument
-        # grad_loss = grad(loss)
+        if jit_fn:
+            grad_loss = self.gradient(loss)  # w.r.t. first function argument
+        else:
+            grad_loss = grad(loss)
+
         start_time = time()
-        _ = grad_loss(x)
+        g = grad_loss(x)
+        assert jnp.sum(jnp.isnan(g)) == 0, "NaNs found in gradient calculation!"
+        print(f"\tInitial gradient norm: {jnp.linalg.norm(g):.4}")
         print(f"\tGradient warmup time: {(time() - start_time):.4} seconds")
 
         # gradient of the loss function
         hessian_loss = self.hessian(loss)  # w.r.t. first function argument
         if hessian_loss:
+            if jit_fn:
+                hessian_loss = jit(hessian_loss)
             start_time = time()
             _ = hessian_loss(x)
             print(f"\tHessian warmup time: {(time() - start_time):.4} seconds")
@@ -174,8 +184,10 @@ class Optimizer:
 
         # minimize
         res_q = self._minimize(opt_problem)
+        grad_loss = opt_problem["jac"]
 
         print(res_q.message)
+        print(f"Final gradient norm: {jnp.linalg.norm(grad_loss(res_q.x)):.4}")
         print(f"Final loss in {res_q.nit} iterations: {res_q.fun:.4}")
         print(f"Optimization elapsed time: {time() - start_time} seconds")
 
