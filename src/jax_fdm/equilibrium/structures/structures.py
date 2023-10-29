@@ -269,7 +269,6 @@ class EquilibriumMeshStructure(EquilibriumStructure, Mesh):
         """
         vertices = list(mesh.vertices())
         edges = list(mesh.edges())
-        faces = [mesh.face_vertices(fkey) for fkey in mesh.faces()]
 
         supports = []
         for vertex in vertices:
@@ -278,8 +277,19 @@ class EquilibriumMeshStructure(EquilibriumStructure, Mesh):
                 flag = 1.0
             supports.append(flag)
 
+        faces = [mesh.face_vertices(fkey) for fkey in mesh.faces()]
+        max_length_face = max(len(face) for face in faces)
+
+        pad_value = -1
+        padded_faces = []
+        for face in faces:
+            len_face = len(face)
+            if len_face < max_length_face:
+                face = face + [pad_value] * (max_length_face - len_face)
+            padded_faces.append(face)
+
+        faces = np.asarray(padded_faces, dtype=DTYPE_INT_NP)
         vertices = np.asarray(vertices, dtype=DTYPE_INT_NP)
-        faces = np.asarray(faces, dtype=DTYPE_INT_NP)
         edges = np.asarray(edges, dtype=DTYPE_INT_NP)
         supports = np.asarray(supports, dtype=DTYPE_INT_NP)
 
