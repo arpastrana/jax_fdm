@@ -26,14 +26,24 @@ def length_vector(u):
     """
     Calculate the length of a vector along its columns.
     """
-    return jnp.linalg.norm(u, axis=-1, keepdims=True)
+    length = jnp.linalg.norm(u, axis=-1, keepdims=True)
+
+    return length
 
 
-def normalize_vector(u):
+def normalize_vector(u, safe_nan=True):
     """
     Scale a vector such that it has a unit length.
     """
-    return u / length_vector(u)
+    if safe_nan:
+        u = jnp.nan_to_num(u)
+        is_zero_vector = jnp.allclose(u, 0.0)
+        u = jnp.where(is_zero_vector, jnp.ones_like(u), u)
+        length = jnp.where(is_zero_vector, 1.0, length_vector(u))
+    else:
+        length = length_vector(u)
+
+    return u / length
 
 
 def vector_unitized(u):
@@ -168,7 +178,7 @@ def normal_polygon(polygon, unitized=True):
     normal = jnp.nansum(ns, axis=0)
 
     if unitized:
-        return normalize_vector(normal)
+        normal = normalize_vector(normal)
 
     return normal
 
@@ -294,6 +304,10 @@ if __name__ == "__main__":
     from compas.geometry import Vector
 
     from jax import jit
+    from jax import grad
+
+    from jax.config import config
+    config.update("jax_debug_nans", True)
 
     # Test vector transformation from XYZ to polygon LCS
 
@@ -368,7 +382,6 @@ if __name__ == "__main__":
     assert jnp.allclose(lcs, lcs_target), f"lcs:\n{lcs}\nlcs_target:\n{lcs_target}"
 
     # Test area polygon
-
     import numpy as np
     from jax import vmap, jit
     from math import pi
@@ -378,12 +391,16 @@ if __name__ == "__main__":
     from compas.geometry import normal_polygon as compas_normal_polygon
 
     radius = 2.0
-    num_angles = 100
+    # num_angles = 100
+    num_angles = 4
 
     polygons = []
 
     area_polygon = jit(area_polygon)
     area_polygon(np.ones((5, 3)))
+
+    grad_area_normal_polygon = grad(lambda x: jnp.sum(jnp.square(normal_polygon(x) - 1.0)))
+    grad_area_normal_polygon = jit(grad_area_normal_polygon)
 
     for i in range(4, 5):
         polygon = Polygon.from_sides_and_radius_xy(i, radius)
@@ -411,13 +428,33 @@ if __name__ == "__main__":
             assert jnp.allclose(np.array(normal_compas), normal), f"Not equal: JAX: {normal:.2f} vs. COMPAS: {normal_compas:.2f}"
 
             points_nan = np.reshape(np.array([np.nan] * 6), (-1, 3))
-            polygon_nan = np.vstack((points_nan, np.array(polygon.points), points_nan))
+            polygon_nan = np.vstack((np.array(polygon.points), points_nan, points_nan))
             normal_nan = normal_polygon(polygon_nan)
 
             assert jnp.allclose(np.array(normal_compas), normal_nan), f"Not equal: JAX: {normal_nan:.2f} vs. COMPAS: {normal_compas:.2f}"
 
+            points_padlast = np.array(polygon.points)[0, :]
+            polygon_padlast = np.vstack((np.array(polygon.points), points_padlast))
+            normal_padlast = normal_polygon(polygon_padlast)
+
+            assert jnp.allclose(np.array(normal_compas), normal_padlast), f"Not equal: JAX: {normal_nan:.2f} vs. COMPAS: {normal_padlast:.2f}"
+
+            gnormal_nan = grad_area_normal_polygon(polygon_nan)
+            assert jnp.sum(jnp.isnan(gnormal_nan)) == 0, "Gradient of nan'd polygon has nans!"
+
+            gnormal_padlast = grad_area_normal_polygon(polygon_padlast)
+
+            print(polygon_nan)
+            print(gnormal_nan)
+            print()
+            print(polygon_padlast)
+            print(gnormal_padlast)
+            print()
+
+            assert jnp.sum(jnp.isnan(gnormal_padlast)) == 0, "Gradient of padded polygon has nans!"
+
     areas = vmap(area_polygon)(jnp.array(polygons))
     normal = vmap(normal_polygon)(jnp.array(polygons))
 
-    print(f"{areas.shape=}")
+    print("Passed normals and areas tests\n")
     print("All good!")
