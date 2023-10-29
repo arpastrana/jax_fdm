@@ -12,17 +12,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 #### Models
 - Added support for efficient reverse-mode AD of the calculation of equilibrium states in the presence of shape-dependent loads, via implicit differentiation. Forward-mode AD is pending.
 - Added `EquilibriumModel.equilibrium_iterative` to compute equilibrium states that have shape-dependent edge and face loads using fixed point iteration.
-- Added `EquiibriumModel.edges_load` and `EquiibriumModel.faces_load` to allow computation of edge and face loads
+- Added `EquiibriumModel.edges_load` and `EquiibriumModel.faces_load` to allow computation of edge and face loads.
 - Implemented `EquilibriumModelSparse.stiffness_matrix`.
 - Implemented `EquilibriumModel.stiffness_matrix`.
 - Implemented `EquilibriumModel.force_matrix`.
 - Implemented `EquilibriumModel.force_fixed_matrix`.
+- Added `linearsolve_fn`, `itersolve_fn`, `implicit_diff`, and `verbose` as attributes of `EquilibriumModel`.
 
 #### Equilibrium
-- Implemented `equilibrium.states.LoadState`
-- Implemented `equilibrium.states.EquilibriumParametersState`
+- Restored `vectors` field in `EquilibriumState`.
+- Implemented `equilibrium.states.LoadState`.
+- Implemented `equilibrium.states.EquilibriumParametersState`.
 
 #### Solvers
+- Implemented `solver_anderson`, to find fixed points of a function with `jaxopt.AndersonAcceleration`.
 - Defined a `jax.custom_vjp` for `fixed_point`, an interface function that solves for fixed points of a function for different root-finding solver types: `solver_fixedpoint`, `solver_forward`, and `solver_newton`. 
 - Implemented `solver_fixedpoint`, a function that wraps `jaxopt.FixedPointIterator` to calculate static equilibrium iteratively.
 - Implemented `solver_forward`, to find fixed points of a function using an `equinox.while_loop`.
@@ -31,9 +34,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 #### Loads
 - Added `equilibrium.loads` module to enable support for edge and face-loads, which correspond to line and area loads, respectively.
 These two load types can be optionally become follower loads setting the `is_local` input flag to `True`. A follower load will update its direction iteratively, according to the local coordinate system of an edge or a face at an iteration. The two main functions that enable this feature are `loads.nodes_load_from_faces` and `loads.nodes_load_from_edges`. These functions are wrapped by `EquilibriumModel` under `EquiibriumModel.edges_load` and `EquiibriumModel.faces_load`. 
-- Implemented `equilibrium.loads.nodes_`
+- Implemented `equilibrium.loads.nodes_`.
 
 #### Datastructures
+- Report standard deviation in `FDDatastructure.print_stats()`.
 - Added constructor method `FDNetwork.from_mesh`.
 - Added `FDMesh.face_lcs` to calculate the local coordinaty system of a mesh face.
 - Added `datastructures.FDDatastructure.edges_loads`.
@@ -46,6 +50,11 @@ These two load types can be optionally become follower loads setting the `is_loc
 - Implemented `structures.Graph`.
 - Implemented `structures.GraphSparse`.
 - Added `FDNetwork.is_edge_fully_supported`. 
+- Added `EquilibriumMeshStructure.from_mesh` with support for inhomogenous faces (i.e. faces with different number of vertices). The solution is to pad the rows of the `faces` 2D array with `-1` to match `max_num_vertices`. 
+
+#### Goals
+
+- Implemented `NetworkXYZLaplacianGoal`
 
 #### Optimization
 - Added `optimization.Optimizer.loads_static` attribute to store edge and face loads during optimization.
@@ -53,6 +62,7 @@ These two load types can be optionally become follower loads setting the `is_loc
 #### Geometry
 - Added `polygon_lcs` to compute the local coordinate system of a closed polygon.
 - Added `line_lcs` to compute the local coordinate system of a line.
+- Added `nan` gradient guardrail to `normalize_vector` calculations.
 
 #### Parameters
 - Added support for mesh vertex parameters.
@@ -66,6 +76,7 @@ These two load types can be optionally become follower loads setting the `is_loc
 - Implemented helper function `sparse_blockdiag_matrix` to `spsolve_gpu_ravel`.
 
 #### Visualization
+- Added `plotters/VectorArtist` to custom plot loads and reactions arrows.
 - Implemented `LossPlotter._print_error_stats` to report loss breakdown of error terms.
 
 ### Changed
@@ -73,6 +84,7 @@ These two load types can be optionally become follower loads setting the `is_loc
 #### Models
 
 #### Equilibrium
+- The functions `fdm` and `constrained_fdm` take iterative equilibrium parameters as function arguments.
 - The functions `fdm` and `constrained_fdm` can take an `FDMesh` as input, in addition to `FDNetwork`.
 
 #### Sparse solver
@@ -89,15 +101,19 @@ These two load types can be optionally become follower loads setting the `is_loc
 - Changed signature of `Regularizer.__call__` to take in parameters instead of equilibirum state. 
 
 #### Datastructures 
-- Overhauled `EquilibriumStructure` and `EquilibirumStructureSparse`. They are subclasses `equinox.Module`, and now they are meant to be immutable. They also have little idea of what an `FDNetwork` is.
+- Overhauled `EquilibriumStructure` and `EquilibriumStructureSparse`. They are subclasses `equinox.Module`, and now they are meant to be immutable. They also have little idea of what an `FDNetwork` is.
+- Modified `face_matrix` adjacency matrix creation function to skip -1 vertices. This is to add support for `MeshStructures` that have faces with different number of vertices.
 
 #### Optimization
 - `Optimizer.problem` takes an `FDNetwork` as input.
+- `Optimizer.problem` takes boolean `jit_fn` as arg to disable jitting if needed.
 - Changed `ParameterManager` to require an `FDNetwork` as argument at initialization.
 - Changed `Parameter.value` signature. Gets value from `network` directly, not from `structure.network`
 - `optimization.OptimizationRecorder` has support to store, export and import named tuple parameters.
 
 #### Visualization
+- Fixed bug in `viewers/network_artist.py` that overshifted load arrows.
+- Edge coloring considers force sign for `force` color scheme in `artists/network_artist.py`.
 - Fixed bug with the coloring of reaction forces in `viewers/network_artist.py`.
 - Fixed bug with the coloring of reaction forces in `artists/network_artist.py`.
 - `LossPlotter` has support to plot named tuple parameters.
@@ -108,7 +124,8 @@ These two load types can be optionally become follower loads setting the `is_loc
 - Removed `EquilibriumModel.from_network`.
 - Removed `sparse.force_densities_to_A`. Superseded by `EquilibriumModelSparse.stiffness_matrix`. 
 - Removed `sparse.force_densities_to_b`. Superseded by `EquilibriumModel.force_matrix`.
-- Removed partial jitting from `Loss.__call__`
+- Removed partial jitting from `Loss.__call__`.
+- Removed partial jitting from `Error.__call__`.
 
 
 ## [0.7.1] 2023-05-08
