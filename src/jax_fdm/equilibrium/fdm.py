@@ -1,3 +1,5 @@
+import numpy as np
+
 from jax_fdm import DTYPE_JAX
 
 from jax_fdm.datastructures import FDNetwork
@@ -29,13 +31,20 @@ def _fdm(model, params, structure, datastructure):
     return datastructure_updated(datastructure, eq_state, params)
 
 
-def fdm(datastructure, sparse=True, is_load_local=False, tmax=1, eta=1e-6):
+def fdm(datastructure,
+        sparse=True,
+        is_load_local=False,
+        tmax=1,
+        eta=1e-6,
+        itersolve_fn=None,
+        implicit_diff=True,
+        verbose=False):
     """
     Compute a datastructure in a state of static equilibrium using the force density method.
     """
     datastructure_validate(datastructure)
 
-    model = model_from_sparsity(sparse, tmax, eta, is_load_local)
+    model = model_from_sparsity(sparse, tmax, eta, is_load_local, itersolve_fn, implicit_diff, verbose)
     structure = structure_from_datastructure(datastructure, sparse)
 
     params = EquilibriumParametersState.from_datastructure(datastructure, dtype=DTYPE_JAX)
@@ -58,7 +67,11 @@ def constrained_fdm(datastructure,
                     eta=1e-6,
                     callback=None,
                     sparse=True,
-                    is_load_local=False):
+                    is_load_local=False,
+                    itersolve_fn=None,
+                    implicit_diff=True,
+                    verbose=False,
+                    jit=True):
     """
     Generate a network in a constrained state of static equilibrium using the force density method.
     """
@@ -68,7 +81,7 @@ def constrained_fdm(datastructure,
         print("Constraints are not supported yet for sparse inputs. Switching to dense.")
         sparse = False
 
-    model = model_from_sparsity(sparse, tmax, eta, is_load_local)
+    model = model_from_sparsity(sparse, tmax, eta, is_load_local, itersolve_fn, implicit_diff, verbose)
     structure = structure_from_datastructure(datastructure, sparse)
 
     opt_problem = optimizer.problem(model,
@@ -79,7 +92,8 @@ def constrained_fdm(datastructure,
                                     constraints,
                                     maxiter,
                                     tol,
-                                    callback)
+                                    callback,
+                                    jit)
 
     opt_params = optimizer.solve(opt_problem)
 
@@ -92,7 +106,7 @@ def constrained_fdm(datastructure,
 # Helpers
 # ==========================================================================
 
-def model_from_sparsity(sparse, tmax, eta, is_load_local):
+def model_from_sparsity(sparse, tmax, eta, is_load_local, itersolve_fn=None, implicit_diff=True, verbose=False):
     """
     Create an equilibrium model from a sparsity flag.
     """
@@ -100,7 +114,7 @@ def model_from_sparsity(sparse, tmax, eta, is_load_local):
     if sparse:
         model = EquilibriumModelSparse
 
-    return model(tmax, eta, is_load_local)
+    return model(tmax, eta, is_load_local, itersolve_fn, implicit_diff, verbose)
 
 
 def structure_from_datastructure(datastructure, sparse):
@@ -143,26 +157,27 @@ def datastructure_validate(datastructure):
     """
     Check that the network is healthy.
     """
-    assert datastructure.number_of_supports() > 0, "The datastructure has no supports"
-    assert datastructure.number_of_edges() > 0, "The datastructure has no edges"
+    assert datastructure.number_of_supports() > 0, "The FD datastructure has no supports"
+    assert datastructure.number_of_edges() > 0, "The FD datastructure has no edges"
+    assert np.all(np.abs(np.array(datastructure.edges_forcedensities())) > 0.0), "The FD datastructure has edges with zero force density"
 
     try:
-        assert datastructure.number_of_nodes() > 0, "The datastructure has no nodes"
+        assert datastructure.number_of_nodes() > 0, "The FD datastructure has no nodes"
     except AttributeError:
-        assert datastructure.number_of_vertices() > 0, "The datastructure has no nodes"
+        assert datastructure.number_of_vertices() > 0, "The FD datastructure has no nodes"
 
 
-def datastructure_updated(datastructure, eq_state, params):
+def datastructure_updated(datastructure, eq_state, params, use_loadsfromparams=False):
     """
     Return a copy of a datastructure whose attributes are updated with an equilibrium state.
     """
     datastructure = datastructure.copy()
-    datastructure_update(datastructure, eq_state, params)
+    datastructure_update(datastructure, eq_state, params, use_loadsfromparams)
 
     return datastructure
 
 
-def datastructure_update(datastructure, eq_state, params):
+def datastructure_update(datastructure, eq_state, params, use_loadsfromparams=False):
     """
     Update in-place the attributes of a datastructure with an equilibrium state.
     """
@@ -171,10 +186,13 @@ def datastructure_update(datastructure, eq_state, params):
     lengths = eq_state.lengths.tolist()
     residuals = eq_state.residuals.tolist()
     forces = eq_state.forces.tolist()
-    loads = eq_state.loads.tolist()
 
     forcedensities = params.q.tolist()
-    # loads = params.loads.nodes.tolist()
+
+    if use_loadsfromparams:
+        loads = params.loads.nodes.tolist()
+    else:
+        loads = eq_state.loads.tolist()
 
     # update edges
     datastructure_edges_update(datastructure,
