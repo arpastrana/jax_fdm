@@ -3,6 +3,7 @@ import jax.numpy as jnp
 from jax import vmap
 
 from jax_fdm.geometry import area_triangle
+from jax_fdm.geometry import normal_polygon
 from jax_fdm.geometry import length_vector
 from jax_fdm.geometry import line_lcs
 from jax_fdm.geometry import polygon_lcs
@@ -12,13 +13,15 @@ from jax_fdm.geometry import polygon_lcs
 # Face loads
 # ==========================================================================
 
+from jax_fdm.geometry import normalize_vector
+
+
 def nodes_load_from_faces(xyz, faces_load, structure, is_local=False):
     """
     Calculate the tributary face loads aplied to the nodes of a structure.
     """
     faces = structure.faces_indexed
     faces_load = calculate_faces_load(xyz, faces, faces_load, is_local)
-
     edges_load = edges_tributary_faces_load(xyz, faces_load, structure)
     nodes_load = nodes_tributary_edges_load(edges_load, structure)
 
@@ -34,22 +37,73 @@ def calculate_faces_load(xyz, faces, faces_load, is_local):
 
     faces_load_lcs = vmap(face_load_lcs, in_axes=(None, 0, 0))
 
-    return faces_load_lcs(xyz, faces, faces_load)
+    # def for_grad_loads(xyz, faces, faces_load):
+    #     _loads = faces_load_lcs(xyz, faces, faces_load)
+    #     return jnp.sum(_loads)
+
+    # _faces = faces[-15:, :]
+    # _faces_load = faces_load[-15:, :]
+    # g = grad(for_grad_loads)(xyz, _faces, _faces_load)
+    # jax.debug.print("grad of face loads lcs\n{}", g)
+
+    loads = faces_load_lcs(xyz, faces, faces_load)
+
+    # jax.debug.print("faces\n{}", faces[-15:, :])
+    # jax.debug.print("face loads\n{}", loads[-15:, :])
+    # jax.debug.print("face loads\n{}", loads)
+
+    return loads
 
 
 def face_load_lcs(xyz, face, face_load):
     """
     Transform the load vector applied to the face to a vector in its local coordinate system.
     """
+    # return zero cos nop if plane normal is zero
+    # may raise nans, use double where trick
+    # is_zero_normal = jnp.allclose(normal, 0.0)
+    # normal = jnp.where(is_zero_normal, jnp.ones_like(normal), normal)
+    # cos_nop = jnp.where(is_zero_normal, 0.0, normal @ (origin - xyz))
+
+    # # return zero length if residual is zero
+    # # may raise nans, use double where trick
+    # is_zero_res = jnp.allclose(residual, 0.0)
+    # residual = jnp.where(is_zero_res, jnp.ones_like(residual), residual)
+    # length = jnp.where(is_zero_res, 0.0, cos_nop / (normal @ vector_normalized(residual)))
+
     def face_xyz(xyz, face):
+        # Replace -1 with first entry to avoid nans in gradient computation
+        # This was a pesky bug, since using nans as replacement did not cause
+        # issues with the forward computation of normals, but it does for
+        # the backward pass.
+        # face = jnp.reshape(face, (-1, 1))
+        face = jnp.ravel(face)
+
         xyz_face = xyz[face, :]
-        face = jnp.reshape(face, (-1, 1))
-        return jnp.where(face >= 0, xyz_face, jnp.nan)
+        xyz_repl = xyz_face[0, :]
+        xyz_face = vmap(jnp.where, in_axes=(0, 0, None))(face >= 0, xyz_face, xyz_repl)
+        # xyz_face = jnp.where(face >= 0, xyz_face, xyz_repl)
+        # print(xyz_face.shape)
+        # jax.debug.print("{}\n{}", face, xyz_face)
+        return xyz_face
 
     fxyz = face_xyz(xyz, face)
-    lcs = polygon_lcs(fxyz)
 
-    return face_load @ lcs
+    normal = normal_polygon(fxyz)
+    is_zero_normal = jnp.allclose(normal, 0.0)
+    # is_finite_normal = jnp.isfinite(normal)
+    # jax.debug.print("is finite normal {} {}", is_finite_normal.shape, is_finite_normal)
+    # lcs = jnp.where(is_finite_normal, polygon_lcs(fxyz), jnp.eye(3))
+    # jax.debug.print("lcs {} {}", lcs.shape, lcs)
+    lcs = jnp.where(is_zero_normal, jnp.eye(3), polygon_lcs(fxyz))
+    # lcs = polygon_lcs(fxyz)
+
+    load = face_load @ lcs
+
+    # is_zero_load = jnp.allclose(load, 0.0)
+    # load = jnp.where(is_zero_load, jnp.zeros_like(load), load)
+
+    return load
 
 
 def edges_tributary_faces_load(xyz, faces_load, structure):
@@ -151,9 +205,7 @@ def edges_tributary_edges_load(xyz, edges_load, structure):
     """
     Calculate the face area load taken by every edge in a datastructure.
     """
-    # calculate edge lengths
-    # TODO: This information is already calculated by the FDM equilibrium model
-    # Inject?
+    # TODO: edge lengths calculated by the FDM equilibrium model, inject?
     edges_vector = structure.connectivity @ xyz
     edges_length = length_vector(edges_vector)
 
@@ -181,7 +233,6 @@ if __name__ == "__main__":
     import os
     from jax_fdm import DATA
     from jax_fdm.datastructures import FDMesh
-    from jax_fdm.geometry import normalize_vector
     from jax_fdm.equilibrium import EquilibriumMeshStructure
     from jax_fdm.equilibrium import EquilibriumMeshStructureSparse
 
@@ -322,7 +373,7 @@ if __name__ == "__main__":
         assert jnp.allclose(sum_nodes_load, compas_load)
 
     def test_mesh_loads(mesh, pz, dtol, sparse, is_local, verbose):
-        # test_faces_load(mesh, pz, dtol=dtol, sparse=sparse, is_local=is_local)
+        test_faces_load(mesh, pz, dtol=dtol, sparse=sparse, is_local=is_local)
         test_edges_load(mesh, pz, dtol=dtol, sparse=sparse, is_local=is_local, verbose=verbose)
 
     # run tests
