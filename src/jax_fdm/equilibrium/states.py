@@ -18,6 +18,7 @@ class EquilibriumState(NamedTuple):
     lengths: jax.Array
     forces: jax.Array
     loads: jax.Array
+    vectors: jax.Array
 
 
 # ==========================================================================
