@@ -223,12 +223,20 @@ if __name__ == "__main__":
     from compas.colors import Color
 
     from jax_fdm.datastructures import FDNetwork
+    from jax_fdm.datastructures import FDMesh
 
+    from jax_fdm.parameters import EdgeForceDensityParameter
+    from jax_fdm.goals import EdgesLengthEqualGoal, EdgeLengthGoal, NetworkXYZLaplacianGoal
     from jax_fdm.equilibrium import fdm
+    from jax_fdm.equilibrium import constrained_fdm
 
-    from jax_fdm.visualization import Viewer
+    from jax_fdm.optimization import LBFGSB, OptimizationRecorder
+    from jax_fdm.losses import Loss
+    from jax_fdm.losses import PredictionError
 
-    # mesh = FDMesh.from_meshgrid(dx=10, nx=10)
+    from jax_fdm.visualization import Viewer, LossPlotter
+
+    record = True
     mesh = FDMesh.from_meshgrid(dx=10, nx=10)
 
     mesh.vertices_supports(mesh.vertices_on_boundary())
@@ -237,24 +245,55 @@ if __name__ == "__main__":
 
     mesh.faces_loads([0.0, 0.0, 0.7])
     mesh.vertices_loads([0.0, 0.0, 0.25])
-    # mesh.edges_loads([0.0, 0.0, 0.5])
 
-    # print(f"{mesh.number_of_edges()=}")
-    # raise
-    # print("Fofin")
+    print(mesh)
+    print(f"{mesh.number_of_supports()=}")
+    print(f"{len(list(mesh.vertices_free()))=}")
+
     mesh_eq = fdm(mesh, tmax=100, is_load_local=False)
-    # mesh_eq_iter = mesh_eq
     mesh_eq_iter = fdm(mesh, tmax=100, is_load_local=True)
 
-    # print("LCS")
-    # for fkey in mesh.faces():
-    #    lcs = mesh_eq.face_lcs(fkey)
-    #    print(lcs)
+    # optimization
+    goals = []
+    edges_free = [edge for edge in mesh.edges() if not mesh.is_edge_fully_supported(edge)]
+
+    print(f"{len(edges_free)=}")
+    goal = EdgesLengthEqualGoal(key=edges_free)
+    goals.append(goal)
+
+    target_length = 1.5
+    goals2 = []
+    for edge in edges_free:
+        goal = EdgeLengthGoal(edge, target_length)
+        goals2.append(goal)
+
+    loss = Loss(PredictionError([NetworkXYZLaplacianGoal()]))
+    optimizer = LBFGSB()
+    recorder = OptimizationRecorder(optimizer) if record else None
+
+    parameters = [EdgeForceDensityParameter(edge, 1e-3, 10) for edge in edges_free]
+    mesh_opt_iter = constrained_fdm(mesh,
+                                    optimizer,
+                                    loss,
+                                    parameters=parameters,
+                                    maxiter=1000,
+                                    tol=1e-6,
+                                    tmax=100,
+                                    callback=recorder,
+                                    is_load_local=True)
+
+    mesh_opt_iter.print_stats()
+
+    if record:
+        plotter = LossPlotter(loss, mesh, dpi=150, figsize=(8, 4))
+        plotter.plot(recorder.history)
+        plotter.show()
 
     print("Viz")
     viewer = Viewer(show_grid=False, viewmode="lighted", width=1600, height=900)
-    viewer.add(FDNetwork.from_mesh(mesh_eq), as_wireframe=True, linecolor=Color.blue())
-    viewer.add(FDNetwork.from_mesh(mesh_eq_iter), edgecolor="force", show_loads=True, show_reactions=True, reactionscale=0.5)
+    viewer.add(FDNetwork.from_mesh(mesh_eq), as_wireframe=True, linecolor=Color.black(), show_points=False)
+    viewer.add(FDNetwork.from_mesh(mesh_eq_iter), as_wireframe=True, linecolor=Color.blue(), show_points=True)
+    viewer.add(FDNetwork.from_mesh(mesh_opt_iter), edgecolor="fd", show_loads=True, show_reactions=True, reactionscale=0.5)
     viewer.show()
 
     # viewer.add(mesh_eq, show_lines=True)
