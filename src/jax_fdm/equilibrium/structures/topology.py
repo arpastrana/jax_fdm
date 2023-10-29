@@ -6,7 +6,7 @@ import jax.numpy as jnp
 import equinox as eqx
 
 from compas.numerical import connectivity_matrix
-from compas.numerical import face_matrix
+from compas.numerical import face_matrix as compas_face_matrix
 from compas.utilities import pairwise
 
 from jax.experimental.sparse import BCOO
@@ -184,6 +184,7 @@ class Mesh(Graph, MeshIndexingMixins):
             findices = []
 
             for findex, face in enumerate(self.faces):
+                face = [vkey for vkey in face if vkey >= 0]
                 face_loop = np.concatenate((face, face[:1]))
                 for u, v in pairwise(face_loop):
                     # iterate one time up, one time clockwise, another counter-clockwise
@@ -262,7 +263,7 @@ class MeshSparse(Mesh, GraphSparse):
 
     def _connectivity_edges_faces_matrix(self):
         """
-        The connectivity matrix between edges and faces of a mesh.
+        The connectivity matrix between edges and faces of a mesh in sparse format.
         """
         C = np.zeros((self.num_edges, self.num_faces))
 
@@ -316,6 +317,18 @@ def mesh_connectivity_edges_faces(mesh):
         connectivity[eindex, findex] = 1.
 
     return connectivity
+
+
+def face_matrix(face_vertices, rtype="array", normalize=False):
+    """
+    Creates a face-vertex adjacency matrix that skips -1 vertex entries.
+    """
+    face_vertices_clean = []
+    for face in face_vertices:
+        face_clean = [vertex for vertex in face if vertex >= 0]
+        face_vertices_clean.append(face_clean)
+
+    return compas_face_matrix(face_vertices_clean, rtype, normalize)
 
 
 if __name__ == "__main__":
