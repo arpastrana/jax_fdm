@@ -223,7 +223,6 @@ if __name__ == "__main__":
     from compas.colors import Color
 
     from jax_fdm.datastructures import FDNetwork
-    from jax_fdm.datastructures import FDMesh
 
     from jax_fdm.parameters import EdgeForceDensityParameter
     from jax_fdm.goals import EdgesLengthEqualGoal, EdgeLengthGoal, NetworkXYZLaplacianGoal
