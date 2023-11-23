@@ -103,5 +103,6 @@ class FDDatastructure(Datastructure):
             maxv = round(max(vals), 3)
             meanv = round(sum(vals) / len(vals), 3)
             stdv = round(stdev(vals), 3)
+            name = "{:<18}".format(name)
 
-            print(f"{name}\t\tMin: {minv}\tMax: {maxv}\tMean: {meanv}\tStDev: {stdv}")
+            print(f"{name}\tMin: {minv}\tMax: {maxv}\tMean: {meanv}\tStDev: {stdv}")

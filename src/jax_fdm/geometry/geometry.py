@@ -192,7 +192,7 @@ def area_polygon(polygon):
 
     This function ignores nan values if any in the input polygon.
     """
-    return length_vector(normal_polygon(polygon, False))
+    return length_vector(normal_polygon(polygon, unitized=False))
 
 
 def normal_triangle(triangle, unitize=False):
@@ -221,11 +221,11 @@ def area_triangle(triangle):
     return 0.5 * length_vector(normal_triangle(triangle))
 
 
-def curvature_point_polygon(point, polygon):
+def _curvature_point_polygon(point, polygon):
     raise NotImplementedError
 
 
-def _curvature_point_polygon(point, polygon):
+def curvature_point_polygon(point, polygon):
     """
     Compute the discrete curvature at a point based on a polygon surrounding it.
     The discrete curvature of a node equals 2 * pi - sum(alphas).

@@ -34,8 +34,8 @@ def solver_anderson(f, a, x_init, solver_config):
                                tol=eta,  # 1e-5 is the default,
                                has_aux=False,
                                history_size=5,  # 5 is default
-                               ridge=1e-5,  # 1e-5 is the default
-                               # implicit_diff=True,
+                               ridge=1e-6,  # 1e-5 is the default, 1e-6 for ark nova kangaroo
+                               implicit_diff=False,
                                # jit=True,
                                # unroll=False,
                                verbose=verbose)

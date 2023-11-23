@@ -107,7 +107,7 @@ class VertexParameter(Parameter):
         """
         Get the current value of the node parameter.
         """
-        return mesh.node_attribute(self.key, name=self.attr_name)
+        return mesh.vertex_attribute(self.key, name=self.attr_name)
 
 
 class EdgeParameter(Parameter):
