@@ -25,19 +25,18 @@ def solver_anderson(f, a, x_init, solver_config):
     tmax = solver_config["tmax"]
     eta = solver_config["eta"]
     verbose = solver_config["verbose"]
+    implicit_diff = solver_config["implicit"]
 
     def f_swapped(x, a):
         return f(a, x)
 
     fpi = AndersonAcceleration(fixed_point_fun=f_swapped,
                                maxiter=tmax,
-                               tol=eta,  # 1e-5 is the default,
+                               tol=eta,  # 1e-5 is the jaxopt default
                                has_aux=False,
-                               history_size=5,  # 5 is default
-                               ridge=1e-6,  # 1e-5 is the default, 1e-6 for ark nova kangaroo
-                               implicit_diff=False,
-                               # jit=True,
-                               # unroll=False,
+                               history_size=5,  # 5 is the jaxopt default
+                               ridge=1e-6,  # 1e-5 is the jaxopt default
+                               implicit_diff=implicit_diff,
                                verbose=verbose)
 
     result = fpi.run(x_init, a)
@@ -160,8 +159,6 @@ def fixed_point_bwd(solver, solver_config, fn, res, x_star_bar):
         _, vjp_x = vjp(lambda x: fn(a, x), x_star)
         return x_star_bar + vjp_x(u)[0]
 
-    # solver_config = {k: v for k, v in solver_config.items()}
-    # solver_config["eta"] = 1e-3
     partial_func = solver(rev_iter,
                           (a, x_star, x_star_bar),
                           x_star_bar,

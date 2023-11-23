@@ -8,9 +8,8 @@ from jax_fdm.equilibrium.states import EquilibriumState
 
 from jax_fdm.equilibrium.sparse import sparse_solve as spsolve
 
-from jax_fdm.equilibrium.iterative import fixed_point
-from jax_fdm.equilibrium.iterative import solver_fixedpoint
-from jax_fdm.equilibrium.iterative import solver_forward
+from jax_fdm.equilibrium.solvers import fixed_point
+from jax_fdm.equilibrium.solvers import solver_forward
 
 from jax_fdm.equilibrium.loads import nodes_load_from_faces
 from jax_fdm.equilibrium.loads import nodes_load_from_edges
@@ -238,8 +237,14 @@ class EquilibriumModel:
         A = self.stiffness_matrix(q, structure)
         f_fixed = self.force_fixed_matrix(q, xyz_fixed, structure)
 
-        solver = solver or solver_fixedpoint
-        solver_kwargs = {"solver_config": {"tmax": tmax, "eta": eta, "verbose": verbose},
+        solver = solver or self.itersolve_fn
+        solver_config = {"tmax": tmax,
+                         "eta": eta,
+                         "verbose": verbose,
+                         # For jaxopt compatibility (as it does not support sparse matrices yet)
+                         "implicit": False if self.linearsolve_fn is spsolve else True}
+
+        solver_kwargs = {"solver_config": solver_config,
                          "f": equilibrium_iterative_fn,
                          "a": (A, f_fixed, xyz_fixed, load_state),
                          "x_init": xyz_init}
