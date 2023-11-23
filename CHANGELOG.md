@@ -18,6 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Implemented `EquilibriumModel.force_matrix`.
 - Implemented `EquilibriumModel.force_fixed_matrix`.
 - Added `linearsolve_fn`, `itersolve_fn`, `implicit_diff`, and `verbose` as attributes of `EquilibriumModel`.
+- Added `Equilibrium.load_nodes_iter` as attribute to include the node loads in `LoadState.nodes` when running `EquilibriumModel.equilibrium_iterative()`. Defaults to `False`.
 
 #### Equilibrium
 - Restored `vectors` field in `EquilibriumState`.
@@ -54,7 +55,12 @@ These two load types can be optionally become follower loads setting the `is_loc
 
 #### Goals
 
-- Implemented `NetworkXYZLaplacianGoal`
+- Implemented `NetworkXYZLaplacianGoal`.
+- Implemented base class `MeshGoal`.
+- Implemented `MeshXYZLaplacianGoal`.
+- Implemented `MeshXYZFaceLaplacianGoal`.
+- Implemented `MeshAreaGoal`.
+- Implemented `MeshFacesAreaEqualizeGoal`.
 
 #### Optimization
 - Added `optimization.Optimizer.loads_static` attribute to store edge and face loads during optimization.
@@ -105,6 +111,7 @@ These two load types can be optionally become follower loads setting the `is_loc
 - Modified `face_matrix` adjacency matrix creation function to skip -1 vertices. This is to add support for `MeshStructures` that have faces with different number of vertices.
 
 #### Optimization
+- Use `jax.value_and_grad(loss_fn(x))` instead of using `loss_fn(x)` and `jax.grad(loss_fn(x))` separately. This results in optimization speedup because we get both value and grad with a single VJP call. 
 - `Optimizer.problem` takes an `FDNetwork` as input.
 - `Optimizer.problem` takes boolean `jit_fn` as arg to disable jitting if needed.
 - Changed `ParameterManager` to require an `FDNetwork` as argument at initialization.

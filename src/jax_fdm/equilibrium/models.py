@@ -32,6 +32,7 @@ class EquilibriumModel:
                  is_load_local=False,
                  itersolve_fn=None,
                  implicit_diff=True,
+                 load_nodes_iter=False,
                  verbose=False):
 
         self.tmax = tmax
@@ -40,6 +41,7 @@ class EquilibriumModel:
         self.linearsolve_fn = jnp.linalg.solve
         self.itersolve_fn = itersolve_fn or solver_forward
         self.implicit_diff = implicit_diff
+        self.load_nodes_iter = load_nodes_iter
         self.verbose = verbose
 
     # ----------------------------------------------------------------------
@@ -159,11 +161,12 @@ class EquilibriumModel:
         xyz = self.equilibrium(q, xyz_fixed, loads_nodes, structure)
 
         if tmax > 1:
-            # NOTE: Setting node loads to zero when tmax > 1 is temporary
-            loads_nodes = jnp.zeros_like(loads_nodes)
-            loads_state = LoadState(loads_nodes,
-                                    loads_state.edges,
-                                    loads_state.faces)
+            # Setting node loads to zero when tmax > 1 if specified
+            if not self.load_nodes_iter:
+                loads_nodes = jnp.zeros_like(loads_nodes)
+                loads_state = LoadState(loads_nodes,
+                                        loads_state.edges,
+                                        loads_state.faces)
 
             xyz = self.equilibrium_iterative(q,
                                              xyz_fixed,
@@ -176,7 +179,6 @@ class EquilibriumModel:
                                              implicit_diff=implicit_diff,
                                              verbose=verbose)
 
-        # TODO: reactivate loads nodes
         loads_nodes = self.nodes_load(xyz, loads_state, structure)
 
         return self.equilibrium_state(q, xyz, loads_nodes, structure)
