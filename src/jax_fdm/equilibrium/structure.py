@@ -63,8 +63,9 @@ class EquilibriumStructure:
         """
         A list with the node keys of the structure.
         """
-        if not self.nodes:
+        if not self._nodes:
             self._nodes = list(self.network.nodes())
+        return self._nodes
 
     @property
     def faces(self):
