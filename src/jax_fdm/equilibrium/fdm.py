@@ -114,7 +114,7 @@ def model_from_sparsity(sparse, tmax, eta, is_load_local, itersolve_fn=None, imp
     if sparse:
         model = EquilibriumModelSparse
 
-    return model(tmax, eta, is_load_local, itersolve_fn, implicit_diff, verbose)
+    return model(tmax, eta, is_load_local, itersolve_fn, implicit_diff, verbose=verbose)
 
 
 def structure_from_datastructure(datastructure, sparse):
