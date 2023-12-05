@@ -110,3 +110,18 @@ class MeanAbsoluteError(AbsoluteError):
     """
     def errors(self, errors):
         return super(MeanAbsoluteError, self).errors(errors) / self.number_of_goals()
+
+
+class LogMaxError(Error):
+    """
+    The log error for constraints with a target maximum value that should not be exceeded.
+
+    Helpful to deal with soft barrier constraints with an upper bound.
+    """
+    @staticmethod
+    def error(gstate):
+        difference = gstate.prediction - gstate.goal
+        # NOTE: shifting difference so that error is log(1) = 0.0 at least.
+        error = jnp.log(jnp.where(difference >= 0.0, difference, 0.0) + 1.0)
+
+        return jnp.sum(gstate.weight * error)
