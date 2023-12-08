@@ -228,7 +228,16 @@ class FDNetworkViewerArtist(FDNetworkArtist):
         # shift start to make arrow head touch the node the load is applied to
         start = add_vectors(xyz, scale_vector(vector, -scale))
         # shift start to account for half size of edge thickness
-        widths = [self.edge_width[edge] for edge in self.network.connected_edges(node)]
+        widths = []
+        for edge in self.network.connected_edges(node):
+            # filter out edges that are not part of the scene
+            if edge not in self.edges:
+                continue
+            width = self.edge_width.get(edge, self.edge_width.get((edge[1], edge[0])))
+            if width is None:
+                raise ValueError("Edge width not found for edge: {}".format(edge))
+            widths.append(width)
+
         start = add_vectors(start, scale_vector(vector, -max(widths)))
 
         return self.draw_vector(vector, start, scale)
@@ -318,7 +327,7 @@ class FDNetworkViewerArtist(FDNetworkArtist):
         reactions = {}
 
         for node, arrow in self.collection_reactions.items():
-            obj = self.add_reaction(arrow, self.default_reactioncolor)
+            obj = self.add_reaction(arrow, self.reaction_color)
             reactions[node] = obj
 
         return reactions
