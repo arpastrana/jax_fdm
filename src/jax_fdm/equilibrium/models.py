@@ -251,8 +251,8 @@ class EquilibriumModel:
 
         if implicit_diff:
             xyz_new = fixed_point(solver, **solver_kwargs)
-
-        xyz_new = solver(**solver_kwargs)
+        else:
+            xyz_new = solver(**solver_kwargs)
 
         return xyz_new
 
