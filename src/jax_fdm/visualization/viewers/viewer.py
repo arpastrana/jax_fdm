@@ -1,3 +1,4 @@
+import os
 from compas.artists import Artist
 
 try:
@@ -53,3 +54,26 @@ class Viewer(App):
         self.artists.append(artist)
         artist.draw()
         artist.add()
+
+    # def save(self, filename="scene.png", filedir=None):
+    def save(self, filepath):
+        """
+        Save the scene as an image.
+
+        Returns
+        -------
+        None
+            The objects are updated in place
+        """
+        ext = filepath.split(".")[-1]
+        assert ext == "png"
+
+        if not self.started:
+            self.window.show()
+
+        qimage = self.view.grabFramebuffer()
+        filepath = os.path.abspath(filepath)
+        qimage.save(filepath, ext)
+
+        print(f"Saved viewer scene at {filepath}")
+        # self._app.quit()
