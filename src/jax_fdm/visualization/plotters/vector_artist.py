@@ -1,12 +1,16 @@
-from compas_plotters.artists import VectorArtist
+from matplotlib.lines import Line2D
+from compas_plotters.artists import LineArtist
 
 
-class FDVectorPlotterArtist(VectorArtist):
+class FDVectorPlotterArtist(LineArtist):
     """
     An alternative way to plot vectors as arrows.
     """
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self.draw_as_segment = True
+        self.zorder = 5000
+        self.default_linewidth = 0.01
 
     def draw(self):
         """
@@ -17,27 +21,16 @@ class FDVectorPlotterArtist(VectorArtist):
         None
 
         """
-        if self.draw_point:
-            self._point_artist = self.plotter.add(self.point, edgecolor=self.color)
+        x0, y0 = self.line.start[:2]
+        x1, y1 = self.line.end[:2]
 
-        length = self.vector.length
-        min_width = 0.01
-        width = length * 0.012 + min_width
-        x, y = self.point[:2]
-        dx, dy = (self.vector)[:2]
-        self.zorder = 5000
-
-        self._mpl_vector = self.plotter.axes.arrow(
-            x,
-            y,
-            dx,
-            dy,
-            width=width,
-            length_includes_head=True,
-            head_width=length * 0.06 + min_width,
-            head_length=length * 0.12 + min_width,
+        line2d = Line2D(
+            [x0, x1],
+            [y0, y1],
+            linewidth=self.linewidth,
+            linestyle=self.linestyle,
             color=self.color,
             zorder=self.zorder,
-            alpha=1.0,
-            lw=0.0,
         )
+
+        self._mpl_line = self.plotter.axes.add_line(line2d)

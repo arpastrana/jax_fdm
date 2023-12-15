@@ -72,8 +72,9 @@ class Viewer(App):
             self.window.show()
 
         qimage = self.view.grabFramebuffer()
+        # print(type(qimage), f"\n{qimage=}")
         filepath = os.path.abspath(filepath)
         qimage.save(filepath, ext)
 
-        print(f"Saved viewer scene at {filepath}")
+        # print(f"Saved viewer scene at {filepath}"
         # self._app.quit()

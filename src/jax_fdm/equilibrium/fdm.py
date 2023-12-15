@@ -38,6 +38,7 @@ def fdm(datastructure,
         eta=1e-6,
         itersolve_fn=None,
         implicit_diff=True,
+        callback=None,
         verbose=False):
     """
     Compute a datastructure in a state of static equilibrium using the force density method.
