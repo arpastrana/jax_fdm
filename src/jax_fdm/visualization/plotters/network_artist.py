@@ -3,8 +3,8 @@ from math import fabs
 from compas.geometry import add_vectors
 from compas.geometry import length_vector
 from compas.geometry import scale_vector
-from compas.geometry import Point
-from compas.geometry import Vector
+from compas.geometry import normalize_vector
+from compas.geometry import Line
 
 from compas_plotters.artists import NetworkArtist
 
@@ -27,7 +27,7 @@ class FDNetworkPlotterArtist(FDNetworkArtist, NetworkArtist):
         """
         return NetworkArtist.draw_edges(self)
 
-    def draw_reaction(self, node, scale, color):
+    def draw_reaction(self, node, scale, color, *args, **kwargs):
         """
         Draw a reaction vector at a node.
         """
@@ -46,31 +46,47 @@ class FDNetworkPlotterArtist(FDNetworkArtist, NetworkArtist):
             start = add_vectors(start, scale_vector(vector, scale))
 
         # reverse vector to display direction of reaction forces
-        reaction = self.draw_vector(scale_vector(vector, -1.0), start, scale)
+        # reaction = self.draw_vector(scale_vector(vector, -1.0), start, scale, shift_t=-0.15)
+        reaction = self.draw_vector(scale_vector(vector, -1.0), start, scale, shift_t=0.0)
+        # reaction = self.draw_vector(vector, start, scale, shift_t=0.0)
 
-        return self.plotter.add(reaction, point=Point(*start), color=color)
+        return self.plotter.add(reaction, color=color)
 
-    def draw_load(self, node, scale, color):
+    def draw_load(self, node, scale, color, *args, **kwargs):
         """
         Draw a load vector at a node.
         """
         vector = self.network.node_load(node)
-        start = self.network.node_coordinates(node)
 
         if length_vector(vector) < self.load_tol:
             return
 
-        load = self.draw_vector(vector, start, scale)
-        start = add_vectors(start, scale_vector(load, -1.))
+        vector = scale_vector(vector, -1.0)
+        start = self.network.node_coordinates(node)
+        load = self.draw_vector(vector, start, scale, shift_t=0.15)
 
-        return self.plotter.add(load, point=Point(*start), color=color)
+        return self.plotter.add(load, color=color)
 
     @staticmethod
-    def draw_vector(vector, start, scale):
+    def draw_vector(vector, start, scale, shift_t=0.0):
         """
         Draw a vector as an arrow.
         """
         vector_scaled = scale_vector(vector, scale)
+
+        if shift_t:
+            shift_length = length_vector(vector_scaled) * shift_t
+            start = add_vectors(start, scale_vector(normalize_vector(vector), shift_length))
+
         end = add_vectors(start, vector_scaled)
 
-        return Vector.from_start_end(start, end)
+        return FDVector(start, end)
+
+
+class FDVector(Line):
+    """
+    A wrapper around a compas.geometry.Line artist.
+    The goal if this artist to override how vectors are drawn in a plotter.
+    """
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
