@@ -152,19 +152,53 @@ def fixed_point_bwd(solver, solver_config, fn, res, x_star_bar):
     The backward pass of a fixed point solver.
     """
     a, x_star = res
+
+    # equilibrium constraint
+    def residual_fn(params):
+        x_star, A, b = params
+        return A @ x_star - b
+
+    A = a[0]
+    params = (x_star, A, b)
+
+    _, vjp_params = vjp(residual_fn, params)
+
+
     _, vjp_a = vjp(lambda a: fn(a, x_star), a)
 
-    def rev_iter(packed, u):
+    def adjoint_iterative(packed, u):
         a, x_star, x_star_bar = packed
         _, vjp_x = vjp(lambda x: fn(a, x), x_star)
         return x_star_bar + vjp_x(u)[0]
 
-    partial_func = solver(rev_iter,
-                          (a, x_star, x_star_bar),
-                          x_star_bar,
-                          solver_config)
+    w = solver(adjoint_iterative,
+               (a, x_star, x_star_bar),
+               x_star_bar,
+               solver_config)
 
-    a_bar = vjp_a(partial_func)[0]
+    a_bar = vjp_a(w)[0]
+
+    return a_bar, None
+
+
+def fixed_point_bwd_backup(solver, solver_config, fn, res, x_star_bar):
+    """
+    The backward pass of a fixed point solver.
+    """
+    a, x_star = res
+    _, vjp_a = vjp(lambda a: fn(a, x_star), a)
+
+    def adjoint_iterative(packed, u):
+        a, x_star, x_star_bar = packed
+        _, vjp_x = vjp(lambda x: fn(a, x), x_star)
+        return x_star_bar + vjp_x(u)[0]
+
+    lam = solver(adjoint_iterative,
+                 (a, x_star, x_star_bar),
+                 x_star_bar,
+                 solver_config)
+
+    a_bar = vjp_a(lam)[0]
 
     return a_bar, None
 
