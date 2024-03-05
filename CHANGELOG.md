@@ -26,6 +26,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+#### Floating-point arithmetic
+- Updated how to enable double floating precision (`float64`) to comply with changes of `jax.config` in `jax==0.4.25`.
+
+#### Equilibrium
 - Fixed duplicated fixed point iteration in `EquilibriumModel.equilibrium_iterative`. This led to unnecessarily long runtimes. This change also fixes the "mysterious" bug that made `jaxopt` implicit differentiation incompatible with sparse matrices. 
 
 ### Removed
