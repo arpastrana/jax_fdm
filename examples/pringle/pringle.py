@@ -49,8 +49,8 @@ pz = -0.1
 rz_min = 0.45
 rz_max = 2.0
 
-record = True
-export = True
+record = False
+export = False
 
 HERE = os.path.dirname(__file__)
 

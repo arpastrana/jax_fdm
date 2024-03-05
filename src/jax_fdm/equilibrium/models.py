@@ -241,8 +241,9 @@ class EquilibriumModel:
         solver_config = {"tmax": tmax,
                          "eta": eta,
                          "verbose": verbose,
-                         # For jaxopt compatibility (as it does not support sparse matrices yet)
-                         "implicit": False if self.linearsolve_fn is spsolve else True}
+                         "implicit": True}
+        # For jaxopt compatibility (as it does not support sparse matrices yet)
+        #  "implicit": False if self.linearsolve_fn is spsolve else True}
 
         solver_kwargs = {"solver_config": solver_config,
                          "f": equilibrium_iterative_fn,
@@ -250,11 +251,13 @@ class EquilibriumModel:
                          "x_init": xyz_init}
 
         if implicit_diff:
-            xyz_new = fixed_point(solver, **solver_kwargs)
+            # xyz_new = fixed_point(solver, **solver_kwargs)
+            return fixed_point(solver, **solver_kwargs)
 
-        xyz_new = solver(**solver_kwargs)
+        # xyz_new = solver(**solver_kwargs)
+        return solver(**solver_kwargs)
 
-        return xyz_new
+        # return xyz_new
 
     # ----------------------------------------------------------------------
     # Equilibrium state
