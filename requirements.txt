@@ -1,7 +1,7 @@
 jax[cpu]
 compas<2.0
 compas_singular
-compas-notebook
+compas-notebook==0.3.3
 scipy
 equinox
 jaxopt
