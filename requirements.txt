@@ -1,5 +1,5 @@
 jax[cpu]
-compas
+compas<2.0
 compas_singular
 compas-notebook
 scipy
