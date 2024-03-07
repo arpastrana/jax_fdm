@@ -112,3 +112,33 @@ class EquilibriumModel(eqx.Module):
         loads = self.loads
 
         return self.equilibrium(q, xyz_fixed, loads, structure)
+
+
+# ==========================================================================
+# Equilibrium model
+# ==========================================================================
+
+class EquilibriumModelRaveled(EquilibriumModel):
+    """
+    The equilibrium solver.
+    """
+    @classmethod
+    def from_network(cls, network):
+        """
+        Create an equilibrium model from an force density network.
+        """
+        q, xyz_fixed, loads = (jnp.asarray(p) for p in network.parameters())
+
+        xyz_fixed = xyz_fixed.ravel()
+
+        return cls(q, xyz_fixed, loads)
+
+    def __call__(self, structure):
+        """
+        Compute an equilibrium state using the force density method.
+        """
+        q = self.q
+        xyz_fixed = jnp.reshape(self.xyz_fixed, (-1, 3))
+        loads = self.loads
+
+        return self.equilibrium(q, xyz_fixed, loads, structure)
