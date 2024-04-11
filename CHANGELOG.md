@@ -9,7 +9,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- `LossPlotter` exposes `plot_legend` to choose whether or not to show legend with curve labels.
+
 ### Changed
+
+#### Visualization
+- `FDNetworkArtist` takes absolute force density values to calculate viz colors in `"fd"` mode.
+- Fixed bug in `FDNetworkViewerArtist` that threw error when inputing a custom list of edges to display. The problem was that the artist could not find the width of all the edges connected to a node because `edge_width` is only computed for the custom list of edges. The artist was expecting a dictionary with _all_ the edge widths.
 
 ### Removed
 

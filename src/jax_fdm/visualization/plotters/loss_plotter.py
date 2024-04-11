@@ -24,7 +24,7 @@ class LossPlotter:
         self.structure = structure_from_datastructure(datastructure, sparse=False)
         self.fig = plt.figure(**kwargs)
 
-    def plot(self, history, print_breakdown=True):
+    def plot(self, history, print_breakdown=True, plot_legend=True):
         """
         Plot the loss function and its error components on a list of fdm parameter states.
         """
@@ -72,9 +72,13 @@ class LossPlotter:
         plt.ylabel("Loss")
         plt.yscale("log")
         plt.grid()
-        plt.legend()
+
+        if plot_legend:
+            plt.legend()
 
         print(f"Plotting time: {(time() - start_time):.4} seconds")
+
+        return losses
 
     def show(self):
         """

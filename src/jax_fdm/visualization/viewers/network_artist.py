@@ -231,7 +231,13 @@ class FDNetworkViewerArtist(FDNetworkArtist):
         start = add_vectors(xyz, scale_vector(vector, -scale))
 
         # shift start to account for half size of edge thickness
-        widths = [self.edge_width[edge] for edge in self.network.connected_edges(node)]
+        widths = []
+        for edge in self.network.connected_edges(node):
+            width = self.edge_width.get(edge)
+            if not width:
+                width = 0.0
+            widths.append(width)
+
         start = add_vectors(start, scale_vector(normalize_vector(vector), -max(widths)))
 
         return self.draw_vector(vector, start, scale)

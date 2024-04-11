@@ -254,7 +254,7 @@ class FDNetworkArtist(NetworkArtist):
 
             if color == "fd":
                 cmap = self.default_fdcolormap
-                values = [network.edge_forcedensity(edge) for edge in self.edges]
+                values = [fabs(network.edge_forcedensity(edge)) for edge in self.edges]
                 try:
                     ratios = remap_values(values)
                 except ZeroDivisionError:
