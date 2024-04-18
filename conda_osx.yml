@@ -3,7 +3,7 @@ channels:
   - conda-forge
 dependencies:
   - python
-  - compas
+  - compas<2.0
   - compas_view2==0.7.0
   - cyipopt
   - pip:
