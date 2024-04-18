@@ -14,7 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Removed
 
 
-## [0.8.2] 2024-04-18
+## [0.8.3] 2024-04-18
 
 ### Added
 
