@@ -2,7 +2,11 @@ from math import radians
 
 from compas.artists import Artist
 
-from compas_notebook.app import App as NotebookApp
+try:
+    from compas_notebook.app import App as NotebookApp
+except ImportError:
+    class NotebookApp:
+        pass
 
 from jax_fdm.datastructures import FDNetwork
 

@@ -9,13 +9,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- `LossPlotter` exposes `plot_legend` to choose whether or not to show legend with curve labels.
+#### Goals
+- Implemented `EdgeLoadPathGoal`.
 
 ### Changed
 
+#### Floating-point arithmetic
+- Updated how to enable double floating precision (`float64`) to comply with changes of `jax.config` in `jax==0.4.25`.
+
+#### Equilibrium
+- Fixed duplicated fixed point iteration in `EquilibriumModel.equilibrium_iterative`. This led to unnecessarily long runtimes. This change also fixes the "mysterious" bug that made `jaxopt` implicit differentiation incompatible with sparse matrices. 
+
 #### Visualization
+- `LossPlotter` exposes `plot_legend` to choose whether or not to show legend with curve labels.
 - `FDNetworkArtist` takes absolute force density values to calculate viz colors in `"fd"` mode.
 - Fixed bug in `FDNetworkViewerArtist` that threw error when inputing a custom list of edges to display. The problem was that the artist could not find the width of all the edges connected to a node because `edge_width` is only computed for the custom list of edges. The artist was expecting a dictionary with _all_ the edge widths.
+- Package `compas-notebook` became an optional dependency because it does not support `compas<2.0` anymore.
 
 ### Removed
 
@@ -27,16 +36,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 #### Losses
 - Implemented `LogMaxError`. The goal of this error function is to work as a barrier soft constraint for target maximum values. One good use example would be to restrict the height of a shell to a maximum height. 
 
-#### Goals
-- Implemented `EdgeLoadPathGoal`.
-
 ### Changed
-
-#### Floating-point arithmetic
-- Updated how to enable double floating precision (`float64`) to comply with changes of `jax.config` in `jax==0.4.25`.
-
-#### Equilibrium
-- Fixed duplicated fixed point iteration in `EquilibriumModel.equilibrium_iterative`. This led to unnecessarily long runtimes. This change also fixes the "mysterious" bug that made `jaxopt` implicit differentiation incompatible with sparse matrices. 
 
 ### Removed
 
