@@ -1,7 +1,7 @@
 """
 A gradient-based optimizer.
 """
-from time import time
+from time import perf_counter
 from itertools import groupby
 from functools import partial
 
@@ -130,46 +130,28 @@ class Optimizer:
             loss_and_grad_fn = jit(loss_and_grad_fn)
 
         print("Warming up the pressure cooker...")
-        start_time = time()
+        start_time = perf_counter()
         loss_val, grad_val = loss_and_grad_fn(x)
-        print(f"\tLoss and grad warmup time: {(time() - start_time):.4} seconds")
+        print(f"\tLoss and grad warmup time: {(perf_counter() - start_time):.4} seconds")
         print(f"\tInitial loss value: {loss_val:.4}")
         print(f"\tInitial gradient norm: {jnp.linalg.norm(grad_val):.4}")
         assert jnp.sum(jnp.isnan(grad_val)) == 0, "NaNs found in gradient calculation!"
-
-        # print("Warming up the pressure cooker...")
-        # start_time = time()
-        # loss_val = loss(x)
-        # print(f"\tInitial loss value: {loss_val:.4}")
-        # print(f"\tLoss warmup time: {(time() - start_time):.4} seconds")
-
-        # gradient of the loss function
-        # if jit_fn:
-        #     grad_loss = self.gradient(loss)  # w.r.t. first function argument
-        # else:
-        #     grad_loss = grad(loss)
-
-        # start_time = time()
-        # g = grad_loss(x)
-        # assert jnp.sum(jnp.isnan(g)) == 0, "NaNs found in gradient calculation!"
-        # print(f"\tInitial gradient norm: {jnp.linalg.norm(g):.4}")
-        # print(f"\tGradient warmup time: {(time() - start_time):.4} seconds")
 
         # gradient of the loss function
         hessian_fn = self.hessian(loss_fn)  # w.r.t. first function argument
         if hessian_fn:
             if jit_fn:
                 hessian_fn = jit(hessian_fn)
-            start_time = time()
+            start_time = perf_counter()
             _ = hessian_fn(x)
-            print(f"\tHessian warmup time: {(time() - start_time):.4} seconds")
+            print(f"\tHessian warmup time: {(perf_counter() - start_time):.4} seconds")
 
         # constraints
         constraints = constraints or []
         if constraints:
-            start_time = time()
+            start_time = perf_counter()
             constraints = self.constraints(constraints, model, structure, x)
-            print(f"\tConstraints warmup time: {(time() - start_time):.4} seconds")
+            print(f"\tConstraints warmup time: {(perf_counter() - start_time):.4} seconds")
 
         opt_kwargs = {"fun": loss_and_grad_fn,
                       "jac": True,
@@ -189,7 +171,7 @@ class Optimizer:
         Solve an optimization problem by minimizing a loss function via gradient descent.
         """
         print(f"Optimization with {self.name} started...")
-        start_time = time()
+        start_time = perf_counter()
 
         # minimize
         res_q = self._minimize(opt_problem)
@@ -199,7 +181,7 @@ class Optimizer:
         print(res_q.message)
         print(f"Final gradient norm: {jnp.linalg.norm(grad_val):.4}")
         print(f"Final loss in {res_q.nit} iterations: {res_q.fun:.4}")
-        print(f"Optimization elapsed time: {time() - start_time} seconds")
+        print(f"Optimization elapsed time: {perf_counter() - start_time} seconds")
 
         return res_q.x
 

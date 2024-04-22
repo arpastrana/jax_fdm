@@ -1,4 +1,4 @@
-from time import time
+from time import perf_counter
 
 import matplotlib.pyplot as plt
 
@@ -29,7 +29,7 @@ class LossPlotter:
         Plot the loss function and its error components on a list of fdm parameter states.
         """
         print("\nPlotting loss function...")
-        start_time = time()
+        start_time = perf_counter()
 
         # Create batched parameter state
         params = jtu.tree_map(lambda leaf: jnp.asarray(leaf, dtype=DTYPE_JAX),
@@ -76,7 +76,7 @@ class LossPlotter:
         if plot_legend:
             plt.legend()
 
-        print(f"Plotting time: {(time() - start_time):.4} seconds")
+        print(f"Plotting time: {(perf_counter() - start_time):.4} seconds")
 
         return losses
 

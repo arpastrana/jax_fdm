@@ -11,6 +11,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Now we use `time.perf_counter` instead of `time.time` to measure logic execution time more accurately.
+
 ### Removed
 
 
