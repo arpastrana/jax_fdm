@@ -1,4 +1,5 @@
 import numpy as np
+from scipy.sparse import coo_matrix
 
 import jax
 import jax.numpy as jnp
@@ -11,6 +12,7 @@ from compas.utilities import pairwise
 
 from jax.experimental.sparse import BCOO
 
+from jax_fdm import DTYPE_NP
 from jax_fdm import DTYPE_INT_NP
 from jax_fdm import DTYPE_JAX
 
@@ -30,6 +32,7 @@ class Graph(eqx.Module, IndexingMixins):
     edges: np.ndarray
     edges_indexed: jax.Array
     connectivity: jax.Array
+    adjacency: jax.Array
 
     def __init__(self, nodes, edges):
         self.nodes = nodes
@@ -39,6 +42,7 @@ class Graph(eqx.Module, IndexingMixins):
         self.edges_indexed = self._edges_indexed()
 
         self.connectivity = self._connectivity_matrix()
+        self.adjacency = self._adjacency_matrix()
 
     @property
     def num_nodes(self):
@@ -61,6 +65,14 @@ class Graph(eqx.Module, IndexingMixins):
         edges_indexed = self.edges_indexed
 
         return jnp.array(connectivity_matrix(edges_indexed, "array"), dtype=DTYPE_JAX)
+
+    def _adjacency_matrix(self):
+        """
+        The adjacency matrix between nodes and nodes.
+        """
+        edges_indexed = self.edges_indexed
+
+        return jnp.array(adjacency_matrix(edges_indexed, "array"), dtype=DTYPE_JAX)
 
 
 class GraphSparse(Graph):
@@ -114,6 +126,16 @@ class GraphSparse(Graph):
         edges_indexed = self.edges_indexed
 
         return connectivity_matrix(edges_indexed, "csc")
+
+    def _adjacency_matrix(self):
+        """
+        The adjacency matrix between nodes and nodes.
+        """
+        edges_indexed = self.edges_indexed
+
+        A = adjacency_matrix(edges_indexed, "coo")
+
+        return BCOO.from_scipy_sparse(A).todense()
 
 
 # ==========================================================================
@@ -331,9 +353,54 @@ def face_matrix(face_vertices, rtype="array", normalize=False):
     return compas_face_matrix(face_vertices_clean, rtype, normalize)
 
 
+def adjacency_matrix(edges, rtype="array"):
+    """
+    Creates a vertex-vertex adjacency matrix.
+
+    It expects that vertices / nodes are continuously indexed (no skips),
+    and that edges are indexed from 0 to len(vertices) / len(nodes).
+    """
+    num_vertices = np.max(np.ravel(edges)) + 1
+
+    # rows and columns indices for the COO format
+    rows = np.hstack([edges[:, 0], edges[:, 1]])  # add edges in both directions for undirected graph
+    cols = np.hstack([edges[:, 1], edges[:, 0]])
+
+    # data to fill in (all 1s for the existence of edges)
+    data = np.ones(len(rows), dtype=DTYPE_NP)
+
+    # create the COO matrix
+    A = coo_matrix(
+        (data, (rows, cols)),
+        shape=(num_vertices, num_vertices)
+    )
+
+    # convert to floating point matrix
+    return _return_matrix(A.asfptype(), rtype)
+
+
+def _return_matrix(M, rtype):
+    if rtype == "list":
+        return M.toarray().tolist()
+    if rtype == "array":
+        return M.toarray()
+    if rtype == "csr":
+        return M.tocsr()
+    if rtype == "csc":
+        return M.tocsc()
+    if rtype == "coo":
+        return M.tocoo()
+    return M
+
+
+# ==========================================================================
+# Main
+# ==========================================================================
+
 if __name__ == "__main__":
 
     from compas.datastructures import Mesh as CMesh
+    from compas.numerical import adjacency_matrix as adjacency_matrix_compas
 
     num_nodes = 5
     nodes = list(range(num_nodes))
@@ -374,6 +441,7 @@ if __name__ == "__main__":
     cmesh = CMesh.from_meshgrid(2.0, 2)
     print(cmesh)
 
+    # test connectivity edges faces
     C = mesh_connectivity_edges_faces(cmesh)
     cmesh_faces = [cmesh.face_vertices(fkey) for fkey in cmesh.faces()]
     # cmesh_faces[0].append(-1)
@@ -383,7 +451,16 @@ if __name__ == "__main__":
     edges_array = np.asarray(list(cmesh.edges()))
     mesh = MeshSparse(vertices_array, faces_array, edges_array)
 
-    jnp.allclose(C, mesh.connectivity_edges_faces.todense())
+    jnp.allclose(C, mesh.connectivity_edges_faces)
+
+    # test adjacency matrix
+    vertex_index = cmesh.vertex_index()
+    adjacency = [[vertex_index[nbr] for nbr in cmesh.vertex_neighbors(vertex)] for vertex in cmesh.vertices()]
+    A_c = adjacency_matrix_compas(adjacency, rtype="array")
+
+    A = mesh.adjacency.todense()
+    jnp.allclose(A, A_c)
+
     # def f(g):
     #     return jnp.sum(jnp.square(g.nodes - 1.0))
 
