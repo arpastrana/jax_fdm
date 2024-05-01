@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Added `NetworkSmoothGoal` to smoothen the shape of a network based on the fairness energy of its nodes w.r.t. their immediate neighborhood.
+- Implemented `Graph.adjacency` to access the connectivity among nodes/vertices to compute new goals. 
+- Added `adjacency_matrix` as numpy-only function to assemble `Graph.adjacency`. The function is largely inspired by `compas.matrices.adjacency_matrix`.
+
 ### Changed
 
 - Now we use `time.perf_counter` instead of `time.time` to measure logic execution time more accurately.
