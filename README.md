@@ -7,13 +7,13 @@
 [![PyPI - Python Version](https://img.shields.io/pypi/pyversions/jax-fdm.svg)](https://pypi.python.org/project/jax-fdm)
 <!-- [![GitHub - License](https://img.shields.io/github/license/arpastrana/jax_fdm.svg)](https://github.com/arpastrana/jax_fdm) -->
 
-A differentiable, hardware-accelerated framework for inverse form-finding in structural design.
+A differentiable, hardware-accelerated framework for constrained form-finding in structural design.
 
 > Crafted with care in the [Form-Finding Lab](http://formfindinglab.princeton.edu/) at [Princeton University](https://princeton.edu) ❤️🇺🇸
 
 ![](images/jax_logo.gif)
 
-JAX FDM enables the solution of inverse form-finding problems for discrete force networks using the force density method (FDM) and gradient-based optimization.
+JAX FDM enables the solution of inverse problems for the form-finding of discrete force networks using the force density method (FDM) and gradient-based optimization.
 It streamlines the integration of form-finding simulations into deep learning models for machine learning research.
 
 ## Key features
@@ -53,7 +53,7 @@ conda activate jaxenv
 Next, install COMPAS and COMPAS VIEW2 via `conda`:
 
 ```bash
-conda install -c conda-forge compas compas_view2==0.7.0 
+conda install -c conda-forge compas==1.17.10 compas_view2==0.7.0 
 ```
 
 Finally, install JAX FDM with a one-liner via `pip`:
