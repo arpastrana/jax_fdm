@@ -5,6 +5,8 @@ from compas.geometry import length_vector
 from compas.geometry import scale_vector
 from compas.geometry import normalize_vector
 from compas.geometry import Line
+from compas.geometry import Vector
+from compas.geometry import Point
 
 from compas_plotters.artists import NetworkArtist
 
@@ -61,11 +63,14 @@ class FDNetworkPlotterArtist(FDNetworkArtist, NetworkArtist):
         if length_vector(vector) < self.load_tol:
             return
 
-        vector = scale_vector(vector, -1.0)
+        # vector = scale_vector(vector, -1.0)
+        vector = scale_vector(vector, 1.0)
         start = self.network.node_coordinates(node)
         load = self.draw_vector(vector, start, scale, shift_t=0.15)
 
-        return self.plotter.add(load, color=color)
+        # return self.plotter.add(load, color=color)
+        start = Point(*start)
+        return self.plotter.add(load, point=start, color=color)
 
     @staticmethod
     def draw_vector(vector, start, scale, shift_t=0.0):
@@ -80,7 +85,8 @@ class FDNetworkPlotterArtist(FDNetworkArtist, NetworkArtist):
 
         end = add_vectors(start, vector_scaled)
 
-        return FDVector(start, end)
+        # return FDVector(start, end)
+        return Vector.from_start_end(start, end)
 
 
 class FDVector(Line):
