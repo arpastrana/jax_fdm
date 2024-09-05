@@ -68,9 +68,11 @@ class FDNetworkPlotterArtist(FDNetworkArtist, NetworkArtist):
         start = self.network.node_coordinates(node)
         load = self.draw_vector(vector, start, scale, shift_t=0.15)
 
-        # return self.plotter.add(load, color=color)
-        start = Point(*start)
-        return self.plotter.add(load, point=start, color=color)
+        return self.plotter.add(load, color=color)
+
+        # NOTE: Activate to draw as vector arrow
+        # start = Point(*start)
+        # return self.plotter.add(load, point=start, color=color)
 
     @staticmethod
     def draw_vector(vector, start, scale, shift_t=0.0):
@@ -85,8 +87,8 @@ class FDNetworkPlotterArtist(FDNetworkArtist, NetworkArtist):
 
         end = add_vectors(start, vector_scaled)
 
-        # return FDVector(start, end)
-        return Vector.from_start_end(start, end)
+        return FDVector(start, end)
+        # return Vector.from_start_end(start, end)
 
 
 class FDVector(Line):
