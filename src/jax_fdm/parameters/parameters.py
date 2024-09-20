@@ -366,15 +366,21 @@ class NodeGroupLoadZParameter(NodeGroupParameter, NodeLoadZParameter):
 
 class VertexSupportParameter(VertexParameter):
     """
-    A node support parameter.
+    A vertex support parameter.
     """
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
+    def index(self, model, structure):
+        """
+        Get the index of the key of the vertex support in the structure of a model.
+        """
+        return structure.support_index[self.key]
+
 
 class VertexSupportXParameter(VertexSupportParameter, NodeSupportXParameter):
     """
-    Parametrize the X coordinate of a support node.
+    Parametrize the X coordinate of a support verte.
     """
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -382,7 +388,7 @@ class VertexSupportXParameter(VertexSupportParameter, NodeSupportXParameter):
 
 class VertexSupportYParameter(VertexSupportParameter, NodeSupportYParameter):
     """
-    Parametrize the Y coordinate of a support node.
+    Parametrize the Y coordinate of a support vertex.
     """
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -390,7 +396,7 @@ class VertexSupportYParameter(VertexSupportParameter, NodeSupportYParameter):
 
 class VertexSupportZParameter(VertexSupportParameter, NodeSupportZParameter):
     """
-    Parametrize the Z coordinate of a support node.
+    Parametrize the Z coordinate of a support vertex.
     """
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
