@@ -407,15 +407,21 @@ class VertexSupportZParameter(VertexSupportParameter, NodeSupportZParameter):
 # ==========================================================================
 
 
-class VertexGroupSupportParameter(NodeGroupParameter):
+class VertexGroupSupportParameter(VertexGroupParameter):
     """
     Parametrize a group of support nodes.
     """
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
+    def index(self, model, structure):
+        """
+        Get the indices of the keys of the parametrized vertices of the structure of a model.
+        """
+        return [structure.support_index[key] for key in self.key]
 
-class VertexGroupSupportXParameter(VertexGroupParameter, VertexSupportXParameter):
+
+class VertexGroupSupportXParameter(VertexGroupSupportParameter, VertexSupportXParameter):
     """
     Parametrize wiht a single value the X coordinate of a group of support nodes.
     """
@@ -423,7 +429,7 @@ class VertexGroupSupportXParameter(VertexGroupParameter, VertexSupportXParameter
         super().__init__(*args, **kwargs)
 
 
-class VertexGroupSupportYParameter(VertexGroupParameter, VertexSupportYParameter):
+class VertexGroupSupportYParameter(VertexGroupSupportParameter, VertexSupportYParameter):
     """
     Parametrize wiht a single value the Y coordinate of a group of support nodes.
     """
@@ -431,7 +437,7 @@ class VertexGroupSupportYParameter(VertexGroupParameter, VertexSupportYParameter
         super().__init__(*args, **kwargs)
 
 
-class VertexGroupSupportZParameter(VertexGroupParameter, VertexSupportZParameter):
+class VertexGroupSupportZParameter(VertexGroupSupportParameter, VertexSupportZParameter):
     """
     Parametrize wiht a single value the Z coordinate of a group of support nodes.
     """
