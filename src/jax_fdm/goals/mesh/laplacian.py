@@ -27,7 +27,7 @@ class MeshXYZFaceLaplacianGoal(ScalarGoal, MeshGoal):
     This energy is computed as the distance of the XYZ coordinates of
     every vertex to the centroid of the centroids of the faces the
     vertex is part of.
-
+ b
     An enegy-minimizing mesh will have every vertex as close as possible
     to its neighboring faces centroid.
     """
@@ -42,9 +42,9 @@ class MeshXYZFaceLaplacianGoal(ScalarGoal, MeshGoal):
         super().init(model, structure)
         self.connectivity_faces_vertices = structure.connectivity_faces_vertices
 
-    def prediction(self, eq_state, index):
+    def laplacian_vertices(self, eq_state, index):
         """
-        The current load path of the network.
+        The current mesh Laplacian.
         """
         def vertex_laplacian(vertex_xyz, vertex_mask, faces_centroid):
             nbrs_xyz = vertex_faces_centroid(vertex_mask, faces_centroid)
@@ -64,6 +64,12 @@ class MeshXYZFaceLaplacianGoal(ScalarGoal, MeshGoal):
                                         self.connectivity_faces_vertices,
                                         faces_centroid)
 
-        laplacian = jnp.mean(laplacians)
+        return laplacians
 
-        return jnp.atleast_1d(laplacian)
+    def prediction(self, eq_state, index):
+        """
+        The current mesh Laplacian.
+        """
+        laplacians = self.laplacian_vertices(eq_state, index)
+
+        return jnp.atleast_1d(jnp.mean(laplacians))
