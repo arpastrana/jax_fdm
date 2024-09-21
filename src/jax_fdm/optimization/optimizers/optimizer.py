@@ -42,7 +42,7 @@ class Optimizer:
         Returns the defined constraints in a format amenable to `scipy.minimize`.
         """
         if constraints:
-            print(f"Warning! {self.name} does not support constraints. I am ignoring them.")
+            print(f"\nWarning! {self.name} does not support constraints. I am ignoring them.")
 
     def gradient(self, loss):
         """

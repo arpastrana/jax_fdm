@@ -78,7 +78,7 @@ def constrained_fdm(datastructure,
     datastructure_validate(datastructure)
 
     if constraints and sparse:
-        print("Constraints are not supported yet for sparse inputs. Switching to dense.")
+        print("\nConstraints are not supported yet for sparse inputs. Switching to dense.")
         sparse = False
 
     model = model_from_sparsity(sparse, tmax, eta, is_load_local, itersolve_fn, implicit_diff, verbose)
