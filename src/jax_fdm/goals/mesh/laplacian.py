@@ -27,7 +27,7 @@ class MeshXYZFaceLaplacianGoal(ScalarGoal, MeshGoal):
     This energy is computed as the distance of the XYZ coordinates of
     every vertex to the centroid of the centroids of the faces the
     vertex is part of.
- b
+
     An enegy-minimizing mesh will have every vertex as close as possible
     to its neighboring faces centroid.
     """
