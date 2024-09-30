@@ -93,6 +93,16 @@ class PredictionError(Error):
         return gstate.prediction * gstate.weight
 
 
+class MeanPredictionError(PredictionError):
+    """
+    The mean prediction error.
+
+    Average out all errors because no single error is important enough.
+    """
+    def errors(self, errors):
+        return super(PredictionError, self).errors(errors) / self.number_of_goals()
+
+
 class AbsoluteError(Error):
     """
     The canonical absolute error.
