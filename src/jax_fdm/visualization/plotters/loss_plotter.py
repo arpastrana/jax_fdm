@@ -19,12 +19,12 @@ class LossPlotter:
     """
     Plot a loss function.
     """
-    def __init__(self, loss, datastructure, *args, **kwargs):
+    def __init__(self, loss, datastructure, **kwargs):
         self.loss = loss
         self.structure = structure_from_datastructure(datastructure, sparse=False)
         self.fig = plt.figure(**kwargs)
 
-    def plot(self, history, print_breakdown=True, plot_legend=True):
+    def plot(self, history, print_breakdown=True, plot_legend=True, yscale="log", **eq_kwargs):
         """
         Plot the loss function and its error components on a list of fdm parameter states.
         """
@@ -36,8 +36,11 @@ class LossPlotter:
                               history,
                               is_leaf=lambda y: isinstance(y, list))
 
+        if not eq_kwargs:
+            eq_kwargs = {"tmax": 1}
+
         # Model is dense because it dense supports vmapping and sparse does not
-        model = EquilibriumModel(tmax=1)
+        model = EquilibriumModel(**eq_kwargs)
 
         equilibrium_vmap = vmap(model, in_axes=(0, None))
         eq_states = equilibrium_vmap(params, self.structure)
@@ -70,7 +73,7 @@ class LossPlotter:
 
         plt.xlabel("Optimization iterations")
         plt.ylabel("Loss")
-        plt.yscale("log")
+        plt.yscale(yscale)
         plt.grid()
 
         if plot_legend:
