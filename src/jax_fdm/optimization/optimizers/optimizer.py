@@ -180,7 +180,7 @@ class Optimizer:
 
         print(res_q.message)
         print(f"Final gradient norm: {jnp.linalg.norm(grad_val):.4}")
-        print(f"Final loss in {res_q.nit} iterations: {res_q.fun:.4}")
+        print(f"Final loss in {res_q.nit} iterations: {loss_val:.4}")
         print(f"Optimization elapsed time: {perf_counter() - start_time} seconds")
 
         return res_q.x

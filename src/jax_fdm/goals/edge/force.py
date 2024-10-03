@@ -38,4 +38,4 @@ class EdgesForceEqualGoal(ScalarGoal, EdgeGoal):
         """
         forces = eq_state.forces[index]
 
-        return jnp.atleast_1d(jnp.var(forces) / jnp.mean(forces))
+        return jnp.atleast_1d(jnp.var(forces) / jnp.mean(jnp.abs(forces))
