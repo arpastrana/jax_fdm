@@ -168,14 +168,14 @@ class Optimizer:
 
     def solve(self, opt_problem):
         """
-        Solve an optimization problem by minimizing a loss function via gradient descent.
+        Solve an optimization problem by minimizing a loss function.
         """
         print(f"Optimization with {self.name} started...")
         start_time = perf_counter()
 
         # minimize
-        res_q = self._minimize(opt_problem)
         loss_and_grad_fn = opt_problem["fun"]
+        res_q = self._minimize(opt_problem)
         loss_val, grad_val = loss_and_grad_fn(res_q.x)
 
         print(res_q.message)
