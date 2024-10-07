@@ -321,6 +321,10 @@ class FDNetworkArtist(NetworkArtist):
 
         elif isinstance(width, Iterable) and len(width) == 2:
             width_min, width_max = width
+
+            if not self.edges:
+                return
+
             forces = [fabs(self.network.edge_force(edge)) for edge in self.edges]
 
             if min(forces) == max(forces):
