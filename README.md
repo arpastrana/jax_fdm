@@ -162,11 +162,12 @@ If you found this library to be useful in academic or industry work, please cons
 
 ``` bibtex
 @inproceedings{pastrana_jaxfdm_2023,
-               title={{JAX}~{FDM}: A differentiable solver for inverse form-finding},
-               author={Rafael Pastrana and Deniz Oktay and Ryan P. Adams and Sigrid Adriaenssens},
-               booktitle={ICML 2023 Workshop on Differentiable Almost Everything: Differentiable Relaxations, Algorithms, Operators, and Simulators},
-               year={2023},
-               url={https://openreview.net/forum?id=Uu9OPgh24d}}
+               title = {{{JAX FDM}}: {{A}} Differentiable Solver for Inverse Form-Finding},
+               booktitle = {Differentiable {{Almost Everything Workshop}} of the 40th {{International Conference}} on {{Machine Learning}}},
+               author = {Pastrana, Rafael and Oktay, Deniz and Adams, Ryan P. and Adriaenssens, Sigrid},
+               year = {2023},
+               address = {Hawaii, USA},
+               url = {https://openreview.net/forum?id=Uu9OPgh24d}}
 ```
 
 ```bibtex
