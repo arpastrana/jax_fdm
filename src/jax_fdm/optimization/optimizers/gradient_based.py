@@ -67,7 +67,7 @@ class TruncatedNewton(Optimizer):
     Minimize a scalar function of one or more variables using a truncated Newton (TNC) algorithm.
     """
     def __init__(self, **kwargs):
-        super().__init__(name="TNC", **kwargs)
+        super().__init__(name="TNC", disp=False, **kwargs)
 
 
 class TrustRegionConstrained(ConstrainedOptimizer):
