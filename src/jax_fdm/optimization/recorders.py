@@ -20,16 +20,17 @@ class OptimizationRecorder(Data):
         self.history = self._init_history()
 
     def _init_history(self):
-        loads = LoadState(nodes=[], edges=[], faces=[])
-        return EquilibriumParametersState(q=[], xyz_fixed=[], loads=loads)
+        if self.optimizer:
+            loads = LoadState(nodes=[], edges=[], faces=[])
+            return EquilibriumParametersState(q=[], xyz_fixed=[], loads=loads)
+
+        history = []
+        return history
 
     def __call__(self, xk, *args, **kwargs):
         if self.optimizer:
             xk = self.optimizer.parameters_fdm(xk)
         self.record(xk)
-
-    def __len__(self):
-        return len(self.history[0])
 
     def __getitem__(self, index):
         def index_from_leaf(leaf):
@@ -43,7 +44,10 @@ class OptimizationRecorder(Data):
         def append_file(data, file):
             file.append(data)
 
-        jtu.tree_map(append_file, parameters, self.history)
+        if self.optimizer:
+            jtu.tree_map(append_file, parameters, self.history)
+        else:
+            append_file(parameters, self.history)
 
     @property
     def data(self):
