@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Wrapped two gradient-free optimizers from scipy: Nelder-Mead and Powell. They are available as `jax_fdm.optimizers.NelderMead` and `jax_fdm.optimizers.Powell`, respectively. 
+- Linked two evolutionary optimizers from scipy They are available as `jax_fdm.optimizers.DualAnnealing` and `jax_fdm.optimizers.DifferentialEvolution`.
 - Added support for kwargs in `LossPlotter.plot()`. The kwargs control the parameters of the equilibrium model used to plot the loss history.
 - Added `VertexSupportParameter.index()`. This change might appear redundant, but it was necessary to deal with the method resolution order of the parent classes of `VertexSupportParameter`.
 - Added `VertexGroupSupportParameter.index()` for similar reasons as the listed above.
