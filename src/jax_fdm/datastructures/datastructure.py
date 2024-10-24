@@ -87,8 +87,18 @@ class FDDatastructure(Datastructure):
         """
         Print information aboud the equilibrium state of the network.
         """
-        stats = {"FDs": self.edges_forcedensities(),
-                 "Forces": self.edges_forces(),
+        edges_pos = []
+        edges_neg = []
+        for edge in self.edges():
+            _edges = edges_neg
+            if self.edge_forcedensity(edge) > 0.0:
+                _edges = edges_pos
+            _edges.append(edge)
+
+        stats = {"FDs [-]": self.edges_forcedensities(keys=edges_neg),
+                 "FDs [+]": self.edges_forcedensities(keys=edges_pos),
+                 "Forces [-]": self.edges_forces(keys=edges_neg),
+                 "Forces [+]": self.edges_forces(keys=edges_pos),
                  "Lengths": self.edges_lengths()}
 
         other_stats = other_stats or {}
@@ -98,6 +108,9 @@ class FDDatastructure(Datastructure):
         print(f"Load path: {round(self.loadpath(), 3)}")
 
         for name, vals in stats.items():
+
+            if not vals:
+                continue
 
             minv = round(min(vals), 3)
             maxv = round(max(vals), 3)
