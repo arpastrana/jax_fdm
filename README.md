@@ -62,7 +62,7 @@ Finally, install JAX FDM with a one-liner via `pip`:
 pip install jax-fdm
 ```
 
-JAX FDM requires Python 3.7+, JAX 0.3.17+, Numpy 1.23.3+, Scipy 1.9.1+, and COMPAS 1.16.0+.
+JAX FDM requires Python 3.7+, JAX 0.3.17+, Numpy 1.23.3+, Scipy 1.9.1+, and COMPAS 1.17.10
 For visualization, it uses COMPAS_VIEW2 0.7.0.
 
 ### Are you a Windows user? 
@@ -73,7 +73,8 @@ Consequently, installing JAX FDM on Windows may require a different approach fro
 
 One **working** alternative for Windows users is to install JAX and JAX FDM using the [Windows build for JAX](https://github.com/cloudhan/jax-windows-builder).
 Note that this is a community build that has been reported to work **only on Windows 11**.
-Another option to install JAX on Windows is to do so via the [Windows Subsystem for Linux](https://learn.microsoft.com/en-us/windows/wsl/about), with the limitation of having marginal graphical output.
+Another option to install JAX on Windows is to do so via the [Windows Subsystem for Linux](https://learn.microsoft.com/en-us/windows/wsl/about).
+The limitation of this second approach is having no graphical output.
 Please refer to [JAX's installation instructions](https://github.com/google/jax#installation) for other alternatives to install JAX on Windows.
 
 ## Documentation
