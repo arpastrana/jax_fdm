@@ -216,7 +216,11 @@ class Mesh(Graph, MeshIndexingMixins):
                     if edge == halfedge1 or edge == halfedge2:
                         findices.append(findex)
 
-            assert len(findices) <= 2
+            # NOTE: Temporary disabled, but might cause trouble in face loads calculations
+            # assert len(findices) <= 2
+            if len(findices) > 2:
+                print(f"Warning: Edge {(u, v)} is non-manifold as it is shared by more than 2 faces ({len(findices)}).")
+                print("This might lead to errors in area load calculations.")
 
             edges_faces.append(tuple(findices))
 
