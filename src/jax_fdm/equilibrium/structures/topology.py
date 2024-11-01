@@ -209,18 +209,18 @@ class Mesh(Graph, MeshIndexingMixins):
                 face = [vkey for vkey in face if vkey >= 0]
                 face_loop = np.concatenate((face, face[:1]))
                 for u, v in pairwise(face_loop):
-                    # iterate one time up, one time clockwise, another counter-clockwise
+                    # iterate one one time clockwise, another counter clockwise
                     halfedge1 = (int(u), int(v))
                     halfedge2 = (int(v), int(u))
 
                     if edge == halfedge1 or edge == halfedge2:
                         findices.append(findex)
 
-            # NOTE: Temporary disabled, but might cause trouble in face loads calculations
+            # NOTE: Temporary disabled assertion
             # assert len(findices) <= 2
+
             if len(findices) > 2:
-                print(f"Warning: Edge {(u, v)} is non-manifold as it is shared by more than 2 faces ({len(findices)}).")
-                print("This might lead to errors in area load calculations.")
+                print(f"Warning: Edge {edge} is non-manifold, it's shared by ({len(findices)}) faces. This might lead to errors in area load calculations.")
 
             edges_faces.append(tuple(findices))
 
