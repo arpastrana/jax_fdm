@@ -288,8 +288,7 @@ def fixed_point_bwd(solver, solver_config, f, res, vec):
     solver_config = {k: v for k, v in solver_config.items()}
     solver_config["eta"] = 1e-3
 
-    # u_star = solver_forward(
-    u_star = solver_fixedpoint(
+    u_star = solver_forward(
         rev_iter,  # The function to find a fixed-point of
         vec,  # The parameters of rev_iter
         vec,  # The initial guess of the solution vector
