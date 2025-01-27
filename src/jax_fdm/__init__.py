@@ -15,6 +15,7 @@ jax_fdm
 from __future__ import print_function
 
 import os
+import jax
 
 import numpy as np
 import jax.numpy as jnp
@@ -43,5 +44,4 @@ DTYPE_JAX = jnp.float64
 
 # this only works on startup!
 if DTYPE_JAX == jnp.float64 or DTYPE_NP == np.float64:
-    from jax.config import config
-    config.update("jax_enable_x64", True)
+    jax.config.update("jax_enable_x64", True)
