@@ -31,7 +31,7 @@ class Optimizer:
     """
     Base class for all optimizers.
     """
-    def __init__(self, name, disp=True):
+    def __init__(self, name, disp=True, **kwargs):
         self.name = name
         self.disp = disp
         self.pm = None
@@ -153,6 +153,8 @@ class Optimizer:
             constraints = self.constraints(constraints, model, structure, x)
             print(f"\tConstraints warmup time: {(perf_counter() - start_time):.4} seconds")
 
+        options = self.options(extra={"maxiter": maxiter})
+
         opt_kwargs = {"fun": loss_and_grad_fn,
                       "jac": True,
                       "hess": hessian_fn,
@@ -162,9 +164,29 @@ class Optimizer:
                       "bounds": bounds,
                       "constraints": constraints,
                       "callback": callback,
-                      "options": {"maxiter": maxiter, "disp": self.disp}}
+                      "options": options
+                      }
 
         return opt_kwargs
+
+    def options(self, extra=None):
+        """
+        Assemble a dictionary with method-specific optimization options.
+        """
+        options = {"disp": self.disp}
+
+        if extra is None:
+            return options
+
+        if not isinstance(extra, dict):
+            raise ValueError("Extra options must be a dictionary!")
+
+        for key, value in extra.items():
+            if value is None:
+                continue
+            options[key] = value
+
+        return options
 
     def solve(self, opt_problem):
         """
