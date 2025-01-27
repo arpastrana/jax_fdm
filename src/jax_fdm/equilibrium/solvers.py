@@ -206,51 +206,6 @@ def fixed_point_fwd(solver, solver_config, f, a, x_init):
     return x_star, (a, x_star)
 
 
-def fixed_point_bwd_og(solver, solver_config, f, res, vec):
-    """
-    The backward pass of an iterative fixed point solver.
-
-    Parameters
-    ----------
-    solver: The function that executes a fixed point solver.
-    solver_config: The configuration options of the solver.
-    f : The function to iterate upon.
-    res : Auxiliary data transferred from the forward pass.
-    vec: The vector on the left of the VJP.
-
-    Returns
-    -------
-    x : The solution vector at a fixed point.
-    res : None
-    """
-    a, x_star = res
-    _, vjp_a = vjp(lambda a: f(a, x_star), a)
-
-    def rev_iter(packed, u):
-        """
-        The function ought to have signature f(a, u(a)).
-        We are looking for a fixed point u*(a) = f(a, u*(a)).
-        """
-        a, x_star, vec = packed
-
-        # Calculate the Jacobian df / dx
-        _, vjp_x = vjp(lambda x: f(a, x), x_star)
-
-        # Affine function: u = vector + u * df / dx
-        return vec + vjp_x(u)[0]
-
-    u_star = solver(
-        rev_iter,  # The function to find a fixed-point of
-        (a, x_star, vec),  # The parameters of rev_iter
-        vec,  # The initial guess of the solution vector
-        solver_config)  # The configuration of the solver
-
-    # VJP: u * df / da
-    a_bar = vjp_a(u_star)[0]
-
-    return a_bar, None
-
-
 def fixed_point_bwd(solver, solver_config, f, res, vec):
     """
     The backward pass of an iterative fixed point solver.
@@ -279,10 +234,13 @@ def fixed_point_bwd(solver, solver_config, f, res, vec):
 
     def rev_iter(vec, u):
         """
+        Evaluates the function: u = vector + u * df / dx
+
+        Notes
+        -----
         The function ought to have signature f(a, u(a)).
         We are looking for a fixed point u*(a) = f(a, u*(a)).
         """
-        # Affine function: u = vector + u * df / dx
         return vec + vjp_x(u)[0]
 
     solver_config = {k: v for k, v in solver_config.items()}
@@ -292,8 +250,8 @@ def fixed_point_bwd(solver, solver_config, f, res, vec):
         rev_iter,  # The function to find a fixed-point of
         vec,  # The parameters of rev_iter
         vec,  # The initial guess of the solution vector
-        solver_config
-    )  # The configuration of the solver
+        solver_config  # The configuration of the solver
+    )
 
     # VJP: u * df / da
     a_bar = vjp_a(u_star)[0]
