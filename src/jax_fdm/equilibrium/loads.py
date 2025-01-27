@@ -114,19 +114,6 @@ def edge_tributary_face_area(line, centroid):
     return area_triangle(triangle)
 
 
-def _faces_load_2(xyz, faces, faces_load, is_local):
-    """
-    Transform the face loads to the XYZ cartesian coordinate system.
-    """
-    def _faces_load(xyz, face, face_load, is_local):
-        return jnp.where(is_local, face_load_lcs(xyz, face, face_load), face_load)
-
-    floads, is_local = faces_load
-    vmap_facesload = vmap(_faces_load, in_axes=(None, 0, 0, 0))
-
-    return vmap_facesload(xyz, faces, faces_load, is_local)
-
-
 # ==========================================================================
 # Edge loads
 # ==========================================================================
