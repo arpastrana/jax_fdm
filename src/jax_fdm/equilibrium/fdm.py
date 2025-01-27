@@ -159,7 +159,10 @@ def datastructure_validate(datastructure):
     """
     assert datastructure.number_of_supports() > 0, "The FD datastructure has no supports"
     assert datastructure.number_of_edges() > 0, "The FD datastructure has no edges"
-    assert np.all(np.abs(np.array(datastructure.edges_forcedensities())) > 0.0), "The FD datastructure has edges with zero force density"
+
+    has_fd = np.abs(np.array(datastructure.edges_forcedensities())) > 0.0
+    num_no_fd = np.sum(np.logical_not(has_fd).astype(float))
+    assert np.all(has_fd), f"The FD datastructure has {int(num_no_fd)} edges with zero force density"
 
     try:
         assert datastructure.number_of_nodes() > 0, "The FD datastructure has no nodes"
