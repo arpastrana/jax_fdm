@@ -220,7 +220,7 @@ class Mesh(Graph, MeshIndexingMixins):
             # assert len(findices) <= 2
 
             if len(findices) > 2:
-                print(f"Warning: Edge {edge} is non-manifold, it's shared by ({len(findices)}) faces. This might lead to errors in area load calculations.")
+                print(f"Warning: Edge {edge} is non-manifold, it's shared by ({len(findices)}) faces. This might lead to unexpected behavior in e.g. in area load calculations.")
 
             edges_faces.append(tuple(findices))
 
