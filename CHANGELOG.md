@@ -9,12 +9,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Implemented `Optimizer.options()` to allow for method-specific setup in `scipy.optimize.minimize`. This new method assembles the `options` dictionary required by `scipy` in a way that can be customizable per optimizer.
+
 ### Changed
 
+- `jax_fdm.equilibrium.datastructure_validate` now reports the number of edges with zero force densities.
+- `LBFGSBS` became a subclass of `LBFGSB` instead of `Optimizer`.
 - Disabled hard assertion test that ensured that every edge in a `topology.Mesh()` object was connected to at most 2 faces (manifoldness preservation). Now we print out a warning since we are all consenting adults over here. The implications of this change is that area load calculations might be incorrect, but this needs to be more thoroughly tested at a later time.
 
 ### Removed
 
+- Deleted `jax_fdm.loads._faces_load_2` because it was not longer used.
 
 ## [0.8.6] 2024-10-30
 
