@@ -215,9 +215,8 @@ class EquilibriumModel:
             """
             This closure function avoids re-computing A and f_fixed throughout iterations
             because these two matrices remain constant during the fixed point search.
-
-            TODO: Extract closure into function shared with the other nodes equilibrium function?
             """
+            # TODO: Extract closure into function shared with the other nodes equilibrium function?
             A, f_fixed, xyz_fixed, load_state = params
 
             free = structure.indices_free
@@ -242,8 +241,6 @@ class EquilibriumModel:
                          "eta": eta,
                          "verbose": verbose,
                          "implicit": True}
-        # For jaxopt compatibility (as it does not support sparse matrices yet)
-        #  "implicit": False if self.linearsolve_fn is spsolve else True}
 
         solver_kwargs = {"solver_config": solver_config,
                          "f": equilibrium_iterative_fn,
@@ -251,13 +248,10 @@ class EquilibriumModel:
                          "x_init": xyz_init}
 
         if implicit_diff:
-            # xyz_new = fixed_point(solver, **solver_kwargs)
             return fixed_point(solver, **solver_kwargs)
 
-        # xyz_new = solver(**solver_kwargs)
         return solver(**solver_kwargs)
 
-        # return xyz_new
 
     # ----------------------------------------------------------------------
     # Equilibrium state
