@@ -162,7 +162,7 @@ def sparse_solve_bwd(res, g):
 
     params = (A, b)
 
-    # Call vjp of residual_fn to compute gradient wrt params
+    # Call vjp of residual_fn to compute gradient wrt parameters
     params_bar = jax.vjp(residual_fn, params)[1](lam)[0]
 
     return params_bar

@@ -187,6 +187,9 @@ class Mesh(Graph, MeshIndexingMixins):
     def _connectivity_edges_faces_matrix(self):
         """
         The connectivity matrix between edges and faces of a mesh.
+
+        The matrix has dimensions (M x F), where M is the number of edges
+        and F is the number of faces.
         """
         C = np.zeros((self.num_edges, self.num_faces))
 
@@ -345,9 +348,17 @@ def mesh_connectivity_edges_faces(mesh):
     return connectivity
 
 
-def face_matrix(face_vertices, rtype="array", normalize=False):
+def face_matrix(face_vertices, rtype="array", normalize=True):
     """
     Creates a face-vertex adjacency matrix that skips -1 vertex entries.
+
+    Notes
+    -----
+    The matrix has dimensions (F x N), where F is the number of faces
+    and N is the number of vertices.
+
+    If `normalize=True`, then the values in every row add up to `1`.
+    Otherwise, the row adds up to the number of vertices in the face.
     """
     face_vertices_clean = []
     for face in face_vertices:
