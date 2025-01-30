@@ -239,8 +239,8 @@ class EquilibriumModel:
         solver = solver or self.itersolve_fn
         solver_config = {"tmax": tmax,
                          "eta": eta,
-                         "verbose": verbose,
-                         "implicit": True}
+                         "implicit_diff": implicit_diff,
+                         "verbose": verbose}
 
         solver_kwargs = {"solver_config": solver_config,
                          "f": equilibrium_iterative_fn,
@@ -251,7 +251,6 @@ class EquilibriumModel:
             return fixed_point(solver, **solver_kwargs)
 
         return solver(**solver_kwargs)
-
 
     # ----------------------------------------------------------------------
     # Equilibrium state
