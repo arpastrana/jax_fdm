@@ -58,6 +58,7 @@ class LossPlotter:
 
         # Plot loss
         losses = jnp.sum(jnp.asarray(list(errors_all.values()), dtype=DTYPE_JAX), axis=0)
+        self.print_error_stats(losses, "Loss")
         plt.plot(losses, label=self.loss.name)
 
         # Report loss breakdown
