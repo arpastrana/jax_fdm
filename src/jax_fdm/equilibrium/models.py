@@ -99,8 +99,8 @@ class EquilibriumModel:
         """
         Calculate static equilibrium on the nodes of a structure.
         """
-        indices = structure.indices_freefixed
         xyz_free = self.nodes_free_positions(q, xyz_fixed, loads_nodes, structure)
+        indices = structure.indices_freefixed
 
         return self.nodes_positions(xyz_free, xyz_fixed, indices)
 
@@ -171,7 +171,7 @@ class EquilibriumModel:
                                              xyz_fixed,
                                              loads_state,
                                              structure,
-                                             xyz_init=xyz,
+                                             # xyz_init=xyz,
                                              tmax=tmax,
                                              eta=eta,
                                              solver=solver,
@@ -252,6 +252,85 @@ class EquilibriumModel:
 
         return solver(**solver_kwargs)
 
+    def equilibrium_iterative_residual(self,
+                                       q,
+                                       xyz_fixed,
+                                       load_state,
+                                       structure,
+                                       xyz_init=None,
+                                       tmax=100,
+                                       eta=1e-6,
+                                       solver=None,
+                                       implicit_diff=True,
+                                       verbose=False):
+        """
+        Calculate static equilibrium on a structure iteratively.
+
+        Notes
+        -----
+        This function only supports reverse mode auto-differentiation.
+        To support forward-mode, we should define a custom jvp using implicit differentiation.
+        """
+        def loads_fn(params, xyz_free):
+            """
+            Calculate loads matrix of the free nodes of the system.
+            """
+            # Unpack parameters
+            q, xyz_fixed, load_state = params
+
+            # Concatenate free and fixed xyz coordinates
+            xyz = self.nodes_positions(xyz_free, xyz_fixed, structure.indices_freefixed)
+
+            # Calculate shape-dependent loads with full xyz
+            loads_nodes = self.nodes_load(xyz, load_state, structure)
+
+            return self.force_matrix(q, xyz_fixed, loads_nodes, structure)
+
+        def residual_fn(params, xyz_free):
+            """
+            The residual function of the equilibrium problem.
+            """
+            # Unpack parameters
+            q, xyz_fixed, load_state = params
+
+            # Calculate stiffness matrix
+            A = self.stiffness_matrix(q, structure)
+
+            # Calculate load matrix
+            b = loads_fn(params, xyz_free)
+
+            # Residual function
+            residual = A @ xyz_free - b
+
+            return residual
+
+        # recompute xyz_init if not input
+        if xyz_init is None:
+            xyz_free_init = self.nodes_free_positions(q, xyz_fixed, load_state.nodes, structure)
+
+        # Params
+        params = (q, xyz_fixed, load_state)
+
+        solver = solver or self.itersolve_fn
+        solver_config = {"tmax": tmax,
+                         "eta": eta,
+                         "implicit_diff": implicit_diff,
+                         "verbose": verbose}
+
+        solver_kwargs = {"solver_config": solver_config,
+                         "f": residual_fn,
+                         "a": params,
+                         "x_init": xyz_free_init}
+
+        if implicit_diff:
+            xyz_free_star = fixed_point(solver, **solver_kwargs)
+        else:
+            xyz_free_star = solver(**solver_kwargs)
+
+        xyz = self.nodes_positions(xyz_free_star, xyz_fixed, structure.indices_freefixed)
+
+        return xyz
+
     # ----------------------------------------------------------------------
     # Equilibrium state
     # ----------------------------------------------------------------------
@@ -287,13 +366,13 @@ class EquilibriumModel:
 
         return c_free.T @ (q[:, None] * c_free)
 
-    def force_matrix(self, q, xyz_fixed, loads, structure):
+    def force_matrix(self, q, xyz_fixed, load_nodes, structure):
         """
         The force residual matrix of the structure.
         """
         free = structure.indices_free
 
-        return loads[free, :] - self.force_fixed_matrix(q, xyz_fixed, structure)
+        return load_nodes[free, :] - self.force_fixed_matrix(q, xyz_fixed, structure)
 
     @staticmethod
     def force_fixed_matrix(q, xyz_fixed, structure):
@@ -304,6 +383,19 @@ class EquilibriumModel:
         c_fixed = structure.connectivity_fixed
 
         return c_free.T @ (q[:, None] * (c_fixed @ xyz_fixed))
+
+    def force_matrix_shape_dependent(self, xyz_free, q, xyz_fixed, load_state, structure):
+        """
+        The force residual matrix of the structure.
+        """
+        # Concatenate free and fixed xyz coordinates
+        xyz = self.nodes_positions(xyz_free, xyz_fixed, structure.indices_freefixed)
+
+        # Calculate shape-dependent loads with full xyz
+        loads_nodes = self.nodes_load(xyz, load_state, structure)
+
+        # Return load matrix
+        return self.force_matrix(q, xyz_fixed, loads_nodes, structure)
 
 
 # ==========================================================================
