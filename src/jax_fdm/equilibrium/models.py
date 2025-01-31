@@ -1,5 +1,7 @@
 from equinox import is_array
 
+from jax.debug import print as jax_print
+
 import jax.numpy as jnp
 
 from jax.experimental.sparse import CSC
@@ -167,16 +169,19 @@ class EquilibriumModel:
                                         loads_state.edges,
                                         loads_state.faces)
 
-            xyz = self.equilibrium_iterative(q,
-                                             xyz_fixed,
-                                             loads_state,
-                                             structure,
-                                             # xyz_init=xyz,
-                                             tmax=tmax,
-                                             eta=eta,
-                                             solver=solver,
-                                             implicit_diff=implicit_diff,
-                                             verbose=verbose)
+            # xyz = self.equilibrium_iterative(
+            xyz = self.equilibrium_iterative_residual(
+                q,
+                xyz_fixed,
+                loads_state,
+                structure,
+                xyz_init=None,  # xyz,
+                tmax=tmax,
+                eta=eta,
+                solver=solver,
+                implicit_diff=implicit_diff,
+                verbose=verbose
+            )
 
         loads_nodes = self.nodes_load(xyz, loads_state, structure)
 
@@ -297,16 +302,19 @@ class EquilibriumModel:
             A = self.stiffness_matrix(q, structure)
 
             # Calculate load matrix
+            xyz_free = jnp.reshape(xyz_free, (-1, 3))
             b = loads_fn(params, xyz_free)
 
             # Residual function
             residual = A @ xyz_free - b
 
-            return residual
+            return residual.ravel()
 
         # recompute xyz_init if not input
         if xyz_init is None:
+            print("Calculating initial guess")
             xyz_free_init = self.nodes_free_positions(q, xyz_fixed, load_state.nodes, structure)
+            xyz_free_init = xyz_free_init.ravel()
 
         # Params
         params = (q, xyz_fixed, load_state)
@@ -322,11 +330,17 @@ class EquilibriumModel:
                          "a": params,
                          "x_init": xyz_free_init}
 
-        if implicit_diff:
-            xyz_free_star = fixed_point(solver, **solver_kwargs)
-        else:
-            xyz_free_star = solver(**solver_kwargs)
+        # if implicit_diff:
+        #    xyz_free_star = fixed_point(solver, **solver_kwargs)
+        # else:
+        print("Solving equilibrium problem...")
+        xyz_free_star = solver(**solver_kwargs)
 
+        residual = residual_fn(params, xyz_free_star)
+        residual = jnp.linalg.norm(jnp.reshape(residual, (-1, 3)), axis=1)
+        print(f"Mean solution residual: {jnp.mean(residual).item():.3f}")
+
+        xyz_free_star = jnp.reshape(xyz_free_star, (-1, 3))
         xyz = self.nodes_positions(xyz_free_star, xyz_fixed, structure.indices_freefixed)
 
         return xyz
