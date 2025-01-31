@@ -2,7 +2,6 @@ from functools import partial
 
 import jax
 
-from jax.scipy.sparse.linalg import cg
 from jax.scipy.sparse.linalg import gmres
 
 import jax.numpy as jnp
@@ -60,8 +59,8 @@ def solver_anderson(f, a, x_init, solver_config):
                                has_aux=False,
                                history_size=5,  # 5 is the jaxopt default
                                ridge=1e-6,  # 1e-5 is the jaxopt default
-                               implicit_diff=False,
-                               unroll=unroll,
+                               implicit_diff=False,  # False,
+                               unroll=unroll,  # unroll,
                                jit=True,
                                verbose=verbose)
 
@@ -266,7 +265,7 @@ def fixed_point_bwd_forward(solver, solver_config, f, res, vec):
 
     # Copy solver config to leave forward config untouched
     solver_config = {k: v for k, v in solver_config.items()}
-    solver_config["eta"] = 1e-7
+    solver_config["eta"] = 1e-6
 
     # Solve adjoint function iteratively
     # u_star = solver_forward(
@@ -306,9 +305,6 @@ def fixed_point_bwd_iterative(solver, solver_config, f, res, vec):
     # Unpack data from forward pass
     a, x_star = res
 
-    # TODO: Stop gradient is a temporary test
-    # x_star = jax.lax.stop_gradient(x_star)
-
     # Calculate the vector Jacobian function v * df / dx at x*, closed around a
     _, vjp_x = vjp(lambda x: f(a, x), x_star)
 
@@ -324,10 +320,7 @@ def fixed_point_bwd_iterative(solver, solver_config, f, res, vec):
         return w - vjp_x(w)[0]
 
     # Solve adjoint function iteratively
-    # u_star, info = cg(A_fn, vec)
-    # u_star, info = cg(A_fn, vec, tol=1e-7, x0=vec)
-    # u_star, info = gmres(A_fn, vec, tol=1e-7)
-    u_star, info = gmres(A_fn, vec, x0=vec, tol=1e-7)
+    u_star, info = gmres(A_fn, vec, x0=vec, tol=1e-6)
 
     # Calculate the vector Jacobian function v * df / da at a, closed around x*
     _, vjp_a = vjp(lambda a: f(a, x_star), a)
