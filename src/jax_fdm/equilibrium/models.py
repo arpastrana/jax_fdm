@@ -181,11 +181,7 @@ class EquilibriumModel:
                                         loads_state.edges,
                                         loads_state.faces)
 
-            equilibrium_iterative_fn = self.equilibrium_iterative_residual
-            if not self.minimize_residual:
-                equilibrium_iterative_fn = self.equilibrium_iterative_xyz
-
-            xyz_free = equilibrium_iterative_fn(
+            xyz_free = self.eq_iterative_fn(
                 q,
                 xyz_fixed,
                 loads_state,

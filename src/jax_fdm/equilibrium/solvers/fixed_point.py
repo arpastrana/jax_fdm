@@ -60,6 +60,27 @@ def solver_fixedpoint(f, a, x_init, solver_config):
     return solver_jaxopt(FixedPointIteration, f, a, x_init, solver_config)
 
 
+def is_solver_fixedpoint(solver_fn):
+    """
+    Test if a solver function is a fixed point solver.
+
+    Parameters
+    ----------
+    `solver_fn`: A solver function
+
+    Returns
+    -------
+    `True` if the solver is a fixed point solver. Otherwise, `False`.
+    """
+    solver_fns = {
+        solver_anderson,
+        solver_fixedpoint,
+        solver_forward,
+        solver_newton
+    }
+
+    return solver_fn in solver_fns
+
 # ==========================================================================
 # Homecooked solvers
 # ==========================================================================
