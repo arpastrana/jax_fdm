@@ -37,7 +37,6 @@ class EquilibriumModel:
     `is_load_local`: If set to `True`, the face and edge loads are applied in their local coordinate system at every iteration (follower loads). Defaults to `False`.
     `itersolve_fn`: The function that calculates an equilibrium state iteratively. If `None`, the model defaults to forward fixed-point iteration. Note that only the solver must be consistent with the choice of residual function. Defaults to `None`.
     `implicit_diff`: If set to `True`, it applies implicit differentiation to speed up backpropagation. Defaults to `True`.
-    `ignore_nodes_load`: Whether to only apply edge and face loads during the iterative equilibrium calculations. Defaults to `True`.
     `verbose`: Whether to print out calculations' info to the terminal. Defaults to `False`.
     """
     def __init__(self,
@@ -46,7 +45,6 @@ class EquilibriumModel:
                  is_load_local=False,
                  itersolve_fn=None,
                  implicit_diff=True,
-                 ignore_nodes_load=True,
                  verbose=False):
         self.tmax = tmax
         self.eta = eta
@@ -55,7 +53,6 @@ class EquilibriumModel:
         self.itersolve_fn = itersolve_fn or solver_forward
         self.eq_iterative_fn = self.select_equilibrium_iterative_fn(self.itersolve_fn)
         self.implicit_diff = implicit_diff
-        self.ignore_nodes_load = ignore_nodes_load
         self.verbose = verbose
 
     # ----------------------------------------------------------------------
@@ -174,14 +171,6 @@ class EquilibriumModel:
         xyz_free = self.equilibrium(q, xyz_fixed, loads_nodes, structure)
 
         if tmax > 1:
-
-            # Setting node loads to zero when tmax > 1 if specified
-            if self.ignore_nodes_load:
-                loads_nodes = jnp.zeros_like(loads_nodes)
-                loads_state = LoadState(loads_nodes,
-                                        loads_state.edges,
-                                        loads_state.faces)
-
             xyz_free = self.eq_iterative_fn(
                 q,
                 xyz_fixed,
@@ -264,7 +253,6 @@ class EquilibriumModel:
         A = self.stiffness_matrix(q, structure)
         f_fixed = self.force_fixed_matrix(q, xyz_fixed, structure)
 
-        solver = solver or self.itersolve_fn
         solver_config = {"tmax": tmax,
                          "eta": eta,
                          "implicit_diff": implicit_diff,
@@ -275,6 +263,7 @@ class EquilibriumModel:
                          "a": (A, f_fixed, xyz_fixed, load_state),
                          "x_init": xyz_free_init}
 
+        solver = solver or self.itersolve_fn
         if implicit_diff:
             return fixed_point(solver, **solver_kwargs)
 
@@ -348,23 +337,27 @@ class EquilibriumModel:
         solver_config = {"tmax": tmax,
                          "eta": eta,
                          "implicit_diff": implicit_diff,
-                         "verbose": verbose}
+                         "verbose": verbose,
+                         "linear_solve_fn": self.linearsolve_fn,
+                         "loads_fn": loads_fn
+                         }
 
         solver_kwargs = {"solver_config": solver_config,
-                         "f": residual_fn,
-                         "a": params,
+                         "fn": residual_fn,
+                         "theta": params,
                          "x_init": xyz_free_init}
 
         solver = solver or self.itersolve_fn
-        # if implicit_diff:
-        #    xyz_free_star = fixed_point(solver, **solver_kwargs)
-        # else:
-        print("Solving equilibrium problem...")
-        xyz_free_star = solver(**solver_kwargs)
 
-        residual = residual_fn(params, xyz_free_star)
-        residual = jnp.linalg.norm(jnp.reshape(residual, (-1, 3)), axis=1)
-        print(f"Mean solution residual: {jnp.mean(residual).item():.3f}")
+        # print("Solving equilibrium problem...")
+        if implicit_diff:
+            xyz_free_star = least_squares(solver, **solver_kwargs)
+        else:
+            xyz_free_star = solver(**solver_kwargs)
+
+        # residual = residual_fn(params, xyz_free_star)
+        # residual = jnp.linalg.norm(jnp.reshape(residual, (-1, 3)), axis=1)
+        # print(f"Mean solution residual: {jnp.mean(residual).item():.3f}")
 
         xyz_free_star = jnp.reshape(xyz_free_star, (-1, 3))
 

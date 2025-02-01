@@ -8,6 +8,7 @@ import jax.numpy as jnp
 
 from jax import custom_vjp
 from jax import jacrev
+from jax import jacfwd
 from jax import vjp
 
 from equinox.internal import while_loop
@@ -331,7 +332,7 @@ def fixed_point_bwd_direct(solver, solver_config, f, res, vec):
 
     # NOTE: Use jacrev or jacfwd. jacfwd!
     # TODO: Replace jnp.eye with a vmap?
-    jac_fn = jax.jacfwd(f_ravel, argnums=1)  # Jacobian of f w.r.t. x
+    jac_fn = jacfwd(f_ravel, argnums=1)  # Jacobian of f w.r.t. x
     J = jac_fn(theta, x_star_flat)
 
     # Solve adjoint system

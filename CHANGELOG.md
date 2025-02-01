@@ -28,6 +28,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Removed
 
+- Removed attribute `EquilibriumModel.ignore_nodes_load`/`EquilibriumModel.nodes_loads_iter` because zeroing out node lodes behind the scenes can come bite you. Better to explicitly zero out them.
 - Deleted `jax_fdm.loads._faces_load_2` because it was not longer used.
 
 ## [0.8.6] 2024-10-30
