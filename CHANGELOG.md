@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Added `is_solver_fixedpoint` and `is_solver_leastsquares` to check the type of an iterative solver.
 - Added `solver_levenberg_marquardt` to calculate equilibrium states in the presence of  shape-dependent loads by minimizing a residual function explicitly. This solver is wrapped up from `jaxopt`. Note that this solver is currently incompatible with `EquilibriumModelSparse` because `jax.experimental.sparse.csr_matmat` does not implement a batching rule yet.
 - Added `solver_gauss_newton` to calculate equilibrium states in the presence of  shape-dependent loads by minimizing a residual function explicitly. This solver is wrapped up from `jaxopt`.
 - Exposed `report_breakdown` argument in `LossPlotter.plot()` to optionally plot the contributions of the error and regularization terms of a `Loss` function. 
@@ -16,6 +17,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- `EquilibriumModel` automatically picks the iterative equilibrium function based on solver input as `iterativesolve_fn`.
+- Functions `EquilibriumModel.equilibrium()` and
+`EquilibriumModel.equilibrium_iterative()` return `xyz_free` instead of `xyz`. The concatenation of `xyz_free` and `xyz_fixed` needed to build `xyz` is now handled by `EquilibriumModel.__call__()`.
 - Set `implicit=False` and `unroll=False` in `solver_anderson` when performing implicit differentiation on iterative equilibrium calculation with `implicit_diff=True`. 
 - Set `implicit=False` and `unroll=False` in `solver_fixedpoint` when performing implicit differentiation on iterative equilibrium calculation with `implicit_diff=True`. 
 - `jax_fdm.equilibrium.datastructure_validate` now reports the number of edges with zero force densities.

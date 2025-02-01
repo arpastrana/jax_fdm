@@ -57,6 +57,20 @@ def solver_levenberg_marquardt(f, a, x_init, solver_config):
     return solver_jaxopt(LevenbergMarquardt, f, a, x_init, solver_config)
 
 
+def is_solver_leastsquares(solver_fn):
+    """
+    Test if a solver function is a least squares solver.
+
+    Parameters
+    ----------
+    `solver_fn`: A solver function
+
+    Returns
+    -------
+    `True` if the solver is a least squares solver. Otherwise, `False`.
+    """
+    return solver_fn in {solver_gauss_newton, solver_levenberg_marquardt}
+
 # ==========================================================================
 # Fixed point solver wrapper for implicit differentiation
 # ==========================================================================

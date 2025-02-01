@@ -44,7 +44,15 @@ def fdm(datastructure,
     """
     datastructure_validate(datastructure)
 
-    model = model_from_sparsity(sparse, tmax, eta, is_load_local, itersolve_fn, implicit_diff, verbose)
+    model = model_from_sparsity(
+        sparse=sparse,
+        tmax=tmax,
+        eta=eta,
+        is_load_local=is_load_local,
+        itersolve_fn=itersolve_fn,
+        implicit_diff=implicit_diff,
+        verbose=verbose
+    )
     structure = structure_from_datastructure(datastructure, sparse)
 
     params = EquilibriumParametersState.from_datastructure(datastructure, dtype=DTYPE_JAX)
@@ -81,7 +89,16 @@ def constrained_fdm(datastructure,
         print("\nConstraints are not supported yet for sparse inputs. Switching to dense.")
         sparse = False
 
-    model = model_from_sparsity(sparse, tmax, eta, is_load_local, itersolve_fn, implicit_diff, verbose)
+    model = model_from_sparsity(
+        sparse=sparse,
+        tmax=tmax,
+        eta=eta,
+        is_load_local=is_load_local,
+        itersolve_fn=itersolve_fn,
+        implicit_diff=implicit_diff,
+        verbose=verbose
+    )
+
     structure = structure_from_datastructure(datastructure, sparse)
 
     opt_problem = optimizer.problem(model,
@@ -106,7 +123,14 @@ def constrained_fdm(datastructure,
 # Helpers
 # ==========================================================================
 
-def model_from_sparsity(sparse, tmax, eta, is_load_local, itersolve_fn=None, implicit_diff=True, verbose=False):
+def model_from_sparsity(
+        sparse,
+        tmax,
+        eta,
+        is_load_local=False,
+        itersolve_fn=None,
+        implicit_diff=True,
+        verbose=False):
     """
     Create an equilibrium model from a sparsity flag.
     """
@@ -114,7 +138,15 @@ def model_from_sparsity(sparse, tmax, eta, is_load_local, itersolve_fn=None, imp
     if sparse:
         model = EquilibriumModelSparse
 
-    return model(tmax, eta, is_load_local, itersolve_fn, implicit_diff, verbose=verbose)
+    model_instance = model(
+        tmax=tmax,
+        eta=eta,
+        is_load_local=is_load_local,
+        itersolve_fn=itersolve_fn,
+        implicit_diff=implicit_diff,
+        verbose=verbose)
+
+    return model_instance
 
 
 def structure_from_datastructure(datastructure, sparse):

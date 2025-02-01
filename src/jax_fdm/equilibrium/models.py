@@ -10,8 +10,11 @@ from jax_fdm.equilibrium.states import EquilibriumState
 
 from jax_fdm.equilibrium.sparse import sparse_solve as spsolve
 
-from jax_fdm.equilibrium.solvers import fixed_point
 from jax_fdm.equilibrium.solvers import solver_forward
+from jax_fdm.equilibrium.solvers import fixed_point
+from jax_fdm.equilibrium.solvers import least_squares
+from jax_fdm.equilibrium.solvers import is_solver_fixedpoint
+from jax_fdm.equilibrium.solvers import is_solver_leastsquares
 
 from jax_fdm.equilibrium.loads import nodes_load_from_faces
 from jax_fdm.equilibrium.loads import nodes_load_from_edges
@@ -32,7 +35,6 @@ class EquilibriumModel:
     `tmax`: The maximum number of iterations to calculate an equilibrium state. If `tmax=1`, the model is equivalent to doing one linear FDM step, and the rest of the parameters of this model are ignored. The edge and face loads are discarded too. Defaults to `100`.
     `eta`: The convergence tolerance for calculating an equilibrium state. Defaults to `1e-6`.
     `is_load_local`: If set to `True`, the face and edge loads are applied in their local coordinate system at every iteration (follower loads). Defaults to `False`.
-    `minimize_residual`: If set to `True`, it explicitly minimizes a residual function with `itersolve_fn` per iteration. Otherwise, the model performs a fixed-point iteration on the shape of a structure. Defaults to `False`.
     `itersolve_fn`: The function that calculates an equilibrium state iteratively. If `None`, the model defaults to forward fixed-point iteration. Note that only the solver must be consistent with the choice of residual function. Defaults to `None`.
     `implicit_diff`: If set to `True`, it applies implicit differentiation to speed up backpropagation. Defaults to `True`.
     `ignore_nodes_load`: Whether to only apply edge and face loads during the iterative equilibrium calculations. Defaults to `True`.
@@ -42,7 +44,6 @@ class EquilibriumModel:
                  tmax=100,
                  eta=1e-6,
                  is_load_local=False,
-                 minimize_residual=True,
                  itersolve_fn=None,
                  implicit_diff=True,
                  ignore_nodes_load=True,
@@ -50,9 +51,9 @@ class EquilibriumModel:
         self.tmax = tmax
         self.eta = eta
         self.is_load_local = is_load_local
-        self.minimize_residual = minimize_residual
         self.linearsolve_fn = jnp.linalg.solve
         self.itersolve_fn = itersolve_fn or solver_forward
+        self.eq_iterative_fn = self.select_equilibrium_iterative_fn(self.itersolve_fn)
         self.implicit_diff = implicit_diff
         self.ignore_nodes_load = ignore_nodes_load
         self.verbose = verbose
@@ -209,6 +210,18 @@ class EquilibriumModel:
         Calculate static equilibrium on a structure.
         """
         return self.nodes_equilibrium(q, xyz_fixed, loads_nodes, structure)
+
+    def select_equilibrium_iterative_fn(self, solver):
+        """
+        Pick the equilibrium function that is compatible with the input solver function.
+        """
+        if is_solver_fixedpoint(solver):
+            return self.equilibrium_iterative_xyz
+
+        if is_solver_leastsquares(solver):
+            return self.equilibrium_iterative_residual
+
+        raise ValueError(f"Solver {solver} is not supported!")
 
     def equilibrium_iterative_xyz(
             self,
