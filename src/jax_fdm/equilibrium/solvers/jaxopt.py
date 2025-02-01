@@ -27,7 +27,7 @@ def solver_jaxopt(solver_fn, fn, a, x_init, solver_config, solver_kwargs=None):
     # NOTE: Unroll python loop if solver config disables implicit diff
     # This enables reverse-mode AD to calculate gradients when implicit differentiation
     # is off because the solver uses lax.while_loop under the hood to not unroll iterations
-    # but this class of while loop is not reverse-mode differentiable.
+    # but this type of while loop is not reverse-mode differentiable.
     unroll = False
     if not implicit_diff:
         unroll = True

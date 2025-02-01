@@ -37,7 +37,7 @@ def solver_anderson(f, a, x_init, solver_config):
     -------
     x_star : The solution vector at the fixed point.
     """
-    solver_kwargs = {"history_size": 5, "ridge_size": 1e-6}
+    solver_kwargs = {"history_size": 5, "ridge": 1e-6}
 
     return solver_jaxopt(AndersonAcceleration, f, a, x_init, solver_config, solver_kwargs)
 
