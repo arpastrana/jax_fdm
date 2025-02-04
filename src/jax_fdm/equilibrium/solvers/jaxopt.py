@@ -1,3 +1,4 @@
+from chex import assert_max_traces
 
 
 def solver_jaxopt(solver_fn, fn, a, x_init, solver_config, solver_kwargs=None):
@@ -40,8 +41,8 @@ def solver_jaxopt(solver_fn, fn, a, x_init, solver_config, solver_kwargs=None):
         maxiter=tmax,
         tol=eta,
         has_aux=False,
-        implicit_diff=False,  # False, NOTE: Disabling jaxopt implicit diff on purpose
-        unroll=unroll,
+        implicit_diff=True,  # False, NOTE: Disabling jaxopt implicit diff on purpose
+        unroll=False,   # unroll
         jit=True,
         verbose=verbose,
         **solver_kwargs

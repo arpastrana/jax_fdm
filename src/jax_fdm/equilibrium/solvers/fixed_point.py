@@ -3,6 +3,7 @@ from functools import partial
 import jax
 
 from jax.scipy.sparse.linalg import gmres
+from jax.scipy.sparse.linalg import cg
 
 import jax.numpy as jnp
 
@@ -81,6 +82,7 @@ def is_solver_fixedpoint(solver_fn):
     }
 
     return solver_fn in solver_fns
+
 
 # ==========================================================================
 # Homecooked solvers
@@ -291,7 +293,8 @@ def fixed_point_bwd_iterative(solver, solver_config, f, res, vec):
         return w - vjp_x(w)[0]
 
     # Solve adjoint function iteratively
-    u_star, info = gmres(A_fn, vec, x0=vec, tol=1e-6)
+    # u_star, info = gmres(A_fn, vec, x0=vec, tol=1e-6)
+    u_star, info = cg(A_fn, vec, x0=vec, tol=1e-6)
 
     # Calculate the vector Jacobian function v * df / da at a, closed around x*
     _, vjp_a = vjp(lambda a: f(a, x_star), a)
@@ -357,5 +360,5 @@ def fixed_point_bwd_direct(solver, solver_config, f, res, vec):
 # ==========================================================================
 
 # fixed_point.defvjp(fixed_point_fwd, fixed_point_bwd_forward)
-fixed_point.defvjp(fixed_point_fwd, fixed_point_bwd_direct)
 # fixed_point.defvjp(fixed_point_fwd, fixed_point_bwd_iterative)
+fixed_point.defvjp(fixed_point_fwd, fixed_point_bwd_direct)
