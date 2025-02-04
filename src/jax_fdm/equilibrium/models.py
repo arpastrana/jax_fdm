@@ -1,5 +1,3 @@
-from chex import assert_max_traces
-
 from equinox import is_array
 
 from jax.debug import print as jax_print
@@ -212,7 +210,6 @@ class EquilibriumModel:
         """
         return self.nodes_equilibrium(q, xyz_fixed, loads_nodes, structure)
 
-    @assert_max_traces(n=1)
     def equilibrium_iterative_xyz(
             self,
             q,
@@ -239,7 +236,6 @@ class EquilibriumModel:
         K = self.stiffness_matrix(q, structure)
         R_fixed = self.residual_fixed_matrix(q, xyz_fixed, structure)
 
-        @assert_max_traces(n=5)
         def equilibrium_iterative_fn(params, xyz_free):
             """
             This closure function avoids re-computing A and f_fixed throughout iterations
@@ -269,7 +265,6 @@ class EquilibriumModel:
 
         return solver(**solver_kwargs)
 
-    @assert_max_traces(n=1)
     def equilibrium_iterative_residual(self,
                                        q,
                                        xyz_fixed,
@@ -289,14 +284,12 @@ class EquilibriumModel:
         This function only supports reverse mode auto-differentiation.
         To support forward-mode, we should define a custom jvp using implicit differentiation.
         """
-        # @assert_max_traces(n=5)
         def loads_fn(params, xyz_free):
             """
             A closure closing over a structure to calculate the load matrix.
             """
             return self.load_xyz_matrix(params, xyz_free, structure)
 
-        # @assert_max_traces(n=5)
         def residual_fn(params, xyz_free):
             """
             The residual function of the equilibrium problem.
