@@ -1,21 +1,20 @@
-from chex import assert_max_traces
+from functools import partial
 
 
-def solver_jaxopt(solver_fn, fn, a, x_init, solver_config, solver_kwargs=None):
+def solver_jaxopt(solver_cls, f, solver_config, solver_kwargs=None):
     """
-    Solve for a fixed point of a function f(a, x) using anderson acceleration in jaxopt.
+    Solve for a fixed point x* of a function f(x, theta) using a jaxopt solver.
 
     Parameters
     ----------
-    fn : The function to iterate upon.
-    a : The function parameters.
+    f : The function to iterate upon.
     x_init: An initial guess for the values of the solution vector.
+    theta : The function parameters.
     solver_config: The configuration options of the solver.
 
     Returns
     -------
-    x : The solution vector at a fixed point.
-
+    x_star : The solution vector at a fixed point.
     """
     tmax = solver_config["tmax"]
     eta = solver_config["eta"]
@@ -33,11 +32,8 @@ def solver_jaxopt(solver_fn, fn, a, x_init, solver_config, solver_kwargs=None):
     if not implicit_diff:
         unroll = True
 
-    def fn_swapped(x, a):
-        return fn(a, x)
-
-    solver = solver_fn(
-        fn_swapped,
+    solver = solver_cls(
+        f,
         maxiter=tmax,
         tol=eta,
         has_aux=False,
@@ -48,6 +44,14 @@ def solver_jaxopt(solver_fn, fn, a, x_init, solver_config, solver_kwargs=None):
         **solver_kwargs
     )
 
-    result = solver.run(x_init, a)
+    return partial(solver_jaxopt_run, solver=solver)
+    # return solver
+
+
+def solver_jaxopt_run(solver, x_init, theta, structure):
+    """
+    Run a jaxopt solver and extract the found solution.
+    """
+    result = solver.run(x_init, theta, structure)
 
     return result.params

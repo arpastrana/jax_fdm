@@ -2,11 +2,8 @@ from functools import partial
 
 import jax.numpy as jnp
 
-import matplotlib.pyplot as plt
-
 from jax import custom_vjp
 from jax import jacfwd
-from jax import jacrev
 from jax import vjp
 
 from jaxopt import GaussNewton
@@ -15,93 +12,84 @@ from jaxopt import LBFGS
 from jaxopt import ScipyMinimize
 
 from jax_fdm.equilibrium.solvers.jaxopt import solver_jaxopt
-# from jax_fdm.equilibrium.solvers.optimistix import solver_levenberg_marquardt_optimistix
 
 
 # ==========================================================================
 # Iterative solvers - JAXOPT
 # ==========================================================================
 
-def solver_gauss_newton(fn, theta, x_init, solver_config):
+def solver_gauss_newton(f, solver_config):
     """
-    Minimize the residual of function f(theta, x) = 0 using the Gauss Newton algorithm.
+    Minimize the residual of f(x, theta) = 0 with the Gauss Newton algorithm.
 
     Parameters
     ----------
     f : The function to iterate upon.
-    a : The function parameters.
-    x_init: An initial guess for the values of the solution vector.
     solver_config: The configuration options of the solver.
 
     Returns
     -------
-    x_star : The solution vector at the fixed point.
+    x_star : The solution vector.
     """
-    return solver_jaxopt(GaussNewton, fn, theta, x_init, solver_config)
+    return solver_jaxopt(GaussNewton, f, solver_config)
 
 
-def solver_levenberg_marquardt(fn, theta, x_init, solver_config):
+def solver_levenberg_marquardt(f, solver_config):
     """
-    Minimize the residual of function f(theta, x) = 0 using the Levenberg Marquardt algorithm.
+    Minimize the residual of f(x, theta) = 0 with the Levenberg Marquardt algorithm.
 
     Parameters
     ----------
     f : The function to iterate upon.
-    a : The function parameters.
-    x_init: An initial guess for the values of the solution vector.
     solver_config: The configuration options of the solver.
 
     Returns
     -------
-    x_star : The solution vector at the fixed point.
+    x_star : The solution vector.
 
     Notes
     -----
     This solver is incompatible with `EquilibriumModelSparse` because
     `jax.experimental.sparse.csr_matmat` does not implement a batching rule yet.
     """
-    return solver_jaxopt(LevenbergMarquardt, fn, theta, x_init, solver_config)
+    return solver_jaxopt(LevenbergMarquardt, f, solver_config)
 
 
-def solver_lbfgs(fn, theta, x_init, solver_config):
+def solver_lbfgs(f, solver_config):
     """
-    Minimize the residual of function f(theta, x) = 0 using the LBFGS algorithm.
+    Minimize the residual of f(x, theta) = 0 with the LBFGS algorithm.
 
     Parameters
     ----------
     f : The function to iterate upon.
-    a : The function parameters.
-    x_init: An initial guess for the values of the solution vector.
     solver_config: The configuration options of the solver.
 
     Returns
     -------
-    x_star : The solution vector at the fixed point.
+    x_star : The solution vector.
     """
-    return solver_jaxopt(LBFGS, fn, theta, x_init, solver_config)
+    return solver_jaxopt(LBFGS, f, solver_config)
 
 
-def solver_lbfgs_scipy(fn, theta, x_init, solver_config):
+def solver_lbfgs_scipy(f, solver_config):
     """
-    Minimize the residual of function f(theta, x) = 0 using the LBFGS algorithm from scipy.
+    Minimize the residual of f(x, theta) = 0 with scipy's LBFGS algorithm.
 
     Parameters
     ----------
     f : The function to iterate upon.
-    a : The function parameters.
-    x_init: An initial guess for the values of the solution vector.
     solver_config: The configuration options of the solver.
 
     Returns
     -------
-    x_star : The solution vector at the fixed point.
+    x_star : The solution vector.
     """
     solver_kwargs = {"method": "L-BFGS-B"}
 
-    return solver_jaxopt(ScipyMinimize, fn, theta, x_init, solver_config, solver_kwargs)
+    return solver_jaxopt(ScipyMinimize, f, solver_config, solver_kwargs)
 
 
-def is_solver_leastsquares(solver_fn):
+def is_solver_leastsquares(solver):
     """
     Test if a solver function is a least squares solver.
 
@@ -113,30 +101,29 @@ def is_solver_leastsquares(solver_fn):
     -------
     `True` if the solver is a least squares solver. Otherwise, `False`.
     """
-    solver_fns = {
+    solvers = {
         solver_gauss_newton,
         solver_levenberg_marquardt,
         solver_lbfgs,
         solver_lbfgs_scipy,
-        # solver_levenberg_marquardt_optimistix
     }
 
-    return solver_fn in solver_fns
+    return solver in solvers
 
 
 # ==========================================================================
 # Fixed point solver wrapper for implicit differentiation
 # ==========================================================================
 
-@partial(custom_vjp, nondiff_argnums=(0, 1, 2))
-def least_squares(solver, solver_config, fn, theta, x_init):
+@partial(custom_vjp, nondiff_argnums=(0, ))
+def least_squares(solver, x_init, theta):
     """
-    Find a minimum of f(theta, x) in a least-squares sense using an iterative solver.
+    Find a minimum of f(x, theta) in a least-squares sense using an iterative solver.
     """
-    return solver(fn, theta, x_init, solver_config)
+    return solver(x_init, theta)
 
 
-def least_squares_fwd(solver, solver_config, fn, theta, x_init):
+def least_squares_fwd(solver, x_init, theta):
     """
     The forward pass of an iterative least squares solver.
 
@@ -153,12 +140,12 @@ def least_squares_fwd(solver, solver_config, fn, theta, x_init):
     x_star : The solution vector at a fixed point.
     res : Auxiliary data to transfer to the backward pass.
     """
-    x_star = least_squares(solver, solver_config, fn, theta, x_init)
+    x_star = least_squares(solver, x_init, theta)
 
-    return x_star, (theta, x_star)
+    return x_star, (x_star, theta)
 
 
-def least_squares_bwd(solver, solver_config, fn, res, vec):
+def least_squares_bwd(solver, res, vec):
     """
     The backward pass of an iterative least squares solver.
 
@@ -174,22 +161,24 @@ def least_squares_bwd(solver, solver_config, fn, res, vec):
     -------
     theta_bar: the VJP vector of fn w.r.t. the parameters `theta`
     """
-    theta, x_star = res
-    linear_solve_fn = solver_config["linear_solve_fn"]
+    # Fetch residual function from solver
+    f = solver.residual_fun
+
+    # Unpack data from the forward pass
+    x_star, theta = res
 
     # Solve adjoint system
     # _, vjp_x = vjp(lambda x: fn(theta, x), x_star)
     # _ = vjp_x(-vec)
 
-    jac_fn = jacfwd(fn, argnums=1)
-    # jac_fn = jacrev(fn, argnums=1)
+    jac_fn = jacfwd(f, argnums=0)
+    # jac_fn = jacrev(fn, argnums=0)
+
     J = jac_fn(theta, x_star)
-    # NOTE: Temp diagonal
-    J = jnp.diag(J)
-    lam = linear_solve_fn(J.T, -vec)
+    lam = jnp.linalg.solve(J.T, -vec)
 
     # Call vjp of residual_fn to compute gradient wrt parameters
-    _, vjp_theta = vjp(lambda theta: fn(theta, x_star), theta)
+    _, vjp_theta = vjp(lambda theta: f(x_star, theta), theta)
 
     theta_bar = vjp_theta(lam)
 

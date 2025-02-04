@@ -12,11 +12,11 @@ from jax_fdm.equilibrium.states import EquilibriumState
 
 from jax_fdm.equilibrium.sparse import sparse_solve as spsolve
 
-from jax_fdm.equilibrium.solvers import solver_forward
 from jax_fdm.equilibrium.solvers import fixed_point
 from jax_fdm.equilibrium.solvers import least_squares
 from jax_fdm.equilibrium.solvers import is_solver_fixedpoint
 from jax_fdm.equilibrium.solvers import is_solver_leastsquares
+from jax_fdm.equilibrium.solvers import SOLVERS
 
 from jax_fdm.equilibrium.loads import nodes_load_from_faces
 from jax_fdm.equilibrium.loads import nodes_load_from_edges
@@ -43,17 +43,17 @@ class EquilibriumModel:
                  tmax=100,
                  eta=1e-6,
                  is_load_local=False,
-                 itersolve_fn=None,
+                 itersolve_fn="fixedpoint",
                  implicit_diff=True,
                  verbose=False):
         self.tmax = tmax
         self.eta = eta
         self.is_load_local = is_load_local
         self.linearsolve_fn = jnp.linalg.solve
-        self.itersolve_fn = itersolve_fn or solver_forward
-        self.eq_iterative_fn = self.select_equilibrium_iterative_fn(self.itersolve_fn)
-        self.implicit_diff = implicit_diff
         self.verbose = verbose
+
+        solver = self.assemble_solver(itersolve_fn, tmax, eta, implicit_diff, verbose)
+        self.itersolve_fn = solver
 
     # ----------------------------------------------------------------------
     # Edges
@@ -159,32 +159,13 @@ class EquilibriumModel:
         """
         Compute an equilibrium state using the force density method (FDM).
         """
-        q, xyz_fixed, loads_state = params
-        loads_nodes = loads_state.nodes
+        xyz_free = self.equilibrium(params, structure)
 
-        tmax = self.tmax
-        eta = self.eta
-        solver = self.itersolve_fn
-        implicit_diff = self.implicit_diff
-        verbose = self.verbose
-
-        xyz_free = self.equilibrium(q, xyz_fixed, loads_nodes, structure)
-
-        if tmax > 1:
-            xyz_free = self.eq_iterative_fn(
-                q,
-                xyz_fixed,
-                loads_state,
-                structure,
-                xyz_free_init=xyz_free,
-                tmax=tmax,
-                eta=eta,
-                solver=solver,
-                implicit_diff=implicit_diff,
-                verbose=verbose
-            )
+        if self.tmax > 1:
+            xyz_free = self.equilibrium_iterative(params, structure, xyz_free)
 
         # Exit like a champ
+        q, xyz_fixed, loads_state = params
         xyz = self.nodes_positions(xyz_free, xyz_fixed, structure)
         loads_nodes = self.nodes_load(xyz, loads_state, structure)
 
@@ -194,37 +175,16 @@ class EquilibriumModel:
     #  Equilibrium modes
     # ------------------------------------------------------------------------------
 
-    def select_equilibrium_iterative_fn(self, solver):
-        """
-        Pick the equilibrium function that is compatible with the input solver function.
-        """
-        if is_solver_fixedpoint(solver):
-            return self.equilibrium_iterative_xyz
-
-        if is_solver_leastsquares(solver):
-            return self.equilibrium_iterative_residual
-
-        raise ValueError(f"Solver {solver} is not supported!")
-
-    def equilibrium(self, q, xyz_fixed, loads_nodes, structure):
+    def equilibrium(self, params, structure):
         """
         Calculate static equilibrium on a structure.
         """
+        q, xyz_fixed, load_state = params
+        loads_nodes = load_state.nodes
+
         return self.nodes_equilibrium(q, xyz_fixed, loads_nodes, structure)
 
-    @assert_max_traces(n=1)
-    def equilibrium_iterative_xyz(
-            self,
-            q,
-            xyz_fixed,
-            load_state,
-            structure,
-            xyz_free_init=None,
-            tmax=100,
-            eta=1e-6,
-            solver=None,
-            implicit_diff=True,
-            verbose=False):
+    def equilibrium_iterative(self, params, structure, xyz_free_init):
         """
         Calculate static equilibrium on a structure iteratively.
 
@@ -233,130 +193,15 @@ class EquilibriumModel:
         This function only supports reverse mode auto-differentiation.
         To support forward-mode, we should define a custom jvp using implicit differentiation.
         """
-        if xyz_free_init is None:
-            xyz_free_init = self.equilibrium(q, xyz_fixed, load_state.nodes, structure)
-
-        K = self.stiffness_matrix(q, structure)
-        R_fixed = self.residual_fixed_matrix(q, xyz_fixed, structure)
-
-        @assert_max_traces(n=5)
-        def equilibrium_iterative_fn(params, xyz_free):
-            """
-            This closure function avoids re-computing A and f_fixed throughout iterations
-            because these two matrices remain constant during the fixed point search.
-            """
-            # Assemble load matrix
-            P = self.load_xyz_matrix_from_r_fixed(params, xyz_free, structure)
-
-            # Fetch stiffness matrix
-            K = params[0]
-
-            return self.linearsolve_fn(K, P)
-
-        solver_config = {"tmax": tmax,
-                         "eta": eta,
-                         "implicit_diff": implicit_diff,
-                         "verbose": verbose}
-
-        solver_kwargs = {"solver_config": solver_config,
-                         "f": equilibrium_iterative_fn,
-                         "a": (K, R_fixed, xyz_fixed, load_state),
-                         "x_init": xyz_free_init}
-
-        solver = solver or self.itersolve_fn
-        if implicit_diff:
-            return fixed_point(solver, **solver_kwargs)
-
-        return solver(**solver_kwargs)
-
-    @assert_max_traces(n=1)
-    def equilibrium_iterative_residual(self,
-                                       q,
-                                       xyz_fixed,
-                                       load_state,
-                                       structure,
-                                       xyz_free_init=None,
-                                       tmax=100,
-                                       eta=1e-6,
-                                       solver=None,
-                                       implicit_diff=True,
-                                       verbose=False):
-        """
-        Calculate static equilibrium on a structure iteratively.
-
-        Notes
-        -----
-        This function only supports reverse mode auto-differentiation.
-        To support forward-mode, we should define a custom jvp using implicit differentiation.
-        """
-        # @assert_max_traces(n=5)
-        def loads_fn(params, xyz_free):
-            """
-            A closure closing over a structure to calculate the load matrix.
-            """
-            return self.load_xyz_matrix(params, xyz_free, structure)
-
-        # @assert_max_traces(n=5)
-        def residual_fn(params, xyz_free):
-            """
-            The residual function of the equilibrium problem.
-            """
-            # Unpack parameters
-            q, xyz_fixed, load_state = params
-
-            # Calculate stiffness matrix
-            K = self.stiffness_matrix(q, structure)
-
-            # Calculate load matrix
-            xyz_free = jnp.reshape(xyz_free, (-1, 3))
-            P = loads_fn(params, xyz_free)
-
-            # Residual function
-            residual = K @ xyz_free - P
-            residual = residual.ravel()
-
-            return residual
-
-        # Recompute xyz_free_init if not input
-        if xyz_free_init is None:
-            load_nodes = load_state.nodes
-            xyz_free_init = self.nodes_free_positions(q, xyz_fixed, load_nodes, structure)
-
         # Flatten XYZ free for compatibility with the loss function
         xyz_free_init = xyz_free_init.ravel()
 
-        # Parameterss
-        params = (q, xyz_fixed, load_state)
+        xyz_free_star = self.itersolve_fn(
+            x_init=xyz_free_init,
+            theta=params,
+            structure=structure)
 
-        # Solver
-        solver_config = {"tmax": tmax,
-                         "eta": eta,
-                         "implicit_diff": implicit_diff,
-                         "verbose": verbose,
-                         "linear_solve_fn": self.linearsolve_fn,
-                         "loads_fn": loads_fn
-                         }
-
-        solver_kwargs = {"solver_config": solver_config,
-                         "fn": residual_fn,
-                         "theta": params,
-                         "x_init": xyz_free_init}
-
-        solver = solver or self.itersolve_fn
-
-        if implicit_diff:
-            xyz_free_star = least_squares(solver, **solver_kwargs)
-        else:
-            xyz_free_star = solver(**solver_kwargs)
-
-        if verbose:
-            residual = residual_fn(params, xyz_free_star)
-            l2_res = jnp.sum(jnp.square(residual))
-            jax_print("L2 residual: {}", l2_res)
-
-        xyz_free_star = jnp.reshape(xyz_free_star, (-1, 3))
-
-        return xyz_free_star
+        return jnp.reshape(xyz_free_star, (-1, 3))
 
     # ----------------------------------------------------------------------
     # Equilibrium state
@@ -451,6 +296,96 @@ class EquilibriumModel:
         c_fixed = structure.connectivity_fixed
 
         return c_free.T @ (q[:, None] * (c_fixed @ xyz_fixed))
+
+    # ----------------------------------------------------------------------
+    # Helper functions for iterative equilibrium
+    # ----------------------------------------------------------------------
+
+    def assemble_solver(self, solver_name, tmax, eta, implicit_diff, verbose):
+        """
+        """
+        solver_config = {"tmax": tmax,
+                         "eta": eta,
+                         "implicit_diff": implicit_diff,
+                         "verbose": verbose}
+
+        solver = SOLVERS.get(solver_name)
+        if solver is None:
+            raise ValueError(f"Unsupported solver name: {solver_name}!")
+
+        f = self.pick_equilibrium_fn(solver)
+
+        if implicit_diff:
+            solver_implicit = self.pick_solver_implicit_fn(solver)
+            return solver_implicit(solver, f, solver_config)
+
+        return solver(f, solver_config)
+
+    def pick_solver_implicit_fn(self, solver):
+        """
+        Pick the implicit differentiation wrapper that is compatible with the input solver.
+        """
+        if is_solver_fixedpoint(solver):
+            return fixed_point
+        if is_solver_leastsquares(solver):
+            return least_squares
+
+        raise ValueError(f"Solver {solver} is not supported!")
+
+    def pick_equilibrium_fn(self, solver):
+        """
+        Pick the equilibrium function that is compatible with the input solver.
+        """
+        if is_solver_fixedpoint(solver):
+            return self.xyz_free
+        if is_solver_leastsquares(solver):
+            return self.residuals_free
+
+        raise ValueError(f"Solver {solver} is not supported!")
+
+    def calculate_kp_matrices(self, xyz_free, params, structure):
+        """
+        """
+        # Unpack parameters
+        q, xyz_fixed, load_state = params
+
+        # Calculate stiffness matrix
+        K = self.stiffness_matrix(q, structure)
+
+        # Calculate load matrix
+        P = self.load_xyz_matrix(params, xyz_free, structure)
+
+        return K, P
+
+    def xyz_free(self, xyz_free, params, structure):
+        """
+        The residual function of the equilibrium problem.
+        """
+        # Reformat xyz free
+        xyz_free = jnp.reshape(xyz_free, (-1, 3))
+
+        # Calculate matrices
+        K, P = self.calculate_kp_matrices(xyz_free, params, structure)
+
+        # Calculate xyz free
+        xyz_free = self.linearsolve_fn(K, P)
+
+        return xyz_free.ravel()
+
+    def residuals_free(self, xyz_free, params, structure):
+        """
+        The residual function of the equilibrium problem.
+        """
+        # Reformat xyz free
+        xyz_free = jnp.reshape(xyz_free, (-1, 3))
+
+        # Calculate matrices
+        K, P = self.calculate_kp_matrices(xyz_free, params, structure)
+
+        # Residual function
+        residual = K @ xyz_free - P
+
+        return residual.ravel()
 
 
 # ==========================================================================
