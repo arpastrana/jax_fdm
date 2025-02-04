@@ -1,3 +1,5 @@
+from chex import assert_max_traces
+
 from equinox import is_array
 
 from jax.debug import print as jax_print
@@ -18,8 +20,6 @@ from jax_fdm.equilibrium.solvers import is_solver_leastsquares
 
 from jax_fdm.equilibrium.loads import nodes_load_from_faces
 from jax_fdm.equilibrium.loads import nodes_load_from_edges
-
-from jax_fdm.equilibrium.states import LoadState
 
 
 # ==========================================================================
@@ -104,10 +104,10 @@ class EquilibriumModel:
         """
         Calculate the XYZ coordinates of the free nodes.
         """
-        A = self.stiffness_matrix(q, structure)
-        b = self.force_matrix(q, xyz_fixed, loads, structure)
+        K = self.stiffness_matrix(q, structure)
+        P = self.load_matrix(q, xyz_fixed, loads, structure)
 
-        return self.linearsolve_fn(A, b)
+        return self.linearsolve_fn(K, P)
 
     def nodes_equilibrium(self, q, xyz_fixed, loads_nodes, structure):
         """
@@ -119,11 +119,11 @@ class EquilibriumModel:
     #  Load it up!
     # --------------------------------------------------------------------
 
-    def nodes_load(self, xyz, loads, structure):
+    def nodes_load(self, xyz, load_state, structure):
         """
         Calculate the loads applied to the nodes of the structure.
         """
-        nodes_load, edges_load, faces_load = loads
+        nodes_load, edges_load, faces_load = load_state
 
         if is_array(edges_load):
             if edges_load.size > 1:
@@ -194,12 +194,6 @@ class EquilibriumModel:
     #  Equilibrium modes
     # ------------------------------------------------------------------------------
 
-    def equilibrium(self, q, xyz_fixed, loads_nodes, structure):
-        """
-        Calculate static equilibrium on a structure.
-        """
-        return self.nodes_equilibrium(q, xyz_fixed, loads_nodes, structure)
-
     def select_equilibrium_iterative_fn(self, solver):
         """
         Pick the equilibrium function that is compatible with the input solver function.
@@ -212,6 +206,13 @@ class EquilibriumModel:
 
         raise ValueError(f"Solver {solver} is not supported!")
 
+    def equilibrium(self, q, xyz_fixed, loads_nodes, structure):
+        """
+        Calculate static equilibrium on a structure.
+        """
+        return self.nodes_equilibrium(q, xyz_fixed, loads_nodes, structure)
+
+    @assert_max_traces(n=1)
     def equilibrium_iterative_xyz(
             self,
             q,
@@ -232,26 +233,25 @@ class EquilibriumModel:
         This function only supports reverse mode auto-differentiation.
         To support forward-mode, we should define a custom jvp using implicit differentiation.
         """
+        if xyz_free_init is None:
+            xyz_free_init = self.equilibrium(q, xyz_fixed, load_state.nodes, structure)
+
+        K = self.stiffness_matrix(q, structure)
+        R_fixed = self.residual_fixed_matrix(q, xyz_fixed, structure)
+
+        @assert_max_traces(n=5)
         def equilibrium_iterative_fn(params, xyz_free):
             """
             This closure function avoids re-computing A and f_fixed throughout iterations
             because these two matrices remain constant during the fixed point search.
             """
-            # TODO: Extract closure into function shared with the other nodes equilibrium function?
-            A, f_fixed, xyz_fixed, load_state = params
+            # Assemble load matrix
+            P = self.load_xyz_matrix_from_r_fixed(params, xyz_free, structure)
 
-            xyz = self.nodes_positions(xyz_free, xyz_fixed, structure)
-            loads_nodes = self.nodes_load(xyz, load_state, structure)
-            b = loads_nodes[structure.indices_free, :] - f_fixed
+            # Fetch stiffness matrix
+            K = params[0]
 
-            return self.linearsolve_fn(A, b)
-
-        # recompute xyz_init if not input
-        if xyz_free_init is None:
-            xyz_free_init = self.equilibrium(q, xyz_fixed, load_state.nodes, structure)
-
-        A = self.stiffness_matrix(q, structure)
-        f_fixed = self.force_fixed_matrix(q, xyz_fixed, structure)
+            return self.linearsolve_fn(K, P)
 
         solver_config = {"tmax": tmax,
                          "eta": eta,
@@ -260,7 +260,7 @@ class EquilibriumModel:
 
         solver_kwargs = {"solver_config": solver_config,
                          "f": equilibrium_iterative_fn,
-                         "a": (A, f_fixed, xyz_fixed, load_state),
+                         "a": (K, R_fixed, xyz_fixed, load_state),
                          "x_init": xyz_free_init}
 
         solver = solver or self.itersolve_fn
@@ -269,6 +269,7 @@ class EquilibriumModel:
 
         return solver(**solver_kwargs)
 
+    @assert_max_traces(n=1)
     def equilibrium_iterative_residual(self,
                                        q,
                                        xyz_fixed,
@@ -288,21 +289,14 @@ class EquilibriumModel:
         This function only supports reverse mode auto-differentiation.
         To support forward-mode, we should define a custom jvp using implicit differentiation.
         """
+        # @assert_max_traces(n=5)
         def loads_fn(params, xyz_free):
             """
-            Calculate loads matrix of the free nodes of the system.
+            A closure closing over a structure to calculate the load matrix.
             """
-            # Unpack parameters
-            q, xyz_fixed, load_state = params
+            return self.load_xyz_matrix(params, xyz_free, structure)
 
-            # Concatenate free and fixed xyz coordinates
-            xyz = self.nodes_positions(xyz_free, xyz_fixed, structure)
-
-            # Calculate shape-dependent loads with full xyz
-            loads_nodes = self.nodes_load(xyz, load_state, structure)
-
-            return self.force_matrix(q, xyz_fixed, loads_nodes, structure)
-
+        # @assert_max_traces(n=5)
         def residual_fn(params, xyz_free):
             """
             The residual function of the equilibrium problem.
@@ -311,16 +305,17 @@ class EquilibriumModel:
             q, xyz_fixed, load_state = params
 
             # Calculate stiffness matrix
-            A = self.stiffness_matrix(q, structure)
+            K = self.stiffness_matrix(q, structure)
 
             # Calculate load matrix
             xyz_free = jnp.reshape(xyz_free, (-1, 3))
-            b = loads_fn(params, xyz_free)
+            P = loads_fn(params, xyz_free)
 
             # Residual function
-            residual = A @ xyz_free - b
+            residual = K @ xyz_free - P
+            residual = residual.ravel()
 
-            return residual.ravel()
+            return residual
 
         # Recompute xyz_free_init if not input
         if xyz_free_init is None:
@@ -349,15 +344,15 @@ class EquilibriumModel:
 
         solver = solver or self.itersolve_fn
 
-        # print("Solving equilibrium problem...")
         if implicit_diff:
             xyz_free_star = least_squares(solver, **solver_kwargs)
         else:
             xyz_free_star = solver(**solver_kwargs)
 
-        # residual = residual_fn(params, xyz_free_star)
-        # residual = jnp.linalg.norm(jnp.reshape(residual, (-1, 3)), axis=1)
-        # print(f"Mean solution residual: {jnp.mean(residual).item():.3f}")
+        if verbose:
+            residual = residual_fn(params, xyz_free_star)
+            l2_res = jnp.sum(jnp.square(residual))
+            jax_print("L2 residual: {}", l2_res)
 
         xyz_free_star = jnp.reshape(xyz_free_star, (-1, 3))
 
@@ -386,7 +381,7 @@ class EquilibriumModel:
                                 vectors=vectors)
 
     # ----------------------------------------------------------------------
-    # Matrices
+    # Stiffness matrices
     # ----------------------------------------------------------------------
 
     @staticmethod
@@ -398,18 +393,59 @@ class EquilibriumModel:
 
         return c_free.T @ (q[:, None] * c_free)
 
-    def force_matrix(self, q, xyz_fixed, load_nodes, structure):
-        """
-        The force residual matrix of the structure.
-        """
-        free = structure.indices_free
+    # ----------------------------------------------------------------------
+    # Load matrices
+    # ----------------------------------------------------------------------
 
-        return load_nodes[free, :] - self.force_fixed_matrix(q, xyz_fixed, structure)
+    def load_matrix(self, q, xyz_fixed, load_nodes, structure):
+        """
+        The load matrix of the structure.
+        """
+        R_fixed = self.residual_fixed_matrix(q, xyz_fixed, structure)
+
+        return load_nodes[structure.indices_free, :] - R_fixed
+
+    def load_xyz_matrix(self, params, xyz_free, structure):
+        """
+        Calculate loads matrix of the free nodes of the system for shape-dependent loads.
+        """
+        # Unpack parameters
+        q, xyz_fixed, load_state = params
+
+        # Concatenate free and fixed xyz coordinates
+        xyz = self.nodes_positions(xyz_free, xyz_fixed, structure)
+
+        # Calculate shape-dependent loads with full xyz
+        loads_nodes = self.nodes_load(xyz, load_state, structure)
+
+        # Assemble load matrix
+        return self.load_matrix(q, xyz_fixed, loads_nodes, structure)
+
+    def load_xyz_matrix_from_r_fixed(self, params, xyz_free, structure):
+        """
+        Calculate loads matrix of the free nodes of the system for shape-dependent loads.
+        """
+        K, R_fixed, xyz_fixed, load_state = params
+
+        # Concatenate free and fixed xyz coordinates
+        xyz = self.nodes_positions(xyz_free, xyz_fixed, structure)
+
+        # Calculate shape-dependent loads with full xyz
+        loads_nodes = self.nodes_load(xyz, load_state, structure)
+
+        # Assemble load matrix
+        P = loads_nodes[structure.indices_free, :] - R_fixed
+
+        return P
+
+    # ----------------------------------------------------------------------
+    # Load matrices
+    # ----------------------------------------------------------------------
 
     @staticmethod
-    def force_fixed_matrix(q, xyz_fixed, structure):
+    def residual_fixed_matrix(q, xyz_fixed, structure):
         """
-        The force matrix block of the residual forces at the fixed nodes.
+        The load matrix with the contribution of the fixed nodes's residuals.
         """
         c_free = structure.connectivity_free
         c_fixed = structure.connectivity_fixed
