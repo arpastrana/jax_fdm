@@ -9,10 +9,11 @@ from jax.experimental.sparse import CSC
 from jax_fdm import DTYPE_INT_JAX
 from jax_fdm import DTYPE_INT_NP
 
-from jax_fdm.equilibrium.structures.topology import Graph
-from jax_fdm.equilibrium.structures.topology import GraphSparse
-from jax_fdm.equilibrium.structures.topology import Mesh
-from jax_fdm.equilibrium.structures.topology import MeshSparse
+from jax_fdm.equilibrium.structures.graphs import Graph
+from jax_fdm.equilibrium.structures.graphs import GraphSparse
+
+from jax_fdm.equilibrium.structures.meshes import Mesh
+from jax_fdm.equilibrium.structures.meshes import MeshSparse
 
 
 # ==========================================================================
@@ -279,13 +280,15 @@ class EquilibriumMeshStructure(EquilibriumStructure, Mesh):
 
         faces = [mesh.face_vertices(fkey) for fkey in mesh.faces()]
         max_length_face = max(len(face) for face in faces)
+        assert max_length_face > 2, "The mesh faces must have at least 3 vertices each"
 
-        pad_value = -1
         padded_faces = []
         for face in faces:
             len_face = len(face)
             if len_face < max_length_face:
-                face = face + [pad_value] * (max_length_face - len_face)
+                pad_value = face[0]
+                face_padding = [pad_value] * (max_length_face - len_face)
+                face = face + face_padding
             padded_faces.append(face)
 
         faces = np.asarray(padded_faces, dtype=DTYPE_INT_NP)

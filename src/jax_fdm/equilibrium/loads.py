@@ -51,9 +51,8 @@ def face_xyz(xyz, face):
     xyz_repl = xyz_face[0, :]
 
     # NOTE: Replace -1 with first entry to avoid nans in gradient computation
-    # This was a pesky bug, since using nans as replacement did not cause
-    # issues with the forward computation of normals, but it does for
-    # the backward pass.
+    # This was a pesky bug, since using nans as replacement do not cause
+    # issues with the forward computation of normals, but it does for the backward pass.
     xyz_face = vmap(jnp.where, in_axes=(0, 0, None))(face >= 0, xyz_face, xyz_repl)
 
     return xyz_face
@@ -63,7 +62,8 @@ def face_load_lcs(xyz, face, face_load):
     """
     Transform the load vector applied to the face to a vector in its local coordinate system.
     """
-    fxyz = face_xyz(xyz, face)
+    # fxyz = face_xyz(xyz, face)
+    fxyz = xyz[face, :]
 
     normal = normal_polygon(fxyz)
     is_zero_normal = jnp.allclose(normal, 0.0)
