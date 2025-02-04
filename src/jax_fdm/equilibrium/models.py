@@ -1,4 +1,5 @@
 from chex import assert_max_traces
+from functools import partial
 
 from equinox import is_array
 
@@ -309,17 +310,18 @@ class EquilibriumModel:
                          "implicit_diff": implicit_diff,
                          "verbose": verbose}
 
-        solver = SOLVERS.get(solver_name)
-        if solver is None:
+        solver_fn = SOLVERS.get(solver_name)
+        if solver_fn is None:
             raise ValueError(f"Unsupported solver name: {solver_name}!")
 
-        f = self.pick_equilibrium_fn(solver)
+        f = self.pick_equilibrium_fn(solver_fn)
+        solver = solver_fn(f, solver_config)
 
         if implicit_diff:
-            solver_implicit = self.pick_solver_implicit_fn(solver)
-            return solver_implicit(solver, f, solver_config)
+            solver_implicit = self.pick_solver_implicit_fn(solver_fn)
+            return partial(solver_implicit, solver=solver)
 
-        return solver(f, solver_config)
+        return solver
 
     def pick_solver_implicit_fn(self, solver):
         """

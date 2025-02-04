@@ -44,8 +44,8 @@ def solver_jaxopt(solver_cls, f, solver_config, solver_kwargs=None):
         **solver_kwargs
     )
 
-    return partial(solver_jaxopt_run, solver=solver)
-    # return solver
+    # return partial(solver_jaxopt_run, solver=solver)
+    return solver
 
 
 def solver_jaxopt_run(solver, x_init, theta, structure):

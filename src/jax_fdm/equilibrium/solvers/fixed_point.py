@@ -24,6 +24,25 @@ from jax_fdm.equilibrium.solvers.jaxopt import solver_jaxopt
 # Iterative solvers - JAXOPT
 # ==========================================================================
 
+class Solver:
+    def __init__(self, tmax=100, eta=1e-6, verbose=False, implicit_diff=True, *args, **kwargs):
+        """
+        """
+        pass
+
+
+class AndersonSolver(AndersonAcceleration, Solver):
+    def __init__(self, *args, **kwargs):
+        """
+        """
+
+    def __call__(self, x_init_theta, *args, **kwargs):
+        pass
+
+# ==========================================================================
+# Iterative solvers - JAXOPT
+# ==========================================================================
+
 def solver_anderson(f, solver_config):
     """
     Find a fixed point of a function f(x, theta) using Anderson acceleration.
@@ -168,34 +187,34 @@ def solver_newton(f, x_init, theta, solver_config):
 # Fixed point solver wrapper for implicit differentiation
 # ==========================================================================
 
-@partial(custom_vjp, nondiff_argnums=(0, ))
-def fixed_point(solver, x_init, theta):
+@partial(custom_vjp, nondiff_argnums=(0, 3))
+def fixed_point(solver, x_init, theta, structure):
     """
     Solve for a fixed point of a function f(x, theta) using an iterative solver.
     """
-    return solver(x_init, theta)
+    result = solver.run(x_init, theta, structure)
+
+    return result.params.ravel()
 
 
-def fixed_point_fwd(solver, x_init, theta):
+def fixed_point_fwd(solver, x_init, theta, structure):
     """
     The forward pass of an iterative fixed point solver.
 
     Parameters
     ----------
     solver: The function that executes a fixed point solver.
-    solver_config: The configuration options of the solver.
-    f : The function f(x, theta) to iterate upon.
-    theta : The function parameters.
     x_init: An initial guess for the values of the solution vector.
+    theta : The function parameters.
 
     Returns
     -------
     x : The solution vector at a fixed point.
     res : Auxiliary data to transfer to the backward pass.
     """
-    x_star = fixed_point(solver, x_init, theta)
+    x_star = fixed_point(solver, x_init, theta, structure)
 
-    return x_star, (x_star, theta)
+    return x_star, (x_star, theta, structure)
 
 
 def fixed_point_bwd_forward(solver, res, vec):
@@ -306,7 +325,7 @@ def fixed_point_bwd_iterative(solver, res, vec):
     return theta_bar[0], None
 
 
-def fixed_point_bwd_direct(solver, res, vec):
+def fixed_point_bwd_direct(solver, structure, res, vec):
     """
     The backward pass of an iterative fixed point solver.
 
@@ -324,23 +343,24 @@ def fixed_point_bwd_direct(solver, res, vec):
     res : None
     """
     # Fetch fixed point function from solver
+    # f = solver.args["solver"].fixed_point_fun
     f = solver.fixed_point_fun
 
     # Unpack data from forward pass
-    x_star, theta = res
+    x_star, theta, structure = res
 
     # Format data
     x_star_flat = x_star.ravel()
     n = x_star_flat.size
 
-    def f_ravel(x, theta):
+    def f_ravel(x):
         x = x.reshape(-1, 3)
-        return f(x, theta).ravel()
+        return f(x, theta, structure).ravel()
 
     # NOTE: Use jacrev or jacfwd. jacfwd!
     # TODO: Replace jnp.eye with a vmap?
     jac_fn = jacfwd(f_ravel, argnums=0)  # Jacobian of f w.r.t. x
-    J = jac_fn(x_star_flat, theta)
+    J = jac_fn(x_star_flat)
 
     # Solve adjoint system
     # NOTE: Do we need to transpose A? Yes!
@@ -350,13 +370,13 @@ def fixed_point_bwd_direct(solver, res, vec):
     w = jnp.linalg.solve(A.T, b)
 
     # Calculate the vector Jacobian function v * df / dtheta, evaluated at at x*
-    _, vjp_theta = vjp(lambda theta: f(x_star, theta), theta)
+    _, vjp_theta = vjp(lambda theta: f(x_star, theta, structure), theta)
 
     # VJP: w * df / dtheta
-    w = w.reshape(-1, 3)
+    # w = w.reshape(-1, 3)
     theta_bar = vjp_theta(w)
 
-    return theta_bar[0], None
+    return theta_bar[0]
 
 
 # ==========================================================================
