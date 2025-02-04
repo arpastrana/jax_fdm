@@ -3,7 +3,6 @@ A gradient-based optimizer.
 """
 from time import perf_counter
 from itertools import groupby
-from functools import partial
 
 import jax.numpy as jnp
 
@@ -124,7 +123,10 @@ class Optimizer:
         loads = LoadState.from_datastructure(network)
         self.loads_static = loads.edges, loads.faces
 
-        loss_fn = partial(self.loss, loss=loss, model=model, structure=structure)
+        # closure over static parameters
+        def loss_fn(x):
+            return self.loss(x, loss, model, structure)
+
         loss_and_grad_fn = value_and_grad(loss_fn)
         if jit_fn:
             loss_and_grad_fn = jit(loss_and_grad_fn)
