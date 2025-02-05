@@ -186,15 +186,15 @@ def least_squares_bwd(solver, solver_config, fn, res, vec):
     # Solve adjoint system
 
     # Directly
-    # jac_x_fn = jacfwd(fn, argnums=1)
-    # Jx = jac_x_fn(theta, x_star)
-    # lam = linear_solve_fn(Jx.T, -vec)
+    jac_x_fn = jacfwd(fn, argnums=1)
+    Jx = jac_x_fn(theta, x_star)
+    lam = linear_solve_fn(Jx.T, -vec)
 
     # Iteratively
-    _, vjp_x = vjp(lambda x: fn(theta, x).T, x_star)
-    def A_fn(w):
-        return vjp_x(w)[0]
-    lam, info = cg(A_fn, -vec, x0=-vec)
+    # _, vjp_x = vjp(lambda x: fn(theta, x).T, x_star)
+    # def A_fn(w):
+    #     return vjp_x(w)[0]
+    # lam, info = cg(A_fn, -vec, x0=-vec)
 
     # Call vjp of residual_fn to compute gradient wrt parameters
     _, vjp_theta = vjp(lambda theta: fn(theta, x_star), theta)
