@@ -1,5 +1,8 @@
 from functools import partial
 
+from jax.scipy.sparse.linalg import gmres
+from jax.scipy.sparse.linalg import cg
+
 import jax.numpy as jnp
 
 import matplotlib.pyplot as plt
@@ -8,6 +11,7 @@ from jax import custom_vjp
 from jax import jacfwd
 from jax import jacrev
 from jax import vjp
+from jax import jvp
 
 from jaxopt import GaussNewton
 from jaxopt import LevenbergMarquardt
@@ -15,7 +19,7 @@ from jaxopt import LBFGS
 from jaxopt import ScipyMinimize
 
 from jax_fdm.equilibrium.solvers.jaxopt import solver_jaxopt
-# from jax_fdm.equilibrium.solvers.optimistix import solver_levenberg_marquardt_optimistix
+from jax_fdm.equilibrium.solvers.optimistix import solver_levenberg_marquardt_optimistix
 
 
 # ==========================================================================
@@ -78,7 +82,9 @@ def solver_lbfgs(fn, theta, x_init, solver_config):
     -------
     x_star : The solution vector at the fixed point.
     """
-    return solver_jaxopt(LBFGS, fn, theta, x_init, solver_config)
+    solver_kwargs = {"linesearch": "backtracking"}
+
+    return solver_jaxopt(LBFGS, fn, theta, x_init, solver_config, solver_kwargs)
 
 
 def solver_lbfgs_scipy(fn, theta, x_init, solver_config):
@@ -118,7 +124,7 @@ def is_solver_leastsquares(solver_fn):
         solver_levenberg_marquardt,
         solver_lbfgs,
         solver_lbfgs_scipy,
-        # solver_levenberg_marquardt_optimistix
+        solver_levenberg_marquardt_optimistix
     }
 
     return solver_fn in solver_fns
@@ -178,15 +184,17 @@ def least_squares_bwd(solver, solver_config, fn, res, vec):
     linear_solve_fn = solver_config["linear_solve_fn"]
 
     # Solve adjoint system
-    # _, vjp_x = vjp(lambda x: fn(theta, x), x_star)
-    # _ = vjp_x(-vec)
 
-    jac_fn = jacfwd(fn, argnums=1)
-    # jac_fn = jacrev(fn, argnums=1)
-    J = jac_fn(theta, x_star)
-    # NOTE: Temp diagonal
-    J = jnp.diag(J)
-    lam = linear_solve_fn(J.T, -vec)
+    # Directly
+    # jac_x_fn = jacfwd(fn, argnums=1)
+    # Jx = jac_x_fn(theta, x_star)
+    # lam = linear_solve_fn(Jx.T, -vec)
+
+    # Iteratively
+    _, vjp_x = vjp(lambda x: fn(theta, x).T, x_star)
+    def A_fn(w):
+        return vjp_x(w)[0]
+    lam, info = cg(A_fn, -vec, x0=-vec)
 
     # Call vjp of residual_fn to compute gradient wrt parameters
     _, vjp_theta = vjp(lambda theta: fn(theta, x_star), theta)
