@@ -5,6 +5,7 @@ from jax.debug import print as jax_print
 import jax.numpy as jnp
 
 from jax.experimental.sparse import CSC
+from jax.experimental.sparse import BCSR
 
 from jax_fdm.equilibrium.states import EquilibriumState
 
@@ -471,11 +472,22 @@ class EquilibriumModelSparse(EquilibriumModel):
         nondiags_data = -q[index_array.data - 1]
         args = (nondiags_data, index_array.indices, index_array.indptr)
 
-        nondiags = CSC(args, shape=index_array.shape)
+        K = CSC(args, shape=index_array.shape)
 
         # sum of force densities for each node
         diag_fd = diags.T @ q
+        K.data = K.data.at[diag_indices].set(diag_fd)
 
-        nondiags.data = nondiags.data.at[diag_indices].set(diag_fd)
+        # TODO: Test: Convert CSC to BCSR.
+        # This could be possible because this matrix is symmetric.
+        # Using BCSR would enable vmapping over a sparse equilibrium model
+        # But, does the conversion incur in severe performance costs?
+        # args = (K.data, K.indices, K.indptr)
+        # K = BCSR(
+        #     args,
+        #     shape=K.shape,
+        #     indices_sorted=True,
+        #     unique_indices=True
+        # )
 
-        return nondiags
+        return K
