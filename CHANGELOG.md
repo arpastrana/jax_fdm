@@ -9,6 +9,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Set up a `custom_vjp` for the nonlinear equilibrium solvers with the implicit function theorem.
+- Wrapped several `optimistix` optimizers to solved the nonlinear equilibrium problem for shape dependent loads. These solvers are least-squares, minimization, and root-finding optimizers: `Newton`, `NonlinearCG`, `BFGS`, `Dogleg`, and `LevenbergMarquardt`.
+- Exposed `maxcor` argument in `LBFGS` to specify the maximum number of metric corrections to approximate the Hessian.
 - Implemented `EquilibriumModel.load_xyz_matrix` to calculate the load matrices for shape dependent loads.
 - Implemented `EquilibriumModel.load_xyz_matrix_from_r_fixed` to calculate the load matrices for shape dependent loads.
 - Added `is_solver_fixedpoint` and `is_solver_leastsquares` to check the type of an iterative solver.
@@ -19,6 +22,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Replaced `functools.partial` with `jax.tree_util.Partial` whenever closing over a function. The latter avoids --more often than not--- JIT to recompile since `functools.partial` creates a new object in memory every time it is called. 
+- We use a `jit` lowered and compiled version of `loss_and_grad_fn` in `Optimizer.problem()`, which we then pass to `scipy.minimize`.
 - Renamed `EquilibriumModel.force_fixed_matrix()` to `EquilibriumModel.residual_fixed_matrix()`.
 - Renamed `EquilibriumModel.force_matrix()` to `EquilibriumModel.load_matrix()`.
 - `EquilibriumParametersState.from_datastructure` takes `dtype` as optional input. It defaults to `jax.numpy.float64`.

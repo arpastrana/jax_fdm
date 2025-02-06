@@ -1,7 +1,6 @@
-from chex import assert_max_traces
-from functools import partial
-
 from equinox import is_array
+
+from jax.tree_util import Partial
 
 from jax.debug import print as jax_print
 
@@ -15,8 +14,12 @@ from jax_fdm.equilibrium.sparse import sparse_solve as spsolve
 
 from jax_fdm.equilibrium.solvers import fixed_point
 from jax_fdm.equilibrium.solvers import least_squares
+
 from jax_fdm.equilibrium.solvers import is_solver_fixedpoint
 from jax_fdm.equilibrium.solvers import is_solver_leastsquares
+from jax_fdm.equilibrium.solvers import is_solver_minimization
+from jax_fdm.equilibrium.solvers import is_solver_root_finding
+
 from jax_fdm.equilibrium.solvers import SOLVERS
 
 from jax_fdm.equilibrium.loads import nodes_load_from_faces
@@ -170,6 +173,11 @@ class EquilibriumModel:
         xyz = self.nodes_positions(xyz_free, xyz_fixed, structure)
         loads_nodes = self.nodes_load(xyz, loads_state, structure)
 
+        if self.verbose:
+            residuals = self.residuals_free(xyz_free, params, structure)
+            residual = jnp.sum(jnp.square(residuals))
+            jax_print("Equilibrium residual: {}", residual)
+
         return self.equilibrium_state(q, xyz, loads_nodes, structure)
 
     # ------------------------------------------------------------------------------
@@ -200,7 +208,8 @@ class EquilibriumModel:
         xyz_free_star = self.itersolve_fn(
             x_init=xyz_free_init,
             theta=params,
-            structure=structure)
+            structure=structure
+        )
 
         return jnp.reshape(xyz_free_star, (-1, 3))
 
@@ -319,8 +328,7 @@ class EquilibriumModel:
 
         if implicit_diff:
             solver_implicit = self.pick_solver_implicit_fn(solver_fn)
-            return partial(solver_implicit, solver=solver)
-
+            solver = Partial(solver_implicit, solver=solver)
         return solver
 
     def pick_solver_implicit_fn(self, solver):
@@ -331,6 +339,10 @@ class EquilibriumModel:
             return fixed_point
         if is_solver_leastsquares(solver):
             return least_squares
+        if is_solver_minimization(solver):
+            return least_squares
+        if is_solver_root_finding(solver):
+            return least_squares
 
         raise ValueError(f"Solver {solver} is not supported!")
 
@@ -340,8 +352,17 @@ class EquilibriumModel:
         """
         if is_solver_fixedpoint(solver):
             return self.xyz_free
-        if is_solver_leastsquares(solver):
+
+        if is_solver_leastsquares(solver) or is_solver_root_finding(solver):
             return self.residuals_free
+
+        if is_solver_minimization(solver):
+
+            def residuals_free_l2(xyz_free, params, structure):
+                residuals = self.residuals_free(xyz_free, params, structure)
+                return jnp.sum(jnp.square(residuals))
+
+            return residuals_free_l2
 
         raise ValueError(f"Solver {solver} is not supported!")
 
