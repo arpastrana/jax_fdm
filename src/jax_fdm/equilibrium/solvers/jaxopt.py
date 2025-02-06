@@ -1,4 +1,4 @@
-from functools import partial
+from jax.tree_util import Partial
 
 
 def solver_jaxopt(solver_cls, f, solver_config, solver_kwargs=None):
@@ -37,15 +37,14 @@ def solver_jaxopt(solver_cls, f, solver_config, solver_kwargs=None):
         maxiter=tmax,
         tol=eta,
         has_aux=False,
-        implicit_diff=True,  # False, NOTE: Disabling jaxopt implicit diff on purpose
-        unroll=False,   # unroll
+        implicit_diff=False,  # False, NOTE: Disabling jaxopt implicit diff on purpose
+        unroll=unroll,   # unroll
         jit=True,
         verbose=verbose,
         **solver_kwargs
     )
 
-    # return partial(solver_jaxopt_run, solver=solver)
-    return solver
+    return Partial(solver_jaxopt_run, solver=solver)
 
 
 def solver_jaxopt_run(solver, x_init, theta, structure):

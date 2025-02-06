@@ -13,6 +13,8 @@ from jaxopt import ScipyMinimize
 
 from jax_fdm.equilibrium.solvers.jaxopt import solver_jaxopt
 
+from jax_fdm.equilibrium.solvers.optimistix import solver_levenberg_marquardt_optimistix
+from jax_fdm.equilibrium.solvers.optimistix import solver_dogleg_optimistix
 
 # ==========================================================================
 # Iterative solvers - JAXOPT
@@ -52,7 +54,9 @@ def solver_levenberg_marquardt(f, solver_config):
     This solver is incompatible with `EquilibriumModelSparse` because
     `jax.experimental.sparse.csr_matmat` does not implement a batching rule yet.
     """
-    return solver_jaxopt(LevenbergMarquardt, f, solver_config)
+    solver_kwargs = {"solver": "lu", "materialize_jac": True}
+    # solver_kwargs = {}
+    return solver_jaxopt(LevenbergMarquardt, f, solver_config, solver_kwargs)
 
 
 def solver_lbfgs(f, solver_config):
@@ -106,24 +110,25 @@ def is_solver_leastsquares(solver):
         solver_levenberg_marquardt,
         solver_lbfgs,
         solver_lbfgs_scipy,
+        solver_levenberg_marquardt_optimistix,
+        solver_dogleg_optimistix,
     }
 
     return solver in solvers
-
 
 # ==========================================================================
 # Fixed point solver wrapper for implicit differentiation
 # ==========================================================================
 
 @partial(custom_vjp, nondiff_argnums=(0, ))
-def least_squares(solver, x_init, theta):
+def least_squares(solver, x_init, theta, structure):
     """
     Find a minimum of f(x, theta) in a least-squares sense using an iterative solver.
     """
-    return solver(x_init, theta)
+    return solver(x_init=x_init, theta=theta, structure=structure)
 
 
-def least_squares_fwd(solver, x_init, theta):
+def least_squares_fwd(solver, x_init, theta, structure):
     """
     The forward pass of an iterative least squares solver.
 
@@ -140,9 +145,9 @@ def least_squares_fwd(solver, x_init, theta):
     x_star : The solution vector at a fixed point.
     res : Auxiliary data to transfer to the backward pass.
     """
-    x_star = least_squares(solver, x_init, theta)
+    x_star = least_squares(solver, x_init, theta, structure)
 
-    return x_star, (x_star, theta)
+    return x_star, (x_star, theta, structure)
 
 
 def least_squares_bwd(solver, res, vec):
@@ -162,27 +167,26 @@ def least_squares_bwd(solver, res, vec):
     theta_bar: the VJP vector of fn w.r.t. the parameters `theta`
     """
     # Fetch residual function from solver
-    f = solver.residual_fun
+    f = solver.keywords["fn"]
 
     # Unpack data from the forward pass
-    x_star, theta = res
+    x_star, theta, structure = res
 
     # Solve adjoint system
     # _, vjp_x = vjp(lambda x: fn(theta, x), x_star)
     # _ = vjp_x(-vec)
 
     jac_fn = jacfwd(f, argnums=0)
-    # jac_fn = jacrev(fn, argnums=0)
 
-    J = jac_fn(theta, x_star)
+    J = jac_fn(x_star, theta, structure)
     lam = jnp.linalg.solve(J.T, -vec)
 
     # Call vjp of residual_fn to compute gradient wrt parameters
-    _, vjp_theta = vjp(lambda theta: f(x_star, theta), theta)
+    _, vjp_theta = vjp(lambda theta: f(x_star, theta, structure), theta)
 
     theta_bar = vjp_theta(lam)
 
-    return theta_bar[0], None
+    return None, theta_bar[0], None
 
 
 # ==========================================================================

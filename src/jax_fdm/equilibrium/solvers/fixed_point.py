@@ -187,14 +187,12 @@ def solver_newton(f, x_init, theta, solver_config):
 # Fixed point solver wrapper for implicit differentiation
 # ==========================================================================
 
-@partial(custom_vjp, nondiff_argnums=(0, 3))
+@partial(custom_vjp, nondiff_argnums=(0, ))
 def fixed_point(solver, x_init, theta, structure):
     """
     Solve for a fixed point of a function f(x, theta) using an iterative solver.
     """
-    result = solver.run(x_init, theta, structure)
-
-    return result.params.ravel()
+    return solver(x_init=x_init, theta=theta, structure=structure)
 
 
 def fixed_point_fwd(solver, x_init, theta, structure):
@@ -325,7 +323,7 @@ def fixed_point_bwd_iterative(solver, res, vec):
     return theta_bar[0], None
 
 
-def fixed_point_bwd_direct(solver, structure, res, vec):
+def fixed_point_bwd_direct(solver, res, vec):
     """
     The backward pass of an iterative fixed point solver.
 
@@ -343,8 +341,7 @@ def fixed_point_bwd_direct(solver, structure, res, vec):
     res : None
     """
     # Fetch fixed point function from solver
-    # f = solver.args["solver"].fixed_point_fun
-    f = solver.fixed_point_fun
+    f = solver.keywords["solver"].fixed_point_fun
 
     # Unpack data from forward pass
     x_star, theta, structure = res
@@ -376,7 +373,7 @@ def fixed_point_bwd_direct(solver, structure, res, vec):
     # w = w.reshape(-1, 3)
     theta_bar = vjp_theta(w)
 
-    return theta_bar[0]
+    return None, theta_bar[0], None
 
 
 # ==========================================================================
