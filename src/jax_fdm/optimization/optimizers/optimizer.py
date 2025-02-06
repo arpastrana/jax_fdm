@@ -1,6 +1,8 @@
 """
-A gradient-based optimizer.
+An optimizer.
 """
+import jax
+
 from time import perf_counter
 from itertools import groupby
 
@@ -130,6 +132,9 @@ class Optimizer:
         loss_and_grad_fn = value_and_grad(loss_fn)
         if jit_fn:
             loss_and_grad_fn = jit(loss_and_grad_fn)
+            loss_and_grad_fn = loss_and_grad_fn.lower(x).compile()
+            flops = loss_and_grad_fn.cost_analysis()[0]["flops"]
+            print(f"\tFLOPS loss and grad: {flops}")
 
         print("Warming up the pressure cooker...")
         start_time = perf_counter()
