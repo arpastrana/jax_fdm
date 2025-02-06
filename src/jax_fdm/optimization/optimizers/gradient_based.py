@@ -24,10 +24,11 @@ class LBFGSB(Optimizer):
     """
     The limited-memory Boyd-Fletcher-Floyd-Shannon-Byrd (LBFGSB) optimizer.
     """
-    def __init__(self, disp=False, maxfun=None, maxls=None, **kwargs):
+    def __init__(self, disp=False, maxfun=None, maxls=None, maxcor=None, **kwargs):
         super().__init__(name="L-BFGS-B", disp=disp, **kwargs)
         self.maxfun = maxfun
         self.maxls = maxls
+        self.maxcor = maxcor
 
     def options(self, extra=None):
         """
@@ -38,6 +39,7 @@ class LBFGSB(Optimizer):
 
         extra["maxfun"] = self.maxfun
         extra["maxls"] = self.maxls
+        extra["maxcor"] = self.maxcor
 
         return super().options(extra)
 
