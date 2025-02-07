@@ -2,8 +2,17 @@ from functools import partial
 
 import jax
 
+import matplotlib.pyplot as plt
+
+from jaxopt.linear_solve import solve_cg
+from jaxopt.linear_solve import solve_normal_cg
+
 from jax.scipy.sparse.linalg import gmres
 from jax.scipy.sparse.linalg import cg
+
+from jax.scipy.linalg import block_diag
+
+import lineax as lx
 
 import jax.numpy as jnp
 
@@ -11,6 +20,7 @@ from jax import custom_vjp
 from jax import jacrev
 from jax import jacfwd
 from jax import vjp
+from jax import jvp
 
 from equinox.internal import while_loop
 
@@ -202,7 +212,11 @@ def fixed_point_fwd(solver, solver_config, f, a, x_init):
     return x_star, (a, x_star)
 
 
-def fixed_point_bwd_forward(solver, solver_config, f, res, vec):
+# ==========================================================================
+# Backward rules
+# ==========================================================================
+
+def fixed_point_bwd_fixedpoint(solver, solver_config, f, res, vec):
     """
     The backward pass of an iterative fixed point solver.
 
@@ -241,8 +255,7 @@ def fixed_point_bwd_forward(solver, solver_config, f, res, vec):
     solver_config["eta"] = 1e-6
 
     # Solve adjoint function iteratively
-    # u_star = solver_forward(
-    u_star = solver(
+    u_star = solver_forward(
         rev_iter,  # The function to find a fixed-point of
         vec,  # The parameters of rev_iter
         vec,  # The initial guess of the solution vector
@@ -327,7 +340,6 @@ def fixed_point_bwd_direct(solver, solver_config, f, res, vec):
 
     # Format data
     x_star_flat = x_star.ravel()
-    n = x_star_flat.size
 
     def f_ravel(theta, x):
         x = x.reshape(-1, 3)
@@ -341,7 +353,14 @@ def fixed_point_bwd_direct(solver, solver_config, f, res, vec):
     # Solve adjoint system
     # NOTE: Do we need to transpose A? Yes!
     # NOTE: Currently not possible to cast A to a sparse matrix to use a sparse solver
+    n = x_star_flat.size
     A = jnp.eye(n) - J
+
+    print(f"{J.shape=}")
+    plt.spy(J, precision=1e-4)
+    plt.show()
+    raise
+
     b = vec.ravel()
     w = jnp.linalg.solve(A.T, b)
 
@@ -356,9 +375,253 @@ def fixed_point_bwd_direct(solver, solver_config, f, res, vec):
 
 
 # ==========================================================================
+# Backward rule - Adjoint method
+# ==========================================================================
+
+def fixed_point_bwd_adjoint_direct(solver, solver_config, f, res, vec):
+    """
+    The backward pass of an iterative fixed point solver with a pseudo-adjoint method.
+
+    Parameters
+    ----------
+    solver: The function that executes a fixed point solver.
+    solver_config: The configuration options of the solver.
+    f : The function to iterate upon. It ought to have signature f(theta, x(theta)).
+    res : Auxiliary data transferred from the forward pass.
+    vec: The vector on the left of the VJP.
+
+    Returns
+    -------
+    x : The solution vector at a fixed point.
+    res : None
+    """
+    print("\n*** Using direct adjoint ***\n")
+    # Unpack data from forward pass
+    theta, x_star = res
+
+    # Stiffness matrix is the first parameter
+    K = theta[0]
+
+    # Get load function
+    p_fn = solver_config["loads_fn"]
+
+    # Format data
+    x_star_flat = x_star.ravel()
+
+    def p_fn_ravel(x):
+        x = x.reshape(-1, 3)
+        return p_fn(theta, x).ravel()
+
+    # NOTE: Use jacrev or jacfwd. jacfwd for speed!
+    jac_fn = jacfwd(p_fn_ravel)  # Jacobian of p w.r.t. x
+    J = jac_fn(x_star_flat)
+
+    K_block = block_diag(K, K, K)
+
+    # Solve adjoint system
+    # We need to transpose the jacobian to account for the LHS reordering
+    A = K_block - J
+    b = K_block @ vec.ravel()
+    w = jnp.linalg.solve(A, b)
+
+    # Calculate the vector Jacobian function v * df / dtheta, evaluated at at x*
+    _, vjp_theta = vjp(lambda theta: f(theta, x_star), theta)
+
+    # VJP: w * df / da
+    w = w.reshape(-1, 3)
+    a_bar = vjp_theta(w)
+
+    return a_bar[0], None
+
+
+def fixed_point_bwd_adjoint_iterative(solver, solver_config, f, res, vec):
+    """
+    The backward pass of an iterative fixed point solver with a pseudo-adjoint method.
+
+    Parameters
+    ----------
+    solver: The function that executes a fixed point solver.
+    solver_config: The configuration options of the solver.
+    f : The function to iterate upon. It ought to have signature f(theta, x(theta)).
+    res : Auxiliary data transferred from the forward pass.
+    vec: The vector on the left of the VJP.
+
+    Returns
+    -------
+    x : The solution vector at a fixed point.
+    res : None
+    """
+    # Unpack data from forward pass
+    theta, x_star = res
+
+    # Stiffness matrix is the first parameter
+    K = theta[0]
+
+    # Get load function
+    loads_fn = solver_config["loads_fn"]
+
+    # Calculate the vector Jacobian function v * df / dx at x*, closed around a
+    # TODO: Do we transpose the output of loads_fn?
+    _, vjp_x = vjp(lambda x: loads_fn(theta, x), x_star)
+
+    # LHS function: (K^T − G^T) @ w = K^T @ v.
+    # We don't need to transpose K because it is symmetric
+    # TODO: Use jvp instead of vjp?
+    def A_fn(w):
+        return K @ w - vjp_x(w)[0]
+
+    # def A_fn(w):
+    #     primals, tangents = jvp(lambda x: loads_fn(theta, x), (x_star, ), (w, ))
+    #     return K @ w - tangents[0].T
+
+    # RHS matrix
+    b = K @ vec
+
+    # Solve adjoint function iteratively
+    # w, info = gmres(A_fn, b, x0=vec, tol=1e-6)
+    w, info = cg(A_fn, b, tol=1e-6, atol=1e-6, maxiter=10000)
+
+    # Calculate the vector Jacobian function v * df / dtheta, evaluated at at x*
+    _, vjp_theta = vjp(lambda theta: f(theta, x_star), theta)
+
+    # VJP: w * df / da
+    a_bar = vjp_theta(w)
+
+    return a_bar[0], None
+
+
+def fixed_point_bwd_adjoint_test_a(solver, solver_config, f, res, vec):
+    """
+    The backward pass of an iterative fixed point solver with a pseudo-adjoint method.
+
+    Parameters
+    ----------
+    solver: The function that executes a fixed point solver.
+    solver_config: The configuration options of the solver.
+    f : The function to iterate upon. It ought to have signature f(theta, x(theta)).
+    res : Auxiliary data transferred from the forward pass.
+    vec: The vector on the left of the VJP.
+
+    Returns
+    -------
+    x : The solution vector at a fixed point.
+    res : None
+    """
+    print("\n*** Using test adjoint A ***\n")
+    # Unpack data from forward pass
+    theta, x_star = res
+
+    # Stiffness matrix is the first parameter
+    K = theta[0]
+
+    # Get load function
+    p_fn = solver_config["loads_fn"]
+
+    # Format data
+    x_star_flat = x_star.ravel()
+
+    def p_fn_ravel(x):
+        x = x.reshape(-1, 3)
+        return p_fn(theta, x).ravel()
+
+    # NOTE: Use jacrev or jacfwd. jacfwd for speed!
+    jac_fn = jacfwd(p_fn_ravel)  # Jacobian of p w.r.t. x
+    J = jac_fn(x_star_flat)
+
+    # Solve adjoint system
+    # We need to transpose the jacobian to account for the LHS reordering
+    K_block = block_diag(K, K, K)
+    G = jnp.linalg.solve(K_block, J)
+
+    print(f"{G.shape=}")
+    plt.spy(G, precision=1e-4)
+    plt.show()
+    raise
+
+    n = x_star_flat.size
+    A = jnp.eye(n) - G
+
+    b = vec.ravel()
+    w = jnp.linalg.solve(A.T, b)
+
+    # Calculate the vector Jacobian function v * df / dtheta, evaluated at at x*
+    _, vjp_theta = vjp(lambda theta: f(theta, x_star), theta)
+
+    # VJP: w * df / da
+    w = w.reshape(-1, 3)
+    a_bar = vjp_theta(w)
+
+    return a_bar[0], None
+
+
+def fixed_point_bwd_adjoint_test(solver, solver_config, f, res, vec):
+    """
+    The backward pass of an iterative fixed point solver with a pseudo-adjoint method.
+
+    Parameters
+    ----------
+    solver: The function that executes a fixed point solver.
+    solver_config: The configuration options of the solver.
+    f : The function to iterate upon. It ought to have signature f(theta, x(theta)).
+    res : Auxiliary data transferred from the forward pass.
+    vec: The vector on the left of the VJP.
+
+    Returns
+    -------
+    x : The solution vector at a fixed point.
+    res : None
+    """
+    print("\n*** Using test adjoint lineax ***\n")
+    # Unpack data from forward pass
+    theta, x_star = res
+
+    # Stiffness matrix is the first parameter
+    # The matrix is symmetric, so no need to transpose it
+    K = theta[0]
+
+    # Get load function
+    p_fn = solver_config["loads_fn"]
+
+    # Calculate the vector Jacobian function v * dp / dx at x*, closed around theta
+    _, vjp_x = vjp(lambda x: p_fn(theta, x), x_star)
+
+    # Get linear solver for stiffness matrix from equilibrium model
+    # It is jax.numpy.linalg for dense matrices and scipy.spsolve for sparse matrices.
+    linearsolve_fn = solver_config["linearsolve_fn"]
+
+    def A_fn(w):
+        """
+        Evaluates the function: w = vector - w @ K_inv @ dp / dx
+        """
+        lam = linearsolve_fn(K, w)
+
+        return w - vjp_x(lam)[0]
+
+    # Solve adjoint function iteratively
+    # w, info = cg(A_fn, vec, maxiter=1000)
+    # w = solve_normal_cg(A_fn, vec)
+    #
+    A_op = lx.FunctionLinearOperator(A_fn, input_structure=jax.ShapeDtypeStruct(vec.shape, vec.dtype))
+    lin_solver = lx.NormalCG(rtol=1e-6, atol=1e-6)
+    sol = lx.linear_solve(A_op, vec, lin_solver, throw=False, options={"y0": vec})
+
+    w = sol.value
+
+    # Calculate the vector Jacobian function v * df / dtheta, evaluated at at x*
+    _, vjp_theta = vjp(lambda theta: f(theta, x_star), theta)
+
+    # VJP: w * df / da
+    a_bar = vjp_theta(w)
+
+    return a_bar[0], None
+
+
+# ==========================================================================
 # Register custom VJP
 # ==========================================================================
 
-# fixed_point.defvjp(fixed_point_fwd, fixed_point_bwd_forward)
+# fixed_point.defvjp(fixed_point_fwd, fixed_point_bwd_fixedpoint)
 # fixed_point.defvjp(fixed_point_fwd, fixed_point_bwd_iterative)
-fixed_point.defvjp(fixed_point_fwd, fixed_point_bwd_direct)
+# fixed_point.defvjp(fixed_point_fwd, fixed_point_bwd_direct)
+fixed_point.defvjp(fixed_point_fwd, fixed_point_bwd_adjoint_test)
+# fixed_point.defvjp(fixed_point_fwd, fixed_point_bwd_adjoint_iterative)

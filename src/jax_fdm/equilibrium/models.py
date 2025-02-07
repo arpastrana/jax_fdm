@@ -231,29 +231,50 @@ class EquilibriumModel:
         This function only supports reverse mode auto-differentiation.
         To support forward-mode, we should define a custom jvp using implicit differentiation.
         """
-        if xyz_free_init is None:
-            xyz_free_init = self.equilibrium(q, xyz_fixed, load_state.nodes, structure)
-
-        K = self.stiffness_matrix(q, structure)
-        R_fixed = self.residual_fixed_matrix(q, xyz_fixed, structure)
+        def loads_fn(params, xyz_free):
+            """
+            A closure function over a structure to calculate the load matrix.
+            This matrix is the RHS of the equilibrium linear system.
+            """
+            return self.load_xyz_matrix_from_r_fixed(params, xyz_free, structure)
 
         def equilibrium_iterative_fn(params, xyz_free):
             """
+            Parameters
+            ----------
+            params: A tuple with parameters (K, R_fixed, xyz_fixed, load_state)
+            xyz_free: The 3D coordinates of the free vertices.
+
+            Returns
+            -------
+            xyz_free_updated: The updated 3D coordinates of the free vertices.
+
+            Notes
+            -----
             This closure function avoids re-computing A and f_fixed throughout iterations
             because these two matrices remain constant during the fixed point search.
             """
             # Assemble load matrix
-            P = self.load_xyz_matrix_from_r_fixed(params, xyz_free, structure)
+            P = loads_fn(params, xyz_free)
 
             # Fetch stiffness matrix
             K = params[0]
 
             return self.linearsolve_fn(K, P)
 
+        if xyz_free_init is None:
+            xyz_free_init = self.equilibrium(q, xyz_fixed, load_state.nodes, structure)
+
+        K = self.stiffness_matrix(q, structure)
+        R_fixed = self.residual_fixed_matrix(q, xyz_fixed, structure)
+
         solver_config = {"tmax": tmax,
                          "eta": eta,
                          "implicit_diff": implicit_diff,
-                         "verbose": verbose}
+                         "verbose": verbose,
+                         "loads_fn": loads_fn,
+                         "linearsolve_fn": self.linearsolve_fn
+                         }
 
         solver_kwargs = {"solver_config": solver_config,
                          "f": equilibrium_iterative_fn,
@@ -287,7 +308,7 @@ class EquilibriumModel:
         """
         def loads_fn(params, xyz_free):
             """
-            A closure closing over a structure to calculate the load matrix.
+            A closure function over a structure to calculate the load matrix.
             """
             return self.load_xyz_matrix(params, xyz_free, structure)
 
