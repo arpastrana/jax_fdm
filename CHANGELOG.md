@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Added `error_terms` argument in `LossPlotter.plot()` to select what error and regularization terms are plotted.
 - Implemented `EquilibriumModel.load_xyz_matrix` to calculate the load matrices for shape dependent loads.
 - Implemented `EquilibriumModel.load_xyz_matrix_from_r_fixed` to calculate the load matrices for shape dependent loads.
 - Added `is_solver_fixedpoint` and `is_solver_leastsquares` to check the type of an iterative solver.

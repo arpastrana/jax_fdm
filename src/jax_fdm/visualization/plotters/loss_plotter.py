@@ -24,7 +24,7 @@ class LossPlotter:
         self.structure = structure_from_datastructure(datastructure, sparse=False)
         self.fig = plt.figure(**kwargs)
 
-    def plot(self, history, report_breakdown=True, plot_legend=True, yscale="log", **eq_kwargs):
+    def plot(self, history, report_breakdown=True, error_names=None, plot_legend=True, yscale="log", **eq_kwargs):
         """
         Plot the loss function and its error components on a list of fdm parameter states.
         """
@@ -64,7 +64,11 @@ class LossPlotter:
         # Report loss breakdown
         if report_breakdown:
             print("\n***Error breakdown***")
-            for name, errors in errors_all.items():
+            if error_names is None:
+                error_names = errors_all.keys()
+
+            for name in error_names:
+                errors = errors_all[name]
                 plt.plot(errors, label=name)
                 self.print_error_stats(errors, name)
 
