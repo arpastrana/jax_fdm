@@ -1,29 +1,21 @@
-from functools import partial
-
-from jax.scipy.sparse.linalg import gmres
-from jax.scipy.sparse.linalg import cg
-
-import jax.numpy as jnp
-
-import matplotlib.pyplot as plt
-
-from jax import custom_vjp
-from jax import jacfwd
-from jax import jacrev
-from jax import vjp
-from jax import jvp
-
 from jaxopt import GaussNewton
-from jaxopt import LevenbergMarquardt
-from jaxopt import LBFGS
-from jaxopt import ScipyMinimize
 
 from jax_fdm.equilibrium.solvers.jaxopt import solver_jaxopt
-from jax_fdm.equilibrium.solvers.optimistix import solver_levenberg_marquardt_optimistix
+from jax_fdm.equilibrium.solvers.optimistix import solver_optimistix
+
+try:
+    from optimistix import Dogleg
+    from optimistix import LevenbergMarquardt
+    from optimistix import least_squares
+
+    from lineax import NormalCG
+
+except ImportError:
+    pass
 
 
 # ==========================================================================
-# Iterative solvers - JAXOPT
+# JAXOPT solvers
 # ==========================================================================
 
 def solver_gauss_newton(fn, theta, x_init, solver_config):
@@ -43,6 +35,10 @@ def solver_gauss_newton(fn, theta, x_init, solver_config):
     """
     return solver_jaxopt(GaussNewton, fn, theta, x_init, solver_config)
 
+
+# ==========================================================================
+# Optimistix solvers
+# ==========================================================================
 
 def solver_levenberg_marquardt(fn, theta, x_init, solver_config):
     """
@@ -64,48 +60,44 @@ def solver_levenberg_marquardt(fn, theta, x_init, solver_config):
     This solver is incompatible with `EquilibriumModelSparse` because
     `jax.experimental.sparse.csr_matmat` does not implement a batching rule yet.
     """
-    return solver_jaxopt(LevenbergMarquardt, fn, theta, x_init, solver_config)
+    solver_kwargs = {}
+
+    solution = solver_optimistix(
+        LevenbergMarquardt,
+        least_squares,
+        fn,
+        theta,
+        x_init,
+        solver_config,
+        solver_kwargs
+    )
+
+    return solution
 
 
-def solver_lbfgs(fn, theta, x_init, solver_config):
+def solver_dogleg(fn, theta, x_init, solver_config):
     """
-    Minimize the residual of function f(theta, x) = 0 using the LBFGS algorithm.
-
-    Parameters
-    ----------
-    f : The function to iterate upon.
-    a : The function parameters.
-    x_init: An initial guess for the values of the solution vector.
-    solver_config: The configuration options of the solver.
-
-    Returns
-    -------
-    x_star : The solution vector at the fixed point.
     """
-    solver_kwargs = {"linesearch": "backtracking"}
+    # eta = solver_config["eta"]
+    # solver_kwargs = {"linear_solver": NormalCG(eta, eta)}
+    solver_kwargs = {}
 
-    return solver_jaxopt(LBFGS, fn, theta, x_init, solver_config, solver_kwargs)
+    solution = solver_optimistix(
+        Dogleg,
+        least_squares,
+        fn,
+        theta,
+        x_init,
+        solver_config,
+        solver_kwargs
+    )
+
+    return solution
 
 
-def solver_lbfgs_scipy(fn, theta, x_init, solver_config):
-    """
-    Minimize the residual of function f(theta, x) = 0 using the LBFGS algorithm from scipy.
-
-    Parameters
-    ----------
-    f : The function to iterate upon.
-    a : The function parameters.
-    x_init: An initial guess for the values of the solution vector.
-    solver_config: The configuration options of the solver.
-
-    Returns
-    -------
-    x_star : The solution vector at the fixed point.
-    """
-    solver_kwargs = {"method": "L-BFGS-B"}
-
-    return solver_jaxopt(ScipyMinimize, fn, theta, x_init, solver_config, solver_kwargs)
-
+# ==========================================================================
+# Helper functions
+# ==========================================================================
 
 def is_solver_leastsquares(solver_fn):
     """
@@ -122,90 +114,7 @@ def is_solver_leastsquares(solver_fn):
     solver_fns = {
         solver_gauss_newton,
         solver_levenberg_marquardt,
-        solver_lbfgs,
-        solver_lbfgs_scipy,
-        solver_levenberg_marquardt_optimistix
+        solver_dogleg
     }
 
     return solver_fn in solver_fns
-
-
-# ==========================================================================
-# Fixed point solver wrapper for implicit differentiation
-# ==========================================================================
-
-@partial(custom_vjp, nondiff_argnums=(0, 1, 2))
-def least_squares(solver, solver_config, fn, theta, x_init):
-    """
-    Find a minimum of f(theta, x) in a least-squares sense using an iterative solver.
-    """
-    return solver(fn, theta, x_init, solver_config)
-
-
-def least_squares_fwd(solver, solver_config, fn, theta, x_init):
-    """
-    The forward pass of an iterative least squares solver.
-
-    Parameters
-    ----------
-    solver: The function that executes a least_squares solver.
-    solver_config: The configuration options of the solver.
-    fn : The function to iterate upon.
-    theta : The function parameters.
-    x_init: An initial guess for the values of the solution vector.
-
-    Returns
-    -------
-    x_star : The solution vector at a fixed point.
-    res : Auxiliary data to transfer to the backward pass.
-    """
-    x_star = least_squares(solver, solver_config, fn, theta, x_init)
-
-    return x_star, (theta, x_star)
-
-
-def least_squares_bwd(solver, solver_config, fn, res, vec):
-    """
-    The backward pass of an iterative least squares solver.
-
-    Parameters
-    ----------
-    solver: The function that executes a fixed point solver.
-    solver_config: The configuration options of the solver.
-    fn : The function to iterate upon.
-    res : Auxiliary data transferred from the forward pass.
-    vec: The vector on the left of the VJP.
-
-    Returns
-    -------
-    theta_bar: the VJP vector of fn w.r.t. the parameters `theta`
-    """
-    theta, x_star = res
-    linear_solve_fn = solver_config["linear_solve_fn"]
-
-    # Solve adjoint system
-
-    # Directly
-    jac_x_fn = jacfwd(fn, argnums=1)
-    Jx = jac_x_fn(theta, x_star)
-    lam = linear_solve_fn(Jx.T, -vec)
-
-    # Iteratively
-    # _, vjp_x = vjp(lambda x: fn(theta, x).T, x_star)
-    # def A_fn(w):
-    #     return vjp_x(w)[0]
-    # lam, info = cg(A_fn, -vec, x0=-vec)
-
-    # Call vjp of residual_fn to compute gradient wrt parameters
-    _, vjp_theta = vjp(lambda theta: fn(theta, x_star), theta)
-
-    theta_bar = vjp_theta(lam)
-
-    return theta_bar[0], None
-
-
-# ==========================================================================
-# Register custom VJP
-# ==========================================================================
-
-least_squares.defvjp(least_squares_fwd, least_squares_bwd)

@@ -1,7 +1,4 @@
-from chex import assert_max_traces
-
-
-def solver_jaxopt(solver_fn, fn, a, x_init, solver_config, solver_kwargs=None):
+def solver_jaxopt(solver_cls, fn, a, x_init, solver_config, solver_kwargs=None):
     """
     Solve for a fixed point of a function f(a, x) using anderson acceleration in jaxopt.
 
@@ -36,12 +33,12 @@ def solver_jaxopt(solver_fn, fn, a, x_init, solver_config, solver_kwargs=None):
     def fn_swapped(x, a):
         return fn(a, x)
 
-    solver = solver_fn(
+    solver = solver_cls(
         fn_swapped,
         maxiter=tmax,
         tol=eta,
         has_aux=False,
-        implicit_diff=False,  # False, NOTE: Disabling jaxopt implicit diff on purpose
+        implicit_diff=implicit_diff,  # False, NOTE: Disabling jaxopt implicit diff on purpose
         unroll=unroll,   # unroll
         jit=True,
         verbose=verbose,
