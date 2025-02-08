@@ -1,20 +1,14 @@
 try:
-    from optimistix import LevenbergMarquardt
-    from optimistix import Dogleg
-    from optimistix import least_squares
     from optimistix import ImplicitAdjoint
     from optimistix import RecursiveCheckpointAdjoint
-
-    import optimistix as optx
-    import lineax as lx
 
 except ImportError:
     pass
 
 
-def solver_levenberg_marquardt_optimistix(fn, theta, x_init, solver_config):
+def solver_optimistix(solver_cls, routine_fn, fn, a, x_init, solver_config, solver_kwargs=None):
     """
-    Solve for a fixed point of a function f(a, x) using anderson acceleration in jaxopt.
+    Find a root of a function f(a, x) with optimistix.
 
     Parameters
     ----------
@@ -38,33 +32,32 @@ def solver_levenberg_marquardt_optimistix(fn, theta, x_init, solver_config):
     else:
         adjoint = RecursiveCheckpointAdjoint()
 
-    def fn_swapped(x, theta):
-        return fn(theta, x)
+    if solver_kwargs is None:
+        solver_kwargs = {}
 
-    stats = {}
     if verbose:
         stats = {"loss", "step_size"}
+        verbose = frozenset(stats)
+        solver_kwargs["verbose"] = verbose
 
-    verbose = frozenset(stats)
+    def fn_swapped(x, a):
+        return fn(a, x)
 
-    # solver = LevenbergMarquardt(
-    solver = Dogleg(
+    solver = solver_cls(
         rtol=eta,
         atol=eta,
-        norm=optx.two_norm,
-        verbose=verbose,
-        # linear_solver=lx.NormalCG(eta, eta)
+        **solver_kwargs,
     )
 
-    solution = least_squares(
+    solution = routine_fn(
         fn=fn_swapped,
         solver=solver,
         y0=x_init,
-        args=theta,
+        args=a,
         has_aux=False,
         max_steps=tmax,
         throw=False,
-        # tags=frozenset({lx.positive_semidefinite_tag})
+        adjoint=adjoint
     )
 
     return solution.value
