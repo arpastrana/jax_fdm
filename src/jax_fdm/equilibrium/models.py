@@ -297,7 +297,10 @@ class EquilibriumModel:
             """
             The residual function of the equilibrium problem.
             """
-            return self.residual_free_matrix(params, xyz_free, structure)
+            xyz_free = jnp.reshape(xyz_free, (-1, 3))
+            residuals = self.residual_free_matrix(params, xyz_free, structure)
+
+            return residuals.ravel()
 
         # Recompute xyz_free_init if not input
         if xyz_free_init is None:
@@ -449,14 +452,12 @@ class EquilibriumModel:
         K = self.stiffness_matrix(q, structure)
 
         # Calculate load matrix
-        xyz_free = jnp.reshape(xyz_free, (-1, 3))
         P = self.load_xyz_matrix(params, xyz_free, structure)
 
         # Residual function
-        residual = K @ xyz_free - P
-        residual = residual.ravel()
+        residuals = K @ xyz_free - P
 
-        return residual.ravel()
+        return residuals
 
 
 # ==========================================================================
