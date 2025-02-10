@@ -3,7 +3,6 @@ from functools import partial
 from jaxopt.linear_solve import solve_normal_cg
 
 from jax import custom_vjp
-from jax import jacfwd
 from jax import vjp
 
 
@@ -12,7 +11,7 @@ from jax import vjp
 # ==========================================================================
 
 @partial(custom_vjp, nondiff_argnums=(0, 1, 2))
-def nonlinear_solve(solver, solver_config, fn, theta, x_init):
+def solver_nonlinear_implicit(solver, solver_config, fn, theta, x_init):
     """
     Find a minimum of f(theta, x) in a least-squares sense using an iterative solver.
     """
@@ -36,7 +35,7 @@ def nonlinear_fwd(solver, solver_config, fn, theta, x_init):
     x_star : The solution vector at a fixed point.
     res : Auxiliary data to transfer to the backward pass.
     """
-    x_star = nonlinear_solve(solver, solver_config, fn, theta, x_init)
+    x_star = solver_nonlinear_implicit(solver, solver_config, fn, theta, x_init)
 
     return x_star, (theta, x_star)
 
@@ -62,10 +61,9 @@ def nonlinear_bwd(solver, solver_config, fn, res, vec):
     # Solve adjoint system
 
     # A. Directly
-    # linear_solve_fn = solver_config["linear_solve_fn"]
     # jac_x_fn = jacfwd(fn, argnums=1)
     # Jx = jac_x_fn(theta, x_star)
-    # lam = linear_solve_fn(Jx.T, -vec)
+    # lam = jnp.linalg.solve(Jx.T, -vec)
 
     # B. Iteratively
     _, vjp_x = vjp(lambda x: fn(theta, x).T, x_star)
@@ -83,4 +81,4 @@ def nonlinear_bwd(solver, solver_config, fn, res, vec):
 # Register custom VJP
 # ==========================================================================
 
-nonlinear_solve.defvjp(nonlinear_fwd, nonlinear_bwd)
+solver_nonlinear_implicit.defvjp(nonlinear_fwd, nonlinear_bwd)

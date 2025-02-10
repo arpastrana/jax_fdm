@@ -138,7 +138,7 @@ def solver_forward(f, a, x_init, solver_config):
 # ==========================================================================
 
 @partial(custom_vjp, nondiff_argnums=(0, 1, 2))
-def fixed_point_solve(solver, solver_config, f, a, x_init):
+def solver_fixedpoint_implicit(solver, solver_config, f, a, x_init):
     """
     Solve for a fixed point of a function f(a, x) using an iterative solver.
     """
@@ -162,7 +162,7 @@ def fixed_point_fwd(solver, solver_config, f, a, x_init):
     x : The solution vector at a fixed point.
     res : Auxiliary data to transfer to the backward pass.
     """
-    x_star = fixed_point_solve(solver, solver_config, f, a, x_init)
+    x_star = solver_fixedpoint_implicit(solver, solver_config, f, a, x_init)
 
     return x_star, (a, x_star)
 
@@ -396,7 +396,7 @@ def fixed_point_bwd_adjoint(solver, solver_config, f, res, vec):
 # Register custom VJP
 # ==========================================================================
 
-# fixed_point_solve.defvjp(fixed_point_fwd, fixed_point_bwd_fixedpoint)
-# fixed_point_solve.defvjp(fixed_point_fwd, fixed_point_bwd_iterative)
-# fixed_point_solve.defvjp(fixed_point_fwd, fixed_point_bwd_direct)
-fixed_point_solve.defvjp(fixed_point_fwd, fixed_point_bwd_adjoint)
+# solver_fixedpoint_implicit.defvjp(fixed_point_fwd, fixed_point_bwd_fixedpoint)
+# solver_fixedpoint_implicit.defvjp(fixed_point_fwd, fixed_point_bwd_iterative)
+# solver_fixedpoint_implicit.defvjp(fixed_point_fwd, fixed_point_bwd_direct)
+solver_fixedpoint_implicit.defvjp(fixed_point_fwd, fixed_point_bwd_adjoint)
