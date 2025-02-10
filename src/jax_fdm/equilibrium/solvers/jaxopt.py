@@ -38,8 +38,8 @@ def solver_jaxopt(solver_cls, fn, a, x_init, solver_config, solver_kwargs=None):
         maxiter=tmax,
         tol=eta,
         has_aux=False,
-        implicit_diff=implicit_diff,  # False, NOTE: Disabling jaxopt implicit diff on purpose
-        unroll=unroll,   # unroll
+        implicit_diff=implicit_diff,
+        unroll=unroll,
         jit=True,
         verbose=verbose,
         **solver_kwargs

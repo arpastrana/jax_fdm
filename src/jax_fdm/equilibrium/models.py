@@ -5,17 +5,18 @@ from jax.debug import print as jax_print
 import jax.numpy as jnp
 
 from jax.experimental.sparse import CSC
-from jax.experimental.sparse import BCSR
 
 from jax_fdm.equilibrium.states import EquilibriumState
 
 from jax_fdm.equilibrium.sparse import sparse_solve as spsolve
 
 from jax_fdm.equilibrium.solvers import solver_forward
-from jax_fdm.equilibrium.solvers import fixed_point
-from jax_fdm.equilibrium.solvers import least_squares
+from jax_fdm.equilibrium.solvers import solver_fixedpoint_implicit
+from jax_fdm.equilibrium.solvers import solver_nonlinear_implicit
+
 from jax_fdm.equilibrium.solvers import is_solver_fixedpoint
 from jax_fdm.equilibrium.solvers import is_solver_leastsquares
+from jax_fdm.equilibrium.solvers import is_solver_root_finding
 
 from jax_fdm.equilibrium.loads import nodes_load_from_faces
 from jax_fdm.equilibrium.loads import nodes_load_from_edges
@@ -36,7 +37,7 @@ class EquilibriumModel:
     `is_load_local`: If set to `True`, the face and edge loads are applied in their local coordinate system at every iteration (follower loads). Defaults to `False`.
     `itersolve_fn`: The function that calculates an equilibrium state iteratively. If `None`, the model defaults to forward fixed-point iteration. Note that only the solver must be consistent with the choice of residual function. Defaults to `None`.
     `implicit_diff`: If set to `True`, it applies implicit differentiation to speed up backpropagation. Defaults to `True`.
-    `verbose`: Whether to print out calculations' info to the terminal. Defaults to `False`.
+    `verbose`: Whether to print out calculation info to the terminal. Defaults to `False`.
     """
     def __init__(self,
                  tmax=100,
@@ -158,8 +159,8 @@ class EquilibriumModel:
         """
         Compute an equilibrium state using the force density method (FDM).
         """
-        q, xyz_fixed, loads_state = params
-        loads_nodes = loads_state.nodes
+        q, xyz_fixed, load_state = params
+        load_nodes = load_state.nodes
 
         tmax = self.tmax
         eta = self.eta
@@ -167,13 +168,13 @@ class EquilibriumModel:
         implicit_diff = self.implicit_diff
         verbose = self.verbose
 
-        xyz_free = self.equilibrium(q, xyz_fixed, loads_nodes, structure)
+        xyz_free = self.equilibrium(q, xyz_fixed, load_nodes, structure)
 
         if tmax > 1:
             xyz_free = self.eq_iterative_fn(
                 q,
                 xyz_fixed,
-                loads_state,
+                load_state,
                 structure,
                 xyz_free_init=xyz_free,
                 tmax=tmax,
@@ -183,27 +184,19 @@ class EquilibriumModel:
                 verbose=verbose
             )
 
+        if self.verbose:
+            residuals_free = self.residual_free_matrix(params, xyz_free, structure)
+            jax_print("Mean abs residual: {}", jnp.mean(jnp.abs(residuals_free), axis=0))
+
         # Exit like a champ
         xyz = self.nodes_positions(xyz_free, xyz_fixed, structure)
-        loads_nodes = self.nodes_load(xyz, loads_state, structure)
+        loads_nodes = self.nodes_load(xyz, load_state, structure)
 
         return self.equilibrium_state(q, xyz, loads_nodes, structure)
 
     # ------------------------------------------------------------------------------
     #  Equilibrium modes
     # ------------------------------------------------------------------------------
-
-    def select_equilibrium_iterative_fn(self, solver):
-        """
-        Pick the equilibrium function that is compatible with the input solver function.
-        """
-        if is_solver_fixedpoint(solver):
-            return self.equilibrium_iterative_xyz
-
-        if is_solver_leastsquares(solver):
-            return self.equilibrium_iterative_residual
-
-        raise ValueError(f"Solver {solver} is not supported!")
 
     def equilibrium(self, q, xyz_fixed, loads_nodes, structure):
         """
@@ -248,11 +241,6 @@ class EquilibriumModel:
             Returns
             -------
             xyz_free_updated: The updated 3D coordinates of the free vertices.
-
-            Notes
-            -----
-            This closure function avoids re-computing A and f_fixed throughout iterations
-            because these two matrices remain constant during the fixed point search.
             """
             # Assemble load matrix
             P = loads_fn(params, xyz_free)
@@ -270,11 +258,10 @@ class EquilibriumModel:
 
         solver_config = {"tmax": tmax,
                          "eta": eta,
-                         "implicit_diff": implicit_diff,
+                         "implicit_diff": False,
                          "verbose": verbose,
                          "loads_fn": loads_fn,
-                         "linearsolve_fn": self.linearsolve_fn
-                         }
+                         "linearsolve_fn": self.linearsolve_fn}
 
         solver_kwargs = {"solver_config": solver_config,
                          "f": equilibrium_iterative_fn,
@@ -283,7 +270,7 @@ class EquilibriumModel:
 
         solver = solver or self.itersolve_fn
         if implicit_diff:
-            return fixed_point(solver, **solver_kwargs)
+            return solver_fixedpoint_implicit(solver, **solver_kwargs)
 
         return solver(**solver_kwargs)
 
@@ -306,31 +293,11 @@ class EquilibriumModel:
         This function only supports reverse mode auto-differentiation.
         To support forward-mode, we should define a custom jvp using implicit differentiation.
         """
-        def loads_fn(params, xyz_free):
-            """
-            A closure function over a structure to calculate the load matrix.
-            """
-            return self.load_xyz_matrix(params, xyz_free, structure)
-
         def residual_fn(params, xyz_free):
             """
             The residual function of the equilibrium problem.
             """
-            # Unpack parameters
-            q, xyz_fixed, load_state = params
-
-            # Calculate stiffness matrix
-            K = self.stiffness_matrix(q, structure)
-
-            # Calculate load matrix
-            xyz_free = jnp.reshape(xyz_free, (-1, 3))
-            P = loads_fn(params, xyz_free)
-
-            # Residual function
-            residual = K @ xyz_free - P
-            residual = residual.ravel()
-
-            return residual
+            return self.residual_free_matrix(params, xyz_free, structure)
 
         # Recompute xyz_free_init if not input
         if xyz_free_init is None:
@@ -346,11 +313,8 @@ class EquilibriumModel:
         # Solver
         solver_config = {"tmax": tmax,
                          "eta": eta,
-                         "implicit_diff": implicit_diff,
-                         "verbose": verbose,
-                         "linear_solve_fn": self.linearsolve_fn,
-                         "loads_fn": loads_fn
-                         }
+                         "implicit_diff": False,
+                         "verbose": verbose}
 
         solver_kwargs = {"solver_config": solver_config,
                          "fn": residual_fn,
@@ -360,18 +324,25 @@ class EquilibriumModel:
         solver = solver or self.itersolve_fn
 
         if implicit_diff:
-            xyz_free_star = least_squares(solver, **solver_kwargs)
+            xyz_free_star = solver_nonlinear_implicit(solver, **solver_kwargs)
         else:
             xyz_free_star = solver(**solver_kwargs)
-
-        if verbose:
-            residual = residual_fn(params, xyz_free_star)
-            l2_res = jnp.sum(jnp.square(residual))
-            jax_print("L2 residual: {}", l2_res)
 
         xyz_free_star = jnp.reshape(xyz_free_star, (-1, 3))
 
         return xyz_free_star
+
+    def select_equilibrium_iterative_fn(self, solver):
+        """
+        Pick the equilibrium function that is compatible with the input solver function.
+        """
+        if is_solver_fixedpoint(solver):
+            return self.equilibrium_iterative_xyz
+
+        if is_solver_leastsquares(solver) or is_solver_root_finding(solver):
+            return self.equilibrium_iterative_residual
+
+        raise ValueError(f"Solver {solver} is not supported!")
 
     # ----------------------------------------------------------------------
     # Equilibrium state
@@ -454,7 +425,7 @@ class EquilibriumModel:
         return P
 
     # ----------------------------------------------------------------------
-    # Load matrices
+    # Residual matrices
     # ----------------------------------------------------------------------
 
     @staticmethod
@@ -466,6 +437,26 @@ class EquilibriumModel:
         c_fixed = structure.connectivity_fixed
 
         return c_free.T @ (q[:, None] * (c_fixed @ xyz_fixed))
+
+    def residual_free_matrix(self, params, xyz_free, structure):
+        """
+        The residuals of the free nodes of the structure.
+        """
+        # Unpack parameters
+        q, xyz_fixed, load_state = params
+
+        # Calculate stiffness matrix
+        K = self.stiffness_matrix(q, structure)
+
+        # Calculate load matrix
+        xyz_free = jnp.reshape(xyz_free, (-1, 3))
+        P = self.load_xyz_matrix(params, xyz_free, structure)
+
+        # Residual function
+        residual = K @ xyz_free - P
+        residual = residual.ravel()
+
+        return residual.ravel()
 
 
 # ==========================================================================
@@ -498,17 +489,5 @@ class EquilibriumModelSparse(EquilibriumModel):
         # sum of force densities for each node
         diag_fd = diags.T @ q
         K.data = K.data.at[diag_indices].set(diag_fd)
-
-        # TODO: Test: Convert CSC to BCSR.
-        # This could be possible because this matrix is symmetric.
-        # Using BCSR would enable vmapping over a sparse equilibrium model
-        # But, does the conversion incur in severe performance costs?
-        # args = (K.data, K.indices, K.indptr)
-        # K = BCSR(
-        #     args,
-        #     shape=K.shape,
-        #     indices_sorted=True,
-        #     unique_indices=True
-        # )
 
         return K
