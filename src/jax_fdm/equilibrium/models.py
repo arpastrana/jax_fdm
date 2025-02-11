@@ -258,7 +258,7 @@ class EquilibriumModel:
 
         solver_config = {"tmax": tmax,
                          "eta": eta,
-                         "implicit_diff": False,
+                         "implicit_diff": implicit_diff,
                          "verbose": verbose,
                          "loads_fn": loads_fn,
                          "linearsolve_fn": self.linearsolve_fn}
@@ -304,8 +304,7 @@ class EquilibriumModel:
 
         # Recompute xyz_free_init if not input
         if xyz_free_init is None:
-            load_nodes = load_state.nodes
-            xyz_free_init = self.nodes_free_positions(q, xyz_fixed, load_nodes, structure)
+            xyz_free_init = self.equilibrium(q, xyz_fixed, load_state.nodes, structure)
 
         # Flatten XYZ free for compatibility with the loss function
         xyz_free_init = xyz_free_init.ravel()
