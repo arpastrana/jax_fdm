@@ -2,11 +2,7 @@ from functools import partial
 
 import jax
 
-from jaxopt.linear_solve import solve_normal_cg
-
 from jax.scipy.sparse.linalg import cg
-
-import lineax as lx
 
 import jax.numpy as jnp
 
@@ -14,10 +10,14 @@ from jax import custom_vjp
 from jax import jacfwd
 from jax import vjp
 
-from equinox.internal import while_loop
-
 from jaxopt import FixedPointIteration
 from jaxopt import AndersonAcceleration
+
+from equinox.internal import while_loop
+
+from lineax import FunctionLinearOperator
+from lineax import NormalCG
+from lineax import linear_solve
 
 from jax_fdm.equilibrium.solvers.jaxopt import solver_jaxopt
 
@@ -261,7 +261,6 @@ def fixed_point_bwd_iterative(solver, solver_config, f, res, vec):
         return w - vjp_x(w)[0]
 
     # Solve adjoint function iteratively
-    # u_star, info = gmres(A_fn, vec, x0=vec, tol=1e-6)
     u_star, info = cg(A_fn, vec, x0=vec, tol=1e-6)
 
     # Calculate the vector Jacobian function v * df / da at a, closed around x*
@@ -345,7 +344,6 @@ def fixed_point_bwd_adjoint(solver, solver_config, f, res, vec):
     x : The solution vector at a fixed point.
     res : None
     """
-    print("\n*** Using test adjoint lineax ***\n")
     # Unpack data from forward pass
     theta, x_star = res
 
@@ -372,15 +370,12 @@ def fixed_point_bwd_adjoint(solver, solver_config, f, res, vec):
         return w - vjp_x(lam)[0]
 
     # Solve adjoint function iteratively
-    # w = solve_normal_cg(A_fn, vec)
-
-    A_op = lx.FunctionLinearOperator(
+    A_op = FunctionLinearOperator(
         A_fn,
         input_structure=jax.ShapeDtypeStruct(vec.shape, vec.dtype)
     )
-    lin_solver = lx.NormalCG(rtol=1e-6, atol=1e-6)
-    sol = lx.linear_solve(A_op, vec, lin_solver, throw=False, options={"y0": vec})
-
+    lin_solver = NormalCG(rtol=1e-6, atol=1e-6)
+    sol = linear_solve(A_op, vec, lin_solver, throw=False)
     w = sol.value
 
     # Calculate the vector Jacobian function v * df / dtheta, evaluated at at x*
@@ -396,7 +391,4 @@ def fixed_point_bwd_adjoint(solver, solver_config, f, res, vec):
 # Register custom VJP
 # ==========================================================================
 
-# solver_fixedpoint_implicit.defvjp(fixed_point_fwd, fixed_point_bwd_fixedpoint)
-# solver_fixedpoint_implicit.defvjp(fixed_point_fwd, fixed_point_bwd_iterative)
-# solver_fixedpoint_implicit.defvjp(fixed_point_fwd, fixed_point_bwd_direct)
 solver_fixedpoint_implicit.defvjp(fixed_point_fwd, fixed_point_bwd_adjoint)
