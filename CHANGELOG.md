@@ -24,6 +24,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- `LossPlotter.print_error_stats()` reports the loss and error values with up 6 digits of precision. 
 - Renamed `EquilibriumModel.force_fixed_matrix()` to `EquilibriumModel.residual_fixed_matrix()`.
 - Renamed `EquilibriumModel.force_matrix()` to `EquilibriumModel.load_matrix()`.
 - `EquilibriumParametersState.from_datastructure` takes `dtype` as optional input. It defaults to `jax.numpy.float64`.

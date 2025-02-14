@@ -101,5 +101,5 @@ class LossPlotter:
                  "max": np.max(errors)}
 
         name_string = "{:<18}\t".format(error_name)
-        values_string = "  ".join(["{}: {:>12.4f}".format(key.capitalize(), value) for key, value in stats.items()])
+        values_string = "  ".join(["{}: {:>12.6f}".format(key.capitalize(), value) for key, value in stats.items()])
         print(name_string + values_string)
