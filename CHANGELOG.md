@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Implemented `geometry.length_vector_sqrd()`.
 - Pass `implicit_diff` argument to `solver_fixedpoint`.
 
 ### Changed

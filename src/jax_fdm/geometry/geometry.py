@@ -24,11 +24,18 @@ def angle_vectors(u, v, deg=False):
 
 def length_vector(u):
     """
-    Calculate the length of a vector along its columns.
+    Calculate the length of a vector.
     """
     length = jnp.linalg.norm(u, axis=-1, keepdims=True)
 
     return length
+
+
+def length_vector_sqrd(u):
+    """
+    Calculate the squared length of a vector.
+    """
+    return jnp.sum(u * u, axis=-1, keepdims=True)
 
 
 def normalize_vector(u, safe_nan=True):
