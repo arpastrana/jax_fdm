@@ -2,10 +2,10 @@
 
 <!-- Badges -->
 ![build](https://github.com/arpastrana/jax_fdm/workflows/build/badge.svg)
-[![arXiv](https://img.shields.io/badge/arXiv-2307.12407-b31b1b.svg)](https://arxiv.org/abs/2307.12407)
 [![DOI](https://zenodo.org/badge/534255112.svg)](https://zenodo.org/badge/latestdoi/534255112)
 [![PyPI - Latest Release](https://img.shields.io/pypi/v/jax-fdm.svg)](https://pypi.python.org/project/jax-fdm)
 [![PyPI - Python Version](https://img.shields.io/pypi/pyversions/jax-fdm.svg)](https://pypi.python.org/project/jax-fdm)
+[![arXiv](https://img.shields.io/badge/arXiv-2307.12407-b31b1b.svg)](https://arxiv.org/abs/2307.12407)
 <!-- [![GitHub - License](https://img.shields.io/github/license/arpastrana/jax_fdm.svg)](https://github.com/arpastrana/jax_fdm) -->
 
 A differentiable, hardware-accelerated framework for constrained form-finding in structural design.
