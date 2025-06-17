@@ -31,6 +31,13 @@ def length_vector(u):
     return length
 
 
+def length_vector_sqrd(u):
+    """
+    Calculate the squared length of a vector.
+    """
+    return jnp.sum(u * u, axis=-1, keepdims=True)
+
+
 def normalize_vector(u, safe_nan=True):
     """
     Scale a vector such that it has a unit length.
