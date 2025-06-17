@@ -74,6 +74,7 @@ def solver_fixedpoint(f, a, x_init, solver_config):
     tmax = solver_config["tmax"]
     eta = solver_config["eta"]
     verbose = solver_config["verbose"]
+    implicit_diff = solver_config["implicit"]
 
     def f_swapped(x, a):
         return f(a, x)
@@ -82,9 +83,7 @@ def solver_fixedpoint(f, a, x_init, solver_config):
                               maxiter=tmax,
                               tol=eta,
                               has_aux=False,
-                              # implicit_diff=True,
-                              # jit=True,
-                              # unroll=False,
+                              implicit_diff=implicit_diff,
                               verbose=verbose)
 
     result = fpi.run(x_init, a)
