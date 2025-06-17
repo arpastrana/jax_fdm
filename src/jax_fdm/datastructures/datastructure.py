@@ -83,7 +83,7 @@ class FDDatastructure(Datastructure):
         """
         return sum(list(self.edges_loadpaths()))
 
-    def print_stats(self, other_stats=None):
+    def print_stats(self, other_stats=None, ndigits=3):
         """
         Print information aboud the equilibrium state of the network.
         """
@@ -105,17 +105,17 @@ class FDDatastructure(Datastructure):
         stats.update(other_stats)
 
         print(f"\n***{self.__class__.__name__} stats***")
-        print(f"Load path: {round(self.loadpath(), 3)}")
+        print(f"Load path: {round(self.loadpath(), ndigits)}")
 
         for name, vals in stats.items():
 
             if not vals:
                 continue
 
-            minv = round(min(vals), 3)
-            maxv = round(max(vals), 3)
-            meanv = round(sum(vals) / len(vals), 3)
-            stdv = round(stdev(vals), 3)
+            minv = round(min(vals), ndigits)
+            maxv = round(max(vals), ndigits)
+            meanv = round(sum(vals) / len(vals), ndigits)
+            stdv = round(stdev(vals), ndigits)
             name = "{:<18}".format(name)
 
             print(f"{name}\tMin: {minv}\tMax: {maxv}\tMean: {meanv}\tStDev: {stdv}")

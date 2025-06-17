@@ -1,6 +1,6 @@
 def solver_jaxopt(solver_cls, fn, a, x_init, solver_config, solver_kwargs=None):
     """
-    Solve for a fixed point of a function f(a, x) using anderson acceleration in jaxopt.
+    Solve for a fixed point of a function f(a, x) using a jaxopt solver.
 
     Parameters
     ----------
