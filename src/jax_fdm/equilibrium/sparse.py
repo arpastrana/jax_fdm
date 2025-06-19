@@ -153,6 +153,7 @@ def sparse_solve_bwd(res, g):
 
     # Solve adjoint system
     # A.T @ xk_bar = -g
+    # NOTE: No need to transpose A because it is assumed symmetric
     lam = sparse_solve(A, g)
 
     # the implicit constraint function for implicit differentiation

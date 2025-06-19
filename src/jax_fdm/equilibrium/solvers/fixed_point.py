@@ -10,6 +10,8 @@ from jax import custom_vjp
 from jax import jacfwd
 from jax import vjp
 
+from jax.lax import custom_linear_solve
+
 from jaxopt import FixedPointIteration
 from jaxopt import AndersonAcceleration
 
@@ -347,10 +349,6 @@ def fixed_point_bwd_adjoint(solver, solver_config, f, res, vec):
     # Unpack data from forward pass
     theta, x_star = res
 
-    # Stiffness matrix is the first parameter
-    # The matrix is symmetric, so no need to transpose it
-    K = theta[0]
-
     # Get load function
     p_fn = solver_config["loads_fn"]
 
@@ -359,13 +357,35 @@ def fixed_point_bwd_adjoint(solver, solver_config, f, res, vec):
 
     # Get linear solver for stiffness matrix from equilibrium model
     # It is jax.numpy.linalg for dense matrices and scipy.spsolve for sparse matrices.
-    linearsolve_fn = solver_config["linearsolve_fn"]
+    _linearsolve_fn = solver_config["linearsolve_fn"]
+
+    # Stiffness matrix is the first parameter
+    # The matrix is symmetric, so no need to transpose it
+    K = theta[0]
+
+    def linearsolve_fn(b):
+        """
+        Linearize a (sparse) linear solve to automatically get the transpose of this function.
+        Close over the stiffness matrix to guarantee linearity w.r.t. the function inputs.
+
+        Notes
+        ------
+        This information is required by lineax.FunctionLinearOperator.
+        """
+        def matvec_fn(_b):
+            return K @ _b
+
+        def solve_fn(_, _b):
+            return _linearsolve_fn(K, _b)
+
+        # True, because stiffness matrix is symmetric
+        return custom_linear_solve(matvec_fn, b, solve_fn, symmetric=True)
 
     def A_fn(w):
         """
         Evaluates the function: w = vector - w @ K_inv @ dp / dx
         """
-        lam = linearsolve_fn(K, w)
+        lam = linearsolve_fn(w)
 
         return w - vjp_x(lam)[0]
 
@@ -374,9 +394,9 @@ def fixed_point_bwd_adjoint(solver, solver_config, f, res, vec):
         A_fn,
         input_structure=jax.ShapeDtypeStruct(vec.shape, vec.dtype)
     )
-    lin_solver = NormalCG(rtol=1e-6, atol=1e-6)
-    sol = linear_solve(A_op, vec, lin_solver, throw=False)
-    w = sol.value
+    solver = NormalCG(rtol=1e-6, atol=1e-6)
+    solution = linear_solve(A_op, vec, solver, throw=False)  # fails with spsolve due to lack of transposition
+    w = solution.value
 
     # Calculate the vector Jacobian function v * df / dtheta, evaluated at at x*
     _, vjp_theta = vjp(lambda theta: f(theta, x_star), theta)

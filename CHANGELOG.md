@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Added `jax.lax.custom_linear_solver()` to backward rule of implicit `custom_vjp` of fixed-point solver. This new function acts as a thin wrapper around the *sparse* linear solver of `EquilibriumModel.linearsolve_fn()` that defines a custom transpose rule to be compatible with `jax.linear_transpose()`. The transpose is needed by `lineax`, inside `FunctionLinearOperator`. Without the wrapper and the transpose, we cannot use implicit differentiation with a sparse linear solver and a fixed-point solver. Now we can.
 - Implemented `geometry.length_vector_sqrd()`.
 - Print out statistics with `ndigits` of precision in `FDDatastructure.print_stats()`.
 - Listed `lineax` and `optimistix` as dependencies.
