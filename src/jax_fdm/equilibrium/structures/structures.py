@@ -283,10 +283,10 @@ class EquilibriumMeshStructure(EquilibriumStructure, Mesh):
         assert max_length_face > 2, "The mesh faces must have at least 3 vertices each"
 
         padded_faces = []
+        pad_value = -1
         for face in faces:
             len_face = len(face)
             if len_face < max_length_face:
-                pad_value = face[0]
                 face_padding = [pad_value] * (max_length_face - len_face)
                 face = face + face_padding
             padded_faces.append(face)
