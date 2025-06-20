@@ -7,6 +7,7 @@ import jax.numpy as jnp
 from jax.experimental.sparse import CSC
 
 from jax_fdm.equilibrium.states import EquilibriumState
+from jax_fdm.equilibrium.states import LoadState
 
 from jax_fdm.equilibrium.sparse import sparse_solve as spsolve
 
@@ -171,6 +172,9 @@ class EquilibriumModel:
         xyz_free = self.equilibrium(q, xyz_fixed, load_nodes, structure)
 
         if tmax > 1:
+            load_nodes = jnp.zeros_like(load_nodes)
+            load_state = LoadState(load_nodes, load_state.edges, load_state.faces)
+
             xyz_free = self.eq_iterative_fn(
                 q,
                 xyz_fixed,
@@ -190,9 +194,9 @@ class EquilibriumModel:
 
         # Exit like a champ
         xyz = self.nodes_positions(xyz_free, xyz_fixed, structure)
-        loads_nodes = self.nodes_load(xyz, load_state, structure)
+        load_nodes = self.nodes_load(xyz, load_state, structure)
 
-        return self.equilibrium_state(q, xyz, loads_nodes, structure)
+        return self.equilibrium_state(q, xyz, load_nodes, structure)
 
     # ------------------------------------------------------------------------------
     #  Equilibrium modes
