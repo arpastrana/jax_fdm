@@ -10,6 +10,9 @@ from scipy.sparse.linalg import spsolve as spsolve_scipy
 from jax.experimental.sparse import CSC
 from jax.experimental.sparse.linalg import spsolve as spsolve_jax
 
+from jax.lax import custom_linear_solve
+from jax.custom_derivatives import linear_call
+
 
 # ==========================================================================
 # Sparse linear solver on GPU
@@ -95,6 +98,36 @@ def spsolve_cpu(A, b):
     return xk
 
 
+# def _spsolve_cpu(data, indices, indptr, b):
+#     A = csc_matrix((data, indices, indptr))
+#     return spsolve_scipy(A, b)
+
+# def spsolve_cpu(A, b):
+#     """
+#     A wrapper around scipy sparse linear solver that acts as a JAX pure callback.
+#     """
+#     def matvec_fn(b):
+#         return A @ b
+
+#     def solve_fn(_, b):
+#         xk = jax.pure_callback(
+#             _spsolve_cpu,  # callback function
+#             b,  # return type is b
+#             A.data,  # callback function arguments from here on
+#             A.indices,
+#             A.indptr,
+#             b)
+#         return xk
+
+#     # NOTE: Symmetric because stiffness matrix is symmetric
+#     # But this might not be the case for general sparse matrices
+#     return custom_linear_solve(matvec_fn, b, solve_fn, symmetric=True)
+
+
+# def spsolve_cpu(A, b):
+#     return linear_call(_spsolve_cpu, _spsolve_cpu, A, b)
+
+
 # ==========================================================================
 # Register sparse linear solvers
 # ==========================================================================
@@ -122,12 +155,55 @@ spsolve = register_sparse_solver(solvers)
 # Define sparse linear solver
 # ==========================================================================
 
+
+# def sparse_solve(A, b):
+#     """
+#     Test with custom linear solve to gain transposition atop a pure callback.
+#     """
+#     def matvec_fn(_b):
+#         return A @ _b
+
+#     def solve_fn(_, _b):
+#         return spsolve(A, _b)
+
+#     # True, because stiffness matrix is symmetric
+#     return custom_linear_solve(matvec_fn, b, solve_fn, symmetric=True)
+
+
 @jax.custom_vjp
 def sparse_solve(A, b):
     """
     The sparse linear solver.
     """
     return spsolve(A, b)
+
+
+# def sparse_solve_super(A, b):
+#     """
+#     A wrapper around scipy sparse linear solver that acts as a JAX pure callback.
+#     """
+#     def matvec_fn(b):
+#         return A @ b
+
+#     def solve_fn(_, b):
+#         return sparse_solve(A, b)
+
+#     def solve_fn_transpose(_, b):
+#         return sparse_solve(A.T, b)
+
+#     return custom_linear_solve(matvec_fn, b, solve_fn, transpose_solve=solve_fn_transpose, symmetric=False)
+
+# def sparse_solve_super(A, b):
+#     """
+#     A wrapper around scipy sparse linear solver that acts as a JAX pure callback.
+#     """
+#     def solve_fn(_A, _b):
+#         return sparse_solve(_A, _b)
+
+#     def solve_fn_transpose(_A, _b):
+#         return sparse_solve(_A.T, _b)
+
+#     return linear_call(solve_fn, solve_fn_transpose, A, b)
 
 
 # ==========================================================================
@@ -156,7 +232,7 @@ def sparse_solve_bwd(res, g):
     # NOTE: No need to transpose A because it is assumed symmetric
     lam = sparse_solve(A, g)
 
-    # the implicit constraint function for implicit differentiation
+    # The implicit constraint function for implicit differentiation
     def residual_fn(params):
         A, b = params
         return b - A @ xk
