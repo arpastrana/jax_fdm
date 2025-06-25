@@ -172,8 +172,6 @@ class EquilibriumModel:
         xyz_free = self.equilibrium(q, xyz_fixed, load_nodes, structure)
 
         if tmax > 1:
-            load_nodes = jnp.zeros_like(load_nodes)
-            load_state = LoadState(load_nodes, load_state.edges, load_state.faces)
 
             xyz_free = self.eq_iterative_fn(
                 q,
