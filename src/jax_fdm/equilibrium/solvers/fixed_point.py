@@ -2,7 +2,8 @@ from functools import partial
 
 import jax
 
-from jax.scipy.sparse.linalg import cg, bicgstab
+from jax.scipy.sparse.linalg import bicgstab
+from jax.experimental.sparse import JAXSparse
 
 import jax.numpy as jnp
 
@@ -18,11 +19,8 @@ from jaxopt import AndersonAcceleration
 from equinox.internal import while_loop
 
 from lineax import FunctionLinearOperator
-from lineax import BiCGStab
 from lineax import NormalCG
 from lineax import linear_solve
-
-import lineax as lx
 
 from jax_fdm.equilibrium.solvers.jaxopt import solver_jaxopt
 
@@ -369,22 +367,21 @@ def fixed_point_bwd_adjoint(solver, solver_config, f, res, vec):
     # The matrix is symmetric, so no need to transpose it
     K = theta[0]
 
-    # def linearsolve_fn(b):
-    #     """
-    #     Linearize a (sparse) linear solve to automatically get the transpose of this function.
-    #     Close over the stiffness matrix to guarantee linearity w.r.t. the function inputs.
+    if isinstance(K, JAXSparse):
+        _linearsolve_fn = linearsolve_fn
 
-    #     Notes
-    #     ------
-    #     This information is required by lineax.FunctionLinearOperator.
-    #     """
-    #     def matvec_fn(_b):
-    #         return K @ _b
+        def linearsolve_fn(K, b):
+            """
+            Linearize a (sparse) linear solve to get the transpose of this function.
+            The transpose of this function is required by lineax.
+            """
+            def matvec_fn(_b):
+                return K @ _b
 
-    #     def solve_fn(_, _b):
-    #         return _linearsolve_fn(K, _b)
+            def solve_fn(_, _b):
+                return _linearsolve_fn(K, _b)
 
-    #     return custom_linear_solve(matvec_fn, b, solve_fn, symmetric=True)
+            return custom_linear_solve(matvec_fn, b, solve_fn, symmetric=True)
 
     def A_fn(w):
         """
@@ -395,14 +392,10 @@ def fixed_point_bwd_adjoint(solver, solver_config, f, res, vec):
         return w - vjp_x(lam)[0]
 
     # Solve adjoint function iteratively
-    A_op = FunctionLinearOperator(
-        A_fn,
-        input_structure=jax.ShapeDtypeStruct(vec.shape, vec.dtype),
-    )
+    input_structure = jax.ShapeDtypeStruct(vec.shape, vec.dtype)
+    A_op = FunctionLinearOperator(A_fn, input_structure)
 
-    solver = NormalCG(rtol=1e-6, atol=1e-6)  # inflatable
-    # solver = BiCGStab(rtol=1e-6, atol=1e-6)  # better for planarization
-
+    solver = NormalCG(rtol=1e-6, atol=1e-6)
     solution = linear_solve(A_op, vec, solver, throw=False)
     w = solution.value
 
@@ -420,4 +413,3 @@ def fixed_point_bwd_adjoint(solver, solver_config, f, res, vec):
 # ==========================================================================
 
 solver_fixedpoint_implicit.defvjp(fixed_point_fwd, fixed_point_bwd_adjoint)
-# solver_fixedpoint_implicit.defvjp(fixed_point_fwd, fixed_point_bwd_adjoint_general)
