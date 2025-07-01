@@ -259,7 +259,10 @@ class FDNetworkViewerArtist(FDNetworkArtist):
         loads = {}
 
         for node, arrow in self.collection_loads.items():
-            obj = self.add_load(arrow, self.default_loadcolor)
+            color = self.load_color
+            if isinstance(color, dict):
+                color = color[node]
+            obj = self.add_load(arrow, color)
             loads[node] = obj
 
         return loads

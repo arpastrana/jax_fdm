@@ -27,6 +27,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Fixed bug in `FDNetworkViewerArtist()` that ignored custom colors when drawing node loads.
 - `LossPlotter.print_error_stats()` reports the loss and error values with up 6 digits of precision. 
 - Renamed `EquilibriumModel.force_fixed_matrix()` to `EquilibriumModel.residual_fixed_matrix()`.
 - Renamed `EquilibriumModel.force_matrix()` to `EquilibriumModel.load_matrix()`.
