@@ -95,11 +95,20 @@ class FDDatastructure(Datastructure):
                 _edges = edges_pos
             _edges.append(edge)
 
-        stats = {"FDs [-]": self.edges_forcedensities(keys=edges_neg),
-                 "FDs [+]": self.edges_forcedensities(keys=edges_pos),
-                 "Forces [-]": self.edges_forces(keys=edges_neg),
-                 "Forces [+]": self.edges_forces(keys=edges_pos),
-                 "Lengths": self.edges_lengths()}
+        has_edges_pos = len(edges_pos) > 0
+        has_edges_neg = len(edges_neg) > 0
+
+        stats = {}
+        if has_edges_neg:
+            stats["FDs [-]"] = self.edges_forcedensities(keys=edges_neg)
+        if has_edges_pos:
+            stats["FDs [+]"]: self.edges_forcedensities(keys=edges_pos)
+        if has_edges_neg:
+            stats["Forces [-]"] = self.edges_forces(keys=edges_neg)
+        if has_edges_pos:
+            stats["Forces [+]"]: self.edges_forces(keys=edges_pos)
+
+        stats["Lengths"] = self.edges_lengths()
 
         other_stats = other_stats or {}
         stats.update(other_stats)
@@ -115,7 +124,9 @@ class FDDatastructure(Datastructure):
             minv = round(min(vals), ndigits)
             maxv = round(max(vals), ndigits)
             meanv = round(sum(vals) / len(vals), ndigits)
-            stdv = round(stdev(vals), ndigits)
-            name = "{:<18}".format(name)
+            stdv = vals[0]
+            if len(vals) > 1:
+                stdv = round(stdev(vals), ndigits)
 
+            name = "{:<18}".format(name)
             print(f"{name}\tMin: {minv}\tMax: {maxv}\tMean: {meanv}\tStDev: {stdv}")
