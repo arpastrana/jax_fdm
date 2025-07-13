@@ -27,6 +27,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Changed the diagonal matrix in `EquilibriumStructureSparse` to `BCSR` from `CSC` for enabling Jacobian computations.
 - Exposed arrow parameters (head width, head portion, body width and minimum width) in `FDVectorPlotterArtist`.
 - Fixed bug in `FDNetworkViewerArtist()` that ignored custom colors when drawing node loads.
 - `LossPlotter.print_error_stats()` reports the loss and error values with up 6 digits of precision. 

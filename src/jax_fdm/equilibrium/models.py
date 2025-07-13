@@ -489,7 +489,9 @@ class EquilibriumModelSparse(EquilibriumModel):
         K = CSC(args, shape=index_array.shape)
 
         # sum of force densities for each node
-        diag_fd = diags.T @ q
+        # diag_fd = diags.T @ q  # for diags as CSC matrix
+        # NOTE: This is temporary
+        diag_fd = diags @ q  # for diags as BCSR matrix
         K.data = K.data.at[diag_indices].set(diag_fd)
 
         return K

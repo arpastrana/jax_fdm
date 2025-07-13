@@ -3,7 +3,10 @@ import numpy as np
 import jax
 import jax.numpy as jnp
 
+from scipy.sparse import csc_matrix
+
 from jax.experimental.sparse import BCOO
+from jax.experimental.sparse import BCSR
 from jax.experimental.sparse import CSC
 
 from jax_fdm import DTYPE_INT_JAX
@@ -236,8 +239,15 @@ class EquilibriumStructureSparse(EquilibriumStructure, GraphSparse):
         """
         diags_data = jnp.ones_like(c_free_csc.data)
 
-        return CSC((diags_data, c_free_csc.indices, c_free_csc.indptr),
-                   shape=c_free_csc.shape)
+        args = (diags_data, c_free_csc.indices, c_free_csc.indptr)
+        shape = c_free_csc.shape
+        # diag_matrix = CSC(args, shape=shape)
+
+        # NOTE: temporary change from CSV to BCSR matrix to enable Jacobians
+        diag_matrix = csc_matrix(args, shape).tocsr().T
+        diag_matrix = BCSR.from_scipy_sparse(diag_matrix)
+
+        return diag_matrix
 
 
 # ==========================================================================
