@@ -28,7 +28,7 @@ class EquilibriumState(NamedTuple):
 # ==========================================================================
 
 class LoadState(NamedTuple):
-    nodes: Union[jax.Array, float]
+    nodes: Union[jax.Array]
     edges: Union[jax.Array, float]
     faces: Union[jax.Array, float]
 

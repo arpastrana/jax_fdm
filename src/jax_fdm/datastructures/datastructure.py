@@ -102,11 +102,11 @@ class FDDatastructure(Datastructure):
         if has_edges_neg:
             stats["FDs [-]"] = self.edges_forcedensities(keys=edges_neg)
         if has_edges_pos:
-            stats["FDs [+]"]: self.edges_forcedensities(keys=edges_pos)
+            stats["FDs [+]"] = self.edges_forcedensities(keys=edges_pos)
         if has_edges_neg:
             stats["Forces [-]"] = self.edges_forces(keys=edges_neg)
         if has_edges_pos:
-            stats["Forces [+]"]: self.edges_forces(keys=edges_pos)
+            stats["Forces [+]"] = self.edges_forces(keys=edges_pos)
 
         stats["Lengths"] = self.edges_lengths()
 

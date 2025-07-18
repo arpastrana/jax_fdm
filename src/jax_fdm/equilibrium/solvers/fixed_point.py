@@ -224,6 +224,7 @@ def fixed_point_bwd_materialize(solver, solver_config, f, res, vec):
 
     return a_bar[0], None
 
+
 # ==========================================================================
 # Backward rule - Fixed point iteration
 # ==========================================================================

@@ -155,6 +155,7 @@ class Optimizer:
             constraints = self.constraints(constraints, model, structure, x)
             print(f"\tConstraints warmup time: {(perf_counter() - start_time):.4} seconds")
 
+        # optimization options
         options = self.options(extra={"maxiter": maxiter})
 
         opt_kwargs = {"fun": loss_and_grad_fn,
@@ -166,8 +167,7 @@ class Optimizer:
                       "bounds": bounds,
                       "constraints": constraints,
                       "callback": callback,
-                      "options": options
-                      }
+                      "options": options}
 
         return opt_kwargs
 
@@ -198,11 +198,11 @@ class Optimizer:
         start_time = perf_counter()
 
         # minimize
-        loss_and_grad_fn = opt_problem["fun"]
         res_q = self._minimize(opt_problem)
+        loss_and_grad_fn = opt_problem["fun"]
         loss_val, grad_val = loss_and_grad_fn(res_q.x)
 
-        print(res_q.message)
+        print(f"Message: {res_q.message}")
         print(f"Final gradient norm: {jnp.linalg.norm(grad_val):.4}")
         print(f"Final loss in {res_q.nit} iterations: {loss_val:.4}")
         print(f"Optimization elapsed time: {perf_counter() - start_time} seconds")
