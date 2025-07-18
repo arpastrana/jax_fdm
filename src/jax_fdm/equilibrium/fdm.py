@@ -37,6 +37,7 @@ def fdm(datastructure,
         tmax=1,
         eta=1e-6,
         itersolve_fn=None,
+        iterload_fn=None,
         implicit_diff=True,
         verbose=False):
     """
@@ -50,6 +51,7 @@ def fdm(datastructure,
         eta=eta,
         is_load_local=is_load_local,
         itersolve_fn=itersolve_fn,
+        iterload_fn=iterload_fn,
         implicit_diff=implicit_diff,
         verbose=verbose
     )
@@ -77,7 +79,9 @@ def constrained_fdm(datastructure,
                     sparse=True,
                     is_load_local=False,
                     itersolve_fn=None,
+                    iterload_fn=None,
                     implicit_diff=True,
+                    nd=False,
                     verbose=False,
                     jit=True):
     """
@@ -95,6 +99,7 @@ def constrained_fdm(datastructure,
         eta=eta,
         is_load_local=is_load_local,
         itersolve_fn=itersolve_fn,
+        iterload_fn=iterload_fn,
         implicit_diff=implicit_diff,
         verbose=verbose
     )
@@ -129,6 +134,7 @@ def model_from_sparsity(
         eta,
         is_load_local=False,
         itersolve_fn=None,
+        iterload_fn=None,
         implicit_diff=True,
         verbose=False):
     """
@@ -143,6 +149,7 @@ def model_from_sparsity(
         eta=eta,
         is_load_local=is_load_local,
         itersolve_fn=itersolve_fn,
+        iterload_fn=iterload_fn,
         implicit_diff=implicit_diff,
         verbose=verbose)
 

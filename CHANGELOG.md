@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Added attribute `EquilibriumModel.iterload_fn` to host a callable that modifies a load state before starting iterative FDM. This is our current alternative to the previous option that zeroed out the vertex/node loads without a warning. It also opens the door to other types of load changes between the first and second step of form-finding, giving users more flexibility. Modified the functions in `fdm.py` by exposing `iterload_fn` as an argument. These functions are `model_from_sparsity()`, `fdm()`, and `constrained_fdm()`.
 - Added `Viewer.save()` to automatically save images of the current viewer scene.
 - Added automatic support for dense and sparse stiffness matrices in `custom_vjp` of `solver_fixed_point_implicit()`. For sparse matrices, we apply `jax.lax.custom_linear_solver()` as a thin wrapper around the sparse linear solve defined in `EquilibriumModel.linearsolve_fn()` to generate a transpose rule for it. The transpose rule is required by `lineax`, inside `FunctionLinearOperator`. Without the wrapper and the transpose, we cannot use implicit differentiation with a sparse linear solver and a fixed-point solver. Now we can.
 - Implemented `geometry.length_vector_sqrd()`.

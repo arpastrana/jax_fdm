@@ -7,7 +7,7 @@ import jax.numpy as jnp
 from jax.experimental.sparse import CSC
 
 from jax_fdm.equilibrium.states import EquilibriumState
-from jax_fdm.equilibrium.states import LoadState
+from jax_fdm.equilibrium.states import EquilibriumParametersState
 
 from jax_fdm.equilibrium.sparse import sparse_solve as spsolve
 
@@ -37,6 +37,7 @@ class EquilibriumModel:
     `eta`: The convergence tolerance for calculating an equilibrium state. Defaults to `1e-6`.
     `is_load_local`: If set to `True`, the face and edge loads are applied in their local coordinate system at every iteration (follower loads). Defaults to `False`.
     `itersolve_fn`: The function that calculates an equilibrium state iteratively. If `None`, the model defaults to forward fixed-point iteration. Note that only the solver must be consistent with the choice of residual function. Defaults to `None`.
+    `iterload_fn`: A load callback that is invoked before starting iterative equilibrium computation. Defaults to `None`.
     `implicit_diff`: If set to `True`, it applies implicit differentiation to speed up backpropagation. Defaults to `True`.
     `verbose`: Whether to print out calculation info to the terminal. Defaults to `False`.
     """
@@ -45,6 +46,7 @@ class EquilibriumModel:
                  eta=1e-6,
                  is_load_local=False,
                  itersolve_fn=None,
+                 iterload_fn=None,
                  implicit_diff=True,
                  verbose=False):
         self.tmax = tmax
@@ -52,6 +54,7 @@ class EquilibriumModel:
         self.is_load_local = is_load_local
         self.linearsolve_fn = jnp.linalg.solve
         self.itersolve_fn = itersolve_fn or solver_forward
+        self.iterload_fn = iterload_fn
         self.eq_iterative_fn = self.select_equilibrium_iterative_fn(self.itersolve_fn)
         self.implicit_diff = implicit_diff
         self.verbose = verbose
@@ -166,12 +169,17 @@ class EquilibriumModel:
         tmax = self.tmax
         eta = self.eta
         solver = self.itersolve_fn
+        iterload_fn = self.iterload_fn
         implicit_diff = self.implicit_diff
         verbose = self.verbose
 
         xyz_free = self.equilibrium(q, xyz_fixed, load_nodes, structure)
 
         if tmax > 1:
+
+            if iterload_fn is not None:
+                load_state = iterload_fn(load_state)
+                params = EquilibriumParametersState(q, xyz_fixed, load_state)
 
             xyz_free = self.eq_iterative_fn(
                 q,
@@ -183,12 +191,11 @@ class EquilibriumModel:
                 eta=eta,
                 solver=solver,
                 implicit_diff=implicit_diff,
-                verbose=verbose
-            )
+                verbose=verbose)
 
         if self.verbose:
             residuals_free = self.residual_free_matrix(params, xyz_free, structure)
-            jax_print("Mean abs residual: {}", jnp.mean(jnp.abs(residuals_free), axis=0))
+            jax_print("Mean free residual vector: {}", jnp.mean(jnp.abs(residuals_free), axis=0))
 
         # Exit like a champ
         xyz = self.nodes_positions(xyz_free, xyz_fixed, structure)
