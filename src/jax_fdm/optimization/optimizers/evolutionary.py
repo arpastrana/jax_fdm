@@ -1,6 +1,8 @@
 """
 A collection of evolutionary optimizers.
 """
+from time import perf_counter
+
 from jax import vmap
 
 from scipy.optimize import differential_evolution
@@ -13,7 +15,31 @@ from jax_fdm.optimization.optimizers import Optimizer
 # Optimizers
 # ==========================================================================
 
-class DifferentialEvolution(Optimizer):
+
+class EvolutionaryOptimizer(Optimizer):
+    """
+    An optimizer based on evolutionary principles.
+    """
+    def solve(self, opt_problem):
+        """
+        Solve an optimization problem by minimizing a loss function.
+        """
+        print(f"Optimization with {self.name} started...")
+        start_time = perf_counter()
+        res_q = self._minimize(opt_problem)
+        end_time = perf_counter()
+
+        loss_fn = opt_problem["func"]
+        loss_val = loss_fn(res_q.x)
+
+        print(f"Message: {res_q.message}")
+        print(f"Final loss in {res_q.nit} iterations: {loss_val:.4}")
+        print(f"Optimization elapsed time: {end_time() - start_time} seconds")
+
+        return res_q.x
+
+
+class DifferentialEvolution(EvolutionaryOptimizer):
     """
     The a differential evolution optimizer with box constraints.
     """
@@ -62,7 +88,7 @@ class DifferentialEvolution(Optimizer):
         return differential_evolution(**opt_problem)
 
 
-class DualAnnealing(Optimizer):
+class DualAnnealing(EvolutionaryOptimizer):
     """
     The a dual annealing optimizer with box constraints.
     """
