@@ -1,47 +1,23 @@
 """
 A collection of evolutionary optimizers.
 """
-from time import perf_counter
-
 from jax import vmap
 
 from scipy.optimize import differential_evolution
 from scipy.optimize import dual_annealing
 
-from jax_fdm.optimization.optimizers import Optimizer
+from jax_fdm.optimization.optimizers import GradientFreeOptimizer
 
 
 # ==========================================================================
 # Optimizers
 # ==========================================================================
 
-
-class EvolutionaryOptimizer(Optimizer):
-    """
-    An optimizer based on evolutionary principles.
-    """
-    def solve(self, opt_problem):
-        """
-        Solve an optimization problem by minimizing a loss function.
-        """
-        print(f"Optimization with {self.name} started...")
-        start_time = perf_counter()
-        res_q = self._minimize(opt_problem)
-        end_time = perf_counter()
-
-        loss_fn = opt_problem["func"]
-        loss_val = loss_fn(res_q.x)
-
-        print(f"Message: {res_q.message}")
-        print(f"Final loss in {res_q.nit} iterations: {loss_val:.4}")
-        print(f"Optimization elapsed time: {end_time() - start_time} seconds")
-
-        return res_q.x
-
-
-class DifferentialEvolution(EvolutionaryOptimizer):
+class DifferentialEvolution(GradientFreeOptimizer):
     """
     The a differential evolution optimizer with box constraints.
+
+    This algorithm has stochastic components, so mind the seed for reproducibility.
     """
     def __init__(self, popsize=20, vectorized=False, num_workers=1, seed=43, display=False, **kwargs):
         super().__init__(name="DifferentialEvolution", disp=display, **kwargs)
@@ -54,10 +30,7 @@ class DifferentialEvolution(EvolutionaryOptimizer):
         """
         Scipy backend method to minimize a loss function.
         """
-        fun = opt_problem["fun"]
-
-        def func(x):
-            return fun(x)[0]
+        func = opt_problem["fun"]
 
         def func_vmap(x):
             result = vmap(func, in_axes=(1))(x)
@@ -88,11 +61,13 @@ class DifferentialEvolution(EvolutionaryOptimizer):
         return differential_evolution(**opt_problem)
 
 
-class DualAnnealing(EvolutionaryOptimizer):
+class DualAnnealing(GradientFreeOptimizer):
     """
     The a dual annealing optimizer with box constraints.
+
+    This algorithm has stochastic components, so mind the seed for reproducibility.
     """
-    def __init__(self, no_local_search=True, seed=None, display=False, **kwargs):
+    def __init__(self, no_local_search=True, seed=42, display=False, **kwargs):
         super().__init__(name="DualAnnealing", disp=display, **kwargs)
         self.no_local_search = no_local_search
         self.seed = seed
@@ -104,7 +79,7 @@ class DualAnnealing(EvolutionaryOptimizer):
         fun = opt_problem["fun"]
 
         def func(x, *args, **kwargs):
-            return fun(x)[0]
+            return fun(x)
 
         opt_problem["func"] = func
         opt_problem["no_local_search"] = self.no_local_search
