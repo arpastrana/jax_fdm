@@ -386,7 +386,7 @@ def fixed_point_bwd_adjoint(solver, solver_config, f, res, vec):
 
     def A_fn(w):
         """
-        Evaluates the function: w = vector - w @ K_inv @ dp / dx
+        Evaluates the function: vector = w - w @ K_inv @ dp / dx
         """
         lam = linearsolve_fn(K, w)
 
