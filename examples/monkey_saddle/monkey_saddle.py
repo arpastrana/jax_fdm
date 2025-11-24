@@ -39,12 +39,12 @@ from jax_fdm.visualization import Viewer
 
 name = "monkey_saddle"
 
-n = 4  # densification of coarse mesh
+n = 6  # densification of coarse mesh
 
 q0 = -2.0
 px, py, pz = 0.0, 0.0, -1.0  # loads at each node
 qmin, qmax = -20.0, -0.01  # min and max force densities
-rmin, rmax = 2.0, 10.0  # min and max reaction forces
+rmin, rmax = 4.0, 8.0  # min and max reaction forces
 r_exp = 0.5  # reaction force variation exponent
 
 weight_length = 1.0  # weight for edge length goal in optimisation
@@ -58,7 +58,7 @@ maxiter = 500  # optimizer maximum iterations
 tol = 1e-3  # optimizer tolerance
 
 record = True  # True to record optimization history of force densities
-export = True  # export result to JSON
+export = False  # export result to JSON
 
 # ==========================================================================
 # Import coarse mesh
@@ -128,7 +128,7 @@ steps = {vkey: max_step - step for vkey, step in steps.items()}
 # ==========================================================================
 
 nodes = [mesh.vertex_coordinates(vkey) for vkey in mesh.vertices()]
-edges = [(u, v) for u, v in mesh.edges() if u not in anchors or v not in anchors]
+edges = [(u, v) for u, v in mesh.edges()]
 network0 = FDNetwork.from_nodes_and_edges(nodes, edges)
 
 print("FD network:", network0)
@@ -251,7 +251,7 @@ network.print_stats()
 # Visualization
 # ==========================================================================
 
-viewer = Viewer(width=1600, height=900, show_grid=False)
+viewer = Viewer(width=1600, height=900, show_grid=False, viewmode="lighted")
 
 # modify view
 viewer.view.camera.zoom(-35)  # number of steps, negative to zoom out
@@ -259,9 +259,16 @@ viewer.view.camera.rotation[2] = 0.0  # set rotation around z axis to zero
 
 # optimized network
 viewer.add(network,
-           edgewidth=(0.05, 0.25),
+           edgewidth=(0.02, 0.2),
            reactionscale=0.75,
-           edgecolor="fd")
+           show_reactions=False,
+           show_loads=False,
+           edgecolor="force")
+
+# view shaded mesh
+for key in network.nodes():
+    mesh.vertex_attributes(key, "xyz", network.node_coordinates(key))
+viewer.add(mesh, show_points=False, show_edges=False, opacity=0.4)
 
 # reference network
 viewer.add(network0,
