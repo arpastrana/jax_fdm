@@ -167,7 +167,7 @@ if add_edge_length_goal:
 loss = Loss(SquaredError(goals=goals))
 
 # ==========================================================================
-# Create constraints
+# Create hard constraints
 # ==========================================================================
 
 constraints = []
@@ -242,7 +242,6 @@ networks["cstr_opt"] = constrained_fdm(network,
 # ==========================================================================
 
 for network_name, network in networks.items():
-
     print()
     print("Design {}".format(network_name))
     network.print_stats()
@@ -268,17 +267,25 @@ if len(networks) > 1:
 else:
     c_network = networks[0]
 
+# view shaded mesh
+for key in c_network.nodes():
+    mesh.vertex_attributes(key, "xyz", c_network.node_coordinates(key))
+viewer.add(mesh, show_points=False, show_edges=False, opacity=0.6)
+
+# view reference network
 viewer.add(network0,
            as_wireframe=True,
            show_points=False,
            linewidth=1.0,
            color=Color.grey().darkened(10))
 
-# optimized network
+# view optimized network
 viewer.add(c_network,
            edgewidth=(0.05, 0.2),
            show_nodes=False,
            edgecolor="force",
+           show_reactions=False,
+           show_loads=False,
            loadscale=0.5,
            reactionscale=0.5)
 
