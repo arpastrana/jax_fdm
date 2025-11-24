@@ -9,6 +9,7 @@ from compas.geometry import Line
 from compas.geometry import add_vectors
 from compas.geometry import Translation
 from compas.datastructures import network_transform
+from compas.datastructures import Mesh
 
 # static equilibrium
 from jax_fdm.datastructures import FDNetwork
@@ -90,7 +91,7 @@ for i in range(num_v):
         long_edges.append(edge)
 
 cross_edges = []
-for i in range(1, num_u - 1):
+for i in range(num_u):
     seq = []
     for arch in arches:
         seq.append(arch[i])
@@ -197,7 +198,7 @@ c_network = constrained_fdm(network,
                             optimizer=optimizer,
                             loss=loss,
                             parameters=parameters,
-                            maxiter=200,
+                            maxiter=1000,
                             tol=1e-9,
                             callback=recorder)
 
@@ -244,16 +245,26 @@ viewer = Viewer(width=1600, height=900, show_grid=False)
 viewer.add(c_network,
            edgewidth=(0.02, 0.1),
            loadscale=2.0,
-           edgecolor="fd")
+           edgecolor="force",
+           show_reactions=False,
+           show_loads=False)
 
-# reference network
+# create mesh from edges
+edge_lines = [c_network.edge_coordinates(*edge) for edge in c_network.edges()]
+mesh = Mesh.from_lines(edge_lines,
+                        delete_boundary_face=True)
+
+# view mesh
+viewer.add(mesh, show_points=False, show_lines=False, opacity=0.5)
+
+# view reference network
 viewer.add(network,
            as_wireframe=True,
            show_points=False,
            linewidth=2.0,
            color=Color.grey().darkened())
 
-# draw lines betwen subject and target nodes
+# view lines betwen reference and optimized nodes
 for node in c_network.nodes():
     pt = c_network.node_coordinates(node)
     target_pt = network.node_coordinates(node)
