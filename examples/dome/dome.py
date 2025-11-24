@@ -8,6 +8,7 @@ from math import radians
 from math import sqrt
 
 # compas
+from compas.datastructures import Mesh
 from compas.geometry import Line
 from compas.geometry import add_vectors
 from compas.geometry import subtract_vectors
@@ -48,30 +49,30 @@ name = "dome"
 # geometric parameters
 diameter = 1.0
 num_sides = 8
-num_rings = 40
+num_rings = 30
 offset_distance = 0.01  # ring offset
 
 # initial form-finding parameters
 q0_ring = -2.0  # starting force density for ring (hoop) edges
 q0_cross = -0.5  # starting force density for the edges transversal to the rings
 pz = -0.1  # z component of the applied load
-qmin, qmax = None, None
+qmin, qmax = None, -1e-6
 
 # optimization
 optimizer = LBFGSB
 maxiter = 10000
-tol = 1e-6  # 1e-6 for best results at the cost of a considerable speed decrease
+tol = 1e-8  # 1e-6 for best results at the cost of a considerable speed decrease
 
 # goal length
 length_target = 0.03
 
 # goal vector, angle
 angle_vector = [0.0, 0.0, 1.0]  # reference vector to compute angle to in constraint
-angle_base = 20.0  # angle constraint, lower bound
-angle_top = 30.0  # angle constraint, upper bound
+angle_base = 15.0  # angle constraint, lower bound
+angle_top = 45.0  # angle constraint, upper bound
 
 # io
-record = True
+record = False
 export = False
 
 HERE = os.path.dirname(__file__)
@@ -181,7 +182,7 @@ for i, cross_ring in enumerate(edges_cross_rings):
     angle_delta = angle_top - angle_base
     angle = angle_base + angle_delta * (i / (num_rings - 1))
 
-    print(f"Edges ring {i + 1}/{len(edges_cross_rings)}. Angle goal: {angle}")
+    print(f"Edges ring {i + 1}/{len(edges_cross_rings)}\tAngle goal: {angle:.2f}")
 
     for u, v in cross_ring:
 
@@ -286,11 +287,33 @@ if export:
 
 viewer = Viewer(width=1600, height=900, show_grid=False)
 
-# optimized network
-c_network = networks["eq_g"]
-viewer.add(c_network, edgewidth=(0.003, 0.03), edgecolor="force", reactionscale=0.1)
+# create mesh from edges
+edge_lines = [network.edge_coordinates(*edge) for edge in network.edges()]
+mesh = Mesh.from_lines(edge_lines, delete_boundary_face=True)
 
-# add target vectors
+# remove faces with more than 4 vertices
+fkeys_to_delete = []
+for fkey in mesh.faces():
+    if len(mesh.face_vertices(fkey)) > 4 and fkey not in fkeys_to_delete:
+        fkeys_to_delete.append(fkey)
+for fkey in fkeys_to_delete:
+    mesh.delete_face(fkey)
+mesh.cull_vertices()
+
+# view mesh
+viewer.add(mesh, show_points=False, show_lines=False, opacity=0.5)
+
+# view optimized network
+c_network = networks["eq_g"]
+viewer.add(
+    c_network,
+    edgewidth=(0.003, 0.03),
+    edgecolor="force",
+    reactionscale=0.1,
+    show_reactions=False,
+    show_loads=False)
+
+# view target vectors
 for vector, edge in vectors_goal:
     u, v = edge
     xyz = c_network.node_coordinates(u)
