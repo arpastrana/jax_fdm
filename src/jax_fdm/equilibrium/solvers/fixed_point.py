@@ -23,6 +23,8 @@ from lineax import NormalCG
 from lineax import linear_solve
 
 from jax_fdm.equilibrium.solvers.jaxopt import solver_jaxopt
+from jax_fdm.equilibrium.sparse import splu_cpu as splu
+from jax_fdm.equilibrium.sparse import splu_solve_cpu as splu_solve
 
 
 # ==========================================================================
@@ -360,27 +362,31 @@ def fixed_point_bwd_adjoint(solver, solver_config, f, res, vec):
     # Calculate the vector Jacobian function v * dp / dx at x*, closed around theta
     _, vjp_x = vjp(lambda x: p_fn(theta, x), x_star)
 
-    # Get linear solver for stiffness matrix from equilibrium model
-    # It is jax.numpy.linalg for dense matrices and scipy.spsolve for sparse matrices.
-    linearsolve_fn = solver_config["linearsolve_fn"]
-
     # Stiffness matrix is the first parameter
     # The matrix is symmetric, so no need to transpose it
     K = theta[0]
 
-    if isinstance(K, JAXSparse):
-        _linearsolve_fn = linearsolve_fn
+    # Default linear solver is dense
+    def linearsolve_fn(b):
+        """
+        Closure function around a dense linear solver.
+        """
+        return jnp.linalg.solve(K, b)
 
-        def linearsolve_fn(K, b):
+    # If the stiffness matrix is sparse, use a sparse linear solver
+    if isinstance(K, JAXSparse):
+        K_id = splu(K)  # Session ID of the cached sparse LU factorization
+
+        def linearsolve_fn(b):
             """
-            Linearize a (sparse) linear solve to get the transpose of this function.
-            The transpose of this function is required by lineax.
+            Reuse a pre-computed LU decomposition of the stiffness matrix to solve a linear system.
+            Also linearize it to get its transpose, which is required by lineax.
             """
-            def matvec_fn(_b):
-                return K @ _b
+            def matvec_fn(_x):
+                return K @ _x
 
             def solve_fn(_, _b):
-                return _linearsolve_fn(K, _b)
+                return splu_solve(K_id, _b)
 
             return custom_linear_solve(matvec_fn, b, solve_fn, symmetric=True)
 
@@ -388,14 +394,13 @@ def fixed_point_bwd_adjoint(solver, solver_config, f, res, vec):
         """
         Evaluates the function: vector = w - w @ K_inv @ dp / dx
         """
-        lam = linearsolve_fn(K, w)
+        lam = linearsolve_fn(w)
 
         return w - vjp_x(lam)[0]
 
     # Solve adjoint function iteratively
     input_structure = jax.ShapeDtypeStruct(vec.shape, vec.dtype)
     A_op = FunctionLinearOperator(A_fn, input_structure)
-
     solver = NormalCG(rtol=1e-6, atol=1e-6)
     solution = linear_solve(A_op, vec, solver, throw=False)
     w = solution.value
