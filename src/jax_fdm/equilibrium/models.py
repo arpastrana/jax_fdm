@@ -269,8 +269,7 @@ class EquilibriumModel:
                          "eta": eta,
                          "implicit_diff": implicit_diff,
                          "verbose": verbose,
-                         "loads_fn": loads_fn,
-                         "linearsolve_fn": self.linearsolve_fn}
+                         "loads_fn": loads_fn}
 
         solver_kwargs = {"solver_config": solver_config,
                          "f": equilibrium_iterative_fn,
@@ -422,7 +421,7 @@ class EquilibriumModel:
         """
         Calculate loads matrix of the free nodes of the system for shape-dependent loads.
         """
-        K, R_fixed, xyz_fixed, load_state = params
+        _, R_fixed, xyz_fixed, load_state = params
 
         # Concatenate free and fixed xyz coordinates
         xyz = self.nodes_positions(xyz_free, xyz_fixed, structure)
