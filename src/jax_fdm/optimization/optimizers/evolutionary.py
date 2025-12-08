@@ -85,12 +85,12 @@ class DualAnnealing(GradientFreeOptimizer):
         opt_problem["no_local_search"] = self.no_local_search
         opt_problem["maxiter"] = opt_problem["options"]["maxiter"]
         opt_problem["args"] = (None, )
+        opt_problem["seed"] = self.seed
 
         del opt_problem["tol"]
         del opt_problem["fun"]
         del opt_problem["jac"]
         del opt_problem["hess"]
-        del opt_problem["constraints"]
         del opt_problem["method"]
         del opt_problem["options"]
 
