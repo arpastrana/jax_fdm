@@ -139,7 +139,8 @@ class Optimizer:
         print(f"\tInitial gradient norm: {jnp.linalg.norm(grad_val):.4}")
         assert jnp.sum(jnp.isnan(grad_val)) == 0, "NaNs found in gradient calculation!"
 
-        # gradient of the loss function
+        # hessian of the loss function
+        # TODO: move to second-order optimizers
         hessian_fn = self.hessian(loss_fn)  # w.r.t. first function argument
         if hessian_fn:
             if jit_fn:
@@ -194,6 +195,11 @@ class Optimizer:
         """
         Solve an optimization problem by minimizing a loss function.
         """
+        # call callback with initial parameters
+        callback = opt_problem.get("callback")
+        if callback is not None:
+            callback(opt_problem["x0"])
+
         print(f"Optimization with {self.name} started...")
         start_time = perf_counter()
 
@@ -204,7 +210,7 @@ class Optimizer:
 
         print(f"Message: {res_q.message}")
         print(f"Final gradient norm: {jnp.linalg.norm(grad_val):.4}")
-        print(f"Final loss in {res_q.nit} iterations: {loss_val:.4}")
+        print(f"Final loss in {res_q.nit} iterations: {loss_val:.4} and {res_q.nfev} function evaluations")
         print(f"Optimization elapsed time: {perf_counter() - start_time} seconds")
 
         return res_q.x

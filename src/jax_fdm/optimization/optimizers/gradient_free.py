@@ -82,7 +82,6 @@ class GradientFreeOptimizer(Optimizer):
                       "x0": x,
                       "tol": tol,
                       "bounds": bounds,
-                      "constraints": None,
                       "callback": callback,
                       "options": options
                       }
@@ -98,11 +97,14 @@ class GradientFreeOptimizer(Optimizer):
         res_q = self._minimize(opt_problem)
         end_time = perf_counter()
 
-        loss_fn = opt_problem.get("func", opt_problem["fun"])
+        loss_fn = opt_problem.get("func")
+        if not loss_fn:
+            loss_fn = opt_problem["fun"]
+
         loss_val = loss_fn(res_q.x)
 
         print(f"Message: {res_q.message}")
-        print(f"Final loss in {res_q.nit} iterations: {loss_val:.4}")
+        print(f"Final loss in {res_q.nit} iterations: {loss_val:.4} and {res_q.nfev} function evaluations")
         print(f"Optimization elapsed time: {end_time - start_time} seconds")
 
         return res_q.x

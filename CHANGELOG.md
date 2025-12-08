@@ -33,6 +33,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Fixed bug that forgot to fix the random seed of `DualAnnealing()` despite being passed in as an argument at initialization.
 - Stop passing `EquilibriumModel.linearsolve_fn()` as `solver_kwargs` of fixed point solver. This function was used only for the `custom_vjp` operations. The `custom_vjp` now selects and appropriate linear solver based on whether `EquilibriumModel.stiffness_matrix()` is a sparse `jax.CSC` object or not.
 - Now, `goals.NetworkSmoothGoal()` calculates the fairness energy on all the vertices. Previously, it only considered the free vertices. 
 - `FDDatastructure.print_stats()` doesn't reporting positive or negative force and force densities if the datastructure doesn't contain them. 
