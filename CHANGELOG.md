@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Implemented a vanilla `GradientDescent` optimizer.
 - Implemented `splu_cpu` and `splu_solve` to cache sparse stiffness matrix factorization using scipy's sparse infrastructure. These functions specifically instantiate `scipy.sparse.linalg.splu`, a sparse LU factorization using the `SuperLU` package under the hood. We implemented both these functions by wrapping them into `jax.pure_callback` for compatibility with `jax.jit`.
 - The `fixed_point_bwd_adjoint` of the fixed point solver `solver_fixedpoint_implicit` now caches a sparse stiffness matrix to avoid refactorizing it every time the a linear solve is invoked by `lineax` to resolve the adjoint system. Caching reduces computation cost considerably (about 30% in the British Museum example).
 - Created `GradientFreeOptimizer()` class for other gradient-free and evolutionary algorithms to subclass it. This new parent class implements specific `problem()` and `solve()` methods that accounts for the different naming convention of the objective function in `scipy.minimize` (`fun` vs. `func`). Moreover, the new method does not calculate loss and gradients per iteration, only the loss, since the gradient is unnecessary for gradient-free optimization. Omitting the gradient calculation and focusing on the loss alone speeds up optimization wall time.
