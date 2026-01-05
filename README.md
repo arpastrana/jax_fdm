@@ -2,7 +2,7 @@
 
 <!-- Badges -->
 ![build](https://github.com/arpastrana/jax_fdm/workflows/build/badge.svg)
-[![DOI](https://zenodo.org/badge/534255112.svg)](https://zenodo.org/badge/latestdoi/534255112)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.7258292.svg)](https://doi.org/10.5281/zenodo.7258292)
 [![PyPI - Latest Release](https://img.shields.io/pypi/v/jax-fdm.svg)](https://pypi.python.org/project/jax-fdm)
 [![PyPI - Python Version](https://img.shields.io/pypi/pyversions/jax-fdm.svg)](https://pypi.python.org/project/jax-fdm)
 [![arXiv](https://img.shields.io/badge/arXiv-2307.12407-b31b1b.svg)](https://arxiv.org/abs/2307.12407)
