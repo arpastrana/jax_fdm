@@ -88,7 +88,7 @@ class Optimizer:
     def problem(self,
                 model,
                 structure,
-                network,
+                datastructure,
                 loss,
                 parameters=None,
                 constraints=None,
@@ -101,9 +101,9 @@ class Optimizer:
         """
         # optimization parameters
         if not parameters:
-            parameters = [EdgeForceDensityParameter(edge) for edge in network.edges()]
+            parameters = [EdgeForceDensityParameter(edge) for edge in datastructure.edges()]
 
-        self.pm = ParameterManager(model, parameters, structure, network)
+        self.pm = ParameterManager(model, parameters, structure, datastructure)
         x = self.parameters_value()
 
         # message
@@ -120,7 +120,7 @@ class Optimizer:
         print(f"\tGoal collections: {loss.number_of_collections()}\n\tRegularizers: {loss.number_of_regularizers()}")
 
         # load matters
-        loads = LoadState.from_datastructure(network)
+        loads = LoadState.from_datastructure(datastructure)
         self.loads_static = loads.edges, loads.faces
 
         # closure over static parameters
