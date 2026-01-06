@@ -13,7 +13,6 @@ from jax.experimental.sparse import CSC
 from jax.experimental.sparse.linalg import spsolve as spsolve_jax
 
 
-
 # ==========================================================================
 # Sparse linear solver on GPU
 # ==========================================================================

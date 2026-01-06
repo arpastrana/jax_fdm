@@ -110,7 +110,7 @@ def gradient_descent(fun, x0, args=(), jac=None, tol=None, callback=None, option
 
             # Then compute gradient with approx_fprime (this will call fun multiple times)
             def fun_wrapped(z):
-                nfev += 1
+                nfev += 1  # noqa: F823, F841
                 return fun(z, *args)
 
             g_val = approx_fprime(x_arr, fun_wrapped, epsilon=fd_step)

@@ -8,8 +8,6 @@ try:
     from optimistix import LevenbergMarquardt
     from optimistix import least_squares
 
-    from lineax import NormalCG
-
 except ImportError:
     pass
 
@@ -78,8 +76,6 @@ def solver_levenberg_marquardt(fn, theta, x_init, solver_config):
 def solver_dogleg(fn, theta, x_init, solver_config):
     """
     """
-    # eta = solver_config["eta"]
-    # solver_kwargs = {"linear_solver": NormalCG(eta, eta)}
     solver_kwargs = {}
 
     solution = solver_optimistix(

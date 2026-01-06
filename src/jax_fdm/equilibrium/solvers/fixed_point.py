@@ -377,7 +377,7 @@ def fixed_point_bwd_adjoint(solver, solver_config, f, res, vec):
     if isinstance(K, JAXSparse):
         K_id = splu(K)  # Session ID of the cached sparse LU factorization
 
-        def linearsolve_fn(b):
+        def linearsolve_fn(b):  # noqa: F811
             """
             Reuse a pre-computed LU decomposition of the stiffness matrix to solve a linear system.
             Also linearize it to get its transpose, which is required by lineax.
