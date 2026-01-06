@@ -28,12 +28,12 @@ class NetworkSmoothGoal(ScalarGoal, NetworkGoal):
         """
         The current fairness value of the node.
         """
-        xyz = eq_state.xyz[self.indices_free, :]
-        adjacency = self.adjacency[self.indices_free, :]
+        xyz = eq_state.xyz
+        adjacency = self.adjacency
         fairness_fn = vmap(node_nbrs_fairness_ngon, in_axes=(None, 0, 0))
 
-        fairness_nodes = fairness_fn(eq_state.xyz, xyz, adjacency)
-        fairness = jnp.sum(fairness_nodes)
+        fairness_nodes = fairness_fn(xyz, xyz, adjacency)
+        fairness = jnp.mean(fairness_nodes)
 
         return jnp.atleast_1d(fairness)
 
@@ -42,7 +42,6 @@ class NetworkSmoothGoal(ScalarGoal, NetworkGoal):
         Initialize the constraint with information from an equilibrium model.
         """
         super().init(model, structure)
-        self.indices_free = structure.indices_free
         self.adjacency = structure.adjacency
 
 

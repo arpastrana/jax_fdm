@@ -24,20 +24,33 @@ class LBFGSB(Optimizer):
     """
     The limited-memory Boyd-Fletcher-Floyd-Shannon-Byrd (LBFGSB) optimizer.
     """
-    def __init__(self, **kwargs):
-        super().__init__(name="L-BFGS-B", disp=0, **kwargs)
+    def __init__(self, disp=False, maxfun=None, maxls=None, maxcor=None, **kwargs):
+        super().__init__(name="L-BFGS-B", disp=disp, **kwargs)
+        self.maxfun = maxfun
+        self.maxls = maxls
+        self.maxcor = maxcor
+
+    def options(self, extra=None):
+        """
+        Assemble a dictionary with method-specific optimization options.
+        """
+        if extra is None:
+            extra = {}
+
+        extra["maxfun"] = self.maxfun
+        extra["maxls"] = self.maxls
+        extra["maxcor"] = self.maxcor
+
+        return super().options(extra)
 
 
-class LBFGSBS(Optimizer):
+class LBFGSBS(LBFGSB):
     """
     The limited-memory Boyd-Fletcher-Floyd-Shannon-Byrd (LBFGSB) optimizer.
 
     This version of LBFGSB ensures compatibility of JAX gradients with scipy.
     However, it is slower than standard LBFGSB.
     """
-    def __init__(self, **kwargs):
-        super().__init__(name="L-BFGS-B", disp=0, **kwargs)
-
     def gradient(self, loss):
         """
         Compute the gradient function of a loss function.

@@ -1,5 +1,7 @@
 jax[cpu]
 compas<2.0
 scipy
-equinox
 jaxopt
+equinox
+lineax
+optimistix

@@ -3,7 +3,6 @@ A gradient-based optimizer.
 """
 from time import perf_counter
 from itertools import groupby
-from functools import partial
 
 import jax.numpy as jnp
 
@@ -31,7 +30,7 @@ class Optimizer:
     """
     Base class for all optimizers.
     """
-    def __init__(self, name, disp=True):
+    def __init__(self, name, disp=True, **kwargs):
         self.name = name
         self.disp = disp
         self.pm = None
@@ -89,7 +88,7 @@ class Optimizer:
     def problem(self,
                 model,
                 structure,
-                network,
+                datastructure,
                 loss,
                 parameters=None,
                 constraints=None,
@@ -102,9 +101,9 @@ class Optimizer:
         """
         # optimization parameters
         if not parameters:
-            parameters = [EdgeForceDensityParameter(edge) for edge in network.edges()]
+            parameters = [EdgeForceDensityParameter(edge) for edge in datastructure.edges()]
 
-        self.pm = ParameterManager(model, parameters, structure, network)
+        self.pm = ParameterManager(model, parameters, structure, datastructure)
         x = self.parameters_value()
 
         # message
@@ -121,10 +120,13 @@ class Optimizer:
         print(f"\tGoal collections: {loss.number_of_collections()}\n\tRegularizers: {loss.number_of_regularizers()}")
 
         # load matters
-        loads = LoadState.from_datastructure(network)
+        loads = LoadState.from_datastructure(datastructure)
         self.loads_static = loads.edges, loads.faces
 
-        loss_fn = partial(self.loss, loss=loss, model=model, structure=structure)
+        # closure over static parameters
+        def loss_fn(x):
+            return self.loss(x, loss, model, structure)
+
         loss_and_grad_fn = value_and_grad(loss_fn)
         if jit_fn:
             loss_and_grad_fn = jit(loss_and_grad_fn)
@@ -137,7 +139,8 @@ class Optimizer:
         print(f"\tInitial gradient norm: {jnp.linalg.norm(grad_val):.4}")
         assert jnp.sum(jnp.isnan(grad_val)) == 0, "NaNs found in gradient calculation!"
 
-        # gradient of the loss function
+        # hessian of the loss function
+        # TODO: move to second-order optimizers
         hessian_fn = self.hessian(loss_fn)  # w.r.t. first function argument
         if hessian_fn:
             if jit_fn:
@@ -153,6 +156,9 @@ class Optimizer:
             constraints = self.constraints(constraints, model, structure, x)
             print(f"\tConstraints warmup time: {(perf_counter() - start_time):.4} seconds")
 
+        # optimization options
+        options = self.options(extra={"maxiter": maxiter})
+
         opt_kwargs = {"fun": loss_and_grad_fn,
                       "jac": True,
                       "hess": hessian_fn,
@@ -162,25 +168,49 @@ class Optimizer:
                       "bounds": bounds,
                       "constraints": constraints,
                       "callback": callback,
-                      "options": {"maxiter": maxiter, "disp": self.disp}}
+                      "options": options}
 
         return opt_kwargs
+
+    def options(self, extra=None):
+        """
+        Assemble a dictionary with method-specific optimization options.
+        """
+        options = {"disp": self.disp}
+
+        if extra is None:
+            return options
+
+        if not isinstance(extra, dict):
+            raise ValueError("Extra options must be a dictionary!")
+
+        for key, value in extra.items():
+            if value is None:
+                continue
+            options[key] = value
+
+        return options
 
     def solve(self, opt_problem):
         """
         Solve an optimization problem by minimizing a loss function.
         """
+        # call callback with initial parameters
+        callback = opt_problem.get("callback")
+        if callback is not None:
+            callback(opt_problem["x0"])
+
         print(f"Optimization with {self.name} started...")
         start_time = perf_counter()
 
         # minimize
-        loss_and_grad_fn = opt_problem["fun"]
         res_q = self._minimize(opt_problem)
+        loss_and_grad_fn = opt_problem["fun"]
         loss_val, grad_val = loss_and_grad_fn(res_q.x)
 
-        print(res_q.message)
+        print(f"Message: {res_q.message}")
         print(f"Final gradient norm: {jnp.linalg.norm(grad_val):.4}")
-        print(f"Final loss in {res_q.nit} iterations: {loss_val:.4}")
+        print(f"Final loss in {res_q.nit} iterations: {loss_val:.4} and {res_q.nfev} function evaluations")
         print(f"Optimization elapsed time: {perf_counter() - start_time} seconds")
 
         return res_q.x

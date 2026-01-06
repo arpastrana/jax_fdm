@@ -1,5 +1,7 @@
 import jax.numpy as jnp
 
+from jax_fdm import DTYPE_INT_JAX
+
 
 # ==========================================================================
 # Mixins
@@ -31,7 +33,7 @@ class IndexingMixins:
             edge = node_index[int(u)], node_index[int(v)]
             edges_indexed.append(edge)
 
-        return jnp.array(edges_indexed)
+        return jnp.asarray(edges_indexed, dtype=DTYPE_INT_JAX)
 
 
 class MeshIndexingMixins:
@@ -62,4 +64,4 @@ class MeshIndexingMixins:
 
             findexed.append(tuple(face_indices))
 
-        return jnp.array(findexed)
+        return jnp.asarray(findexed, dtype=DTYPE_INT_JAX)

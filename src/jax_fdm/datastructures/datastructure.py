@@ -83,7 +83,7 @@ class FDDatastructure(Datastructure):
         """
         return sum(list(self.edges_loadpaths()))
 
-    def print_stats(self, other_stats=None):
+    def print_stats(self, other_stats=None, ndigits=3):
         """
         Print information aboud the equilibrium state of the network.
         """
@@ -95,27 +95,38 @@ class FDDatastructure(Datastructure):
                 _edges = edges_pos
             _edges.append(edge)
 
-        stats = {"FDs [-]": self.edges_forcedensities(keys=edges_neg),
-                 "FDs [+]": self.edges_forcedensities(keys=edges_pos),
-                 "Forces [-]": self.edges_forces(keys=edges_neg),
-                 "Forces [+]": self.edges_forces(keys=edges_pos),
-                 "Lengths": self.edges_lengths()}
+        has_edges_pos = len(edges_pos) > 0
+        has_edges_neg = len(edges_neg) > 0
+
+        stats = {}
+        if has_edges_neg:
+            stats["FDs [-]"] = self.edges_forcedensities(keys=edges_neg)
+        if has_edges_pos:
+            stats["FDs [+]"] = self.edges_forcedensities(keys=edges_pos)
+        if has_edges_neg:
+            stats["Forces [-]"] = self.edges_forces(keys=edges_neg)
+        if has_edges_pos:
+            stats["Forces [+]"] = self.edges_forces(keys=edges_pos)
+
+        stats["Lengths"] = self.edges_lengths()
 
         other_stats = other_stats or {}
         stats.update(other_stats)
 
         print(f"\n***{self.__class__.__name__} stats***")
-        print(f"Load path: {round(self.loadpath(), 3)}")
+        print(f"Load path: {round(self.loadpath(), ndigits)}")
 
         for name, vals in stats.items():
 
             if not vals:
                 continue
 
-            minv = round(min(vals), 3)
-            maxv = round(max(vals), 3)
-            meanv = round(sum(vals) / len(vals), 3)
-            stdv = round(stdev(vals), 3)
-            name = "{:<18}".format(name)
+            minv = round(min(vals), ndigits)
+            maxv = round(max(vals), ndigits)
+            meanv = round(sum(vals) / len(vals), ndigits)
+            stdv = vals[0]
+            if len(vals) > 1:
+                stdv = round(stdev(vals), ndigits)
 
+            name = "{:<18}".format(name)
             print(f"{name}\tMin: {minv}\tMax: {maxv}\tMean: {meanv}\tStDev: {stdv}")

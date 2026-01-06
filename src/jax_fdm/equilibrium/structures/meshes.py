@@ -1,141 +1,20 @@
 import numpy as np
-from scipy.sparse import coo_matrix
 
 import jax
+
 import jax.numpy as jnp
-
-import equinox as eqx
-
-from compas.numerical import connectivity_matrix
-from compas.numerical import face_matrix as compas_face_matrix
-from compas.utilities import pairwise
 
 from jax.experimental.sparse import BCOO
 
-from jax_fdm import DTYPE_NP
+from compas.numerical import face_matrix as compas_face_matrix
+from compas.utilities import pairwise
+
 from jax_fdm import DTYPE_INT_NP
-from jax_fdm import DTYPE_JAX
 
-from jax_fdm.equilibrium.structures.mixins import IndexingMixins
+from jax_fdm.equilibrium.structures.graphs import Graph
+from jax_fdm.equilibrium.structures.graphs import GraphSparse
+
 from jax_fdm.equilibrium.structures.mixins import MeshIndexingMixins
-
-
-# ==========================================================================
-# Graphs
-# ==========================================================================
-
-class Graph(eqx.Module, IndexingMixins):
-    """
-    A graph.
-    """
-    nodes: np.ndarray
-    edges: np.ndarray
-    edges_indexed: jax.Array
-    connectivity: jax.Array
-    adjacency: jax.Array
-
-    def __init__(self, nodes, edges):
-        self.nodes = nodes
-
-        assert edges.shape[1] == 2, "Edges in graph must connect exactly 2 nodes"
-        self.edges = edges
-        self.edges_indexed = self._edges_indexed()
-
-        self.connectivity = self._connectivity_matrix()
-        self.adjacency = self._adjacency_matrix()
-
-    @property
-    def num_nodes(self):
-        """
-        The number of nodes.
-        """
-        return self.nodes.size
-
-    @property
-    def num_edges(self):
-        """
-        The number of edges.
-        """
-        return self.edges.shape[0]
-
-    def _connectivity_matrix(self):
-        """
-        The connectivity matrix between edges and nodes.
-        """
-        edges_indexed = self.edges_indexed
-
-        return jnp.array(connectivity_matrix(edges_indexed, "array"), dtype=DTYPE_JAX)
-
-    def _adjacency_matrix(self):
-        """
-        The adjacency matrix between nodes and nodes.
-        """
-        edges_indexed = self.edges_indexed
-
-        return jnp.array(adjacency_matrix(edges_indexed, "array"), dtype=DTYPE_JAX)
-
-
-class GraphSparse(Graph):
-    """
-    A sparse graph.
-    """
-    def _connectivity_matrix(self):
-        """
-        The connectivity matrix between edges and nodes in JAX format.
-
-        Notes
-        -----
-        This currently is a dense array, but it should be a sparse one.
-
-        How come?
-
-        Currently there is a JAX bug that prevents us from using the
-        sparse format with the connectivity matrix:
-
-          C =  BCOO.from_scipy_sparse(self.connectivity_scipy)
-
-        When not using a dense array from the next line, we get the
-        following error:
-
-          TypeError: float() argument must be a string or a number, not 'Zero'
-
-        Therefore, we use the connectivity matrix method from the parent
-        class, which outputs a dense array.
-
-        However, submatrices connectivity_free and connectivity_fixed
-        are correctly initialized and used as sparse matrices.
-        """
-        # C = super()._connectivity_matrix()
-        # return BCOO.fromdense(C).astype(DTYPE_JAX)
-
-        # C = self.connectivity_scipy
-        # return BCOO.from_scipy_sparse(C)[:, :]
-
-        # C = self.connectivity_scipy
-        # args = (C.data, C.indices, C.indptr)
-        # return CSC(args, shape=C.shape)
-
-        return super()._connectivity_matrix()
-
-    @property
-    def connectivity_scipy(self):
-        """
-        The connectivity matrix between edges and nodes in SciPy CSC format.
-        """
-        # TODO: Refactor GraphSparse to return a JAX sparse matrix instead
-        edges_indexed = self.edges_indexed
-
-        return connectivity_matrix(edges_indexed, "csc")
-
-    def _adjacency_matrix(self):
-        """
-        The adjacency matrix between nodes and nodes.
-        """
-        edges_indexed = self.edges_indexed
-
-        A = adjacency_matrix(edges_indexed, "coo")
-
-        return BCOO.from_scipy_sparse(A).todense()
 
 
 # ==========================================================================
@@ -187,6 +66,9 @@ class Mesh(Graph, MeshIndexingMixins):
     def _connectivity_edges_faces_matrix(self):
         """
         The connectivity matrix between edges and faces of a mesh.
+
+        The matrix has dimensions (M x F), where M is the number of edges
+        and F is the number of faces.
         """
         C = np.zeros((self.num_edges, self.num_faces))
 
@@ -220,7 +102,7 @@ class Mesh(Graph, MeshIndexingMixins):
             # assert len(findices) <= 2
 
             if len(findices) > 2:
-                print(f"Warning: Edge {edge} is non-manifold, it's shared by ({len(findices)}) faces. This might lead to errors in area load calculations.")
+                print(f"Warning: Edge {edge} is non-manifold, it's shared by ({len(findices)}) faces. This might lead to unexpected behavior in e.g. in area load calculations.")
 
             edges_faces.append(tuple(findices))
 
@@ -264,6 +146,10 @@ class Mesh(Graph, MeshIndexingMixins):
         return jnp.asarray(F)
 
 
+# ==========================================================================
+# Mesh sparse
+# ==========================================================================
+
 class MeshSparse(Mesh, GraphSparse):
     """
     A sparse mesh.
@@ -300,7 +186,7 @@ class MeshSparse(Mesh, GraphSparse):
 
 
 # ==========================================================================
-# Main
+# Helper functions
 # ==========================================================================
 
 def mesh_edges_faces(mesh):
@@ -345,9 +231,17 @@ def mesh_connectivity_edges_faces(mesh):
     return connectivity
 
 
-def face_matrix(face_vertices, rtype="array", normalize=False):
+def face_matrix(face_vertices, rtype="array", normalize=True):
     """
     Creates a face-vertex adjacency matrix that skips -1 vertex entries.
+
+    Notes
+    -----
+    The matrix has dimensions (F x N), where F is the number of faces
+    and N is the number of vertices.
+
+    If `normalize=True`, then the values in every row add up to `1`.
+    Otherwise, the row adds up to the number of vertices in the face.
     """
     face_vertices_clean = []
     for face in face_vertices:
@@ -355,46 +249,6 @@ def face_matrix(face_vertices, rtype="array", normalize=False):
         face_vertices_clean.append(face_clean)
 
     return compas_face_matrix(face_vertices_clean, rtype, normalize)
-
-
-def adjacency_matrix(edges, rtype="array"):
-    """
-    Creates a vertex-vertex adjacency matrix.
-
-    It expects that vertices / nodes are continuously indexed (no skips),
-    and that edges are indexed from 0 to len(vertices) / len(nodes).
-    """
-    num_vertices = np.max(np.ravel(edges)) + 1
-
-    # rows and columns indices for the COO format
-    rows = np.hstack([edges[:, 0], edges[:, 1]])  # add edges in both directions for undirected graph
-    cols = np.hstack([edges[:, 1], edges[:, 0]])
-
-    # data to fill in (all 1s for the existence of edges)
-    data = np.ones(len(rows), dtype=DTYPE_NP)
-
-    # create the COO matrix
-    A = coo_matrix(
-        (data, (rows, cols)),
-        shape=(num_vertices, num_vertices)
-    )
-
-    # convert to floating point matrix
-    return _return_matrix(A.asfptype(), rtype)
-
-
-def _return_matrix(M, rtype):
-    if rtype == "list":
-        return M.toarray().tolist()
-    if rtype == "array":
-        return M.toarray()
-    if rtype == "csr":
-        return M.tocsr()
-    if rtype == "csc":
-        return M.tocsc()
-    if rtype == "coo":
-        return M.tocoo()
-    return M
 
 
 # ==========================================================================
@@ -406,49 +260,12 @@ if __name__ == "__main__":
     from compas.datastructures import Mesh as CMesh
     from compas.numerical import adjacency_matrix as adjacency_matrix_compas
 
-    num_nodes = 5
-    nodes = list(range(num_nodes))
-    edges = [edge for edge in pairwise(nodes)]
-
-    nodes = jnp.array(nodes, dtype=jnp.int64)
-    edges = jnp.array(edges, dtype=jnp.int64)
-
-    graph = Graph(nodes, edges)
-    # supports = np.zeros_like(nodes)
-    # supports[0] = 1
-    # supports[-1] = 1
-    # supports = jnp.asarray(supports)
-    # structure = EquilibriumStructure(nodes, edges, supports)
-    # assert structure.num_supports == 2
-    # print(structure)
-    # print(structure.supports)
-    # print(structure.nodes_free)
-    # print(structure.nodes_fixed)
-    # print(structure.nodes_freefixed)
-
-    # print(graph.nodes)
-    # print(graph.edges)
-    # print(graph.num_nodes)
-    # print(graph.num_edges)
-    # print(graph.connectivity_matrix)
-
-    graph_sparse = GraphSparse(nodes, edges)
-
-    # print(graph_sparse.nodes)
-    # print(graph_sparse.edges)
-    # print(graph_sparse.num_nodes)
-    # print(graph_sparse.num_edges)
-
-    assert jnp.allclose(graph_sparse.connectivity,
-                        graph.connectivity)
-
     cmesh = CMesh.from_meshgrid(2.0, 2)
     print(cmesh)
 
     # test connectivity edges faces
     C = mesh_connectivity_edges_faces(cmesh)
     cmesh_faces = [cmesh.face_vertices(fkey) for fkey in cmesh.faces()]
-    # cmesh_faces[0].append(-1)
 
     vertices_array = np.asarray(list(cmesh.vertices()))
     faces_array = np.asarray(cmesh_faces)
@@ -464,21 +281,5 @@ if __name__ == "__main__":
 
     A = mesh.adjacency.todense()
     jnp.allclose(A, A_c)
-
-    # def f(g):
-    #     return jnp.sum(jnp.square(g.nodes - 1.0))
-
-    # y = f(graph)
-    # print(y)
-
-    # from jax import jit
-    # jf = jit(f)
-    # z = jf(graph)
-    # assert y == z
-    # print(y, z)
-
-    # gjf = jit(grad(f))
-    # w = gjf(graph)
-    # print("w", w)
 
     print("All good, cowboy!")

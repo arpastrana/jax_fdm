@@ -3,12 +3,15 @@ NOTE: Sparse solver does not support forward mode auto-differentiation yet.
 """
 import jax
 import jax.numpy as jnp
+import numpy as np
 
 from scipy.sparse import csc_matrix
 from scipy.sparse.linalg import spsolve as spsolve_scipy
+from scipy.sparse.linalg import splu as splu_scipy
 
 from jax.experimental.sparse import CSC
 from jax.experimental.sparse.linalg import spsolve as spsolve_jax
+
 
 
 # ==========================================================================
@@ -153,16 +156,17 @@ def sparse_solve_bwd(res, g):
 
     # Solve adjoint system
     # A.T @ xk_bar = -g
+    # NOTE: No need to transpose A because it is assumed symmetric
     lam = sparse_solve(A, g)
 
-    # the implicit constraint function for implicit differentiation
+    # The implicit constraint function for implicit differentiation
     def residual_fn(params):
         A, b = params
         return b - A @ xk
 
     params = (A, b)
 
-    # Call vjp of residual_fn to compute gradient wrt params
+    # Call vjp of residual_fn to compute gradient wrt parameters
     params_bar = jax.vjp(residual_fn, params)[1](lam)[0]
 
     return params_bar
@@ -213,3 +217,114 @@ def blockdiag_matrix_sparse(A, num=2, format=CSC):
 # ==========================================================================
 
 sparse_solve.defvjp(sparse_solve_fwd, sparse_solve_bwd)
+
+
+# ==========================================================================
+# Sparse LU factorization on CPU with simple caching
+# ==========================================================================
+
+# Simple single-entry cache for SuperLU factorization
+# Structure: {'factorization': SuperLU_object, 'session_id': int}
+_SPLU_CACHE = {'factorization': None, 'session_id': 0}
+
+
+def splu_clear():
+    """
+    Clear the SPLU cache to free memory.
+    """
+    _SPLU_CACHE['session_id'] = 0
+    _SPLU_CACHE['factorization'] = None
+
+
+def splu_cpu(A, session_id=None):
+    """
+    A wrapper around scipy sparse LU factorization that acts as a JAX pure callback.
+
+    Parameters
+    ----------
+    A : CSC matrix
+        The sparse matrix to factorize.
+    session_id : int, optional
+        Session identifier. If None, uses a default session (0).
+
+    Notes
+    -----
+    Since SuperLU objects cannot be passed through JAX's tracing system, we store
+    the factorization in a simple global cache. Only one factorization is kept at
+    a time per session. The structure (indices, indptr) must remain constant; only
+    the data values may change between factorizations.
+
+    Note that this function modifies the global cache in-place, so it violates
+    the JAX function purity guarantee. Therefore, we only use it in functions
+    that need not be transformed directly with grad or vmap.
+    """
+    if session_id is None:
+        session_id = 0
+
+    def callback(data, indices, indptr, shape, sid):
+        # Convert to numpy arrays
+        data = np.asarray(data)
+        indices = np.asarray(indices)
+        indptr = np.asarray(indptr)
+        shape = tuple(np.asarray(shape).astype(int))
+        sid = int(np.asarray(sid))
+
+        # Create matrix and factorize
+        _A = csc_matrix((data, indices, indptr), shape=shape)
+        _A_fact = splu_scipy(_A)
+
+        # Store factorization (overwrite any previous)
+        _SPLU_CACHE['factorization'] = _A_fact
+        _SPLU_CACHE['session_id'] = sid
+
+        # Return the session ID
+        return np.array(sid, dtype=np.int64)
+
+    # Return type is a scalar int64 (the session ID)
+    sid = jax.pure_callback(
+        callback,
+        jax.ShapeDtypeStruct((), jnp.int64),
+        A.data,
+        A.indices,
+        A.indptr,
+        jnp.array(A.shape),
+        jnp.array(session_id, dtype=jnp.int64)
+    )
+
+    return sid
+
+
+def splu_solve_cpu(session_id, b):
+    """
+    A wrapper around scipy sparse LU solve that acts as a JAX pure callback.
+
+    Parameters
+    ----------
+    session_id : scalar int64
+        The session ID returned by splu_cpu.
+    b : array
+        The right-hand side vector or matrix.
+    """
+    def callback(sid, _b):
+        # Convert to numpy
+        sid = int(np.asarray(sid))
+        _b = np.asarray(_b)
+
+        # Check that we're using the correct session
+        if _SPLU_CACHE['session_id'] != sid:
+            raise ValueError(
+                f"Session mismatch: expected {sid}, but cache has {_SPLU_CACHE['session_id']}. "
+                "Make sure to call splu_cpu before splu_solve_cpu in the same session."
+            )
+
+        # Retrieve factorization from cache
+        _A_fact = _SPLU_CACHE['factorization']
+        if _A_fact is None:
+            raise ValueError("No factorization found in cache. Call splu_cpu first.")
+
+        # Solve and return
+        return _A_fact.solve(_b)
+
+    xk = jax.pure_callback(callback, b, session_id, b)
+
+    return xk

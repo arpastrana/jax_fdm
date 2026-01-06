@@ -5,8 +5,20 @@ class FDVectorPlotterArtist(VectorArtist):
     """
     An alternative way to plot vectors as arrows.
     """
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+    def __init__(
+            self,
+            vector,
+            body_width=0.024,
+            head_portion=0.2,
+            head_width=0.08,
+            width_min=0.0,
+            *args,
+            **kwargs):
+        super().__init__(vector, *args, **kwargs)
+        self.width_min = width_min
+        self.head_portion = head_portion
+        self.head_width = head_width
+        self.body_width = body_width
 
     def draw(self):
         """
@@ -20,9 +32,12 @@ class FDVectorPlotterArtist(VectorArtist):
         if self.draw_point:
             self._point_artist = self.plotter.add(self.point, edgecolor=self.color)
 
+        min_width = self.width_min
         length = self.vector.length
-        min_width = 0.01
-        width = length * 0.012 + min_width
+        width = self.body_width * length + min_width
+        head_length = self.head_portion * length + min_width
+        head_width = self.head_width * length + min_width
+
         x, y = self.point[:2]
         dx, dy = (self.vector)[:2]
         self.zorder = 5000
@@ -34,8 +49,8 @@ class FDVectorPlotterArtist(VectorArtist):
             dy,
             width=width,
             length_includes_head=True,
-            head_width=length * 0.06 + min_width,
-            head_length=length * 0.12 + min_width,
+            head_length=head_length,
+            head_width=head_width,
             color=self.color,
             zorder=self.zorder,
             alpha=1.0,

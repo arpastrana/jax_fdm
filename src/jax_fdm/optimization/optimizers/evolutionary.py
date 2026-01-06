@@ -6,16 +6,18 @@ from jax import vmap
 from scipy.optimize import differential_evolution
 from scipy.optimize import dual_annealing
 
-from jax_fdm.optimization.optimizers import Optimizer
+from jax_fdm.optimization.optimizers import GradientFreeOptimizer
 
 
 # ==========================================================================
 # Optimizers
 # ==========================================================================
 
-class DifferentialEvolution(Optimizer):
+class DifferentialEvolution(GradientFreeOptimizer):
     """
     The a differential evolution optimizer with box constraints.
+
+    This algorithm has stochastic components, so mind the seed for reproducibility.
     """
     def __init__(self, popsize=20, vectorized=False, num_workers=1, seed=43, display=False, **kwargs):
         super().__init__(name="DifferentialEvolution", disp=display, **kwargs)
@@ -28,10 +30,7 @@ class DifferentialEvolution(Optimizer):
         """
         Scipy backend method to minimize a loss function.
         """
-        fun = opt_problem["fun"]
-
-        def func(x):
-            return fun(x)[0]
+        func = opt_problem["fun"]
 
         def func_vmap(x):
             result = vmap(func, in_axes=(1))(x)
@@ -62,11 +61,13 @@ class DifferentialEvolution(Optimizer):
         return differential_evolution(**opt_problem)
 
 
-class DualAnnealing(Optimizer):
+class DualAnnealing(GradientFreeOptimizer):
     """
     The a dual annealing optimizer with box constraints.
+
+    This algorithm has stochastic components, so mind the seed for reproducibility.
     """
-    def __init__(self, no_local_search=True, seed=None, display=False, **kwargs):
+    def __init__(self, no_local_search=True, seed=42, display=False, **kwargs):
         super().__init__(name="DualAnnealing", disp=display, **kwargs)
         self.no_local_search = no_local_search
         self.seed = seed
@@ -78,18 +79,18 @@ class DualAnnealing(Optimizer):
         fun = opt_problem["fun"]
 
         def func(x, *args, **kwargs):
-            return fun(x)[0]
+            return fun(x)
 
         opt_problem["func"] = func
         opt_problem["no_local_search"] = self.no_local_search
         opt_problem["maxiter"] = opt_problem["options"]["maxiter"]
         opt_problem["args"] = (None, )
+        opt_problem["seed"] = self.seed
 
         del opt_problem["tol"]
         del opt_problem["fun"]
         del opt_problem["jac"]
         del opt_problem["hess"]
-        del opt_problem["constraints"]
         del opt_problem["method"]
         del opt_problem["options"]
 

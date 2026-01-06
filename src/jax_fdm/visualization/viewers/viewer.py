@@ -53,3 +53,20 @@ class Viewer(App):
         self.artists.append(artist)
         artist.draw()
         artist.add()
+
+    def save(self, filepath):
+        """
+        Save the viewer scene as an image to a filepath.
+
+        Notes
+        -----
+        The filepath must include the desired image extension.
+        The viewer must be called manually after calling this function.
+        """
+        ext = filepath.split(".")[-1]
+
+        if not self.started:
+            self.window.show()
+
+        qimage = self.view.grabFramebuffer()
+        qimage.save(filepath, ext)

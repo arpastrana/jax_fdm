@@ -37,6 +37,7 @@ def fdm(datastructure,
         tmax=1,
         eta=1e-6,
         itersolve_fn=None,
+        iterload_fn=None,
         implicit_diff=True,
         verbose=False):
     """
@@ -44,7 +45,16 @@ def fdm(datastructure,
     """
     datastructure_validate(datastructure)
 
-    model = model_from_sparsity(sparse, tmax, eta, is_load_local, itersolve_fn, implicit_diff, verbose)
+    model = model_from_sparsity(
+        sparse=sparse,
+        tmax=tmax,
+        eta=eta,
+        is_load_local=is_load_local,
+        itersolve_fn=itersolve_fn,
+        iterload_fn=iterload_fn,
+        implicit_diff=implicit_diff,
+        verbose=verbose
+    )
     structure = structure_from_datastructure(datastructure, sparse)
 
     params = EquilibriumParametersState.from_datastructure(datastructure, dtype=DTYPE_JAX)
@@ -69,7 +79,9 @@ def constrained_fdm(datastructure,
                     sparse=True,
                     is_load_local=False,
                     itersolve_fn=None,
+                    iterload_fn=None,
                     implicit_diff=True,
+                    nd=False,
                     verbose=False,
                     jit=True):
     """
@@ -81,7 +93,17 @@ def constrained_fdm(datastructure,
         print("\nConstraints are not supported yet for sparse inputs. Switching to dense.")
         sparse = False
 
-    model = model_from_sparsity(sparse, tmax, eta, is_load_local, itersolve_fn, implicit_diff, verbose)
+    model = model_from_sparsity(
+        sparse=sparse,
+        tmax=tmax,
+        eta=eta,
+        is_load_local=is_load_local,
+        itersolve_fn=itersolve_fn,
+        iterload_fn=iterload_fn,
+        implicit_diff=implicit_diff,
+        verbose=verbose
+    )
+
     structure = structure_from_datastructure(datastructure, sparse)
 
     opt_problem = optimizer.problem(model,
@@ -106,7 +128,15 @@ def constrained_fdm(datastructure,
 # Helpers
 # ==========================================================================
 
-def model_from_sparsity(sparse, tmax, eta, is_load_local, itersolve_fn=None, implicit_diff=True, verbose=False):
+def model_from_sparsity(
+        sparse,
+        tmax,
+        eta,
+        is_load_local=False,
+        itersolve_fn=None,
+        iterload_fn=None,
+        implicit_diff=True,
+        verbose=False):
     """
     Create an equilibrium model from a sparsity flag.
     """
@@ -114,7 +144,16 @@ def model_from_sparsity(sparse, tmax, eta, is_load_local, itersolve_fn=None, imp
     if sparse:
         model = EquilibriumModelSparse
 
-    return model(tmax, eta, is_load_local, itersolve_fn, implicit_diff, verbose=verbose)
+    model_instance = model(
+        tmax=tmax,
+        eta=eta,
+        is_load_local=is_load_local,
+        itersolve_fn=itersolve_fn,
+        iterload_fn=iterload_fn,
+        implicit_diff=implicit_diff,
+        verbose=verbose)
+
+    return model_instance
 
 
 def structure_from_datastructure(datastructure, sparse):
@@ -159,7 +198,10 @@ def datastructure_validate(datastructure):
     """
     assert datastructure.number_of_supports() > 0, "The FD datastructure has no supports"
     assert datastructure.number_of_edges() > 0, "The FD datastructure has no edges"
-    assert np.all(np.abs(np.array(datastructure.edges_forcedensities())) > 0.0), "The FD datastructure has edges with zero force density"
+
+    has_fd = np.abs(np.array(datastructure.edges_forcedensities())) > 0.0
+    num_no_fd = np.sum(np.logical_not(has_fd).astype(float))
+    assert np.all(has_fd), f"The FD datastructure has {int(num_no_fd)} edges with zero force density"
 
     try:
         assert datastructure.number_of_nodes() > 0, "The FD datastructure has no nodes"

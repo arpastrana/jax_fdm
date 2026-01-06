@@ -7,6 +7,8 @@ from typing import NamedTuple
 from jax_fdm.datastructures import FDNetwork
 from jax_fdm.datastructures import FDMesh
 
+from jax_fdm import DTYPE_JAX
+
 
 # ==========================================================================
 # Equilibrium state
@@ -26,7 +28,7 @@ class EquilibriumState(NamedTuple):
 # ==========================================================================
 
 class LoadState(NamedTuple):
-    nodes: Union[jax.Array, float]
+    nodes: Union[jax.Array]
     edges: Union[jax.Array, float]
     faces: Union[jax.Array, float]
 
@@ -76,6 +78,9 @@ class EquilibriumParametersState(NamedTuple):
 
         elif isinstance(datastructure, FDMesh):
             xyz_fixed = datastructure.vertices_fixedcoordinates()
+
+        if dtype is None:
+            dtype = DTYPE_JAX
 
         return cls(q=jnp.asarray(q, dtype),
                    xyz_fixed=jnp.asarray(xyz_fixed, dtype),

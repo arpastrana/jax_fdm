@@ -24,7 +24,7 @@ class LossPlotter:
         self.structure = structure_from_datastructure(datastructure, sparse=False)
         self.fig = plt.figure(**kwargs)
 
-    def plot(self, history, print_breakdown=True, plot_legend=True, yscale="log", **eq_kwargs):
+    def plot(self, history, report_breakdown=True, error_names=None, plot_legend=True, yscale="log", **eq_kwargs):
         """
         Plot the loss function and its error components on a list of fdm parameter states.
         """
@@ -45,31 +45,32 @@ class LossPlotter:
         equilibrium_vmap = vmap(model, in_axes=(0, None))
         eq_states = equilibrium_vmap(params, self.structure)
 
-        if print_breakdown:
-            print("\n***Error breakdown***")
-
-        errors_all = []
+        # Calculate error and regularization contributions
+        errors_all = {}
 
         for error_term in self.loss.terms_error:
             errors = vmap(error_term)(eq_states)
-            errors_all.append(errors)
-            plt.plot(errors, label=error_term.name)
-
-            if print_breakdown:
-                self.print_error_stats(error_term, errors)
+            errors_all[error_term.name] = errors
 
         for reg_term in self.loss.terms_regularization:
             errors = vmap(reg_term)(params)
-            errors_all.append(errors)
-            plt.plot(errors, label=reg_term.name)
+            errors_all[reg_term.name] = errors
 
-            if print_breakdown:
-                self.print_error_stats(reg_term, errors)
-                print()
-
-        losses = jnp.sum(jnp.asarray(errors_all, dtype=DTYPE_JAX), axis=0)
-
+        # Plot loss
+        losses = jnp.sum(jnp.asarray(list(errors_all.values()), dtype=DTYPE_JAX), axis=0)
+        self.print_error_stats(losses, "Loss")
         plt.plot(losses, label=self.loss.name)
+
+        # Report loss breakdown
+        if report_breakdown:
+            print("\n***Error breakdown***")
+            if error_names is None:
+                error_names = errors_all.keys()
+
+            for name in error_names:
+                errors = errors_all[name]
+                plt.plot(errors, label=name)
+                self.print_error_stats(errors, name)
 
         plt.xlabel("Optimization iterations")
         plt.ylabel("Loss")
@@ -90,7 +91,7 @@ class LossPlotter:
         plt.show()
 
     @staticmethod
-    def print_error_stats(error_term, errors):
+    def print_error_stats(errors, error_name):
         """
         Print error statistics
         """
@@ -99,6 +100,6 @@ class LossPlotter:
                  "min": np.min(errors),
                  "max": np.max(errors)}
 
-        name_string = "{:<18}\t".format(error_term.name)
-        values_string = "  ".join(["{}: {:>12.4f}".format(key.capitalize(), value) for key, value in stats.items()])
+        name_string = "{:<18}\t".format(error_name)
+        values_string = "  ".join(["{}: {:>12.6f}".format(key.capitalize(), value) for key, value in stats.items()])
         print(name_string + values_string)

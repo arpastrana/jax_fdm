@@ -41,28 +41,29 @@ def calculate_faces_load(xyz, faces, faces_load, is_local):
     return loads
 
 
+def face_xyz(xyz, face):
+    """
+    Get this face XYZ coordinates from XYZ vertices array.
+    """
+    face = jnp.ravel(face)
+
+    xyz_face = xyz[face, :]
+    xyz_repl = xyz_face[0, :]
+
+    # NOTE: Replace -1 with first entry to avoid nans in gradient computation
+    # This was a pesky bug, since using nans as replacement do not cause
+    # issues with the forward computation of normals, but it does for the backward pass.
+    xyz_face = vmap(jnp.where, in_axes=(0, 0, None))(face >= 0, xyz_face, xyz_repl)
+
+    return xyz_face
+
+
 def face_load_lcs(xyz, face, face_load):
     """
     Transform the load vector applied to the face to a vector in its local coordinate system.
     """
-    def face_xyz(xyz, face):
-        """
-        Get this face XYZ coordinates from XYZ vertices array.
-        """
-        face = jnp.ravel(face)
-
-        xyz_face = xyz[face, :]
-        xyz_repl = xyz_face[0, :]
-
-        # NOTE: Replace -1 with first entry to avoid nans in gradient computation
-        # This was a pesky bug, since using nans as replacement did not cause
-        # issues with the forward computation of normals, but it does for
-        # the backward pass.
-        xyz_face = vmap(jnp.where, in_axes=(0, 0, None))(face >= 0, xyz_face, xyz_repl)
-
-        return xyz_face
-
-    fxyz = face_xyz(xyz, face)
+    # fxyz = face_xyz(xyz, face)
+    fxyz = xyz[face, :]
 
     normal = normal_polygon(fxyz)
     is_zero_normal = jnp.allclose(normal, 0.0)
@@ -78,12 +79,13 @@ def edges_tributary_faces_load(xyz, faces_load, structure):
     Calculate the face area load taken by every edge in a datastructure.
     """
     c_vertices = structure.connectivity
-    c_faces = structure.connectivity_edges_faces
+    c_edges_faces = structure.connectivity_edges_faces
+    c_faces_vertices = structure.connectivity_faces_vertices
 
-    face_centroids = structure.connectivity_faces_vertices @ xyz
+    face_centroids = c_faces_vertices @ xyz
     loads_fn = vmap(edge_tributary_faces_load, in_axes=(0, 0, None, None, None))
 
-    return loads_fn(c_vertices, c_faces, xyz, faces_load, face_centroids)
+    return loads_fn(c_vertices, c_edges_faces, xyz, faces_load, face_centroids)
 
 
 def edge_tributary_faces_load(c_edge_nodes, c_edge_faces, xyz, faces_load, face_centroids):
@@ -112,19 +114,6 @@ def edge_tributary_face_area(line, centroid):
     triangle = jnp.vstack((line, jnp.reshape(centroid, (1, 3))))
 
     return area_triangle(triangle)
-
-
-def _faces_load_2(xyz, faces, faces_load, is_local):
-    """
-    Transform the face loads to the XYZ cartesian coordinate system.
-    """
-    def _faces_load(xyz, face, face_load, is_local):
-        return jnp.where(is_local, face_load_lcs(xyz, face, face_load), face_load)
-
-    floads, is_local = faces_load
-    vmap_facesload = vmap(_faces_load, in_axes=(None, 0, 0, 0))
-
-    return vmap_facesload(xyz, faces, faces_load, is_local)
 
 
 # ==========================================================================

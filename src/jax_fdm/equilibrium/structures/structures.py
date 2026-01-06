@@ -3,16 +3,20 @@ import numpy as np
 import jax
 import jax.numpy as jnp
 
+from scipy.sparse import csc_matrix
+
 from jax.experimental.sparse import BCOO
+from jax.experimental.sparse import BCSR
 from jax.experimental.sparse import CSC
 
 from jax_fdm import DTYPE_INT_JAX
 from jax_fdm import DTYPE_INT_NP
 
-from jax_fdm.equilibrium.structures.topology import Graph
-from jax_fdm.equilibrium.structures.topology import GraphSparse
-from jax_fdm.equilibrium.structures.topology import Mesh
-from jax_fdm.equilibrium.structures.topology import MeshSparse
+from jax_fdm.equilibrium.structures.graphs import Graph
+from jax_fdm.equilibrium.structures.graphs import GraphSparse
+
+from jax_fdm.equilibrium.structures.meshes import Mesh
+from jax_fdm.equilibrium.structures.meshes import MeshSparse
 
 
 # ==========================================================================
@@ -235,8 +239,15 @@ class EquilibriumStructureSparse(EquilibriumStructure, GraphSparse):
         """
         diags_data = jnp.ones_like(c_free_csc.data)
 
-        return CSC((diags_data, c_free_csc.indices, c_free_csc.indptr),
-                   shape=c_free_csc.shape)
+        args = (diags_data, c_free_csc.indices, c_free_csc.indptr)
+        shape = c_free_csc.shape
+        # diag_matrix = CSC(args, shape=shape)
+
+        # NOTE: temporary change from CSV to BCSR matrix to enable Jacobians
+        diag_matrix = csc_matrix(args, shape).tocsr().T
+        diag_matrix = BCSR.from_scipy_sparse(diag_matrix)
+
+        return diag_matrix
 
 
 # ==========================================================================
@@ -279,13 +290,15 @@ class EquilibriumMeshStructure(EquilibriumStructure, Mesh):
 
         faces = [mesh.face_vertices(fkey) for fkey in mesh.faces()]
         max_length_face = max(len(face) for face in faces)
+        assert max_length_face > 2, "The mesh faces must have at least 3 vertices each"
 
-        pad_value = -1
         padded_faces = []
+        pad_value = -1
         for face in faces:
             len_face = len(face)
             if len_face < max_length_face:
-                face = face + [pad_value] * (max_length_face - len_face)
+                face_padding = [pad_value] * (max_length_face - len_face)
+                face = face + face_padding
             padded_faces.append(face)
 
         faces = np.asarray(padded_faces, dtype=DTYPE_INT_NP)
