@@ -18,6 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Removed
 
+- Updated docstring of `normalized_vector()` to declare the function is not fully `nan` safe, even though it internally performs `nansum` to sum over cross-products. The problem is that information is lost in that sum, and the resulting normal vector is erroneous.
 
 ## [0.9.0] 2026-01-06
 

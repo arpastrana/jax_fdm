@@ -43,6 +43,12 @@ def length_vector_sqrd(u):
 def normalize_vector(u, safe_nan=True):
     """
     Scale a vector such that it has a unit length.
+
+    Notes
+    -----
+    If safe_nan is True, any nan values in the input vector are replaced by zeroes.
+    The function will return a zero vector if the input vector is a zero vector
+    or if all its elements are nan.
     """
     if safe_nan:
         u = jnp.nan_to_num(u)
@@ -157,8 +163,9 @@ def normal_polygon_2(polygon, unitized=False):
     """
     Computes the unit-length normal of a polygon.
 
-    A polygon that is defined as a sequence of unique points.
-    A polygon must have at least three points.
+    Notes
+    -----
+    A polygon that is defined as a sequence of at least three points.
     """
     centroid = jnp.mean(polygon, axis=0)
     op = polygon - centroid
@@ -175,10 +182,11 @@ def normal_polygon(polygon, unitized=True):
     """
     Computes the normal of a closed polygon.
 
+    Notes
+    -----
     A polygon that is defined as a sequence of unique points and must be
-    defined by at least 3 points.
-
-    This function ignores nan values if any in the input polygon.
+    defined by at least 3 points. This function is not nan safe, because it
+    loses information when cross-multiplying valid entries with nan values.
     """
     assert len(polygon) >= 3, "A polygon must be defined by at least 3 points"
 
@@ -198,8 +206,6 @@ def area_polygon(polygon):
 
     A polygon that is defined as a sequence of unique points and must be
     defined by at least 3 points.
-
-    This function ignores nan values if any in the input polygon.
     """
     return length_vector(normal_polygon(polygon, unitized=False))
 
@@ -208,6 +214,8 @@ def normal_triangle(triangle, unitize=False):
     """
     Computes the normal vector of a triangle.
 
+    Notes
+    -----
     A triangle is defined as a set of exactly three points.
     """
     assert len(triangle) == 3, "A triangle is defined by exactly 3 points"
@@ -225,6 +233,8 @@ def area_triangle(triangle):
     """
     Calculate the area of a triangle.
 
+    Notes
+    -----
     A triangle is defined as a set of exactly three points.
     """
     return 0.5 * length_vector(normal_triangle(triangle))
@@ -243,7 +253,6 @@ def planarity_polygon(polygon):
     assert polygon.shape == polygon_shifted.shape
 
     edge_vectors = polygon - polygon_shifted
-    # FIXME: There is a bug in normalize_vector that normalizes a zero vector to a vector with ones.
     unit_vectors = vmap(normalize_vector, in_axes=(0,))(edge_vectors)
     assert unit_vectors.shape == edge_vectors.shape
 
@@ -294,6 +303,8 @@ def line_lcs(line):
     """
     Returns the local coordinate system (LCS) of a line.
 
+    Notes
+    -----
     The LCS is a 3D orthonormal basis formed by unit vectors U, V, and W.
     The orthonormal basis is constructed using the following convention:
 
@@ -318,6 +329,8 @@ def polygon_lcs(polygon):
     """
     Returns the local coordinate system (LCS) of a polygon.
 
+    Notes
+    -----
     The LCS is a 3D orthonormal basis formed by unit vectors U, V, and W.
     The orthonormal basis is constructed using the following convention:
 
@@ -336,167 +349,3 @@ def polygon_lcs(polygon):
     u = jnp.where(u @ vperp < 0.0, -u, u)
 
     return jnp.vstack((u, v, w))
-
-
-if __name__ == "__main__":
-
-    from compas.geometry import Polygon
-    from compas.geometry import Rotation
-    from compas.geometry import Frame
-    from compas.geometry import Vector
-
-    from jax import jit
-    from jax import grad
-
-    from jax.config import config
-    config.update("jax_debug_nans", True)
-
-    # Test vector transformation from XYZ to polygon LCS
-
-    # Test polygon LCS
-    load = Vector(0.0, 0.0, 1.0)
-    load_scale = 2.0
-    polygon = Polygon.from_sides_and_radius_xy(4, 1.0)
-
-    polygon_lcs = jit(polygon_lcs)
-    lcs = polygon_lcs(jnp.array(polygon.points))
-    assert jnp.allclose(lcs, WORLD_XYZ), f"lcs:\n{lcs}\nlcs_target:\n{WORLD_XYZ}"
-
-    load_lcs = jnp.array(load * load_scale) @ lcs
-    load_target = WORLD_Z * load_scale
-    assert jnp.allclose(load_lcs, load_target), f"lcs:\n{load_lcs}\nlcs_target:\n{load_target}"
-    load_lcs = -jnp.array(load * load_scale) @ lcs
-    load_target = load_target * -1.0
-    assert jnp.allclose(load_lcs, load_target), f"lcs:\n{load_lcs}\nlcs_target:\n{load_target}"
-    print("Passed world XYZ test\n")
-
-    R = Rotation.from_frame_to_frame(Frame.worldXY(), Frame.worldZX())
-    polygon_transformed = polygon.transformed(R)
-    lcs = polygon_lcs(jnp.array(polygon_transformed.points[::-1]))
-    lcs_target = jnp.vstack((WORLD_X, WORLD_Z, -WORLD_Y))
-    assert jnp.allclose(lcs, lcs_target), f"lcs:\n{lcs}\nlcs_target:\n{lcs_target}"
-
-    load_lcs = jnp.array(load * load_scale) @ lcs
-    load_target = -WORLD_Y * load_scale
-    assert jnp.allclose(load_lcs, load_target), f"lcs:\n{load_lcs}\nlcs_target:\n{load_target}"
-    load_lcs = -jnp.array(load * load_scale) @ lcs
-    load_target = load_target * -1.0
-    assert jnp.allclose(load_lcs, load_target), f"lcs:\n{load_lcs}\nlcs_target:\n{load_target}"
-
-    print("Passed world XY to ZX test\n")
-
-    R = Rotation.from_frame_to_frame(Frame.worldXY(), Frame.worldYZ())
-    polygon_transformed = polygon.transformed(R)
-    lcs = polygon_lcs(jnp.array(polygon_transformed.points))
-    lcs_target = jnp.vstack((WORLD_Y, WORLD_Z, WORLD_X))
-    assert jnp.allclose(lcs, lcs_target), f"lcs:\n{lcs}\nlcs_target:\n{lcs_target}"
-
-    load_lcs = jnp.array(load * load_scale) @ lcs
-    load_target = WORLD_X * load_scale
-    assert jnp.allclose(load_lcs, load_target), f"lcs:\n{load_lcs}\nlcs_target:\n{load_target}"
-    load_lcs = -jnp.array(load * load_scale) @ lcs
-    load_target = load_target * -1.0
-    assert jnp.allclose(load_lcs, load_target), f"lcs:\n{load_lcs}\nlcs_target:\n{load_target}"
-
-    print("Passed world XY to YZ test\n")
-
-    # Test line LCS
-    line_lcs = jit(line_lcs)
-    line = [[0.0, 0.0, 0.0], [1.0, 0.0, 0.0]]
-    line = jnp.array(line)
-    lcs = line_lcs(line)
-
-    lcs_target = WORLD_XYZ
-    assert jnp.allclose(lcs, lcs_target), f"lcs:\n{lcs}\nlcs_target:\n{lcs_target}"
-
-    line = [[0.0, 0.0, 0.0], [0.0, 1.0, 0.0]]
-    line = jnp.array(line)
-    lcs = line_lcs(line)
-
-    lcs_target = jnp.array([[0.0, 1.0, 0.0], [-1.0, 0.0, 0.0], [0.0, 0.0, 1.0]])
-    assert jnp.allclose(lcs, lcs_target), f"lcs:\n{lcs}\nlcs_target:\n{lcs_target}"
-
-    line = [[0.0, 0.0, 0.0], [0.0, 0.0, 1.0]]
-    line = jnp.array(line)
-    lcs = line_lcs(line)
-
-    lcs_target = jnp.array([[0.0, 0.0, 1.0], [1.0, 0.0, 0.0], [0.0, 1.0, 0.0]])
-    assert jnp.allclose(lcs, lcs_target), f"lcs:\n{lcs}\nlcs_target:\n{lcs_target}"
-
-    # Test area polygon
-    import numpy as np
-    from jax import vmap, jit
-    from math import pi
-    from compas.geometry import Polygon
-    from compas.geometry import Rotation
-    from compas.geometry import area_polygon as compas_area_polygon
-    from compas.geometry import normal_polygon as compas_normal_polygon
-
-    radius = 2.0
-    # num_angles = 100
-    num_angles = 4
-
-    polygons = []
-
-    area_polygon = jit(area_polygon)
-    area_polygon(np.ones((5, 3)))
-
-    grad_area_normal_polygon = grad(lambda x: jnp.sum(jnp.square(normal_polygon(x) - 1.0)))
-    grad_area_normal_polygon = jit(grad_area_normal_polygon)
-
-    for i in range(4, 5):
-        polygon = Polygon.from_sides_and_radius_xy(i, radius)
-
-        for j in range(1, num_angles):
-
-            polygon_old = polygon
-
-            angle = (j * (0.5 * pi / num_angles))
-            R1 = Rotation.from_axis_and_angle(axis=[1.0, 0.0, 0.0], angle=angle)
-            polygon = polygon.transformed(R1)
-            R2 = Rotation.from_axis_and_angle(axis=[0.0, 1.0, 0.0], angle=angle)
-            polygon = polygon.transformed(R2)
-            polygons.append(polygon)
-
-            assert not np.allclose(polygon, polygon_old)
-
-            area_compas = compas_area_polygon(polygon.points)
-            area = area_polygon(np.array(polygon.points))  # .item()
-
-            assert jnp.allclose(area_compas, area), f"Not equal: JAX: {area:.2f} vs. COMPAS: {area_compas:.2f}"
-
-            normal_compas = compas_normal_polygon(polygon.points)
-            normal = normal_polygon(np.array(polygon.points))  # .item()
-            assert jnp.allclose(np.array(normal_compas), normal), f"Not equal: JAX: {normal:.2f} vs. COMPAS: {normal_compas:.2f}"
-
-            points_nan = np.reshape(np.array([np.nan] * 6), (-1, 3))
-            polygon_nan = np.vstack((np.array(polygon.points), points_nan, points_nan))
-            normal_nan = normal_polygon(polygon_nan)
-
-            assert jnp.allclose(np.array(normal_compas), normal_nan), f"Not equal: JAX: {normal_nan:.2f} vs. COMPAS: {normal_compas:.2f}"
-
-            points_padlast = np.array(polygon.points)[0, :]
-            polygon_padlast = np.vstack((np.array(polygon.points), points_padlast))
-            normal_padlast = normal_polygon(polygon_padlast)
-
-            assert jnp.allclose(np.array(normal_compas), normal_padlast), f"Not equal: JAX: {normal_nan:.2f} vs. COMPAS: {normal_padlast:.2f}"
-
-            gnormal_nan = grad_area_normal_polygon(polygon_nan)
-            assert jnp.sum(jnp.isnan(gnormal_nan)) == 0, "Gradient of nan'd polygon has nans!"
-
-            gnormal_padlast = grad_area_normal_polygon(polygon_padlast)
-
-            print(polygon_nan)
-            print(gnormal_nan)
-            print()
-            print(polygon_padlast)
-            print(gnormal_padlast)
-            print()
-
-            assert jnp.sum(jnp.isnan(gnormal_padlast)) == 0, "Gradient of padded polygon has nans!"
-
-    areas = vmap(area_polygon)(jnp.array(polygons))
-    normal = vmap(normal_polygon)(jnp.array(polygons))
-
-    print("Passed normals and areas tests\n")
-    print("All good!")
