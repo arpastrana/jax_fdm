@@ -28,7 +28,7 @@ class MeshXYZFaceLaplacianGoal(ScalarGoal, MeshGoal):
     every vertex to the centroid of the centroids of the faces the
     vertex is part of.
 
-    An enegy-minimizing mesh will have every vertex as close as possible
+    An energy-minimizing mesh will have every vertex as close as possible
     to its neighboring faces centroid.
     """
     def __init__(self, target=0.0, weight=1.0):

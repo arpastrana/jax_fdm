@@ -1,3 +1,5 @@
+from jax import vmap
+
 import jax.numpy as jnp
 
 from jax.lax import cond
@@ -45,7 +47,7 @@ def normalize_vector(u, safe_nan=True):
     if safe_nan:
         u = jnp.nan_to_num(u)
         is_zero_vector = jnp.allclose(u, 0.0)
-        u = jnp.where(is_zero_vector, jnp.ones_like(u), u)
+        u = jnp.where(is_zero_vector, jnp.zeros_like(u), u)
         length = jnp.where(is_zero_vector, 1.0, length_vector(u))
     else:
         length = length_vector(u)
@@ -228,8 +230,41 @@ def area_triangle(triangle):
     return 0.5 * length_vector(normal_triangle(triangle))
 
 
-def _curvature_point_polygon(point, polygon):
-    raise NotImplementedError
+def planarity_polygon(polygon):
+    """
+    Calculate the planarity of a polygon.
+
+    Notes
+    -----
+    The planarity of a polygon is calculated as the sum of the absolute dot product
+    between the polygon's unitized normal vector and its unitized edge vectors.
+    """
+    polygon_shifted = jnp.roll(polygon, 1, axis=0)
+    assert polygon.shape == polygon_shifted.shape
+
+    edge_vectors = polygon - polygon_shifted
+    # FIXME: There is a bug in normalize_vector that normalizes a zero vector to a vector with ones.
+    unit_vectors = vmap(normalize_vector, in_axes=(0,))(edge_vectors)
+    assert unit_vectors.shape == edge_vectors.shape
+
+    normal = normal_polygon(polygon)
+    cosines = vmap(jnp.dot, in_axes=(0, None))(unit_vectors, normal)
+    assert cosines.shape[0] == polygon.shape[0]
+
+    planarity = jnp.sum(jnp.abs(cosines))
+
+    return planarity
+
+
+def planarity_triangle(triangle):
+    """
+    Calculate the planarity of a triangle.
+
+    Notes
+    -----
+    The planarity of a triangle is 0.0 by construction.
+    """
+    return 0.0
 
 
 def curvature_point_polygon(point, polygon):
