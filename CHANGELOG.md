@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Refactored `LogMaxError()` for numerical stability. Specifically, replaced `jnp.log(x+1)` with `jnp.log1p` and `jnp.where` with `jnp.maximum`.
 - Fixed bug in `normalized_vector()` that returned a vector of ones when supplied a zero vector. This is a special case because of the undefined behavior of division by zero. After the fix, we decided that the function should return the zero vector if one such vector is input to the function.
 
 ### Removed

@@ -131,7 +131,9 @@ class LogMaxError(Error):
     @staticmethod
     def error(gstate):
         difference = gstate.prediction - gstate.goal
-        # NOTE: shifting difference so that error is log(1) = 0.0 at least.
-        error = jnp.log(jnp.where(difference >= 0.0, difference, 0.0) + 1.0)
+        violation = jnp.maximum(difference, 0.0)  # TODO: consider softplus as a smooth alternative
+        # NOTE: shifting difference via (x + 1.0) so that error is log(1) = 0.0 at least.
+        # jnp.log1p(x) is equivalent but more numerically stable than jnp.log(x + 1.0)
+        error = jnp.log1p(violation)  # TODO: consider changing to quadratic error for large violations later
 
         return jnp.sum(gstate.weight * error)
