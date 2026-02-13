@@ -24,6 +24,13 @@ class NetworkSmoothGoal(ScalarGoal, NetworkGoal):
         self.adjacency = None
         self.indices_free = None
 
+    def init(self, model, structure):
+        """
+        Initialize the constraint with information from an equilibrium model.
+        """
+        super().init(model, structure)
+        self.adjacency = structure.adjacency
+
     def prediction(self, eq_state, index):
         """
         The current fairness value of the node.
@@ -37,21 +44,15 @@ class NetworkSmoothGoal(ScalarGoal, NetworkGoal):
 
         return jnp.atleast_1d(fairness)
 
-    def init(self, model, structure):
-        """
-        Initialize the constraint with information from an equilibrium model.
-        """
-        super().init(model, structure)
-        self.adjacency = structure.adjacency
-
 
 def node_nbrs_fairness_ngon(xyz_all, xyz_node, adjacency_node):
     """
     Compute the fairness of an n-gon node neighborhood.
     """
-    xyz_nbrs = adjacency_node @ xyz_all / jnp.sum(adjacency_node, axis=-1)
+    num_nbrs = jnp.sum(adjacency_node, axis=-1)
+    centroid = (adjacency_node @ xyz_all) / num_nbrs
 
-    fvector = xyz_node - xyz_nbrs
+    fvector = xyz_node - centroid
     assert fvector.shape == xyz_node.shape
 
-    return jnp.sum(jnp.square(fvector))
+    return jnp.dot(fvector, fvector)
