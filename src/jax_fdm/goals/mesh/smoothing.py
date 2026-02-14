@@ -17,10 +17,14 @@ class MeshSmoothGoal(ScalarGoal, MeshGoal):
     between the position of a vertex and the centroid of its neighbors' positions.
 
     Based on Eq. 2 in Tang et al. (2013). DOI: 10.1145/2601097.2601213
+    Modifications:
+        - The fairness is computed only for the free vertices.
+        - No reweighting is performed based on vertex valences.
     """
     def __init__(self):
         super().__init__()
         self.adjacency = None
+        self.indices_free = None
 
     def init(self, model, structure):
         """
@@ -55,4 +59,4 @@ def vertex_nbrs_fairness_ngon(xyz_all, xyz_vertex, adjacency_vertex):
     fvector = xyz_vertex - centroid
     assert fvector.shape == xyz_vertex.shape
 
-    return jnp.dot(fvector, fvector)
+    return jnp.dot(fvector, fvector) # * jnp.square(num_nbrs)
