@@ -318,9 +318,11 @@ def line_lcs(line):
     threshold = jnp.allclose(jnp.abs(WORLD_Z @ u), 1.0)
     vperp = jnp.where(threshold, WORLD_Y, WORLD_Z)
     v = jnp.cross(vperp, u)
+    v = vector_unitized(v)
 
     w = jnp.cross(u, v)
     w = jnp.where(w @ vperp < 0.0, -w, w)
+    w = vector_unitized(w)
 
     return jnp.vstack((u, v, w))
 
@@ -344,8 +346,10 @@ def polygon_lcs(polygon):
     threshold = jnp.allclose(jnp.abs(WORLD_X @ w), 1.0)
     vperp = jnp.where(threshold, WORLD_Y, WORLD_X)
     v = jnp.cross(w, vperp)
+    v = vector_unitized(v)
 
     u = jnp.cross(w, v)
     u = jnp.where(u @ vperp < 0.0, -u, u)
+    u = vector_unitized(u)
 
     return jnp.vstack((u, v, w))

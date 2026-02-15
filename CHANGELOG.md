@@ -9,11 +9,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Implemented `goals.MeshLoadPathGoal()` to control the total load path enery of a mesh.
 - Implemented `goals.MeshPlanarityGoal()` to planarize all the faces of a mesh. 
 - Added `polygon_planarity()` to geometry processing module (with tests!). The planarity of a polygon is calculated as the sum of the absolute dot product between the polygon's unitized normal vector and its unitized edge vectors, following the work of Tang et al. (2014).
 
 ### Changed
 
+- Fixed bug in `line_lcs()` and `polygon_lcs()`, functions that calculate the local coordinate system of a line and a polygon, respectively. The bug was that while the frame normal was properly unitized, the other two vectors were not.
 - Refactored `LogMaxError()` for numerical stability. Specifically, replaced `jnp.log(x+1)` with `jnp.log1p` and `jnp.where` with `jnp.maximum`.
 - Fixed bug in `normalized_vector()` that returned a vector of ones when supplied a zero vector. This is a special case because of the undefined behavior of division by zero. After the fix, we decided that the function should return the zero vector if one such vector is input to the function.
 
