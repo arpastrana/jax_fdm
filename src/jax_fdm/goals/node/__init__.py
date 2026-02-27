@@ -7,6 +7,7 @@ from .line import *  # noqa F403
 from .segment import *  # noqa F403
 from .plane import *  # noqa F403
 from .residual import *  # noqa F403
+from .colinear import *  # noqa F403
 
 
 __all__ = [name for name in dir() if not name.startswith('_')]
