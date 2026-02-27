@@ -11,16 +11,23 @@ WORLD_Z = jnp.array([0.0, 0.0, 1.0])
 WORLD_XYZ = jnp.eye(3)
 
 
+def cosine_vectors(u, v):
+    """
+    Compute the signed cosine of the angle between two vectors.
+    """
+    return normalize_vector(u) @ normalize_vector(v)
+
+
 def angle_vectors(u, v, deg=False):
     """
     Compute the smallest angle in degrees between two vectors.
     """
-    L = length_vector(u) * length_vector(v)
-    cosim = jnp.maximum(jnp.minimum((u @ v) / L, 1.0), -1.0)
+    cosim = cosine_vectors(u, v)
     angle = jnp.arccos(cosim)
 
     if deg:
         return jnp.degrees(angle)
+
     return angle
 
 
@@ -355,7 +362,7 @@ def polygon_lcs(polygon):
     return jnp.vstack((u, v, w))
 
 
-def colinearity_points(points: jnp.ndarray) -> jnp.ndarray:
+def colinearity_points(points):
     """
     Calculate the colinearity of a sequence of points.
 
@@ -392,7 +399,7 @@ def colinearity_points(points: jnp.ndarray) -> jnp.ndarray:
     return jnp.sum(dtdt / lbar) / jnp.maximum(n_interior, 1)
 
 
-def curvature_points(points: jnp.ndarray) -> jnp.ndarray:
+def curvature_points(points):
     """
     Compute the curvature (turning) energy of a sequence of points.
 
@@ -422,3 +429,62 @@ def curvature_points(points: jnp.ndarray) -> jnp.ndarray:
     n_interior = dt.shape[0]
 
     return jnp.sum(dt**2) / jnp.maximum(n_interior, 1)
+
+
+def _unit_edge_vectors_polygon(polygon):
+    """
+    Return unit vectors from each vertex to its prev and next neighbors.
+
+    Returns
+    -------
+    unit_to_prev, unit_to_next : tuple of jnp.ndarray
+        Each (n, d); vectors from vertex i toward i-1 and i+1.
+    """
+    polygon_prev = jnp.roll(polygon, shift=1, axis=0)
+    polygon_next = jnp.roll(polygon, shift=-1, axis=0)
+
+    edge_to_prev = polygon_prev - polygon  # from i toward i-1
+    edge_to_next = polygon_next - polygon  # from i toward i+1
+
+    unit_to_prev = vmap(normalize_vector, in_axes=(0,))(edge_to_prev)
+    unit_to_next = vmap(normalize_vector, in_axes=(0,))(edge_to_next)
+
+    return unit_to_prev, unit_to_next
+
+
+def angles_polygon(polygon, deg=False):
+    """
+    Calculate the internal angles of a polygon.
+
+    Parameters
+    ----------
+    polygon : jnp.ndarray
+        (n, d) array of polygon coordinates, d=2 or 3
+    deg : bool, optional
+        If True, return the angles in degrees. Default is False.
+    Returns
+    -------
+    angles : jnp.ndarray
+        (n,) array of internal angles of the polygon in radians.
+    """
+    unit_to_prev, unit_to_next = _unit_edge_vectors_polygon(polygon)
+
+    return vmap(angle_vectors, in_axes=(0, 0, None))(unit_to_prev, unit_to_next, deg)
+
+
+def cosines_angles_polygon(polygon):
+    """
+    Calculate the internal angle cosines of a polygon.
+
+    Parameters
+    ----------
+    polygon : jnp.ndarray
+        (n, d) array of polygon coordinates, d=2 or 3
+    Returns
+    -------
+    cosines : jnp.ndarray
+        (n,) array of internal cosine angles of the polygon.
+    """
+    unit_to_prev, unit_to_next = _unit_edge_vectors_polygon(polygon)
+
+    return vmap(cosine_vectors, in_axes=(0, 0))(unit_to_prev, unit_to_next)

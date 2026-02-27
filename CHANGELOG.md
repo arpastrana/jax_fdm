@@ -9,6 +9,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Implemented `cosine_angles_polygon()`, a function that measures the internal angle cosines of a polygon (i.e., the dot product between outgoing sides at every polygon vertex).
+- Implemented `angles_polygon()`, a function that measures the internal angles of a polygon.
+- Extracted logic to `cosine_vectors()` to measure the cosine of the angle between two vectors.
 - Implemented `goals.NodesCurvatureGoal()` to control the curvature of a sequence of nodes.
 - Implemented `goals.NodesColinearGoal()` to make a sequence of nodes colinear.
 - Added `curvature_points()` to measure the discrete curvature of a sequence of points.
