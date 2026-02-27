@@ -353,3 +353,72 @@ def polygon_lcs(polygon):
     u = vector_unitized(u)
 
     return jnp.vstack((u, v, w))
+
+
+def colinearity_points(points: jnp.ndarray) -> jnp.ndarray:
+    """
+    Calculate the colinearity of a sequence of points.
+
+    Parameters
+    ----------
+    points : jnp.ndarray
+        (n, d) ordered points in 2D or 3D.
+
+    Returns
+    -------
+    colinearity : jnp.ndarray
+        The colinearity energy.
+
+    Notes
+    -----
+    Colinearity is defined as length-normalized fairness energy:
+        E = sum_i ||e_i - e_{i-1}||^2 / 0.5 * (||e_{i-1}||^2 + ||e_i||^2)
+    where e_i = points[i+1] - points[i].
+
+    The normalization makes this energy less sensitive to local point spacing
+    than a raw second-difference energy. A colinearity of 0.0 indicates that
+    the points are colinear (i.e., they lie on a straight line). The result
+    is normalized by the number of interior vertices so it is invariant to
+    problem size.
+    """
+    line_vectors = subtract_vectors(points[1:], points[:-1])
+    lengths_squared = length_vector_sqrd(line_vectors)
+
+    dt = line_vectors[1:] - line_vectors[:-1]
+    dtdt = jnp.sum(dt**2, axis=-1)
+    lbar = 0.5 * (lengths_squared[1:] + lengths_squared[:-1])
+    n_interior = dt.shape[0]
+
+    return jnp.sum(dtdt / lbar) / jnp.maximum(n_interior, 1)
+
+
+def curvature_points(points: jnp.ndarray) -> jnp.ndarray:
+    """
+    Compute the curvature (turning) energy of a sequence of points.
+
+    Penalizes changes in direction between consecutive edges. Scale-invariant.
+
+    Parameters
+    ----------
+    points : jnp.ndarray
+        (n, d) ordered points in 2D or 3D.
+
+    Returns
+    -------
+    energy : jnp.ndarray
+        The turning energy.
+
+    Notes
+    -----
+    Curvature is defined as raw turning energy:
+        E = sum_i ||t_i - t_{i-1}||^2 / (num_points - 2)
+    where t_i is the unit tangent vector. Energy depends only on turn angles,
+    not on edge lengths, so it is scale-invariant.
+    """
+    line_vectors = subtract_vectors(points[1:], points[:-1])
+    tangents = vector_unitized(line_vectors)
+
+    dt = tangents[1:] - tangents[:-1]
+    n_interior = dt.shape[0]
+
+    return jnp.sum(dt**2) / jnp.maximum(n_interior, 1)

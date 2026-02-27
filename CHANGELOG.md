@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Implemented `goals.NodesCurvatureGoal()` to control the curvature of a sequence of nodes.
+- Implemented `goals.NodesColinearGoal()` to make a sequence of nodes colinear.
+- Added `curvature_points()` to measure the discrete curvature of a sequence of points.
+- Created `colinearity_points()` to measure the colinearity of a sequence of points.
 - Implemented `goals.MeshLoadPathGoal()` to control the total load path enery of a mesh.
 - Implemented `goals.MeshPlanarityGoal()` to planarize all the faces of a mesh. 
 - Added `polygon_planarity()` to geometry processing module (with tests!). The planarity of a polygon is calculated as the sum of the absolute dot product between the polygon's unitized normal vector and its unitized edge vectors, following the work of Tang et al. (2014).
