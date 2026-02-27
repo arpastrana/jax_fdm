@@ -288,7 +288,8 @@ class EquilibriumMeshStructure(EquilibriumStructure, Mesh):
                 flag = 1.0
             supports.append(flag)
 
-        faces = [mesh.face_vertices(fkey) for fkey in mesh.faces()]
+        face_keys = np.asarray(list(mesh.faces()), dtype=DTYPE_INT_NP)
+        faces = [mesh.face_vertices(fkey) for fkey in face_keys]
         max_length_face = max(len(face) for face in faces)
         assert max_length_face > 2, "The mesh faces must have at least 3 vertices each"
 
@@ -306,7 +307,7 @@ class EquilibriumMeshStructure(EquilibriumStructure, Mesh):
         edges = np.asarray(edges, dtype=DTYPE_INT_NP)
         supports = np.asarray(supports, dtype=DTYPE_INT_NP)
 
-        return cls(vertices, faces, edges, supports)
+        return cls(vertices, faces, edges=edges, supports=supports, face_keys=face_keys)
 
     @property
     def support_index(self):

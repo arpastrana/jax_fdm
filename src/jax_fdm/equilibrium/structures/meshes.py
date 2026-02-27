@@ -32,8 +32,9 @@ class Mesh(Graph, MeshIndexingMixins):
     faces_indexed: jax.Array
     connectivity_faces_vertices: jax.Array
     connectivity_edges_faces: jax.Array
+    face_keys: np.ndarray
 
-    def __init__(self, vertices, faces, edges=None, **kwargs):
+    def __init__(self, vertices, faces, edges=None, face_keys=None, **kwargs):
 
         if edges is None:
             edges = self._edges_from_faces(faces)
@@ -44,6 +45,10 @@ class Mesh(Graph, MeshIndexingMixins):
         self.faces = faces
         self.faces_indexed = self._faces_indexed()
         self.connectivity_faces_vertices = self._connectivity_faces_matrix()
+
+        if face_keys is None:
+            face_keys = np.arange(len(faces))
+        self.face_keys = np.asarray(face_keys, dtype=DTYPE_INT_NP)
 
         super().__init__(vertices, edges)
 
