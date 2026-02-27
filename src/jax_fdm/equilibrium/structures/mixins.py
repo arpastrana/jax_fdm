@@ -42,7 +42,14 @@ class MeshIndexingMixins:
         """
         A dictionary between vertex keys and their enumeration indices.
         """
-        return {int(node): index for index, node in enumerate(self.vertices)}
+        return {int(vkey): index for index, vkey in enumerate(self.vertices)}
+
+    @property
+    def face_index(self):
+        """
+        A dictionary between face keys and their enumeration indices.
+        """
+        return {int(fkey): index for index, fkey in enumerate(self.face_keys)}
 
     def _faces_indexed(self):
         """
