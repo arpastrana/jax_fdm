@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Implemented `FaceRectangleGoal`, the first face-based goal in this library to promote equilibrium solutions where every edge in a quad face is orthogonal to its two neighboring edges.
+- Introduced `goals.FaceGoal()` object to define goals on mesh faces!
+- To support the point below, we added `MeshIndexingMixins.face_index` as a property precisely as a way to map between an `FDMesh.faces()` and `structures.Mesh.faces`.
+- Added `Mesh.face_keys` as a datastructure attribute to bookkeep the face keys (fkeys) of an `FDMesh`. Storing such keys is needed to support goals defined on mesh faces while assigning them via fkeys through the `Goal` interface. This feature allows a 1:1 info mapping from an `datastructureFDMesh` to a `structures.Mesh`. A bit hacky, if you ask me, but it works.
 - Implemented `cosine_angles_polygon()`, a function that measures the internal angle cosines of a polygon (i.e., the dot product between outgoing sides at every polygon vertex).
 - Implemented `angles_polygon()`, a function that measures the internal angles of a polygon.
 - Extracted logic to `cosine_vectors()` to measure the cosine of the angle between two vectors.

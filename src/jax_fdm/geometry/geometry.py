@@ -487,4 +487,6 @@ def cosines_angles_polygon(polygon):
     """
     unit_to_prev, unit_to_next = _unit_edge_vectors_polygon(polygon)
 
-    return vmap(cosine_vectors, in_axes=(0, 0))(unit_to_prev, unit_to_next)
+    cosines = vmap(cosine_vectors, in_axes=(0, 0))(unit_to_prev, unit_to_next)
+
+    return cosines

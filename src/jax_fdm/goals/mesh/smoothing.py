@@ -59,4 +59,5 @@ def vertex_nbrs_fairness_ngon(xyz_all, xyz_vertex, adjacency_vertex):
     fvector = xyz_vertex - centroid
     assert fvector.shape == xyz_vertex.shape
 
-    return jnp.dot(fvector, fvector) # * jnp.square(num_nbrs)
+    # return jnp.dot(fvector, fvector)
+    return jnp.dot(fvector, fvector) * jnp.square(num_nbrs)
