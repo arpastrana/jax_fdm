@@ -8,7 +8,7 @@ from jax_fdm.goals.face import FaceGoal
 from jax_fdm.geometry import cosines_angles_polygon
 
 
-class FaceRectangleGoal(ScalarGoal, FaceGoal):
+class FaceRectangularGoal(ScalarGoal, FaceGoal):
     """
     Make the internal angles of a quadrilateral mesh face reach 90 degrees.
 
