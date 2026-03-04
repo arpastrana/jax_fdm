@@ -34,5 +34,6 @@ class FaceRectangularGoal(ScalarGoal, FaceGoal):
         """
         fxyz = eq_state.xyz[self.face_indices]
         face_cosines = vmap(cosines_angles_polygon, in_axes=(0))(fxyz)
+        face_cosines = jnp.mean(jnp.abs(face_cosines), axis=-1)
 
-        return jnp.atleast_1d(jnp.sum(jnp.abs(face_cosines)))
+        return jnp.atleast_1d(jnp.sum(face_cosines))
