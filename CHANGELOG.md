@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Added journal paper citation to `README.md`.
 - Implemented `FaceRectangularGoal`, the first face-based goal in this library to promote equilibrium solutions where every edge in a quad face is orthogonal to its two neighboring edges.
 - Introduced `goals.FaceGoal()` object to define goals on mesh faces!
 - To support the point below, we added `MeshIndexingMixins.face_index` as a property precisely as a way to map between an `FDMesh.faces()` and `structures.Mesh.faces`.

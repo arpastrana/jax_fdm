@@ -8,23 +8,25 @@
 [![arXiv](https://img.shields.io/badge/arXiv-2307.12407-b31b1b.svg)](https://arxiv.org/abs/2307.12407)
 <!-- [![GitHub - License](https://img.shields.io/github/license/arpastrana/jax_fdm.svg)](https://github.com/arpastrana/jax_fdm) -->
 
-A differentiable, hardware-accelerated framework for constrained form-finding in structural design.
+A differentiable, hardware-accelerated framework for the structural design of lightweight structures.
 
-> Crafted with care in the [Form-Finding Lab](http://formfindinglab.princeton.edu/) at [Princeton University](https://princeton.edu) ❤️🇺🇸
+> Crafted with care in the [AI Lab](http://ai.princeton.edu/) at [Princeton University](https://princeton.edu) ❤️🇺🇸
 
 ![](images/jax_logo.gif)
 
-JAX FDM enables the solution of inverse problems for the form-finding of structured modeled as pin-jointed bar systems using the force density method (FDM) and gradient-based optimization.
-It streamlines the integration of form-finding simulations into deep learning models for machine learning research.
+Lightweight span long distances with slender cross-sections due to their mechanically efficient shapes.
+However, simulating these structures and turning them into feasible designs that satisfy technical constraints remains challenging due to geometrically nonlinear mechanical behaviors and high-dimensional search spaces.
+
+JAX FDM enables the solution of inverse problems for lightweight structures modeled as pin-jointed bar systems using the force density method (FDM) and gradient-based optimization.
+It streamlines the integration of mechanical simulations into deep learning models for machine learning research.
 
 ## Key features
 
 - **Legendary form-finding solver.**
-JAX FDM computes static equilibrium states for bar systems with the [force density method (FDM)](https://www.sciencedirect.com/science/article/pii/0045782574900450), the time-tested form-finding solver backed up by over 50 years of peer-reviewed research 📚.
+JAX FDM computes static equilibrium states for pin-jointed bar systems with the [force density method (FDM)](https://www.sciencedirect.com/science/article/pii/0045782574900450), the time-tested form-finding solver for geometrically nonlinear systems backed up by over 50 years of peer-reviewed research 📚.
 <!--  -->
 - **Derivatives, JIT compilation and parallelization.**
 JAX FDM is written in [JAX](https://github.com/google/jax), a library for high-performance numerical computing and machine learning research, and it thus inherits many of JAX's perks: calculate derivatives, parallelize, and just-in-time (JIT) compile entire form-finding simulations written in Python code, and run them on a CPU, a GPU, or a TPU 🤯.
-<!-- The same JAX code can be run in a CPU, or in multiple GPUs or TPUs (🤯). Accelerate your simulations with minimal burden! -->
 - **Autotune those force densities, loads and supports.**
 A form-found structure should fulfill additional design requirements to become a feasible structure.
 Formulate an inverse form-finding scenario like this as an optimization problem with JAX FDM.
@@ -161,9 +163,22 @@ The length of the arch segments also varies within the prescribe bounds to minim
 
 If you found this library to be useful in academic or industry work, please consider 1) starring the project on Github, and 2) citing it:
 
+
+``` bibtex
+@article{pastrana_dfdm_2026,
+         title = {Differentiable force density method for the design of lightweight structures},
+         author = {Pastrana, Rafael and Oktay, Deniz and Bletzinger, Kai-Uwe and Adams, Ryan P. and Adriaenssens, Sigrid},
+         date = {2026},
+         journaltitle = {Computer Methods in Applied Mechanics and Engineering},
+         volume = {458},
+         pages = {118783},
+         issn = {00457825},
+         doi = {10.1016/j.cma.2026.118783}}
+```
+
 ``` bibtex
 @inproceedings{pastrana_jaxfdm_2023,
-               title = {{{JAX FDM}}: {{A}} Differentiable Solver for Inverse Form-Finding},
+               title = {{{JAX FDM}}: {{A}} differentiable solver for inverse form-Finding},
                booktitle = {Differentiable {{Almost Everything Workshop}} of the 40th {{International Conference}} on {{Machine Learning}}},
                author = {Pastrana, Rafael and Oktay, Deniz and Adams, Ryan P. and Adriaenssens, Sigrid},
                year = {2023},
