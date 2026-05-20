@@ -11,6 +11,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Cached `FDNetworkArtist.node_xyz` to avoid recomputing this dictionary every single time an edge was drawn. This is an upstream bug from `compas.artists`, which might be fixed by now, since we currently use a legacy version of this dependency. With caching, we reduced plotting time by one order of magnitude. The change was essential when plotting frames to create optimization history animations.
+
 ### Removed
 
 
