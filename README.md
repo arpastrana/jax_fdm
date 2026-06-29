@@ -6,6 +6,7 @@
 [![PyPI - Latest Release](https://img.shields.io/pypi/v/jax-fdm.svg)](https://pypi.python.org/project/jax-fdm)
 [![PyPI - Python Version](https://img.shields.io/pypi/pyversions/jax-fdm.svg)](https://pypi.python.org/project/jax-fdm)
 [![arXiv](https://img.shields.io/badge/arXiv-2307.12407-b31b1b.svg)](https://arxiv.org/abs/2307.12407)
+[![CMAME](https://img.shields.io/badge/CMAME-10.1016%2Fj.cma.2026.118783-blue.svg)](https://doi.org/10.1016/j.cma.2026.118783)
 <!-- [![GitHub - License](https://img.shields.io/github/license/arpastrana/jax_fdm.svg)](https://github.com/arpastrana/jax_fdm) -->
 
 A differentiable, hardware-accelerated framework for the structural design of lightweight structures.
@@ -64,24 +65,17 @@ Finally, install JAX FDM with a one-liner via `pip`:
 pip install jax-fdm
 ```
 
-JAX FDM requires Python 3.7+, JAX 0.3.17+, Numpy 1.23.3+, Scipy 1.9.1+, and COMPAS 1.17.10
+JAX FDM requires Python 3.10+ and builds on JAX, NumPy, SciPy, Equinox, and the COMPAS framework. See `requirements.txt` for the complete dependency list.
 For visualization, it uses COMPAS_VIEW2 0.7.0.
 
 ### Are you a Windows user? 
  
-JAX is only officially supported on Linux (Ubuntu 16.04 or later) and macOS (10.12 or later) platforms.
-This is the case with JAX FDM too. 
-Consequently, installing JAX FDM on Windows may require a different approach from that given by the instructions listed above.
+JAX now provides official native CPU wheels for Windows, so JAX FDM should work directly.
+On Windows you may also need to install the [Microsoft Visual Studio 2019 Redistributable](https://learn.microsoft.com/en-us/cpp/windows/latest-supported-vc-redist).
 
-One **working** alternative for Windows users is to install JAX and JAX FDM using the [Windows build for JAX](https://github.com/cloudhan/jax-windows-builder).
-Note that this is a community build that has been reported to work **only on Windows 11**.
-Another option to install JAX on Windows is to do so via the [Windows Subsystem for Linux](https://learn.microsoft.com/en-us/windows/wsl/about).
-The limitation of this second approach is having no graphical output.
-Please refer to [JAX's installation instructions](https://github.com/google/jax#installation) for other alternatives to install JAX on Windows.
-
-## Documentation
-
-Work in progress! Expect a release soon.
+For GPU acceleration on Windows, native support is unavailable.
+You can instead run JAX through the [Windows Subsystem for Linux (WSL2)](https://learn.microsoft.com/en-us/windows/wsl/about), but keep in mind that it has no graphical output and that support for this configuration is experimental.
+Please refer to [JAX's installation instructions](https://docs.jax.dev/en/latest/installation.html) for details.
 
 ## Quick example
 
@@ -103,7 +97,7 @@ network.nodes_loads([0.0, 0.0, -0.3])
 f_network = fdm(network)
 ```
 
-You now wish to find a new form for this arch that minimizes the [total Maxwell's load path](https://doi.org/10.1007/s00158-019-02214-w), while keeping the length of the arch segments between 0.75 and 1 meters.
+You now wish to find a new form for this arch that minimizes the [total Michell's load path](https://doi.org/10.1007/s00158-019-02214-w), while keeping the length of the arch segments between 0.75 and 1 meters.
 You solve this constrained form-finding problem with the SLSQP gradient-based optimizer.
 
 ```python
@@ -137,7 +131,11 @@ viewer.show()
 ![](images/arch_loadpath.png)
 
 The constrained form is shallower than the unconstrained one as a result of the optimization process.
-The length of the arch segments also varies within the prescribe bounds to minimize the load path: segments are the longest where the arch's internal forces are lower (1.0 meter, at the appex); and conversely, the segments are shorter where the arch's internal forces are higher (0.75 m, at the base).
+The length of the arch segments also varies within the prescribed bounds to minimize the load path: segments are the longest where the arch's internal forces are lower (1.0 meter, at the apex); and conversely, the segments are shorter where the arch's internal forces are higher (0.75 m, at the base).
+
+## Documentation
+
+Documentation is a work in progress. In the meantime, check out the scripts in the [`examples/`](https://github.com/arpastrana/jax_fdm/tree/main/examples) folder.
 
 ## More examples
 
