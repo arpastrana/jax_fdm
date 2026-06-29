@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Patched `numpy.int=int` in `visualization.viewer` so that `compas_view2=0.7.0` remains functional with `numpy>=1.24` (the version that deprecated `numpy.int`). Core package dependencies like `jax` require later versions of numpy, so pinning `numpy` to an antique version was unrealistic. This patch must be removed once we complete migration to `compas>2` and we can install `compas_viewers` instead of the now deprecated `compas_view2`.
 - Cached `FDNetworkArtist.node_xyz` to avoid recomputing this dictionary every single time an edge was drawn. This is an upstream bug from `compas.artists`, which might be fixed by now, since we currently use a legacy version of this dependency. With caching, we reduced plotting time by one order of magnitude. The change was essential when plotting frames to create optimization history animations.
 
 ### Removed
