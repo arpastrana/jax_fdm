@@ -1,15 +1,15 @@
 from math import fabs
 
-from compas.geometry import Plane
 from compas.geometry import Circle
-from compas.geometry import Sphere
 from compas.geometry import Cylinder
+from compas.geometry import Plane
 from compas.geometry import Point
+from compas.geometry import Sphere
 from compas.geometry import Vector
-from compas.geometry import scale_vector
-from compas.geometry import normalize_vector
 from compas.geometry import add_vectors
 from compas.geometry import length_vector
+from compas.geometry import normalize_vector
+from compas.geometry import scale_vector
 
 try:
     from compas_view2.shapes import Arrow
@@ -17,7 +17,6 @@ except ImportError:
     pass
 
 from jax_fdm.visualization.artists import FDNetworkArtist
-
 
 __all__ = ["FDNetworkViewerArtist"]
 

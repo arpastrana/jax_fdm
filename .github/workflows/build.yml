@@ -8,10 +8,6 @@ on:
     branches:
       - main
 
-defaults:
-  run:
-    shell: bash -l {0}
-
 jobs:
   build-package:
     if: "!contains(github.event.pull_request.labels.*.name, 'docs-only')"
@@ -19,17 +15,21 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, macos-latest]
-        python-version: ['3.10']
+        python-version: ['3.10', '3.11']
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
 
       - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
 
-      - uses: compas-dev/compas-actions.build@v3.2.1
-        with:
-          test_lint: true
-          test_compas: true
+      - name: Install package
+        run: pip install -e ".[dev]"
+
+      - name: Lint with ruff
+        run: ruff check .
+
+      - name: Run tests
+        run: pytest

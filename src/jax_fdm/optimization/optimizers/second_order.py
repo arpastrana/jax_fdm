@@ -3,7 +3,6 @@ from jax import jacrev
 
 from jax_fdm.optimization.optimizers import Optimizer
 
-
 # ==========================================================================
 # Second-order optimizer
 # ==========================================================================

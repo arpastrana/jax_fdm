@@ -1,16 +1,12 @@
 from time import perf_counter
 
-import matplotlib.pyplot as plt
-
-import numpy as np
-
-from jax import vmap
-
 import jax.numpy as jnp
 import jax.tree_util as jtu
+import matplotlib.pyplot as plt
+import numpy as np
+from jax import vmap
 
 from jax_fdm import DTYPE_JAX
-
 from jax_fdm.equilibrium import EquilibriumModel
 from jax_fdm.equilibrium import structure_from_datastructure
 

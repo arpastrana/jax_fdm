@@ -10,7 +10,6 @@ except ImportError:
 
 from jax_fdm.datastructures import FDNetwork
 
-
 __all__ = ["NotebookViewer"]
 
 

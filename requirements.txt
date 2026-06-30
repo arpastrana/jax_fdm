@@ -1,7 +1,0 @@
-jax[cpu]
-compas<2.0
-scipy
-jaxopt
-equinox
-lineax
-optimistix

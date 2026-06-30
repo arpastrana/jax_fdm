@@ -1,14 +1,10 @@
+from collections.abc import Iterable
 from math import fabs
 
-from collections.abc import Iterable
-
 from compas.artists import NetworkArtist
-
 from compas.colors import Color
 from compas.colors import ColorMap
-
 from compas.utilities import remap_values
-
 
 __all__ = ["FDNetworkArtist"]
 
@@ -231,6 +227,19 @@ class FDNetworkArtist(NetworkArtist):
     # ==========================================================================
     # Properties
     # ==========================================================================
+
+    @property
+    def node_xyz(self):
+        if not self._node_xyz:
+            self._node_xyz = {
+                node: self.network.node_attributes(node, "xyz")
+                for node in self.network.nodes()
+            }
+        return self._node_xyz
+
+    @node_xyz.setter
+    def node_xyz(self, node_xyz):
+        self._node_xyz = node_xyz
 
     @property
     def edge_color(self):

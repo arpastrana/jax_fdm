@@ -1,13 +1,12 @@
 from functools import partial
 
 import jax.numpy as jnp
-
+from jax import jacfwd
 from jax import jit
 from jax import vjp
-from jax import jacfwd
 
-from jax_fdm.optimization.optimizers import SecondOrderOptimizer
 from jax_fdm.optimization.optimizers import ConstrainedOptimizer
+from jax_fdm.optimization.optimizers import SecondOrderOptimizer
 
 try:
     from cyipopt import minimize_ipopt

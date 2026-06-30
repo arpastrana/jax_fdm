@@ -1,87 +1,56 @@
 """
 Solve a constrained force density problem using gradient-based optimization.
 """
-import os
-
-from math import radians
 
 from itertools import cycle
+from math import radians
 
 import jax.numpy as jnp
-from jax_fdm.geometry import angle_vectors
 from compas_view2.shapes import Arrow
-from compas.colors import Color, ColorMap
-from compas.geometry import scale_vector, angle_vectors
-from jax_fdm.geometry import normal_polygon
 
-# compas
-from compas.colors import Color
-from compas.geometry import Line
-from compas.geometry import Polyline
-from compas.geometry import add_vectors
-from compas.geometry import Translation
-from compas.geometry import offset_line
-from compas.geometry import dot_vectors
-from compas.datastructures import network_transform, network_find_cycles
+from compas.colors import ColorMap
 
 # compas
 from compas.datastructures import Mesh
+from compas.datastructures import network_find_cycles
+
+# compas
 from compas.geometry import Line
+from compas.geometry import Polyline
+from compas.geometry import Translation
 from compas.geometry import add_vectors
-from compas.geometry import subtract_vectors, normalize_vector
-from compas.geometry import cross_vectors
+from compas.geometry import angle_vectors
+from compas.geometry import dot_vectors
+from compas.geometry import normalize_vector
+from compas.geometry import offset_polyline
+from compas.geometry import project_point_plane
 from compas.geometry import rotate_points
 from compas.geometry import scale_vector
-from compas.geometry import Polygon
-from compas.geometry import offset_polygon
-from compas.geometry import offset_polyline
-from compas.geometry import Translation
-from compas.geometry import project_point_plane
-from compas.utilities import pairwise
-from compas.utilities import geometric_key
+from compas.geometry import subtract_vectors
+from jax_fdm.constraints import EdgeLengthConstraint
+from jax_fdm.constraints import NodeZCoordinateConstraint
 
 # static equilibrium
 from jax_fdm.datastructures import FDNetwork
-
-from jax_fdm.equilibrium import fdm
 from jax_fdm.equilibrium import constrained_fdm
-
-from jax_fdm.goals import NodePointGoal
-from jax_fdm.goals import EdgeLengthGoal
-from jax_fdm.goals import NodeResidualForceGoal
-from jax_fdm.goals import NodeYCoordinateGoal
-from jax_fdm.goals import NodePlaneGoal
+from jax_fdm.equilibrium import fdm
 from jax_fdm.goals import EdgeDirectionGoal
-from jax_fdm.goals import EdgeAngleGoal
+from jax_fdm.goals import EdgeLengthGoal
+from jax_fdm.goals import NodePlaneGoal
+from jax_fdm.goals import NodePointGoal
+from jax_fdm.goals import NodeTangentAngleGoal
 from jax_fdm.goals import NodeXCoordinateGoal
 from jax_fdm.goals import NodeYCoordinateGoal
-from jax_fdm.goals import NodeNormalAngleGoal
-from jax_fdm.goals import NodeTangentAngleGoal
-
-from jax_fdm.constraints import NodeZCoordinateConstraint
-from jax_fdm.constraints import NodeTangentAngleConstraint
-
 from jax_fdm.losses import Loss
 from jax_fdm.losses import SquaredError
-from jax_fdm.losses import L2Regularizer
-
-from jax_fdm.optimization import SLSQP
 from jax_fdm.optimization import LBFGSB
-from jax_fdm.optimization import IPOPT
-from jax_fdm.optimization import TrustRegionConstrained
-
+from jax_fdm.optimization import SLSQP
 from jax_fdm.optimization import OptimizationRecorder
-
 from jax_fdm.parameters import EdgeForceDensityParameter
 from jax_fdm.parameters import NodeSupportXParameter
 from jax_fdm.parameters import NodeSupportYParameter
-
-from jax_fdm.constraints import EdgeLengthConstraint
-from jax_fdm.constraints import EdgeAngleConstraint
-
 from jax_fdm.visualization import LossPlotter
 from jax_fdm.visualization import Viewer
-
 
 # ==========================================================================
 # Helper functions

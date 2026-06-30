@@ -1,23 +1,17 @@
-import numpy as np
-
 import jax
 import jax.numpy as jnp
-
-from scipy.sparse import csc_matrix
-
+import numpy as np
 from jax.experimental.sparse import BCOO
 from jax.experimental.sparse import BCSR
 from jax.experimental.sparse import CSC
+from scipy.sparse import csc_matrix
 
 from jax_fdm import DTYPE_INT_JAX
 from jax_fdm import DTYPE_INT_NP
-
 from jax_fdm.equilibrium.structures.graphs import Graph
 from jax_fdm.equilibrium.structures.graphs import GraphSparse
-
 from jax_fdm.equilibrium.structures.meshes import Mesh
 from jax_fdm.equilibrium.structures.meshes import MeshSparse
-
 
 # ==========================================================================
 # Structure

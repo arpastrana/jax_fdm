@@ -1,13 +1,12 @@
-from jax_fdm.datastructures import FDNetwork
-from jax_fdm.equilibrium import fdm
-from jax_fdm.equilibrium import constrained_fdm
-from jax_fdm.optimization import SLSQP
 from jax_fdm.constraints import EdgeLengthConstraint
+from jax_fdm.datastructures import FDNetwork
+from jax_fdm.equilibrium import constrained_fdm
+from jax_fdm.equilibrium import fdm
 from jax_fdm.goals import NetworkLoadPathGoal
-from jax_fdm.losses import PredictionError
 from jax_fdm.losses import Loss
+from jax_fdm.losses import PredictionError
+from jax_fdm.optimization import SLSQP
 from jax_fdm.visualization import Viewer
-
 
 network = FDNetwork.from_json("data/json/arch.json")
 network.edges_forcedensities(q=-1.0)

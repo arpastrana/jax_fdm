@@ -4,10 +4,10 @@
 #
 # needs_sphinx = "1.0"
 
-import sys
-import os
-import inspect
 import importlib
+import inspect
+import os
+import sys
 
 import sphinx_compas_theme
 from sphinx.ext.napoleon.docstring import NumpyDocstring
@@ -19,7 +19,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), '../src'))
 project = "jax_fdm"
 copyright = "Rafael Pastrana"
 author = "Rafael Pastrana"
-release = "0.9.0"
+release = "0.10.0"
 version = ".".join(release.split(".")[0:2])
 
 master_doc = "index"

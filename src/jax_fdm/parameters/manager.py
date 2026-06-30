@@ -1,24 +1,20 @@
-import numpy as np
 import jax.numpy as jnp
+import numpy as np
 
 from jax_fdm import DTYPE_JAX
-
-from jax_fdm.parameters import split_parameters
-from jax_fdm.parameters import combine_parameters
-
-from jax_fdm.parameters import ParameterGroup
-
-from jax_fdm.parameters import EdgeParameter
-from jax_fdm.parameters import NodeSupportParameter
-from jax_fdm.parameters import NodeLoadParameter
-
 from jax_fdm.parameters import EdgeForceDensityParameter
-from jax_fdm.parameters import NodeSupportXParameter
-from jax_fdm.parameters import NodeSupportYParameter
-from jax_fdm.parameters import NodeSupportZParameter
+from jax_fdm.parameters import EdgeParameter
+from jax_fdm.parameters import NodeLoadParameter
 from jax_fdm.parameters import NodeLoadXParameter
 from jax_fdm.parameters import NodeLoadYParameter
 from jax_fdm.parameters import NodeLoadZParameter
+from jax_fdm.parameters import NodeSupportParameter
+from jax_fdm.parameters import NodeSupportXParameter
+from jax_fdm.parameters import NodeSupportYParameter
+from jax_fdm.parameters import NodeSupportZParameter
+from jax_fdm.parameters import ParameterGroup
+from jax_fdm.parameters import combine_parameters
+from jax_fdm.parameters import split_parameters
 
 
 class ParameterManager:

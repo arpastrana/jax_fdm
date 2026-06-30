@@ -1,13 +1,10 @@
-import numpy as np
-
 import jax.numpy as jnp
-
+import numpy as np
 from jax import vmap
 
+from jax_fdm.constraints.node import NodeConstraint
 from jax_fdm.geometry import angle_vectors
 from jax_fdm.geometry import normalize_vector
-
-from jax_fdm.constraints.node import NodeConstraint
 
 
 class NodeNormalAngleConstraint(NodeConstraint):

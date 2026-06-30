@@ -2,7 +2,6 @@ import jax.numpy as jnp
 
 from jax_fdm.geometry import colinearity_points
 from jax_fdm.geometry import curvature_points
-
 from jax_fdm.goals import ScalarGoal
 from jax_fdm.goals.node import NodeGoal
 

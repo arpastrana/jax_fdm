@@ -6,25 +6,28 @@
 [![PyPI - Latest Release](https://img.shields.io/pypi/v/jax-fdm.svg)](https://pypi.python.org/project/jax-fdm)
 [![PyPI - Python Version](https://img.shields.io/pypi/pyversions/jax-fdm.svg)](https://pypi.python.org/project/jax-fdm)
 [![arXiv](https://img.shields.io/badge/arXiv-2307.12407-b31b1b.svg)](https://arxiv.org/abs/2307.12407)
+[![CMAME](https://img.shields.io/badge/CMAME-10.1016%2Fj.cma.2026.118783-blue.svg)](https://doi.org/10.1016/j.cma.2026.118783)
 <!-- [![GitHub - License](https://img.shields.io/github/license/arpastrana/jax_fdm.svg)](https://github.com/arpastrana/jax_fdm) -->
 
-A differentiable, hardware-accelerated framework for constrained form-finding in structural design.
+A differentiable, hardware-accelerated framework for the structural design of lightweight structures.
 
-> Crafted with care in the [Form-Finding Lab](http://formfindinglab.princeton.edu/) at [Princeton University](https://princeton.edu) ❤️🇺🇸
+> Crafted with care in the [AI Lab](http://ai.princeton.edu/) at [Princeton University](https://princeton.edu) ❤️🇺🇸
 
 ![](images/jax_logo.gif)
 
-JAX FDM enables the solution of inverse problems for the form-finding of structured modeled as pin-jointed bar systems using the force density method (FDM) and gradient-based optimization.
-It streamlines the integration of form-finding simulations into deep learning models for machine learning research.
+Lightweight span long distances with slender cross-sections due to their mechanically efficient shapes.
+However, simulating these structures and turning them into feasible designs that satisfy technical constraints remains challenging due to geometrically nonlinear mechanical behaviors and high-dimensional search spaces.
+
+JAX FDM enables the solution of inverse problems for lightweight structures modeled as pin-jointed bar systems using the force density method (FDM) and gradient-based optimization.
+It streamlines the integration of mechanical simulations into deep learning models for machine learning research.
 
 ## Key features
 
 - **Legendary form-finding solver.**
-JAX FDM computes static equilibrium states for bar systems with the [force density method (FDM)](https://www.sciencedirect.com/science/article/pii/0045782574900450), the time-tested form-finding solver backed up by over 50 years of peer-reviewed research 📚.
+JAX FDM computes static equilibrium states for pin-jointed bar systems with the [force density method (FDM)](https://www.sciencedirect.com/science/article/pii/0045782574900450), the time-tested form-finding solver for geometrically nonlinear systems backed up by over 50 years of peer-reviewed research 📚.
 <!--  -->
 - **Derivatives, JIT compilation and parallelization.**
 JAX FDM is written in [JAX](https://github.com/google/jax), a library for high-performance numerical computing and machine learning research, and it thus inherits many of JAX's perks: calculate derivatives, parallelize, and just-in-time (JIT) compile entire form-finding simulations written in Python code, and run them on a CPU, a GPU, or a TPU 🤯.
-<!-- The same JAX code can be run in a CPU, or in multiple GPUs or TPUs (🤯). Accelerate your simulations with minimal burden! -->
 - **Autotune those force densities, loads and supports.**
 A form-found structure should fulfill additional design requirements to become a feasible structure.
 Formulate an inverse form-finding scenario like this as an optimization problem with JAX FDM.
@@ -53,7 +56,7 @@ conda activate jaxenv
 Next, install COMPAS and COMPAS VIEW2 via `conda`:
 
 ```bash
-conda install -c conda-forge compas==1.17.10 compas_view2==0.7.0 
+conda install -c conda-forge compas==1.17.10 compas_view2==0.7.0
 ```
 
 Finally, install JAX FDM with a one-liner via `pip`:
@@ -62,31 +65,36 @@ Finally, install JAX FDM with a one-liner via `pip`:
 pip install jax-fdm
 ```
 
-JAX FDM requires Python 3.7+, JAX 0.3.17+, Numpy 1.23.3+, Scipy 1.9.1+, and COMPAS 1.17.10
+JAX FDM requires Python 3.10+ and builds on JAX, NumPy, SciPy, Equinox, and the COMPAS framework. See `pyproject.toml` for the complete dependency list.
 For visualization, it uses COMPAS_VIEW2 0.7.0.
 
-### Are you a Windows user? 
- 
-JAX is only officially supported on Linux (Ubuntu 16.04 or later) and macOS (10.12 or later) platforms.
-This is the case with JAX FDM too. 
-Consequently, installing JAX FDM on Windows may require a different approach from that given by the instructions listed above.
+#### Optional extras
 
-One **working** alternative for Windows users is to install JAX and JAX FDM using the [Windows build for JAX](https://github.com/cloudhan/jax-windows-builder).
-Note that this is a community build that has been reported to work **only on Windows 11**.
-Another option to install JAX on Windows is to do so via the [Windows Subsystem for Linux](https://learn.microsoft.com/en-us/windows/wsl/about).
-The limitation of this second approach is having no graphical output.
-Please refer to [JAX's installation instructions](https://github.com/google/jax#installation) for other alternatives to install JAX on Windows.
+JAX FDM declares optional dependency groups you can install from a source checkout with `pip`:
 
-## Documentation
+```bash
+pip install -e ".[viz]"    # 3D viewer (compas_view2) and matplotlib
+pip install -e ".[ipopt]"  # the IPOPT interior-point optimizer (cyipopt)
+pip install -e ".[dev]"     # development tools (ruff, pytest, build, bump-my-version)
+```
 
-Work in progress! Expect a release soon.
+Note that `compas_view2` is distributed through `conda-forge`, so the `viz` extra may still require a `conda` install as shown above. The `ipopt` extra needs a system Ipopt library available on your machine.
+
+### Are you a Windows user?
+
+JAX now provides official native CPU wheels for Windows, so JAX FDM should work directly.
+On Windows you may also need to install the [Microsoft Visual Studio 2019 Redistributable](https://learn.microsoft.com/en-us/cpp/windows/latest-supported-vc-redist).
+
+For GPU acceleration on Windows, native support is unavailable.
+You can instead run JAX through the [Windows Subsystem for Linux (WSL2)](https://learn.microsoft.com/en-us/windows/wsl/about), but keep in mind that it has no graphical output and that support for this configuration is experimental.
+Please refer to [JAX's installation instructions](https://docs.jax.dev/en/latest/installation.html) for details.
 
 ## Quick example
 
 Suppose you are interested in generating a form in static equilibrium for a 10-meter span arch subjected to vertical point loads of 0.3 kN.
 The arch has to be a compression-only structure.
 You model the arch as a `jax_fdm` network (download the arch `json` file [here](https://github.com/arpastrana/jax_fdm/blob/main/data/json/arch.json)).
-Then, you apply a force density of -1 to all of its edges, and compute the required shape with the force density method. 
+Then, you apply a force density of -1 to all of its edges, and compute the required shape with the force density method.
 
 ```python
 from jax_fdm.datastructures import FDNetwork
@@ -101,7 +109,7 @@ network.nodes_loads([0.0, 0.0, -0.3])
 f_network = fdm(network)
 ```
 
-You now wish to find a new form for this arch that minimizes the [total Maxwell's load path](https://doi.org/10.1007/s00158-019-02214-w), while keeping the length of the arch segments between 0.75 and 1 meters.
+You now wish to find a new form for this arch that minimizes the [total Michell's load path](https://doi.org/10.1007/s00158-019-02214-w), while keeping the length of the arch segments between 0.75 and 1 meters.
 You solve this constrained form-finding problem with the SLSQP gradient-based optimizer.
 
 ```python
@@ -135,14 +143,18 @@ viewer.show()
 ![](images/arch_loadpath.png)
 
 The constrained form is shallower than the unconstrained one as a result of the optimization process.
-The length of the arch segments also varies within the prescribe bounds to minimize the load path: segments are the longest where the arch's internal forces are lower (1.0 meter, at the appex); and conversely, the segments are shorter where the arch's internal forces are higher (0.75 m, at the base).
+The length of the arch segments also varies within the prescribed bounds to minimize the load path: segments are the longest where the arch's internal forces are lower (1.0 meter, at the apex); and conversely, the segments are shorter where the arch's internal forces are higher (0.75 m, at the base).
+
+## Documentation
+
+Documentation is a work in progress. In the meantime, check out the scripts in the [`examples/`](https://github.com/arpastrana/jax_fdm/tree/main/examples) folder.
 
 ## More examples
 
 
 ### Notebooks
 
-> These notebooks run directly from your browser without having to install anything locally! 
+> These notebooks run directly from your browser without having to install anything locally!
 
 - [Arch](https://colab.research.google.com/drive/1_SrFuRPWxB0cG-BaZtNqitisQ7M3oUOG?usp=sharing): Control the height and the horizontal projection of a 2D arch.
 - [3D spiral](https://colab.research.google.com/drive/13hi9VsQ2PSLY2otfyDSvlX3xhpfFJ7zJ?usp=sharing): Calculate the loads required to maintain a compression-only 3D spiral in equilibrium [(Angelillo, et al. 2021)](https://doi.org/10.1016/j.engstruct.2021.112176).
@@ -153,17 +165,30 @@ The length of the arch segments also varies within the prescribe bounds to minim
 
 > These python scripts require a local installation of JAX FDM.
 
-- [Pointy dome](https://github.com/arpastrana/jax_fdm/blob/main/examples/dome/dome.py): Control the tilt and the coarse width of a brick dome. 
+- [Pointy dome](https://github.com/arpastrana/jax_fdm/blob/main/examples/dome/dome.py): Control the tilt and the coarse width of a brick dome.
 - [Triple-branching saddle](https://github.com/arpastrana/jax_fdm/blob/main/examples/monkey_saddle/monkey_saddle.py): Design the distribution of thrusts at the supports of a monkey saddle network while constraining the edge lengths.
-- [Saddle bridge](https://github.com/arpastrana/jax_fdm/blob/main/examples/pringle/pringle.py): Create a crease in the middle of the bridge while constraining to transversal edges of the network to a target plane. 
+- [Saddle bridge](https://github.com/arpastrana/jax_fdm/blob/main/examples/pringle/pringle.py): Create a crease in the middle of the bridge while constraining to transversal edges of the network to a target plane.
 
 ## Citation
 
 If you found this library to be useful in academic or industry work, please consider 1) starring the project on Github, and 2) citing it:
 
+
+``` bibtex
+@article{pastrana_dfdm_2026,
+         title = {Differentiable force density method for the design of lightweight structures},
+         author = {Pastrana, Rafael and Oktay, Deniz and Bletzinger, Kai-Uwe and Adams, Ryan P. and Adriaenssens, Sigrid},
+         date = {2026},
+         journaltitle = {Computer Methods in Applied Mechanics and Engineering},
+         volume = {458},
+         pages = {118783},
+         issn = {00457825},
+         doi = {10.1016/j.cma.2026.118783}}
+```
+
 ``` bibtex
 @inproceedings{pastrana_jaxfdm_2023,
-               title = {{{JAX FDM}}: {{A}} Differentiable Solver for Inverse Form-Finding},
+               title = {{{JAX FDM}}: {{A}} differentiable solver for inverse form-Finding},
                booktitle = {Differentiable {{Almost Everything Workshop}} of the 40th {{International Conference}} on {{Machine Learning}}},
                author = {Pastrana, Rafael and Oktay, Deniz and Adams, Ryan P. and Adriaenssens, Sigrid},
                year = {2023},

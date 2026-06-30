@@ -16,15 +16,14 @@ from __future__ import print_function
 
 import os
 
-import numpy as np
 import jax.numpy as jnp
-
+import numpy as np
 
 __author__ = ["Rafael Pastrana"]
 __copyright__ = "Rafael Pastrana"
 __license__ = "MIT License"
 __email__ = "arpastrana@princeton.edu"
-__version__ = "0.9.0"
+__version__ = "0.10.0"
 
 
 HERE = os.path.dirname(__file__)
