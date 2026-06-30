@@ -274,7 +274,7 @@ class NodeGroupSupportParameter(NodeGroupParameter):
 
 class NodeGroupSupportXParameter(NodeGroupSupportParameter, NodeSupportXParameter):
     """
-    Parametrize wiht a single value the X coordinate of a group of support nodes.
+    Parametrize with a single value the X coordinate of a group of support nodes.
     """
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -282,7 +282,7 @@ class NodeGroupSupportXParameter(NodeGroupSupportParameter, NodeSupportXParamete
 
 class NodeGroupSupportYParameter(NodeGroupSupportParameter, NodeSupportYParameter):
     """
-    Parametrize wiht a single value the Y coordinate of a group of support nodes.
+    Parametrize with a single value the Y coordinate of a group of support nodes.
     """
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -290,7 +290,7 @@ class NodeGroupSupportYParameter(NodeGroupSupportParameter, NodeSupportYParamete
 
 class NodeGroupSupportZParameter(NodeGroupSupportParameter, NodeSupportZParameter):
     """
-    Parametrize wiht a single value the Z coordinate of a group of support nodes.
+    Parametrize with a single value the Z coordinate of a group of support nodes.
     """
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -337,15 +337,15 @@ class NodeLoadZParameter(NodeLoadParameter):
 
 class NodeGroupLoadXParameter(NodeGroupParameter, NodeLoadXParameter):
     """
-    Parametrize wiht a single value the X component of the load applied to a group of nodes.
+    Parametrize with a single value the X component of the load applied to a group of nodes.
     """
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
 
-class NodeGroupLoadYParameter(NodeGroupParameter, NodeLoadXParameter):
+class NodeGroupLoadYParameter(NodeGroupParameter, NodeLoadYParameter):
     """
-    Parametrize wiht a single value the Y component of the load applied to a group of nodes.
+    Parametrize with a single value the Y component of the load applied to a group of nodes.
     """
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -353,7 +353,7 @@ class NodeGroupLoadYParameter(NodeGroupParameter, NodeLoadXParameter):
 
 class NodeGroupLoadZParameter(NodeGroupParameter, NodeLoadZParameter):
     """
-    Parametrize wiht a single value the Z component of the load applied to a group of nodes.
+    Parametrize with a single value the Z component of the load applied to a group of nodes.
     """
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -422,7 +422,7 @@ class VertexGroupSupportParameter(VertexGroupParameter):
 
 class VertexGroupSupportXParameter(VertexGroupSupportParameter, VertexSupportXParameter):
     """
-    Parametrize wiht a single value the X coordinate of a group of support nodes.
+    Parametrize with a single value the X coordinate of a group of support nodes.
     """
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -430,7 +430,7 @@ class VertexGroupSupportXParameter(VertexGroupSupportParameter, VertexSupportXPa
 
 class VertexGroupSupportYParameter(VertexGroupSupportParameter, VertexSupportYParameter):
     """
-    Parametrize wiht a single value the Y coordinate of a group of support nodes.
+    Parametrize with a single value the Y coordinate of a group of support nodes.
     """
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -438,7 +438,7 @@ class VertexGroupSupportYParameter(VertexGroupSupportParameter, VertexSupportYPa
 
 class VertexGroupSupportZParameter(VertexGroupSupportParameter, VertexSupportZParameter):
     """
-    Parametrize wiht a single value the Z coordinate of a group of support nodes.
+    Parametrize with a single value the Z coordinate of a group of support nodes.
     """
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -482,15 +482,15 @@ class VertexLoadZParameter(VertexLoadParameter, NodeLoadZParameter):
 
 class VertexGroupLoadXParameter(VertexGroupParameter, VertexLoadXParameter):
     """
-    Parametrize wiht a single value the X component of the load applied to a group of nodes.
+    Parametrize with a single value the X component of the load applied to a group of nodes.
     """
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
 
-class VertesGroupLoadYParameter(VertexGroupParameter, VertexLoadXParameter):
+class VertexGroupLoadYParameter(VertexGroupParameter, VertexLoadYParameter):
     """
-    Parametrize wiht a single value the Y component of the load applied to a group of nodes.
+    Parametrize with a single value the Y component of the load applied to a group of nodes.
     """
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -498,7 +498,7 @@ class VertesGroupLoadYParameter(VertexGroupParameter, VertexLoadXParameter):
 
 class VertexGroupLoadZParameter(VertexGroupParameter, VertexLoadZParameter):
     """
-    Parametrize wiht a single value the Z component of the load applied to a group of nodes.
+    Parametrize with a single value the Z component of the load applied to a group of nodes.
     """
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

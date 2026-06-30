@@ -34,6 +34,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Consolidated dependency declarations into `pyproject.toml`. Runtime dependencies are now listed inline under `[project.dependencies]` (no longer read dynamically from a file), and the `requirements.txt` and `requirements-dev.txt` files were removed. Development dependencies live in the `[dev]` optional-dependencies extra; install them with `pip install -e ".[dev]"`.
 - Linted the whole repository with `ruff` (previously only `src`) and widened the CI lint step from `ruff check src` to `ruff check .`. This applied import sorting and whitespace fixes across `examples/`, `docs/`, and `tests/`, and removed a duplicate `angle_vectors` import in `examples/pringle/pringle_temporal_horizontal.py`. Added `per-file-ignores` for `src/jax_fdm/__init__.py` (`E402`, `F401`) and the jaxtyping module `src/jax_fdm/equilibrium/states.py` (`F722`, `F821`).
 
+### Fixed
+
+- Fixed `NodeGroupLoadYParameter` and `VertexGroupLoadYParameter`, which inherited from the `X` load parameter and so resolved their attribute to `px`, parametrizing the X load component instead of Y. They now inherit from the matching `Y` parameter. Also corrected the misspelled class name `VertesGroupLoadYParameter` to `VertexGroupLoadYParameter`.
+
 
 ## [0.10.0] 2026-05-07
 
