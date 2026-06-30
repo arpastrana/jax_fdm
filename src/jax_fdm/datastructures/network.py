@@ -3,7 +3,6 @@ A force density network.
 """
 
 from compas.datastructures import Network
-
 from jax_fdm.datastructures import FDDatastructure
 
 

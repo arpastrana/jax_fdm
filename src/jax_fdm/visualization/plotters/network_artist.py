@@ -1,13 +1,12 @@
 from math import fabs
 
+from compas_plotters.artists import NetworkArtist
+
+from compas.geometry import Point
+from compas.geometry import Vector
 from compas.geometry import add_vectors
 from compas.geometry import length_vector
 from compas.geometry import scale_vector
-from compas.geometry import Point
-from compas.geometry import Vector
-
-from compas_plotters.artists import NetworkArtist
-
 from jax_fdm.visualization.artists import FDNetworkArtist
 
 

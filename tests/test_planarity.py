@@ -1,16 +1,13 @@
-from compas.datastructures import mesh_unify_cycles
 import jax
 import jax.numpy as jnp
 
 from compas.datastructures import mesh_unify_cycles
 from compas.geometry import Polygon
 from compas.geometry import Rotation
-
 from jax_fdm.datastructures import FDMesh
 from jax_fdm.equilibrium import EquilibriumMeshStructure
-
-from jax_fdm.geometry import planarity_triangle
 from jax_fdm.geometry import planarity_polygon
+from jax_fdm.geometry import planarity_triangle
 from jax_fdm.goals.mesh.planarity import faces_planarity
 
 

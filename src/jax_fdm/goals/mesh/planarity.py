@@ -1,10 +1,8 @@
+import jax.numpy as jnp
 from jax import vmap
 
-import jax.numpy as jnp
-
-from jax_fdm.geometry import planarity_triangle
 from jax_fdm.geometry import planarity_polygon
-
+from jax_fdm.geometry import planarity_triangle
 from jax_fdm.goals import ScalarGoal
 from jax_fdm.goals.mesh import MeshGoal
 

@@ -16,9 +16,8 @@ from __future__ import print_function
 
 import os
 
-import numpy as np
 import jax.numpy as jnp
-
+import numpy as np
 
 __author__ = ["Rafael Pastrana"]
 __copyright__ = "Rafael Pastrana"

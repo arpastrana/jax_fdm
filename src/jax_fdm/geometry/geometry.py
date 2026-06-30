@@ -1,9 +1,6 @@
-from jax import vmap
-
 import jax.numpy as jnp
-
+from jax import vmap
 from jax.lax import cond
-
 
 WORLD_X = jnp.array([1.0, 0.0, 0.0])
 WORLD_Y = jnp.array([0.0, 1.0, 0.0])

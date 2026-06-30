@@ -4,9 +4,7 @@ A force density mesh.
 import numpy as np
 
 from compas.datastructures import Mesh
-
 from jax_fdm.datastructures import FDDatastructure
-
 from jax_fdm.geometry import polygon_lcs
 
 

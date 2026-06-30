@@ -1,12 +1,9 @@
+import jax.tree_util as jtu
 import numpy as np
 
 from compas.data import Data
-
-import jax.tree_util as jtu
-
-from jax_fdm.equilibrium import LoadState
 from jax_fdm.equilibrium import EquilibriumParametersState
-
+from jax_fdm.equilibrium import LoadState
 
 # ==========================================================================
 # Recorder

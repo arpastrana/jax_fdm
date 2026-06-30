@@ -1,9 +1,7 @@
 from importlib.util import find_spec
 
 from compas.artists import Artist
-
 from jax_fdm.datastructures import FDNetwork
-
 
 __all__ = ["Viewer"]
 

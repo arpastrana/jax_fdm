@@ -1,10 +1,8 @@
 import numpy as np
-
-from scipy.optimize import approx_fprime
 from scipy.optimize import OptimizeResult
+from scipy.optimize import approx_fprime
 
 from jax_fdm.optimization.optimizers import Optimizer
-
 
 # ==========================================================================
 # Gradient descent

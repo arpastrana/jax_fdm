@@ -1,12 +1,10 @@
-from compas.geometry import Vector
-from compas.geometry import Cone
+from compas.datastructures import Mesh
 from compas.geometry import Circle
+from compas.geometry import Cone
 from compas.geometry import Cylinder
 from compas.geometry import Plane
 from compas.geometry import Shape
-
-from compas.datastructures import Mesh
-
+from compas.geometry import Vector
 
 __all__ = ["Arrow"]
 

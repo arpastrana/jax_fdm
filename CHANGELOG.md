@@ -9,12 +9,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Added optional dependency extras to the package metadata: `viz` (`compas_view2`, `matplotlib`), `ipopt` (`cyipopt`), and `dev`. Install them with, e.g., `pip install -e ".[viz]"`.
+
 ### Changed
 
+- Migrated packaging from `setup.py`/`setup.cfg` to `pyproject.toml` with the setuptools build backend. Packages are now discovered with `[tool.setuptools.packages.find]` rooted at `src`, which fixes a long-standing bug where `packages=["jax_fdm"]` shipped only the top-level package and omitted every subpackage from the built wheel. The version is single-sourced dynamically from `jax_fdm.__version__`, and runtime dependencies are read dynamically from `requirements.txt` (unchanged). Tool configuration for `ruff` (replacing `flake8`/`isort`/`pydocstyle`) and `pytest` now lives in `pyproject.toml`. Also dropped the incorrect `bdist_wheel universal=1` flag that produced a `py2.py3` wheel tag.
 - Patched `numpy.int=int` in `visualization.viewer` so that `compas_view2=0.7.0` remains functional with `numpy>=1.24` (the version that deprecated `numpy.int`). Core package dependencies like `jax` require later versions of numpy, so pinning `numpy` to an antique version was unrealistic. This patch must be removed once we complete migration to `compas>2` and we can install `compas_viewers` instead of the now deprecated `compas_view2`.
 - Cached `FDNetworkArtist.node_xyz` to avoid recomputing this dictionary every single time an edge was drawn. This is an upstream bug from `compas.artists`, which might be fixed by now, since we currently use a legacy version of this dependency. With caching, we reduced plotting time by one order of magnitude. The change was essential when plotting frames to create optimization history animations.
 
 ### Removed
+
+- Removed `MANIFEST.in`. The setuptools `src`-rooted package discovery and `pyproject.toml` metadata now produce a correct sdist without it.
+- Removed `.bumpversion.cfg`. Its configuration moved to `[tool.bumpversion]` in `pyproject.toml` (managed by `bump-my-version`). The obsolete `setup.py` and `docs/conf.py` (Sphinx) file targets were dropped.
+- Slimmed `tasks.py`: removed the dead `build_ghuser_components` Grasshopper task and the Sphinx `docs`/`linkcheck`/`testdocs` and `check` (`check-manifest`/`setup.py check`) wrappers. The `lint` task now runs `ruff` and `release` uses `bump-my-version`.
+- Modernized the GitHub Actions workflows. `build.yml` now installs with `pip install -e ".[dev]"` and runs `ruff` and `pytest` directly (replacing `compas-actions.build`), testing against Python 3.10 and 3.11 on Ubuntu and macOS. `release.yml` drops the deprecated `::set-output` command and the archived `actions/create-release@v1` in favor of `softprops/action-gh-release`, builds with `python -m build`, and publishes via `pypa/gh-action-pypi-publish`. Bumped `actions/checkout` and `actions/setup-python` to current major versions across all workflows.
+- Modernized `.editorconfig`: dropped the dead `*.bat`/`*.cmd`/`*.ps1` and `Makefile` blocks, added a `*.toml` rule, broadened the YAML glob to `*.{yml,yaml}`, and switched the project URL to HTTPS.
+- Enabled the `W` (pycodestyle warnings, e.g. trailing whitespace and final newline) rule set in ruff, so the whitespace conventions in `.editorconfig` are now enforced by the linter.
+- Sorted and grouped imports across the source tree to satisfy ruff's `I` (isort) rule.
+- Removed the `conda_osx.yml` and `conda_linux.yml` environment files. They were byte-for-byte identical, unreferenced, and provisioned a stale dev toolchain. The `conda`-only dependencies (`compas_view2`, `cyipopt`) are documented in the README installation section.
+- Consolidated dependency declarations into `pyproject.toml`. Runtime dependencies are now listed inline under `[project.dependencies]` (no longer read dynamically from a file), and the `requirements.txt` and `requirements-dev.txt` files were removed. Development dependencies live in the `[dev]` optional-dependencies extra; install them with `pip install -e ".[dev]"`.
 
 
 ## [0.10.0] 2026-05-07

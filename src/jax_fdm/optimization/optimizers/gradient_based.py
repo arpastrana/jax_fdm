@@ -3,10 +3,9 @@ A collection of scipy-powered, gradient-based optimizers.
 """
 import numpy as np
 
-from jax_fdm.optimization.optimizers import Optimizer
 from jax_fdm.optimization.optimizers import ConstrainedOptimizer
+from jax_fdm.optimization.optimizers import Optimizer
 from jax_fdm.optimization.optimizers import SecondOrderOptimizer
-
 
 # ==========================================================================
 # Optimizers

@@ -1,4 +1,4 @@
-# EditorConfig is awesome: http://EditorConfig.org
+# EditorConfig is awesome: https://EditorConfig.org
 
 root = true
 
@@ -11,19 +11,16 @@ indent_size = 4
 charset = utf-8
 max_line_length = 180
 
-[*.{bat,cmd,ps1}]
-end_of_line = crlf
-
 [*.md]
 trim_trailing_whitespace = false
 
-[Makefile]
-indent_style = tab
-indent_size = 4
-
-[*.yml]
+[*.{yml,yaml}]
 indent_style = space
 indent_size = 2
+
+[*.toml]
+indent_style = space
+indent_size = 4
 
 [LICENSE]
 insert_final_newline = false
