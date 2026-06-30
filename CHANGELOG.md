@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Added a characterization test suite under `tests/` that pins the current force density engine behavior ahead of the COMPAS 2.x migration, extending collected coverage from geometry-only to the solver, optimizer, recorder serialization, connectivity, and load-assembly model. The tests are invariant-first (load conservation, dense-vs-sparse agreement, equilibrium residuals, optimizer monotonicity, recorder round-trip), so only two small golden files are committed. COMPAS cross-checks are quarantined behind a `compas_xcheck` marker, leaving the suite runnable COMPAS-free via `pytest -m "not compas_xcheck"`. Added `tests/conftest.py` with shared fixtures and a baseline helper gated by `JFDM_CAPTURE_BASELINES`.
 - Added optional dependency extras to the package metadata: `viz` (`compas_view2`, `matplotlib`), `ipopt` (`cyipopt`), and `dev`. Install them with, e.g., `pip install -e ".[viz]"`.
 - Added a `.pre-commit-config.yaml` with `ruff` (lint and auto-fix) and the standard whitespace, YAML, TOML, and merge-conflict checks. Install the hooks with `pre-commit install`. Added `pre-commit` to the `[dev]` extra.
 

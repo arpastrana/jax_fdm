@@ -125,6 +125,8 @@ conda.recipe/
 !data/json/vault0.json
 !data/json/vault_mesh.json
 !data/json/arch.json
+!tests/baselines/*.json
+!tests/data/*.json
 
 *.png
 !images
