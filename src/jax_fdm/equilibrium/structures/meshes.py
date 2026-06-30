@@ -247,37 +247,3 @@ def face_matrix(face_vertices, rtype="array", normalize=True):
         face_vertices_clean.append(face_clean)
 
     return compas_face_matrix(face_vertices_clean, rtype, normalize)
-
-
-# ==========================================================================
-# Main
-# ==========================================================================
-
-if __name__ == "__main__":
-
-    from compas.datastructures import Mesh as CMesh
-    from compas.numerical import adjacency_matrix as adjacency_matrix_compas
-
-    cmesh = CMesh.from_meshgrid(2.0, 2)
-    print(cmesh)
-
-    # test connectivity edges faces
-    C = mesh_connectivity_edges_faces(cmesh)
-    cmesh_faces = [cmesh.face_vertices(fkey) for fkey in cmesh.faces()]
-
-    vertices_array = np.asarray(list(cmesh.vertices()))
-    faces_array = np.asarray(cmesh_faces)
-    edges_array = np.asarray(list(cmesh.edges()))
-    mesh = MeshSparse(vertices_array, faces_array, edges_array)
-
-    jnp.allclose(C, mesh.connectivity_edges_faces)
-
-    # test adjacency matrix
-    vertex_index = cmesh.vertex_index()
-    adjacency = [[vertex_index[nbr] for nbr in cmesh.vertex_neighbors(vertex)] for vertex in cmesh.vertices()]
-    A_c = adjacency_matrix_compas(adjacency, rtype="array")
-
-    A = mesh.adjacency.todense()
-    jnp.allclose(A, A_c)
-
-    print("All good, cowboy!")
