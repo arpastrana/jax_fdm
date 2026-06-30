@@ -21,6 +21,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Removed `MANIFEST.in`. The setuptools `src`-rooted package discovery and `pyproject.toml` metadata now produce a correct sdist without it.
 - Removed `.bumpversion.cfg`. Its configuration moved to `[tool.bumpversion]` in `pyproject.toml` (managed by `bump-my-version`). The obsolete `setup.py` and `docs/conf.py` (Sphinx) file targets were dropped.
+- Slimmed `tasks.py`: removed the dead `build_ghuser_components` Grasshopper task and the Sphinx `docs`/`linkcheck`/`testdocs` and `check` (`check-manifest`/`setup.py check`) wrappers. The `lint` task now runs `ruff` and `release` uses `bump-my-version`.
 
 
 ## [0.10.0] 2026-05-07
