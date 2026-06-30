@@ -328,4 +328,3 @@ def test_cosines_angles_polygon_mesh_faces_quad_triangles():
         cosines = cosines_angles_polygon(fxyz)
         # Inner quad faces are rectangles: all internal angles 90°, cos(90°) = 0
         assert jnp.allclose(cosines, 0.0)
-

@@ -1,37 +1,30 @@
 # the essentials
 import os
 
+# pattern-making
+from compas_singular.datastructures import CoarseQuadMesh
+
 # compas
 from compas.colors import Color
 from compas.topology import dijkstra_path
 from compas.utilities import pairwise
 
-# pattern-making
-from compas_singular.datastructures import CoarseQuadMesh
-
 # force density
 from jax_fdm.datastructures import FDNetwork
-
-from jax_fdm.equilibrium import fdm
 from jax_fdm.equilibrium import constrained_fdm
-
-from jax_fdm.optimization import LBFGSB
-from jax_fdm.optimization import OptimizationRecorder
-
-from jax_fdm.parameters import EdgeForceDensityParameter
-
+from jax_fdm.equilibrium import fdm
 from jax_fdm.goals import EdgeLengthGoal
-from jax_fdm.goals import NodeResidualForceGoal
 from jax_fdm.goals import NetworkLoadPathGoal
-
+from jax_fdm.goals import NodeResidualForceGoal
+from jax_fdm.losses import L2Regularizer
+from jax_fdm.losses import Loss
 from jax_fdm.losses import PredictionError
 from jax_fdm.losses import SquaredError
-from jax_fdm.losses import Loss
-from jax_fdm.losses import L2Regularizer
-
+from jax_fdm.optimization import LBFGSB
+from jax_fdm.optimization import OptimizationRecorder
+from jax_fdm.parameters import EdgeForceDensityParameter
 from jax_fdm.visualization import LossPlotter
 from jax_fdm.visualization import Viewer
-
 
 # ==========================================================================
 # Parameters

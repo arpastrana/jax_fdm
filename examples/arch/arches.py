@@ -1,7 +1,5 @@
-import jax.numpy as jnp
 
 # compas
-from compas.colors import Color
 from compas.colors import ColorMap
 from compas.geometry import Translation
 from compas.geometry import add_vectors
@@ -10,8 +8,8 @@ from compas.geometry import add_vectors
 from jax_fdm.datastructures import FDNetwork
 from jax_fdm.equilibrium import constrained_fdm
 from jax_fdm.goals import NodeResidualDirectionGoal
-from jax_fdm.losses import SquaredError
 from jax_fdm.losses import Loss
+from jax_fdm.losses import SquaredError
 from jax_fdm.optimization import SLSQP
 from jax_fdm.parameters import EdgeForceDensityParameter
 from jax_fdm.visualization import Viewer

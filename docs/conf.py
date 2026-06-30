@@ -4,10 +4,10 @@
 #
 # needs_sphinx = "1.0"
 
-import sys
-import os
-import inspect
 import importlib
+import inspect
+import os
+import sys
 
 import sphinx_compas_theme
 from sphinx.ext.napoleon.docstring import NumpyDocstring

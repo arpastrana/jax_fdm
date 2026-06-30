@@ -5,32 +5,25 @@ import os
 
 # compas
 from compas.colors import Color
-from compas.geometry import Line
-from compas.geometry import add_vectors
-from compas.geometry import Translation
-from compas.datastructures import network_transform
 from compas.datastructures import Mesh
+from compas.datastructures import network_transform
+from compas.geometry import Line
+from compas.geometry import Translation
+from compas.geometry import add_vectors
 
 # static equilibrium
 from jax_fdm.datastructures import FDNetwork
-
 from jax_fdm.equilibrium import constrained_fdm
-
 from jax_fdm.goals import EdgeLengthGoal
 from jax_fdm.goals import NodePlaneGoal
 from jax_fdm.goals import NodeResidualForceGoal
-
 from jax_fdm.losses import Loss
 from jax_fdm.losses import SquaredError
-
 from jax_fdm.optimization import SLSQP
-from jax_fdm.optimization import OptimizationRecorder
-
 from jax_fdm.optimization import EdgeForceDensityParameter
-
+from jax_fdm.optimization import OptimizationRecorder
 from jax_fdm.visualization import LossPlotter
 from jax_fdm.visualization import Viewer
-
 
 # ==========================================================================
 # Initial parameters
