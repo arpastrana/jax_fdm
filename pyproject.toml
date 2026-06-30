@@ -69,6 +69,22 @@ select = ["E", "F", "I"]
 force-single-line = true
 known-first-party = ["compas", "jax_fdm"]
 
+[tool.bumpversion]
+current_version = "0.10.0"
+commit = true
+tag = true
+message = "Bump version to {new_version}"
+
+[[tool.bumpversion.files]]
+filename = "src/jax_fdm/__init__.py"
+search = "__version__ = \"{current_version}\""
+replace = "__version__ = \"{new_version}\""
+
+[[tool.bumpversion.files]]
+filename = "CHANGELOG.md"
+search = "Unreleased"
+replace = "[{new_version}] {now:%Y-%m-%d}"
+
 [tool.pytest.ini_options]
 testpaths = ["tests", "src/jax_fdm"]
 norecursedirs = ["migrations"]

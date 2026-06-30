@@ -19,6 +19,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Removed
 
+- Removed `MANIFEST.in`. The setuptools `src`-rooted package discovery and `pyproject.toml` metadata now produce a correct sdist without it.
+- Removed `.bumpversion.cfg`. Its configuration moved to `[tool.bumpversion]` in `pyproject.toml` (managed by `bump-my-version`). The obsolete `setup.py` and `docs/conf.py` (Sphinx) file targets were dropped.
+
 
 ## [0.10.0] 2026-05-07
 
