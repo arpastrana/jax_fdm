@@ -1,5 +1,6 @@
 # the essentials
 import os
+
 import numpy as np
 from scipy.spatial.distance import directed_hausdorff
 
@@ -9,23 +10,16 @@ from compas.geometry import Line
 
 # jax fdm
 from jax_fdm.datastructures import FDNetwork
-
-from jax_fdm.equilibrium import fdm
 from jax_fdm.equilibrium import constrained_fdm
-
+from jax_fdm.equilibrium import fdm
+from jax_fdm.goals import NodePointGoal
+from jax_fdm.losses import Loss
+from jax_fdm.losses import RootMeanSquaredError
 from jax_fdm.optimization import LBFGSB
 from jax_fdm.optimization import OptimizationRecorder
-
 from jax_fdm.parameters import EdgeForceDensityParameter
-
-from jax_fdm.goals import NodePointGoal
-
-from jax_fdm.losses import RootMeanSquaredError
-from jax_fdm.losses import Loss
-
 from jax_fdm.visualization import LossPlotter
 from jax_fdm.visualization import Viewer
-
 
 # ==========================================================================
 # Parameters

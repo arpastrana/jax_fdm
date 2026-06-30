@@ -4,47 +4,32 @@ Solve a constrained force density problem using gradient-based optimization.
 import os
 from itertools import cycle
 
-
 # math
 from math import radians
-from math import sqrt
 
 # compas
-from compas.datastructures import Mesh
-from compas.geometry import Line
-from compas.geometry import add_vectors
-from compas.geometry import subtract_vectors
-from compas.geometry import cross_vectors
-from compas.geometry import rotate_points
-from compas.geometry import scale_vector
 from compas.geometry import Polygon
-from compas.geometry import offset_polygon
 from compas.geometry import Translation
+from compas.geometry import add_vectors
+from compas.geometry import cross_vectors
+from compas.geometry import offset_polygon
+from compas.geometry import rotate_points
+from compas.geometry import subtract_vectors
 from compas.utilities import pairwise
 
 # static equilibrium
 from jax_fdm.datastructures import FDNetwork
-
-from jax_fdm.equilibrium import fdm
 from jax_fdm.equilibrium import constrained_fdm
-
-from jax_fdm.goals import EdgeLengthGoal
 from jax_fdm.goals import EdgeDirectionGoal
+from jax_fdm.goals import EdgeLengthGoal
 from jax_fdm.goals import NodePointGoal
-
-from jax_fdm.losses import SquaredError
 from jax_fdm.losses import Loss
-
+from jax_fdm.losses import SquaredError
 from jax_fdm.optimization import LBFGSB
-from jax_fdm.optimization import SLSQP
-from jax_fdm.optimization import TrustRegionConstrained
 from jax_fdm.optimization import OptimizationRecorder
-
+from jax_fdm.optimization import TrustRegionConstrained
 from jax_fdm.parameters import EdgeForceDensityParameter
-
-from jax_fdm.visualization import LossPlotter
 from jax_fdm.visualization import Viewer
-
 
 # ==========================================================================
 # Initial parameters

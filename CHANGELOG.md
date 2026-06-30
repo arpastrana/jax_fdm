@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Added optional dependency extras to the package metadata: `viz` (`compas_view2`, `matplotlib`), `ipopt` (`cyipopt`), and `dev`. Install them with, e.g., `pip install -e ".[viz]"`.
+- Added a `.pre-commit-config.yaml` with `ruff` (lint and auto-fix) and the standard whitespace, YAML, TOML, and merge-conflict checks. Install the hooks with `pre-commit install`. Added `pre-commit` to the `[dev]` extra.
 
 ### Changed
 
@@ -28,6 +29,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Sorted and grouped imports across the source tree to satisfy ruff's `I` (isort) rule.
 - Removed the `conda_osx.yml` and `conda_linux.yml` environment files. They were byte-for-byte identical, unreferenced, and provisioned a stale dev toolchain. The `conda`-only dependencies (`compas_view2`, `cyipopt`) are documented in the README installation section.
 - Consolidated dependency declarations into `pyproject.toml`. Runtime dependencies are now listed inline under `[project.dependencies]` (no longer read dynamically from a file), and the `requirements.txt` and `requirements-dev.txt` files were removed. Development dependencies live in the `[dev]` optional-dependencies extra; install them with `pip install -e ".[dev]"`.
+- Linted the whole repository with `ruff` (previously only `src`) and widened the CI lint step from `ruff check src` to `ruff check .`. This applied import sorting and whitespace fixes across `examples/`, `docs/`, and `tests/`, and removed a duplicate `angle_vectors` import in `examples/pringle/pringle_temporal_horizontal.py`. Added `per-file-ignores` for `src/jax_fdm/__init__.py` (`E402`, `F401`) and the jaxtyping module `src/jax_fdm/equilibrium/states.py` (`F722`, `F821`).
 
 
 ## [0.10.0] 2026-05-07
@@ -47,7 +49,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added `curvature_points()` to measure the discrete curvature of a sequence of points.
 - Created `colinearity_points()` to measure the colinearity of a sequence of points.
 - Implemented `goals.MeshLoadPathGoal()` to control the total load path enery of a mesh.
-- Implemented `goals.MeshPlanarityGoal()` to planarize all the faces of a mesh. 
+- Implemented `goals.MeshPlanarityGoal()` to planarize all the faces of a mesh.
 - Added `polygon_planarity()` to geometry processing module (with tests!). The planarity of a polygon is calculated as the sum of the absolute dot product between the polygon's unitized normal vector and its unitized edge vectors, following the work of Tang et al. (2014).
 
 ### Changed
@@ -75,16 +77,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Pass `implicit_diff` argument to `solver_fixedpoint`.
 - Print out statistics with `ndigits` of precision in `FDDatastructure.print_stats()`.
 - Listed `lineax` and `optimistix` as dependencies.
-- Added `EquilibriumModel.residual_free_matrix()` to compute the matrix with the residual force vectors on the free vertices of a structure. 
+- Added `EquilibriumModel.residual_free_matrix()` to compute the matrix with the residual force vectors on the free vertices of a structure.
 - Set up a `custom_vjp` with the implicit function theorem for the nonlinear equilibrium solvers (least squares and root finding).
-- Wrapped up 3 different `optimistix` optimizers to solve the nonlinear equilibrium problem with shape dependent loads. These solvers are least-squares and root-finding optimizers: `Newton`, `Dogleg`, and `LevenbergMarquardt`. These solvers minimize the residual function explicitly, which differs from the fixed-point iterators that solve the equilibrium problem by minimizing the difference between the XYZ coordinates of the free vertices of a structure over two consecutive iterations. These solvers are listed in the API as `solver_newton`, `solver_dogleg`, and `solver_levenger_marquardt`. 
+- Wrapped up 3 different `optimistix` optimizers to solve the nonlinear equilibrium problem with shape dependent loads. These solvers are least-squares and root-finding optimizers: `Newton`, `Dogleg`, and `LevenbergMarquardt`. These solvers minimize the residual function explicitly, which differs from the fixed-point iterators that solve the equilibrium problem by minimizing the difference between the XYZ coordinates of the free vertices of a structure over two consecutive iterations. These solvers are listed in the API as `solver_newton`, `solver_dogleg`, and `solver_levenger_marquardt`.
 - Exposed the `maxcor` argument in scipy's `LBFGSB()` wrapper. This argument controls the number of approximation terms of the full Hessian.
 - Added `error_terms` argument in `LossPlotter.plot()` to select what error and regularization terms are plotted.
 - Implemented `EquilibriumModel.load_xyz_matrix` to calculate the load matrices for shape dependent loads.
 - Implemented `EquilibriumModel.load_xyz_matrix_from_r_fixed` to calculate the load matrices for shape dependent loads.
 - Added `is_solver_fixedpoint` and `is_solver_leastsquares` to check the type of an iterative solver.
 - Added `solver_gauss_newton` to calculate equilibrium states in the presence of  shape-dependent loads by minimizing a residual function explicitly. This solver is wrapped up from `jaxopt`.
-- Exposed `report_breakdown` argument in `LossPlotter.plot()` to optionally plot the contributions of the error and regularization terms of a `Loss` function. 
+- Exposed `report_breakdown` argument in `LossPlotter.plot()` to optionally plot the contributions of the error and regularization terms of a `Loss` function.
 - Implemented `Optimizer.options()` to allow for method-specific setup in `scipy.optimize.minimize`. This new method assembles the `options` dictionary required by `scipy` in a way that can be customizable per optimizer.
 
 ### Changed
@@ -93,23 +95,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - The callback function is called once before optimization starts in `Optimizer.solve()` and in `GradientFreeOptimizer.solve()`.
 - Fixed bug that forgot to fix the random seed of `DualAnnealing()` despite being passed in as an argument at initialization.
 - Stop passing `EquilibriumModel.linearsolve_fn()` as `solver_kwargs` of fixed point solver. This function was used only for the `custom_vjp` operations. The `custom_vjp` now selects and appropriate linear solver based on whether `EquilibriumModel.stiffness_matrix()` is a sparse `jax.CSC` object or not.
-- Now, `goals.NetworkSmoothGoal()` calculates the fairness energy on all the vertices. Previously, it only considered the free vertices. 
-- `FDDatastructure.print_stats()` doesn't reporting positive or negative force and force densities if the datastructure doesn't contain them. 
+- Now, `goals.NetworkSmoothGoal()` calculates the fairness energy on all the vertices. Previously, it only considered the free vertices.
+- `FDDatastructure.print_stats()` doesn't reporting positive or negative force and force densities if the datastructure doesn't contain them.
 - Changed the diagonal matrix generated by `EquilibriumStructureSparse._get_sparse_diag_data()` from `jax.experimental.sparse.CSC` to `jax.experimental.sparse.BCSR` for enabling Jacobian computations.
 - Exposed arrow parameters (head width, head portion, body width and minimum width) in `FDVectorPlotterArtist`.
 - Fixed bug in `FDNetworkViewerArtist()` that ignored custom colors when drawing node loads.
-- `LossPlotter.print_error_stats()` reports the loss and error values with up 6 digits of precision. 
+- `LossPlotter.print_error_stats()` reports the loss and error values with up 6 digits of precision.
 - Renamed `EquilibriumModel.force_fixed_matrix()` to `EquilibriumModel.residual_fixed_matrix()`.
 - Renamed `EquilibriumModel.force_matrix()` to `EquilibriumModel.load_matrix()`.
 - `EquilibriumParametersState.from_datastructure` takes `dtype` as optional input. It defaults to `jax.numpy.float64`.
 - Changed `DTYPE_INT` to `int64` instead of `int32`.
-- To calculate the local coordinate system of a mesh face, `loads.face_load_lcs()` no longer replaces vertex indices that were padded with a `-1` with `face[0]`. Instead, it takes all the vertices in a `face` to get the XYZ coordinates of the face polygon. The previous behavior led to due excessive compilation time and XLA warnings due to "constant folding" problems because of the index replacement with a vmapped `jnp.where()`. 
+- To calculate the local coordinate system of a mesh face, `loads.face_load_lcs()` no longer replaces vertex indices that were padded with a `-1` with `face[0]`. Instead, it takes all the vertices in a `face` to get the XYZ coordinates of the face polygon. The previous behavior led to due excessive compilation time and XLA warnings due to "constant folding" problems because of the index replacement with a vmapped `jnp.where()`.
 - ~~The faces generated by `EquilibriumStructureMesh.from_mesh` are now padded with first index `face[0]` instead of a `-1`.~~
 - `EquilibriumModel` automatically picks the iterative equilibrium function based on solver input as `iterativesolve_fn`.
 - Functions `EquilibriumModel.equilibrium()` and
 `EquilibriumModel.equilibrium_iterative()` return `xyz_free` instead of `xyz`. The concatenation of `xyz_free` and `xyz_fixed` needed to build `xyz` is now handled by `EquilibriumModel.__call__()`.
-- Set `implicit=False` and `unroll=False` in `solver_anderson` when performing implicit differentiation on iterative equilibrium calculation with `implicit_diff=True`. 
-- Set `implicit=False` and `unroll=False` in `solver_fixedpoint` when performing implicit differentiation on iterative equilibrium calculation with `implicit_diff=True`. 
+- Set `implicit=False` and `unroll=False` in `solver_anderson` when performing implicit differentiation on iterative equilibrium calculation with `implicit_diff=True`.
+- Set `implicit=False` and `unroll=False` in `solver_fixedpoint` when performing implicit differentiation on iterative equilibrium calculation with `implicit_diff=True`.
 - `jax_fdm.equilibrium.datastructure_validate` now reports the number of edges with zero force densities.
 - `LBFGSBS` became a subclass of `LBFGSB` instead of `Optimizer`.
 - Disabled hard assertion test that ensured that every edge in a `topology.Mesh()` object was connected to at most 2 faces (manifoldness preservation). Now we print out a warning since we are all consenting adults over here. The implications of this change is that area load calculations might be incorrect, but this needs to be more thoroughly tested at a later time.
@@ -123,7 +125,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Wrapped two gradient-free optimizers from scipy: Nelder-Mead and Powell. They are available as `jax_fdm.optimizers.NelderMead` and `jax_fdm.optimizers.Powell`, respectively. 
+- Wrapped two gradient-free optimizers from scipy: Nelder-Mead and Powell. They are available as `jax_fdm.optimizers.NelderMead` and `jax_fdm.optimizers.Powell`, respectively.
 - Linked two evolutionary optimizers from scipy They are available as `jax_fdm.optimizers.DualAnnealing` and `jax_fdm.optimizers.DifferentialEvolution`.
 - Added support for kwargs in `LossPlotter.plot()`. The kwargs control the parameters of the equilibrium model used to plot the loss history.
 - Added `VertexSupportParameter.index()`. This change might appear redundant, but it was necessary to deal with the method resolution order of the parent classes of `VertexSupportParameter`.
@@ -136,7 +138,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed bug in `OptimizationRecorder`. The recorder did not know how to record optimization history without an explictly initialized optimizer.
 - Deprecated `jax_fdm.optimization.optimizers.scipy` in favor of `jax_fdm.optimization.optimizers.gradient_based`.
 - Fixed bug. Return early in `NetworkArtist.edge_width()` if the artist edges list is empty.
-- Fixed bug in `EdgesForceEqualGoal.prediction()`: the normalization mean of compressive edge forces was a negative number. This led to negative normalized variance values, which was plainly incorrect. 
+- Fixed bug in `EdgesForceEqualGoal.prediction()`: the normalization mean of compressive edge forces was a negative number. This led to negative normalized variance values, which was plainly incorrect.
 - `VertexGroupSupportParameter` inherits from `VertexGroupParameter` instead of `NodeGroupParameter`. This was a bug.
 
 ### Removed
@@ -157,7 +159,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Added `NetworkSmoothGoal` to smoothen the shape of a network based on the fairness energy of its nodes w.r.t. their immediate neighborhood.
-- Implemented `Graph.adjacency` to access the connectivity among nodes/vertices to compute new goals. 
+- Implemented `Graph.adjacency` to access the connectivity among nodes/vertices to compute new goals.
 - Added `adjacency_matrix` as numpy-only function to assemble `Graph.adjacency`. The function is largely inspired by `compas.matrices.adjacency_matrix`.
 
 ### Changed
@@ -180,7 +182,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Updated how to enable double floating precision (`float64`) to comply with changes of `jax.config` in `jax==0.4.25`.
 
 #### Equilibrium
-- Fixed duplicated fixed point iteration in `EquilibriumModel.equilibrium_iterative`. This led to unnecessarily long runtimes. This change also fixes the "mysterious" bug that made `jaxopt` implicit differentiation incompatible with sparse matrices. 
+- Fixed duplicated fixed point iteration in `EquilibriumModel.equilibrium_iterative`. This led to unnecessarily long runtimes. This change also fixes the "mysterious" bug that made `jaxopt` implicit differentiation incompatible with sparse matrices.
 
 #### Visualization
 - `LossPlotter` exposes `plot_legend` to choose whether or not to show legend with curve labels.
@@ -196,7 +198,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 #### Losses
-- Implemented `LogMaxError`. The goal of this error function is to work as a barrier soft constraint for target maximum values. One good use example would be to restrict the height of a shell to a maximum height. 
+- Implemented `LogMaxError`. The goal of this error function is to work as a barrier soft constraint for target maximum values. One good use example would be to restrict the height of a shell to a maximum height.
 
 ### Changed
 
@@ -225,14 +227,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 #### Solvers
 - Implemented `solver_anderson`, to find fixed points of a function with `jaxopt.AndersonAcceleration`. The implicit differentiation operator of the solver provided by `jaxopt` is deactivated when using `EquilibriumModelSparse` because `jaxopt` does not support sparse matrices yet.
-- Defined a `jax.custom_vjp` for `fixed_point`, an interface function that solves for fixed points of a function for different root-finding solver types: `solver_fixedpoint`, `solver_forward`, and `solver_newton`. 
+- Defined a `jax.custom_vjp` for `fixed_point`, an interface function that solves for fixed points of a function for different root-finding solver types: `solver_fixedpoint`, `solver_forward`, and `solver_newton`.
 - Implemented `solver_fixedpoint`, a function that wraps `jaxopt.FixedPointIterator` to calculate static equilibrium iteratively.
 - Implemented `solver_forward`, to find fixed points of a function using an `equinox.while_loop`.
 - Implemented `solver_netwon`, to find fixed points of a function using Newton's method.
 
 #### Loads
 - Added `equilibrium.loads` module to enable support for edge and face-loads, which correspond to line and area loads, respectively.
-These two load types can be optionally become follower loads setting the `is_local` input flag to `True`. A follower load will update its direction iteratively, according to the local coordinate system of an edge or a face at an iteration. The two main functions that enable this feature are `loads.nodes_load_from_faces` and `loads.nodes_load_from_edges`. These functions are wrapped by `EquilibriumModel` under `EquiibriumModel.edges_load` and `EquiibriumModel.faces_load`. 
+These two load types can be optionally become follower loads setting the `is_local` input flag to `True`. A follower load will update its direction iteratively, according to the local coordinate system of an edge or a face at an iteration. The two main functions that enable this feature are `loads.nodes_load_from_faces` and `loads.nodes_load_from_edges`. These functions are wrapped by `EquilibriumModel` under `EquiibriumModel.edges_load` and `EquiibriumModel.faces_load`.
 - Implemented `equilibrium.loads.nodes_`.
 
 #### Datastructures
@@ -248,8 +250,8 @@ These two load types can be optionally become follower loads setting the `is_loc
 - Implemented `structures.MeshSparse`.
 - Implemented `structures.Graph`.
 - Implemented `structures.GraphSparse`.
-- Added `FDNetwork.is_edge_fully_supported`. 
-- Added `EquilibriumMeshStructure.from_mesh` with support for inhomogenous faces (i.e. faces with different number of vertices). The solution is to pad the rows of the `faces` 2D array with `-1` to match `max_num_vertices`. 
+- Added `FDNetwork.is_edge_fully_supported`.
+- Added `EquilibriumMeshStructure.from_mesh` with support for inhomogenous faces (i.e. faces with different number of vertices). The solution is to pad the rows of the `faces` 2D array with `-1` to match `max_num_vertices`.
 
 #### Goals
 
@@ -299,17 +301,17 @@ These two load types can be optionally become follower loads setting the `is_loc
 - Renamed previous verison of `spsolve_gpu` to `spsolve_gpu_stack`.
 
 #### Geometry
-- Added support for `jnp.nan` inputs in the calculations of `geometry.normal_polygon`. 
+- Added support for `jnp.nan` inputs in the calculations of `geometry.normal_polygon`.
 
 #### Losses
-- Changed signature of `Regularizer.__call__` to take in parameters instead of equilibirum state. 
+- Changed signature of `Regularizer.__call__` to take in parameters instead of equilibirum state.
 
-#### Datastructures 
+#### Datastructures
 - Overhauled `EquilibriumStructure` and `EquilibriumStructureSparse`. They are subclasses `equinox.Module`, and now they are meant to be immutable. They also have little idea of what an `FDNetwork` is.
 - Modified `face_matrix` adjacency matrix creation function to skip -1 vertices. This is to add support for `MeshStructures` that have faces with different number of vertices.
 
 #### Optimization
-- Use `jax.value_and_grad(loss_fn(x))` instead of using `loss_fn(x)` and `jax.grad(loss_fn(x))` separately. This results in optimization speedup because we get both value and grad with a single VJP call. 
+- Use `jax.value_and_grad(loss_fn(x))` instead of using `loss_fn(x)` and `jax.grad(loss_fn(x))` separately. This results in optimization speedup because we get both value and grad with a single VJP call.
 - `Optimizer.problem` takes an `FDNetwork` as input.
 - `Optimizer.problem` takes boolean `jit_fn` as arg to disable jitting if needed.
 - Changed `ParameterManager` to require an `FDNetwork` as argument at initialization.
@@ -327,7 +329,7 @@ These two load types can be optionally become follower loads setting the `is_loc
 ### Removed
 
 - Removed `EquilibriumModel.from_network`.
-- Removed `sparse.force_densities_to_A`. Superseded by `EquilibriumModelSparse.stiffness_matrix`. 
+- Removed `sparse.force_densities_to_A`. Superseded by `EquilibriumModelSparse.stiffness_matrix`.
 - Removed `sparse.force_densities_to_b`. Superseded by `EquilibriumModel.force_matrix`.
 - Removed partial jitting from `Loss.__call__`.
 - Removed partial jitting from `Error.__call__`.
@@ -349,7 +351,7 @@ These two load types can be optionally become follower loads setting the `is_loc
 ## [0.7.0] 2023-05-08
 
 ### Added
- 
+
 - Added `EquilibriumStructure.init` as a quick fix to warm start properties.
 
 ### Changed
@@ -363,7 +365,7 @@ These two load types can be optionally become follower loads setting the `is_loc
 
 ### Removed
 
-- Removed `structure` attribute from `EquilibriumModel` en route to equinox modules. 
+- Removed `structure` attribute from `EquilibriumModel` en route to equinox modules.
 
 ## [0.6.0] 2023-04-30
 
@@ -418,9 +420,9 @@ Support for differentiable CPU sparse solver
 
 ### Changed
 
-- Sped up `EquilibriumModel.nodes_free_positions()` computation after replacing `jnp.diag(q)` with `vmap(jnp.dot)(q, *)`. 
+- Sped up `EquilibriumModel.nodes_free_positions()` computation after replacing `jnp.diag(q)` with `vmap(jnp.dot)(q, *)`.
 - Vectorized error computations in `LossPlotter.plot()` to expedite method.
-- `OptimizationRecorder.record()` now stores history in a dictionary, not in a list. 
+- `OptimizationRecorder.record()` now stores history in a dictionary, not in a list.
 - Fixed bug in `FDNetworkViewerArtist` that ocurred while plotting reaction forces on unconnected nodes.
 - Turned `TrustRegionConstrained` into a first order optimizer.
 
@@ -483,7 +485,7 @@ Support for differentiable CPU sparse solver
 
 ### Changed
 
-- Fixed bug in `edgewidth` sizing in `NetworkArtist` when all edges have the same force. 
+- Fixed bug in `edgewidth` sizing in `NetworkArtist` when all edges have the same force.
 - Changed `angle_vectors` to return angle in radians by default.
 - Shifted loads start point in `plotters.NetworkArtist` for them to be incident to the nodes.
 
@@ -496,7 +498,7 @@ Support for differentiable CPU sparse solver
 
 ### Changed
 
-- Changed generator unpacking `*sarrays` in `parameters.split` unsupported in Python 3.7. 
+- Changed generator unpacking `*sarrays` in `parameters.split` unsupported in Python 3.7.
 - Changed tension-compression force color map gradient to a binary color map.
 
 ### Removed
@@ -524,8 +526,8 @@ Support for differentiable CPU sparse solver
 - `NetworkLoadPathGoal` uses `jnp.multiply` instead of multipication operator `*`.
 - Broke down `Optimizer.minimize()` into `.problem()` and `.solve()`.
 - For efficiency, `SecondOrderOptimizer` calculates `hessian` as `jax.jacfwd(jax.jacrev)`.
-- Changed calculation of the scalar ouput of `Loss` using a compact loop. 
-- Changed calculation of the scalar ouput of `Error` using a compact loop. 
+- Changed calculation of the scalar ouput of `Loss` using a compact loop.
+- Changed calculation of the scalar ouput of `Error` using a compact loop.
 
 ### Removed
 
@@ -551,7 +553,7 @@ Support for differentiable CPU sparse solver
 - `EquilibriumModel.__call__` tasks `q`, `xyz_fixed` and `loads` as arguments.
 - `FDNetwork.transform` only modifies node coordinates.
 - `FDNetworkViewerArtist` shifts a node load by the maximum edge width at the node.
-- `OptimizationRecorder.history` stores `q`, `xyz_fixed` and `loads`. 
+- `OptimizationRecorder.history` stores `q`, `xyz_fixed` and `loads`.
 - `LossPlotter.plot` supports `q`, `xyz_fixed` and `loads` to be compatible with `OptimizationRecorder.history`.
 
 ### Removed
@@ -595,7 +597,7 @@ Support for differentiable CPU sparse solver
 
 ### Added
 
-- Added `datastructures.FDNetwork.transformed()` 
+- Added `datastructures.FDNetwork.transformed()`
 - Created `visualization.plotters.FDNetworkPlotterArtist`
 - Implemented `visualization.plotters.Plotter`
 
@@ -642,4 +644,3 @@ Support for differentiable CPU sparse solver
 ### Changed
 
 ### Removed
-
