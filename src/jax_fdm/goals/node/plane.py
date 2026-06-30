@@ -1,7 +1,6 @@
 import numpy as np
 
 from jax_fdm.geometry import closest_point_on_plane
-
 from jax_fdm.goals.node import NodePointGoal
 
 

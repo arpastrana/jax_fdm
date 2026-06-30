@@ -1,0 +1,100 @@
+[build-system]
+requires = ["setuptools>=64"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "jax_fdm"
+description = "Auto-differentiable and hardware-accelerated force density method"
+readme = "README.md"
+license = { text = "MIT license" }
+authors = [{ name = "Rafael Pastrana", email = "arpastrana@princeton.edu" }]
+requires-python = ">=3.10"
+keywords = [
+    "jax",
+    "automatic-differentiation",
+    "architecture",
+    "form-finding",
+    "structural-design",
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Topic :: Scientific/Engineering",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: Unix",
+    "Operating System :: POSIX",
+    "Operating System :: Microsoft :: Windows",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: Implementation :: CPython",
+]
+dynamic = ["version"]
+dependencies = [
+    "jax[cpu]",
+    "compas<2.0",
+    "scipy",
+    "jaxopt",
+    "equinox",
+    "lineax",
+    "optimistix",
+]
+
+[project.urls]
+Homepage = "https://github.com/arpastrana/jax_fdm"
+Repository = "https://github.com/arpastrana/jax_fdm"
+
+[project.optional-dependencies]
+# 3D viewer. compas_view2 ships on conda-forge; you may still need conda for it.
+viz = ["compas_view2==0.7.0", "matplotlib"]
+# Interior-point optimizer. cyipopt needs a system Ipopt library.
+ipopt = ["cyipopt"]
+dev = [
+    "ruff",
+    "pytest >=3.2",
+    "bump-my-version",
+    "build",
+    "twine",
+    "invoke >=0.14",
+]
+
+[tool.setuptools.dynamic]
+version = { attr = "jax_fdm.__version__" }
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.ruff]
+line-length = 180
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "W"]
+
+[tool.ruff.lint.isort]
+force-single-line = true
+known-first-party = ["compas", "jax_fdm"]
+
+[tool.bumpversion]
+current_version = "0.10.0"
+commit = true
+tag = true
+message = "Bump version to {new_version}"
+
+[[tool.bumpversion.files]]
+filename = "src/jax_fdm/__init__.py"
+search = "__version__ = \"{current_version}\""
+replace = "__version__ = \"{new_version}\""
+
+[[tool.bumpversion.files]]
+filename = "CHANGELOG.md"
+search = "Unreleased"
+replace = "[{new_version}] {now:%Y-%m-%d}"
+
+[tool.pytest.ini_options]
+testpaths = ["tests", "src/jax_fdm"]
+norecursedirs = ["migrations"]
+python_files = ["test_*.py", "*_test.py", "tests.py"]
+addopts = ["-ra", "--strict-markers", "--doctest-modules", "--tb=short"]

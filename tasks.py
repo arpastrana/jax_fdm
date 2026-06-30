@@ -5,7 +5,6 @@ import contextlib
 import glob
 import os
 import sys
-import tempfile
 from shutil import rmtree
 
 from invoke import Exit
@@ -65,16 +64,12 @@ def help(ctx):
 
 
 @task(help={
-    'docs': 'True to clean up generated documentation, otherwise False',
     'bytecode': 'True to clean up compiled python files, otherwise False.',
     'builds': 'True to clean up build/packaging artifacts, otherwise False.'})
-def clean(ctx, docs=True, bytecode=True, builds=True):
+def clean(ctx, bytecode=True, builds=True):
     """Cleans the local copy from compiled artifacts."""
 
     with chdir(BASE_FOLDER):
-        if builds:
-            ctx.run('python setup.py clean')
-
         if bytecode:
             for root, dirs, files in os.walk(BASE_FOLDER):
                 for f in files:
@@ -83,12 +78,7 @@ def clean(ctx, docs=True, bytecode=True, builds=True):
                 if '.git' in dirs:
                     dirs.remove('.git')
 
-        folders = []
-
-        if docs:
-            folders.append('docs/api/generated')
-
-        folders.append('dist/')
+        folders = ['dist/']
 
         if bytecode:
             for t in ('src', 'tests'):
@@ -102,61 +92,11 @@ def clean(ctx, docs=True, bytecode=True, builds=True):
             rmtree(os.path.join(BASE_FOLDER, folder), ignore_errors=True)
 
 
-@task(help={
-      'rebuild': 'True to clean all previously built docs before starting, otherwise False.',
-      'doctest': 'True to run doctests, otherwise False.',
-      'check_links': 'True to check all web links in docs for validity, otherwise False.'})
-def docs(ctx, doctest=False, rebuild=False, check_links=False):
-    """Builds package's HTML documentation."""
-
-    if rebuild:
-        clean(ctx)
-
-    with chdir(BASE_FOLDER):
-        if doctest:
-            testdocs(ctx)
-
-        opts = '-E' if rebuild else ''
-        ctx.run('sphinx-build {} -b html docs dist/docs'.format(opts))
-
-        if check_links:
-            linkcheck(ctx, rebuild=rebuild)
-
-
 @task()
 def lint(ctx):
     """Check the consistency of coding style."""
-    log.write('Running flake8 python linter...')
-    ctx.run('flake8 src')
-
-
-@task()
-def testdocs(ctx):
-    """Test the examples in the docstrings."""
-    log.write('Running doctest...')
-    ctx.run('pytest --doctest-modules')
-
-
-@task()
-def linkcheck(ctx, rebuild=False):
-    """Check links in documentation."""
-    log.write('Running link check...')
-    opts = '-E' if rebuild else ''
-    ctx.run('sphinx-build {} -b linkcheck docs dist/docs'.format(opts))
-
-
-@task()
-def check(ctx):
-    """Check the consistency of documentation, coding style and a few other things."""
-
-    with chdir(BASE_FOLDER):
-        lint(ctx)
-
-        log.write('Checking MANIFEST.in...')
-        ctx.run('check-manifest')
-
-        log.write('Checking metadata...')
-        ctx.run('python setup.py check --strict --metadata')
+    log.write('Running ruff linter...')
+    ctx.run('ruff check src')
 
 
 @task(help={
@@ -164,7 +104,7 @@ def check(ctx):
 def test(ctx, checks=False, doctest=False):
     """Run all tests."""
     if checks:
-        check(ctx)
+        lint(ctx)
 
     with chdir(BASE_FOLDER):
         cmd = ['pytest']
@@ -191,29 +131,6 @@ def prepare_changelog(ctx):
 
 
 @task(help={
-      'gh_io_folder': 'Folder where GH_IO.dll is located. Defaults to the Rhino 6.0 installation folder (platform-specific).',
-      'ironpython': 'Command for running the IronPython executable. Defaults to `ipy`.'})
-def build_ghuser_components(ctx, gh_io_folder=None, ironpython=None):
-    """Build Grasshopper user objects from source"""
-    with chdir(BASE_FOLDER):
-        with tempfile.TemporaryDirectory('actions.ghcomponentizer') as action_dir:
-            target_dir = source_dir = os.path.abspath('src/compas_ghpython/components')
-            ctx.run('git clone https://github.com/compas-dev/compas-actions.ghpython_components.git {}'.format(action_dir))
-
-            if not gh_io_folder:
-                import compas_ghpython
-                gh_io_folder = compas_ghpython.get_grasshopper_plugin_path('6.0')
-
-            if not ironpython:
-                ironpython = 'ipy'
-
-            gh_io_folder = os.path.abspath(gh_io_folder)
-            componentizer_script = os.path.join(action_dir, 'componentize.py')
-
-            ctx.run('{} {} {} {} --ghio "{}"'.format(ironpython, componentizer_script, source_dir, target_dir, gh_io_folder))
-
-
-@task(help={
       'release_type': 'Type of release follows semver rules. Must be one of: major, minor, patch.'})
 def release(ctx, release_type):
     """Releases the project in one swift command!"""
@@ -221,10 +138,11 @@ def release(ctx, release_type):
         raise Exit('The release type parameter is invalid.\nMust be one of: major, minor, patch.')
 
     # Run checks
-    ctx.run('invoke check test')
+    lint(ctx)
+    test(ctx)
 
     # Bump version and git tag it
-    ctx.run('bump2version %s --verbose' % release_type)
+    ctx.run('bump-my-version bump %s --verbose' % release_type)
 
     # Prepare the change log for the next release
     prepare_changelog(ctx)

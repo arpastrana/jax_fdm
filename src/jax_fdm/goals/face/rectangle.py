@@ -1,11 +1,9 @@
+import jax.numpy as jnp
 from jax import vmap
 
-import jax.numpy as jnp
-
+from jax_fdm.geometry import cosines_angles_polygon
 from jax_fdm.goals import ScalarGoal
 from jax_fdm.goals.face import FaceGoal
-
-from jax_fdm.geometry import cosines_angles_polygon
 
 
 class FaceRectangularGoal(ScalarGoal, FaceGoal):

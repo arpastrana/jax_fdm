@@ -3,10 +3,8 @@ A bunch of goals to strive for.
 """
 from jax_fdm.geometry import length_vector
 from jax_fdm.geometry import normalize_vector
-
 from jax_fdm.goals import ScalarGoal
 from jax_fdm.goals import VectorGoal
-
 from jax_fdm.goals.node import NodeGoal
 
 

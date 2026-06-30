@@ -1,13 +1,12 @@
 try:
+    from lineax import SVD
     from optimistix import Newton
     from optimistix import root_find
-    from lineax import SVD
 
 except ImportError:
     pass
 
 from jax_fdm.equilibrium.solvers import solver_optimistix
-
 
 # ==========================================================================
 # Optimistix solvers

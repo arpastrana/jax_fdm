@@ -1,10 +1,8 @@
+import jax.numpy as jnp
 import numpy as np
 
-import jax.numpy as jnp
-
-from jax_fdm.geometry import angle_vectors
-
 from jax_fdm.constraints.edge import EdgeConstraint
+from jax_fdm.geometry import angle_vectors
 
 
 class EdgeAngleConstraint(EdgeConstraint):

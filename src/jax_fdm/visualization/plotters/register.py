@@ -1,11 +1,8 @@
 from compas.artists import Artist
-
 from jax_fdm.datastructures import FDNetwork
-
 from jax_fdm.visualization.plotters import FDNetworkPlotterArtist
 from jax_fdm.visualization.plotters import FDVector
 from jax_fdm.visualization.plotters import FDVectorPlotterArtist
-
 
 __all__ = ["register_artists"]
 

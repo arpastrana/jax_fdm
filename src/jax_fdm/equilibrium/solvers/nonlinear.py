@@ -1,10 +1,8 @@
 from functools import partial
 
-from jaxopt.linear_solve import solve_normal_cg
-
 from jax import custom_vjp
 from jax import vjp
-
+from jaxopt.linear_solve import solve_normal_cg
 
 # ==========================================================================
 # Custom VJP via implicit differentiation

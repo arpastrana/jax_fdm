@@ -1,18 +1,15 @@
-from jax import jit
 import jax.numpy as jnp
 
+from compas.geometry import Frame
 from compas.geometry import Polygon
 from compas.geometry import Rotation
-from compas.geometry import Frame
 from compas.geometry import Vector
-
-from jax_fdm.geometry import WORLD_XYZ
 from jax_fdm.geometry import WORLD_X
+from jax_fdm.geometry import WORLD_XYZ
 from jax_fdm.geometry import WORLD_Y
 from jax_fdm.geometry import WORLD_Z
 from jax_fdm.geometry import line_lcs
 from jax_fdm.geometry import polygon_lcs
-
 
 load = Vector(0.0, 0.0, 1.0)
 load_scale = 2.0

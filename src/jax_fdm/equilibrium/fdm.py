@@ -1,20 +1,15 @@
 import numpy as np
 
 from jax_fdm import DTYPE_JAX
-
-from jax_fdm.datastructures import FDNetwork
 from jax_fdm.datastructures import FDMesh
-
+from jax_fdm.datastructures import FDNetwork
+from jax_fdm.equilibrium import EquilibriumMeshStructure
+from jax_fdm.equilibrium import EquilibriumMeshStructureSparse
 from jax_fdm.equilibrium import EquilibriumModel
 from jax_fdm.equilibrium import EquilibriumModelSparse
-
-from jax_fdm.equilibrium import EquilibriumStructure
-from jax_fdm.equilibrium import EquilibriumMeshStructure
-from jax_fdm.equilibrium import EquilibriumStructureSparse
-from jax_fdm.equilibrium import EquilibriumMeshStructureSparse
-
 from jax_fdm.equilibrium import EquilibriumParametersState
-
+from jax_fdm.equilibrium import EquilibriumStructure
+from jax_fdm.equilibrium import EquilibriumStructureSparse
 
 # ==========================================================================
 # Form-finding

@@ -1,14 +1,12 @@
+from typing import NamedTuple
+from typing import Union
+
 import jax
 import jax.numpy as jnp
 
-from typing import Union
-from typing import NamedTuple
-
-from jax_fdm.datastructures import FDNetwork
-from jax_fdm.datastructures import FDMesh
-
 from jax_fdm import DTYPE_JAX
-
+from jax_fdm.datastructures import FDMesh
+from jax_fdm.datastructures import FDNetwork
 
 # ==========================================================================
 # Equilibrium state

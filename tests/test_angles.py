@@ -2,18 +2,17 @@
 Unit tests for angles_polygon.
 """
 from itertools import cycle
+
 import jax
 import jax.numpy as jnp
 from jax import vmap
 
 from compas.geometry import Polygon
 from compas.geometry import Rotation
-
 from jax_fdm.datastructures import FDMesh
 from jax_fdm.equilibrium import EquilibriumMeshStructure
 from jax_fdm.geometry import angles_polygon
 from jax_fdm.geometry import cosines_angles_polygon
-
 
 # Analytical internal angles for regular n-gons: (n-2)*π/n radians
 TRIANGLE_ANGLE_RAD = jnp.pi / 3  # 60°

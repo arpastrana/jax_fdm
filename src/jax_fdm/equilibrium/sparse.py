@@ -4,14 +4,11 @@ NOTE: Sparse solver does not support forward mode auto-differentiation yet.
 import jax
 import jax.numpy as jnp
 import numpy as np
-
-from scipy.sparse import csc_matrix
-from scipy.sparse.linalg import spsolve as spsolve_scipy
-from scipy.sparse.linalg import splu as splu_scipy
-
 from jax.experimental.sparse import CSC
 from jax.experimental.sparse.linalg import spsolve as spsolve_jax
-
+from scipy.sparse import csc_matrix
+from scipy.sparse.linalg import splu as splu_scipy
+from scipy.sparse.linalg import spsolve as spsolve_scipy
 
 # ==========================================================================
 # Sparse linear solver on GPU
