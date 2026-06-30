@@ -108,4 +108,6 @@ addopts = ["-ra", "--strict-markers", "--doctest-modules", "--tb=short"]
 markers = [
     # Deletable scaffolding; run the COMPAS-free suite with -m "not compas_xcheck".
     "compas_xcheck: cross-check a result against COMPAS",
+    # Slow tests; skip them with -m "not slow".
+    "slow: a slow-running test",
 ]
