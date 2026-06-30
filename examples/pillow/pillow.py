@@ -2,40 +2,32 @@
 Solve a constrained force density problem using gradient-based optimization.
 """
 import os
-
 from random import random
 
 import numpy as np
+
+# quads
+from compas_singular.datastructures import CoarseQuadMesh
 
 # compas
 from compas.colors import Color
 from compas.geometry import Line
 from compas.geometry import add_vectors
-
-# quads
-from compas_singular.datastructures import CoarseQuadMesh
+from jax_fdm.constraints import EdgeForceConstraint
+from jax_fdm.constraints import EdgeLengthConstraint
+from jax_fdm.constraints import NodeCurvatureConstraint
 
 # jax_fdm
 from jax_fdm.datastructures import FDNetwork
-
-from jax_fdm.equilibrium import fdm
 from jax_fdm.equilibrium import constrained_fdm
-
+from jax_fdm.equilibrium import fdm
 from jax_fdm.goals import EdgeLengthGoal
-from jax_fdm.goals import NodeLineGoal
 from jax_fdm.goals import NetworkLoadPathGoal
-
-from jax_fdm.constraints import NodeCurvatureConstraint
-from jax_fdm.constraints import EdgeLengthConstraint
-from jax_fdm.constraints import EdgeForceConstraint
-
-from jax_fdm.losses import SquaredError
+from jax_fdm.goals import NodeLineGoal
 from jax_fdm.losses import Loss
-
+from jax_fdm.losses import SquaredError
 from jax_fdm.optimization import SLSQP
-
 from jax_fdm.visualization import Viewer
-
 
 # ==========================================================================
 # Initial parameters

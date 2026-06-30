@@ -2,18 +2,15 @@
 import os
 from math import pi
 
-# jax_fdm
-from jax_fdm.optimization import OptimizationRecorder
-
 from jax_fdm.datastructures import FDNetwork
-
 from jax_fdm.equilibrium import EquilibriumModel
 from jax_fdm.equilibrium import EquilibriumStructure
-from jax_fdm.equilibrium import fdm
 from jax_fdm.equilibrium import datastructure_update
+from jax_fdm.equilibrium import fdm
 
+# jax_fdm
+from jax_fdm.optimization import OptimizationRecorder
 from jax_fdm.visualization import Viewer
-
 
 # ==========================================================================
 # Read in optimization history

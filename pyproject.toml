@@ -58,6 +58,7 @@ dev = [
     "build",
     "twine",
     "invoke >=0.14",
+    "pre-commit",
 ]
 
 [tool.setuptools.dynamic]
@@ -76,6 +77,12 @@ select = ["E", "F", "I", "W"]
 [tool.ruff.lint.isort]
 force-single-line = true
 known-first-party = ["compas", "jax_fdm"]
+
+[tool.ruff.lint.per-file-ignores]
+# Re-exports and the jax x64 config run before the submodule imports.
+"src/jax_fdm/__init__.py" = ["E402", "F401"]
+# jaxtyping string-shape annotations (e.g. Float[Array, "n 3"]) trip pyflakes.
+"src/jax_fdm/equilibrium/states.py" = ["F722", "F821"]
 
 [tool.bumpversion]
 current_version = "0.10.0"

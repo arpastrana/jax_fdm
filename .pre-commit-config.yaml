@@ -1,0 +1,28 @@
+# Pre-commit hooks for jax_fdm. Install with:
+#
+#     pre-commit install
+#
+# Run against all files with:
+#
+#     pre-commit run --all-files
+#
+repos:
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.15.20
+    hooks:
+      # Lint and auto-fix (imports, pycodestyle, pyflakes). Mirrors `ruff check`
+      # in CI. The repo intentionally does not run `ruff format`.
+      - id: ruff
+        args: [--fix]
+
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v6.0.0
+    hooks:
+      # Data fixtures under data/ are excluded so the JSON files stay byte-stable.
+      - id: trailing-whitespace
+        exclude: ^data/
+      - id: end-of-file-fixer
+        exclude: ^data/
+      - id: check-yaml
+      - id: check-toml
+      - id: check-merge-conflict

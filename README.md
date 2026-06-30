@@ -56,7 +56,7 @@ conda activate jaxenv
 Next, install COMPAS and COMPAS VIEW2 via `conda`:
 
 ```bash
-conda install -c conda-forge compas==1.17.10 compas_view2==0.7.0 
+conda install -c conda-forge compas==1.17.10 compas_view2==0.7.0
 ```
 
 Finally, install JAX FDM with a one-liner via `pip`:
@@ -80,8 +80,8 @@ pip install -e ".[dev]"     # development tools (ruff, pytest, build, bump-my-ve
 
 Note that `compas_view2` is distributed through `conda-forge`, so the `viz` extra may still require a `conda` install as shown above. The `ipopt` extra needs a system Ipopt library available on your machine.
 
-### Are you a Windows user? 
- 
+### Are you a Windows user?
+
 JAX now provides official native CPU wheels for Windows, so JAX FDM should work directly.
 On Windows you may also need to install the [Microsoft Visual Studio 2019 Redistributable](https://learn.microsoft.com/en-us/cpp/windows/latest-supported-vc-redist).
 
@@ -94,7 +94,7 @@ Please refer to [JAX's installation instructions](https://docs.jax.dev/en/latest
 Suppose you are interested in generating a form in static equilibrium for a 10-meter span arch subjected to vertical point loads of 0.3 kN.
 The arch has to be a compression-only structure.
 You model the arch as a `jax_fdm` network (download the arch `json` file [here](https://github.com/arpastrana/jax_fdm/blob/main/data/json/arch.json)).
-Then, you apply a force density of -1 to all of its edges, and compute the required shape with the force density method. 
+Then, you apply a force density of -1 to all of its edges, and compute the required shape with the force density method.
 
 ```python
 from jax_fdm.datastructures import FDNetwork
@@ -154,7 +154,7 @@ Documentation is a work in progress. In the meantime, check out the scripts in t
 
 ### Notebooks
 
-> These notebooks run directly from your browser without having to install anything locally! 
+> These notebooks run directly from your browser without having to install anything locally!
 
 - [Arch](https://colab.research.google.com/drive/1_SrFuRPWxB0cG-BaZtNqitisQ7M3oUOG?usp=sharing): Control the height and the horizontal projection of a 2D arch.
 - [3D spiral](https://colab.research.google.com/drive/13hi9VsQ2PSLY2otfyDSvlX3xhpfFJ7zJ?usp=sharing): Calculate the loads required to maintain a compression-only 3D spiral in equilibrium [(Angelillo, et al. 2021)](https://doi.org/10.1016/j.engstruct.2021.112176).
@@ -165,9 +165,9 @@ Documentation is a work in progress. In the meantime, check out the scripts in t
 
 > These python scripts require a local installation of JAX FDM.
 
-- [Pointy dome](https://github.com/arpastrana/jax_fdm/blob/main/examples/dome/dome.py): Control the tilt and the coarse width of a brick dome. 
+- [Pointy dome](https://github.com/arpastrana/jax_fdm/blob/main/examples/dome/dome.py): Control the tilt and the coarse width of a brick dome.
 - [Triple-branching saddle](https://github.com/arpastrana/jax_fdm/blob/main/examples/monkey_saddle/monkey_saddle.py): Design the distribution of thrusts at the supports of a monkey saddle network while constraining the edge lengths.
-- [Saddle bridge](https://github.com/arpastrana/jax_fdm/blob/main/examples/pringle/pringle.py): Create a crease in the middle of the bridge while constraining to transversal edges of the network to a target plane. 
+- [Saddle bridge](https://github.com/arpastrana/jax_fdm/blob/main/examples/pringle/pringle.py): Create a crease in the middle of the bridge while constraining to transversal edges of the network to a target plane.
 
 ## Citation
 

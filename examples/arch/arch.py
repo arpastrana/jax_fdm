@@ -1,13 +1,10 @@
 # compas
-from compas.geometry import add_vectors
-from compas.colors import Color
 from compas.geometry import Polyline
+from compas.geometry import add_vectors
 
 # static equilibrium
 from jax_fdm.datastructures import FDNetwork
-
 from jax_fdm.equilibrium import fdm
-
 from jax_fdm.visualization import Viewer
 
 # ==========================================================================
