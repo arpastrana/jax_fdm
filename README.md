@@ -65,7 +65,7 @@ Finally, install JAX FDM with a one-liner via `pip`:
 pip install jax-fdm
 ```
 
-JAX FDM requires Python 3.10+ and builds on JAX, NumPy, SciPy, Equinox, and the COMPAS framework. See `requirements.txt` for the complete dependency list.
+JAX FDM requires Python 3.10+ and builds on JAX, NumPy, SciPy, Equinox, and the COMPAS framework. See `pyproject.toml` for the complete dependency list.
 For visualization, it uses COMPAS_VIEW2 0.7.0.
 
 #### Optional extras

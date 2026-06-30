@@ -26,6 +26,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Modernized `.editorconfig`: dropped the dead `*.bat`/`*.cmd`/`*.ps1` and `Makefile` blocks, added a `*.toml` rule, broadened the YAML glob to `*.{yml,yaml}`, and switched the project URL to HTTPS.
 - Enabled the `W` (pycodestyle warnings, e.g. trailing whitespace and final newline) rule set in ruff, so the whitespace conventions in `.editorconfig` are now enforced by the linter.
 - Sorted and grouped imports across the source tree to satisfy ruff's `I` (isort) rule.
+- Removed the `conda_osx.yml` and `conda_linux.yml` environment files. They were byte-for-byte identical, unreferenced, and provisioned a stale dev toolchain. The `conda`-only dependencies (`compas_view2`, `cyipopt`) are documented in the README installation section.
+- Consolidated dependency declarations into `pyproject.toml`. Runtime dependencies are now listed inline under `[project.dependencies]` (no longer read dynamically from a file), and the `requirements.txt` and `requirements-dev.txt` files were removed. Development dependencies live in the `[dev]` optional-dependencies extra; install them with `pip install -e ".[dev]"`.
 
 
 ## [0.10.0] 2026-05-07

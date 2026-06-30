@@ -12,7 +12,7 @@ In short, this is how that works.
 3. Install development dependencies:
 
    ```bash
-   pip install -r requirements-dev.txt
+   pip install -e ".[dev]"
    ```
 
 4. Make sure all tests pass:

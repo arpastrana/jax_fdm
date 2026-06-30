@@ -31,7 +31,16 @@ classifiers = [
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: Implementation :: CPython",
 ]
-dynamic = ["version", "dependencies"]
+dynamic = ["version"]
+dependencies = [
+    "jax[cpu]",
+    "compas<2.0",
+    "scipy",
+    "jaxopt",
+    "equinox",
+    "lineax",
+    "optimistix",
+]
 
 [project.urls]
 Homepage = "https://github.com/arpastrana/jax_fdm"
@@ -53,7 +62,6 @@ dev = [
 
 [tool.setuptools.dynamic]
 version = { attr = "jax_fdm.__version__" }
-dependencies = { file = ["requirements.txt"] }
 
 [tool.setuptools.packages.find]
 where = ["src"]
