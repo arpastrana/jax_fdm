@@ -30,6 +30,7 @@ class Optimizer:
         self.disp = disp
         self.pm = None
         self.loads_static = None
+        self.result = None
 
     def constraints(self, constraints, model, params_opt):
         """
@@ -200,6 +201,7 @@ class Optimizer:
 
         # minimize
         res_q = self._minimize(opt_problem)
+        self.result = res_q
         loss_and_grad_fn = opt_problem["fun"]
         loss_val, grad_val = loss_and_grad_fn(res_q.x)
 
