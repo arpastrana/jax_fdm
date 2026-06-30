@@ -9,8 +9,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Added optional dependency extras to the package metadata: `viz` (`compas_view2`, `matplotlib`), `ipopt` (`cyipopt`), and `dev`. Install them with, e.g., `pip install -e ".[viz]"`.
+
 ### Changed
 
+- Migrated packaging from `setup.py`/`setup.cfg` to `pyproject.toml` with the setuptools build backend. Packages are now discovered with `[tool.setuptools.packages.find]` rooted at `src`, which fixes a long-standing bug where `packages=["jax_fdm"]` shipped only the top-level package and omitted every subpackage from the built wheel. The version is single-sourced dynamically from `jax_fdm.__version__`, and runtime dependencies are read dynamically from `requirements.txt` (unchanged). Tool configuration for `ruff` (replacing `flake8`/`isort`/`pydocstyle`) and `pytest` now lives in `pyproject.toml`. Also dropped the incorrect `bdist_wheel universal=1` flag that produced a `py2.py3` wheel tag.
 - Patched `numpy.int=int` in `visualization.viewer` so that `compas_view2=0.7.0` remains functional with `numpy>=1.24` (the version that deprecated `numpy.int`). Core package dependencies like `jax` require later versions of numpy, so pinning `numpy` to an antique version was unrealistic. This patch must be removed once we complete migration to `compas>2` and we can install `compas_viewers` instead of the now deprecated `compas_view2`.
 - Cached `FDNetworkArtist.node_xyz` to avoid recomputing this dictionary every single time an edge was drawn. This is an upstream bug from `compas.artists`, which might be fixed by now, since we currently use a legacy version of this dependency. With caching, we reduced plotting time by one order of magnitude. The change was essential when plotting frames to create optimization history animations.
 
