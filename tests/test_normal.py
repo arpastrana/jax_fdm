@@ -1,13 +1,11 @@
 from math import pi
-from math import sqrt
 
-import numpy as np
 import jax.numpy as jnp
+import numpy as np
 
 from compas.geometry import Polygon
 from compas.geometry import Rotation
 from compas.geometry import normal_polygon as compas_normal_polygon
-
 from jax_fdm.geometry import normal_polygon
 
 

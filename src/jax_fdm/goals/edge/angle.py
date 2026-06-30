@@ -1,9 +1,7 @@
+import jax.numpy as jnp
 import numpy as np
 
-import jax.numpy as jnp
-
 from jax_fdm.geometry import angle_vectors
-
 from jax_fdm.goals import ScalarGoal
 from jax_fdm.goals.edge import EdgeGoal
 

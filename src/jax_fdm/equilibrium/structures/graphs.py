@@ -1,21 +1,15 @@
-import numpy as np
-from scipy.sparse import coo_matrix
-
+import equinox as eqx
 import jax
 import jax.numpy as jnp
-
-import equinox as eqx
+import numpy as np
+from jax.experimental.sparse import BCOO
+from scipy.sparse import coo_matrix
 
 from compas.numerical import connectivity_matrix
 from compas.utilities import pairwise
-
-from jax.experimental.sparse import BCOO
-
-from jax_fdm import DTYPE_NP
 from jax_fdm import DTYPE_JAX
-
+from jax_fdm import DTYPE_NP
 from jax_fdm.equilibrium.structures.mixins import IndexingMixins
-
 
 # ==========================================================================
 # Graph

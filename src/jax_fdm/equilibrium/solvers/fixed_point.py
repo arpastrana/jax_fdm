@@ -1,23 +1,16 @@
 from functools import partial
 
 import jax
-
-from jax.scipy.sparse.linalg import bicgstab
-from jax.experimental.sparse import JAXSparse
-
 import jax.numpy as jnp
-
+from equinox.internal import while_loop
 from jax import custom_vjp
 from jax import jacfwd
 from jax import vjp
-
+from jax.experimental.sparse import JAXSparse
 from jax.lax import custom_linear_solve
-
-from jaxopt import FixedPointIteration
+from jax.scipy.sparse.linalg import bicgstab
 from jaxopt import AndersonAcceleration
-
-from equinox.internal import while_loop
-
+from jaxopt import FixedPointIteration
 from lineax import FunctionLinearOperator
 from lineax import NormalCG
 from lineax import linear_solve
@@ -25,7 +18,6 @@ from lineax import linear_solve
 from jax_fdm.equilibrium.solvers.jaxopt import solver_jaxopt
 from jax_fdm.equilibrium.sparse import splu_cpu as splu
 from jax_fdm.equilibrium.sparse import splu_solve_cpu as splu_solve
-
 
 # ==========================================================================
 # Iterative solvers - JAXOPT

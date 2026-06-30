@@ -1,11 +1,8 @@
 import numpy as np
-
 from jax import vmap
 
 from jax_fdm import DTYPE_NP
-
 from jax_fdm.goals import GoalState
-
 
 # ==========================================================================
 # Base goal

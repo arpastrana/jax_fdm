@@ -1,18 +1,15 @@
 """
 A gradient-based optimizer that deals with equality and inequality constraints.
 """
+from functools import partial
 from itertools import groupby
 
-from functools import partial
-
-from jax import jit
 from jax import jacfwd
-
+from jax import jit
 from scipy.optimize import NonlinearConstraint
 
 from jax_fdm.optimization import Collection
 from jax_fdm.optimization.optimizers import Optimizer
-
 
 # ==========================================================================
 # Constrained optimizer

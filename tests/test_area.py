@@ -1,12 +1,11 @@
 from math import pi
 
-import numpy as np
 import jax.numpy as jnp
+import numpy as np
 
 from compas.geometry import Polygon
 from compas.geometry import Rotation
 from compas.geometry import area_polygon as compas_area_polygon
-
 from jax_fdm.geometry import area_polygon
 
 

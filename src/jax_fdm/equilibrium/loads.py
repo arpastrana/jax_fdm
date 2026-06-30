@@ -1,19 +1,16 @@
 import jax.numpy as jnp
-
 from jax import vmap
 
 from jax_fdm.geometry import area_triangle
-from jax_fdm.geometry import normal_polygon
 from jax_fdm.geometry import length_vector
 from jax_fdm.geometry import line_lcs
-from jax_fdm.geometry import polygon_lcs
-
+from jax_fdm.geometry import normal_polygon
 
 # ==========================================================================
 # Face loads
 # ==========================================================================
-
 from jax_fdm.geometry import normalize_vector
+from jax_fdm.geometry import polygon_lcs
 
 
 def nodes_load_from_faces(xyz, faces_load, structure, is_local=False):
@@ -187,6 +184,7 @@ def nodes_tributary_edges_load(edges_load, structure):
 if __name__ == "__main__":
 
     import os
+
     from jax_fdm import DATA
     from jax_fdm.datastructures import FDMesh
     from jax_fdm.equilibrium import EquilibriumMeshStructure

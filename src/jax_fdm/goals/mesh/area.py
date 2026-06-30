@@ -1,12 +1,9 @@
 import jax.numpy as jnp
-
 from jax import vmap
 
-from jax_fdm.goals import ScalarGoal
-
-from jax_fdm.goals.mesh import MeshGoal
-
 from jax_fdm.geometry import area_polygon
+from jax_fdm.goals import ScalarGoal
+from jax_fdm.goals.mesh import MeshGoal
 
 
 class MeshAreaGoal(ScalarGoal, MeshGoal):

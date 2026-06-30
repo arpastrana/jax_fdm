@@ -6,12 +6,9 @@ from time import perf_counter
 from jax import jit
 
 from jax_fdm.equilibrium import LoadState
-
-from jax_fdm.parameters import ParameterManager
-from jax_fdm.parameters import EdgeForceDensityParameter
-
 from jax_fdm.optimization.optimizers import Optimizer
-
+from jax_fdm.parameters import EdgeForceDensityParameter
+from jax_fdm.parameters import ParameterManager
 
 # ==========================================================================
 # Optimizers

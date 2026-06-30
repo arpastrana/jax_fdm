@@ -1,26 +1,21 @@
 """
 A gradient-based optimizer.
 """
-from time import perf_counter
 from itertools import groupby
+from time import perf_counter
 
 import jax.numpy as jnp
-
-from jax import jit
 from jax import grad
+from jax import jit
 from jax import value_and_grad
-
-from scipy.optimize import minimize
 from scipy.optimize import Bounds
+from scipy.optimize import minimize
 
-from jax_fdm.equilibrium import LoadState
 from jax_fdm.equilibrium import EquilibriumParametersState
-
-from jax_fdm.parameters import ParameterManager
-from jax_fdm.parameters import EdgeForceDensityParameter
-
+from jax_fdm.equilibrium import LoadState
 from jax_fdm.optimization import Collection
-
+from jax_fdm.parameters import EdgeForceDensityParameter
+from jax_fdm.parameters import ParameterManager
 
 # ==========================================================================
 # Optimizer

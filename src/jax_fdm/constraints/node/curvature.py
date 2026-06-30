@@ -1,9 +1,7 @@
+import jax.numpy as jnp
 import numpy as np
 
-import jax.numpy as jnp
-
 from jax_fdm.constraints.node import NodeConstraint
-
 from jax_fdm.geometry import curvature_point_polygon
 
 

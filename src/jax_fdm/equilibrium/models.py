@@ -1,27 +1,19 @@
-from equinox import is_array
-
-from jax.debug import print as jax_print
-
 import jax.numpy as jnp
-
+from equinox import is_array
+from jax.debug import print as jax_print
 from jax.experimental.sparse import CSC
 
-from jax_fdm.equilibrium.states import EquilibriumState
-from jax_fdm.equilibrium.states import EquilibriumParametersState
-
-from jax_fdm.equilibrium.sparse import sparse_solve as spsolve
-
-from jax_fdm.equilibrium.solvers import solver_forward
-from jax_fdm.equilibrium.solvers import solver_fixedpoint_implicit
-from jax_fdm.equilibrium.solvers import solver_nonlinear_implicit
-
+from jax_fdm.equilibrium.loads import nodes_load_from_edges
+from jax_fdm.equilibrium.loads import nodes_load_from_faces
 from jax_fdm.equilibrium.solvers import is_solver_fixedpoint
 from jax_fdm.equilibrium.solvers import is_solver_leastsquares
 from jax_fdm.equilibrium.solvers import is_solver_root_finding
-
-from jax_fdm.equilibrium.loads import nodes_load_from_faces
-from jax_fdm.equilibrium.loads import nodes_load_from_edges
-
+from jax_fdm.equilibrium.solvers import solver_fixedpoint_implicit
+from jax_fdm.equilibrium.solvers import solver_forward
+from jax_fdm.equilibrium.solvers import solver_nonlinear_implicit
+from jax_fdm.equilibrium.sparse import sparse_solve as spsolve
+from jax_fdm.equilibrium.states import EquilibriumParametersState
+from jax_fdm.equilibrium.states import EquilibriumState
 
 # ==========================================================================
 # Equilibrium model

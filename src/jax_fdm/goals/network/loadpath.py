@@ -1,7 +1,6 @@
 import jax.numpy as jnp
 
 from jax_fdm.goals import ScalarGoal
-
 from jax_fdm.goals.network import NetworkGoal
 
 

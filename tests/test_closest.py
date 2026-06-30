@@ -1,5 +1,5 @@
-import numpy as np
 import jax.numpy as jnp
+import numpy as np
 
 from compas.geometry import closest_point_on_line as compas_closest_point_on_line
 from jax_fdm.geometry import closest_point_on_line

@@ -1,14 +1,10 @@
+from collections.abc import Iterable
 from math import fabs
 
-from collections.abc import Iterable
-
 from compas.artists import NetworkArtist
-
 from compas.colors import Color
 from compas.colors import ColorMap
-
 from compas.utilities import remap_values
-
 
 __all__ = ["FDNetworkArtist"]
 

@@ -1,21 +1,14 @@
-import numpy as np
-
 import jax
-
 import jax.numpy as jnp
-
+import numpy as np
 from jax.experimental.sparse import BCOO
 
 from compas.numerical import face_matrix as compas_face_matrix
 from compas.utilities import pairwise
-
 from jax_fdm import DTYPE_INT_NP
-
 from jax_fdm.equilibrium.structures.graphs import Graph
 from jax_fdm.equilibrium.structures.graphs import GraphSparse
-
 from jax_fdm.equilibrium.structures.mixins import MeshIndexingMixins
-
 
 # ==========================================================================
 # Mesh

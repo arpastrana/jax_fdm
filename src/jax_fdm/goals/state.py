@@ -1,7 +1,7 @@
 from typing import NamedTuple
 
-import numpy as np
 import jax.numpy as jnp
+import numpy as np
 
 
 class GoalState(NamedTuple):

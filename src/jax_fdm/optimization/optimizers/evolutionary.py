@@ -2,12 +2,10 @@
 A collection of evolutionary optimizers.
 """
 from jax import vmap
-
 from scipy.optimize import differential_evolution
 from scipy.optimize import dual_annealing
 
 from jax_fdm.optimization.optimizers import GradientFreeOptimizer
-
 
 # ==========================================================================
 # Optimizers
