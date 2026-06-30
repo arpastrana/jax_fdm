@@ -63,7 +63,7 @@ line-length = 180
 target-version = "py310"
 
 [tool.ruff.lint]
-select = ["E", "F", "I"]
+select = ["E", "F", "I", "W"]
 
 [tool.ruff.lint.isort]
 force-single-line = true
