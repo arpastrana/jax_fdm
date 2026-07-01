@@ -11,8 +11,9 @@ from jax.lax import custom_linear_solve
 from jax.scipy.sparse.linalg import bicgstab
 from jaxopt import AndersonAcceleration
 from jaxopt import FixedPointIteration
+from lineax import CG
 from lineax import FunctionLinearOperator
-from lineax import NormalCG
+from lineax import Normal
 from lineax import linear_solve
 
 from jax_fdm.equilibrium.solvers.jaxopt import solver_jaxopt
@@ -393,7 +394,7 @@ def fixed_point_bwd_adjoint(solver, solver_config, f, res, vec):
     # Solve adjoint function iteratively
     input_structure = jax.ShapeDtypeStruct(vec.shape, vec.dtype)
     A_op = FunctionLinearOperator(A_fn, input_structure)
-    solver = NormalCG(rtol=1e-6, atol=1e-6)
+    solver = Normal(CG(rtol=1e-6, atol=1e-6))
     solution = linear_solve(A_op, vec, solver, throw=False)
     w = solution.value
 
