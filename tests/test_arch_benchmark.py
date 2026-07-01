@@ -7,6 +7,10 @@ Reference: R. Pastrana, D. Oktay, K. U. Bletzinger, R. P. Adams, S. Adriaenssens
 structures," Computer Methods in Applied Mechanics and Engineering 458
 (2026) 118783, doi:10.1016/j.cma.2026.118783.
 
+The benchmark itself originates with A. Liew, "Constrained Force Density
+Method optimisation for form-finding," Structures 28 (2020) 1845-1856,
+doi:10.1016/j.istruc.2020.09.078; the DFDM paper reproduces it as a reference.
+
 The inverse problem finds the rise of a compression-only planar arch, of
 fixed horizontal projection and under a uniform vertical load, that minimizes
 its load path Omega. The continuous solution is known in closed form, so no
