@@ -28,7 +28,6 @@ classifiers = [
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
-    "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: Implementation :: CPython",
 ]
 dynamic = ["version"]
@@ -105,3 +104,9 @@ testpaths = ["tests", "src/jax_fdm"]
 norecursedirs = ["migrations"]
 python_files = ["test_*.py", "*_test.py", "tests.py"]
 addopts = ["-ra", "--strict-markers", "--doctest-modules", "--tb=short"]
+markers = [
+    # Deletable scaffolding; run the COMPAS-free suite with -m "not compas_xcheck".
+    "compas_xcheck: cross-check a result against COMPAS",
+    # Slow tests; skip them with -m "not slow".
+    "slow: a slow-running test",
+]

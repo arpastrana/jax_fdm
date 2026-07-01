@@ -6,7 +6,6 @@ from jax.experimental.sparse import BCOO
 from scipy.sparse import coo_matrix
 
 from compas.numerical import connectivity_matrix
-from compas.utilities import pairwise
 from jax_fdm import DTYPE_JAX
 from jax_fdm import DTYPE_NP
 from jax_fdm.equilibrium.structures.mixins import IndexingMixins
@@ -175,24 +174,3 @@ def _return_matrix(M, rtype):
     if rtype == "coo":
         return M.tocoo()
     return M
-
-
-# ==========================================================================
-# Main
-# ==========================================================================
-
-if __name__ == "__main__":
-
-    num_nodes = 5
-    nodes = list(range(num_nodes))
-    edges = [edge for edge in pairwise(nodes)]
-
-    nodes = jnp.array(nodes, dtype=jnp.int64)
-    edges = jnp.array(edges, dtype=jnp.int64)
-
-    graph = Graph(nodes, edges)
-    graph_sparse = GraphSparse(nodes, edges)
-
-    assert jnp.allclose(graph_sparse.connectivity, graph.connectivity)
-
-    print("All good, cowboy!")

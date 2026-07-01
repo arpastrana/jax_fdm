@@ -14,8 +14,15 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-latest, macos-latest]
-        python-version: ['3.10', '3.11']
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        python-version: ['3.10']
+        # Cover the supported ceiling (3.11) on one runner without fanning it
+        # out across every OS. 3.12 is not yet supported: the legacy compas<2.0
+        # pin imports the removed distutils module. Revisit after the compas 2.x
+        # migration.
+        include:
+          - os: ubuntu-latest
+            python-version: '3.11'
 
     steps:
       - uses: actions/checkout@v4
