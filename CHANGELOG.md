@@ -24,7 +24,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Patched `numpy.int=int` in `visualization.viewer` so `compas_view2=0.7.0` keeps working with `numpy>=1.24` (which deprecated `numpy.int`), since `jax` requires modern numpy. Remove this once we migrate to `compas>2` and `compas_viewers`.
 - Cached `FDNetworkArtist.node_xyz` instead of recomputing it for every drawn edge, cutting plotting time by an order of magnitude (an upstream `compas.artists` bug in the legacy version we use).
 - `Optimizer` now retains the backend result of its last solve on `self.result` (the scipy `OptimizeResult`), exposing the convergence status, message, and multipliers that `solve` previously discarded. `constrained_fdm` still returns the equilibrium network unchanged.
-- Added Windows to the `build.yml` test matrix: Python 3.10 now runs on Ubuntu, macOS, and Windows plus one Ubuntu job on 3.12, covering the supported floor and ceiling within the previous four-job count and closing a gap where 3.12 was advertised but never tested.
+- Added Windows to the `build.yml` test matrix: Python 3.10 now runs on Ubuntu, macOS, and Windows plus one Ubuntu job on 3.11, covering the supported floor and ceiling within the previous four-job count.
 
 ### Removed
 
