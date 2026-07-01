@@ -5,7 +5,6 @@ import numpy as np
 from jax.experimental.sparse import BCOO
 from scipy.sparse import coo_matrix
 
-from compas.numerical import connectivity_matrix
 from jax_fdm import DTYPE_JAX
 from jax_fdm import DTYPE_NP
 from jax_fdm.equilibrium.structures.mixins import IndexingMixins
@@ -136,6 +135,23 @@ class GraphSparse(Graph):
 # Helper functions
 # ==========================================================================
 
+def connectivity_matrix(edges, rtype="array"):
+    """
+    Creates a connectivity matrix from a list of vertex index pairs.
+
+    Each row represents an edge, with -1 in the start node's column and +1 in
+    the end node's column.
+    """
+    m = len(edges)
+    data = np.array([-1] * m + [1] * m)
+    rows = np.array(list(range(m)) + list(range(m)))
+    cols = np.array([edge[0] for edge in edges] + [edge[1] for edge in edges])
+
+    C = coo_matrix((data, (rows, cols))).asfptype()
+
+    return build_matrix(C, rtype)
+
+
 def adjacency_matrix(edges, rtype="array"):
     """
     Creates a vertex-vertex adjacency matrix.
@@ -159,10 +175,13 @@ def adjacency_matrix(edges, rtype="array"):
     )
 
     # convert to floating point matrix
-    return _return_matrix(A.asfptype(), rtype)
+    return build_matrix(A.asfptype(), rtype)
 
 
-def _return_matrix(M, rtype):
+def build_matrix(M, rtype):
+    """
+    Returns a scipy sparse matrix in the requested format.
+    """
     if rtype == "list":
         return M.toarray().tolist()
     if rtype == "array":

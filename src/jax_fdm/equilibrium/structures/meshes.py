@@ -2,12 +2,12 @@ import jax
 import jax.numpy as jnp
 import numpy as np
 from jax.experimental.sparse import BCOO
+from scipy.sparse import coo_matrix
 
-from compas.numerical import face_matrix as compas_face_matrix
-from compas.utilities import pairwise
 from jax_fdm import DTYPE_INT_NP
 from jax_fdm.equilibrium.structures.graphs import Graph
 from jax_fdm.equilibrium.structures.graphs import GraphSparse
+from jax_fdm.equilibrium.structures.graphs import build_matrix
 from jax_fdm.equilibrium.structures.mixins import MeshIndexingMixins
 
 # ==========================================================================
@@ -88,7 +88,7 @@ class Mesh(Graph, MeshIndexingMixins):
             for findex, face in enumerate(self.faces):
                 face = [vkey for vkey in face if vkey >= 0]
                 face_loop = np.concatenate((face, face[:1]))
-                for u, v in pairwise(face_loop):
+                for u, v in zip(face_loop, face_loop[1:]):
                     # iterate one one time clockwise, another counter clockwise
                     halfedge1 = (int(u), int(v))
                     halfedge2 = (int(v), int(u))
@@ -120,7 +120,7 @@ class Mesh(Graph, MeshIndexingMixins):
         halfedges = []
         for face in faces:
             face_loop = np.concatenate((face, face[:1]))
-            for u, v in pairwise(face_loop):
+            for u, v in zip(face_loop, face_loop[1:]):
                 halfedge = (int(u), int(v))
                 halfedges.append(halfedge)
 
@@ -246,4 +246,13 @@ def face_matrix(face_vertices, rtype="array", normalize=True):
         face_clean = [vertex for vertex in face if vertex >= 0]
         face_vertices_clean.append(face_clean)
 
-    return compas_face_matrix(face_vertices_clean, rtype, normalize)
+    if normalize:
+        f = np.array([(i, j, 1.0 / len(vertices))
+                      for i, vertices in enumerate(face_vertices_clean) for j in vertices])
+    else:
+        f = np.array([(i, j, 1.0)
+                      for i, vertices in enumerate(face_vertices_clean) for j in vertices])
+
+    F = coo_matrix((f[:, 2], (f[:, 0].astype(int), f[:, 1].astype(int))))
+
+    return build_matrix(F, rtype)

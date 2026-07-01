@@ -40,7 +40,13 @@ class LBFGSB(Optimizer):
         extra["maxls"] = self.maxls
         extra["maxcor"] = self.maxcor
 
-        return super().options(extra)
+        options = super().options(extra)
+
+        # scipy>=1.16 dropped `disp` from L-BFGS-B's accepted options (and it has
+        # no options-based verbosity control left), so passing it warns.
+        options.pop("disp", None)
+
+        return options
 
 
 class LBFGSBS(LBFGSB):
