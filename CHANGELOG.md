@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Added `tests/test_adjoint_routing.py`, which pins *which* differentiation path each model configuration executes (linear solve at `tmax=1`, implicit adjoint at `tmax>1` with `implicit_diff=True`, unrolled autodiff otherwise) by spying on the routing functions rather than the numbers. The gradient-correctness tests pass regardless of the path taken, so these guard against a refactor silently rerouting the backward pass. The adjoint path is covered for both dense and sparse stiffness matrices, and the assertions are execution-only, so they stay backend- and precision-independent.
 - Added a COMPAS-free test suite under `tests/` that pins the force density engine behavior (solver, optimizer, recorder, connectivity, load assembly) ahead of the COMPAS 2.x migration. The tests are invariant-first, so only two small "golden" files are committed. COMPAS cross-checks are quarantined behind a `compas_xcheck` marker.
 - Added `tests/test_reference_solver.py`, cross-validating the solver against an independent structural-analysis solver (Stiff3D by TUM): two self-stressed reference networks from committed CSV fixtures are recovered to within `1e-8`.
 - Added `tests/test_optimizer_parameters.py`, covering previously untested nodal load parameters (to `1e-9`) and grouped force-density, support, and load parameters across all three axes. The load sweep also guards the Y-component regression.
