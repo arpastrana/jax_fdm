@@ -14,8 +14,13 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-latest, macos-latest]
-        python-version: ['3.10', '3.11']
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        python-version: ['3.10']
+        # Cover the supported ceiling (3.12) on one runner without fanning it
+        # out across every OS.
+        include:
+          - os: ubuntu-latest
+            python-version: '3.12'
 
     steps:
       - uses: actions/checkout@v4
