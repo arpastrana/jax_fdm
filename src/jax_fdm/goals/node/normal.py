@@ -137,4 +137,4 @@ class NodeNormalAngleGoal(ScalarGoal, NodeGoal):
         """
         normal = self.node_normal(eqstate, index)
 
-        return angle_vectors(normal, self.vector[index, :])
+        return jnp.atleast_1d(angle_vectors(normal, self.vector[index, :]))
