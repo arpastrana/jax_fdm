@@ -6,9 +6,6 @@ from random import random
 
 import numpy as np
 
-# quads
-from compas_singular.datastructures import CoarseQuadMesh
-
 # compas
 from compas.colors import Color
 from compas.geometry import Line
@@ -18,6 +15,7 @@ from jax_fdm.constraints import EdgeLengthConstraint
 from jax_fdm.constraints import NodeCurvatureConstraint
 
 # jax_fdm
+from jax_fdm.datastructures import FDMesh
 from jax_fdm.datastructures import FDNetwork
 from jax_fdm.equilibrium import constrained_fdm
 from jax_fdm.equilibrium import fdm
@@ -83,50 +81,39 @@ export = False
 # Create base geometry
 # ==========================================================================
 
-vertices = [[l1, 0.0, 0.0], [l1, l2, 0.0], [0.0, l2, 0.0], [0.0, 0.0, 0.0]]
-faces = [[0, 1, 2, 3]]
-coarse = CoarseQuadMesh.from_vertices_and_faces(vertices, faces)
-
-coarse.collect_strips()
-coarse.set_strips_density(divisions)
-coarse.densification()
-mesh = coarse.get_quad_mesh()
-
-vertices, _ = mesh.to_vertices_and_faces()
-network = FDNetwork.from_nodes_and_edges(vertices, mesh.edges())
+mesh = FDMesh.from_meshgrid(dx=l1, nx=divisions, dy=l2, ny=divisions)
 
 # ==========================================================================
 # Define structural system
 # ==========================================================================
 
-# define anchors
-for key in network.nodes():
+# anchor the boundary vertices
+for key in mesh.vertices():
     if mesh.is_vertex_on_boundary(key):
-        network.node_anchor(key)
+        mesh.vertex_support(key)
 
 # set initial q to all edges
-for edge in network.edges():
+for edge in mesh.edges():
     q = q0 + dq * (random() - 0.5)
-    network.edge_forcedensity(edge, q)
+    mesh.edge_forcedensity(edge, q)
 
-networks = {"input": network}
+meshes = {"input": mesh}
 
 # ==========================================================================
 # Initial form finding - no external loads
 # ==========================================================================
 
-networks["unloaded"] = fdm(network)
+meshes["unloaded"] = fdm(mesh)
 
 # ==========================================================================
 # Initial form finding - loaded
 # ==========================================================================
 
-# apply loads
 mesh_area = mesh.area()
-for key in network.nodes():
-    network.node_load(key, load=[0.0, 0.0, pz * mesh.vertex_area(key) / mesh_area])
+for key in mesh.vertices():
+    mesh.vertex_load(key, load=[0.0, 0.0, pz * mesh.vertex_area(key) / mesh_area])
 
-networks["loaded"] = fdm(network)
+meshes["loaded"] = fdm(mesh)
 
 # ==========================================================================
 # Create loss function with soft goals
@@ -137,10 +124,10 @@ goals = []
 # horizontal projection goal
 if add_horizontal_projection_goal:
     print("Horizontal projection goal")
-    for node in network.nodes_free():
-        xyz = network.node_coordinates(node)
+    for vertex in mesh.vertices_free():
+        xyz = mesh.vertex_coordinates(vertex)
         line = Line(xyz, add_vectors(xyz, [0.0, 0.0, 1.0]))
-        goal = NodeLineGoal(node, target=line, weight=weight_horizontal_projection)
+        goal = NodeLineGoal(vertex, target=line, weight=weight_horizontal_projection)
         goals.append(goal)
 
 # load path goal
@@ -151,9 +138,9 @@ if add_load_path_goal:
 
 # edge length goal
 if add_edge_length_goal:
-    network2 = networks["loaded"]
-    for edge in network.edges():
-        goal = EdgeLengthGoal(edge, network2.edge_length(*edge), weight=weight_edge_length)
+    mesh_loaded = meshes["loaded"]
+    for edge in mesh.edges():
+        goal = EdgeLengthGoal(edge, mesh_loaded.edge_length(*edge), weight=weight_edge_length)
         goals.append(goal)
 
 loss = Loss(SquaredError(goals=goals))
@@ -165,11 +152,11 @@ loss = Loss(SquaredError(goals=goals))
 constraints = []
 
 if add_edge_length_constraint:
-    average_length = np.mean([network.edge_length(*edge) for edge in network.edges()])
+    average_length = np.mean([mesh.edge_length(*edge) for edge in mesh.edges()])
     length_min = ratio_length_min * average_length
     length_max = ratio_length_max * average_length
 
-    for edge in network.edges():
+    for edge in mesh.edges():
         constraint = EdgeLengthConstraint(edge,
                                           bound_low=length_min,
                                           bound_up=length_max)
@@ -179,7 +166,7 @@ if add_edge_length_constraint:
     print(msg.format(round(length_min, 2), round(length_max, 2)))
 
 if add_edge_force_constraint:
-    for edge in network.edges():
+    for edge in mesh.edges():
         constraint = EdgeForceConstraint(edge,
                                          bound_low=force_min,
                                          bound_up=force_max)
@@ -189,17 +176,9 @@ if add_edge_force_constraint:
     print(msg.format(round(force_min, 2), round(force_max, 2)))
 
 if add_curvature_constraint:
-    polyedge0 = mesh.collect_polyedge(*mesh.edges_on_boundary()[0])
-    n = len(polyedge0)
-    i = int(n / 2)
-    u0, v0 = polyedge0[i - 1: i + 1]
-
-    if mesh.halfedge[u0][v0] is None:
-        u0, v0 = v0, u0
-
-    u, v = mesh.halfedge_after(u0, v0)
-    polyedge = mesh.collect_polyedge(u, v)
-    subpolyedge = polyedge[1:-1]
+    stride = divisions + 1
+    mid_column = divisions // 2
+    subpolyedge = [mid_column * stride + row for row in range(1, divisions)]
 
     for key in subpolyedge:
         polygon = mesh.vertex_neighbors(key, ordered=True)
@@ -216,33 +195,33 @@ if add_curvature_constraint:
 # Form finding
 # ==========================================================================
 
-networks["free"] = fdm(network)
+meshes["free"] = fdm(mesh)
 
-networks["uncstr_opt"] = constrained_fdm(network,
-                                         optimizer=optimizer(),
-                                         loss=loss,
-                                         maxiter=maxiter)
-
-networks["cstr_opt"] = constrained_fdm(network,
+meshes["uncstr_opt"] = constrained_fdm(mesh,
                                        optimizer=optimizer(),
                                        loss=loss,
-                                       constraints=constraints,
                                        maxiter=maxiter)
+
+meshes["cstr_opt"] = constrained_fdm(mesh,
+                                     optimizer=optimizer(),
+                                     loss=loss,
+                                     constraints=constraints,
+                                     maxiter=maxiter)
 
 # ==========================================================================
 # Print and export results
 # ==========================================================================
 
-for network_name, network in networks.items():
+for mesh_name, design in meshes.items():
     print()
-    print("Design {}".format(network_name))
-    network.print_stats()
+    print(f"Design {mesh_name}")
+    design.print_stats()
 
     if export:
         HERE = os.path.dirname(__file__)
-        FILE_OUT = os.path.join(HERE, "../data/json/{}_{}.json".format(model_name, network_name))
-        network.to_json(FILE_OUT)
-        print("Design {} exported to".format(network_name), FILE_OUT)
+        FILE_OUT = os.path.join(HERE, f"../data/json/{model_name}_{mesh_name}.json")
+        design.to_json(FILE_OUT)
+        print(f"Design {mesh_name} exported to {FILE_OUT}")
 
 # ==========================================================================
 # Visualization
@@ -250,29 +229,25 @@ for network_name, network in networks.items():
 
 viewer = Viewer(width=1600, height=900, show_grid=False)
 
-# add all networks except the last one
-networks = list(networks.values())
+designs = list(meshes.values())
 
-network0 = networks[0]
-if len(networks) > 1:
-    c_network = networks[-1]  # last network is colored
-else:
-    c_network = networks[0]
+mesh0 = designs[0]  # reference (input) mesh
+c_mesh = designs[-1] if len(designs) > 1 else designs[0]  # optimized design
 
-# view shaded mesh
-for key in c_network.nodes():
-    mesh.vertex_attributes(key, "xyz", c_network.node_coordinates(key))
-viewer.add(mesh, show_points=False, show_edges=False, opacity=0.6)
+# view shaded optimized mesh (its vertices already sit at equilibrium)
+viewer.add(c_mesh, show_points=False, show_edges=False, opacity=0.6)
 
-# view reference network
-viewer.add(network0,
-           as_wireframe=True,
+# view reference mesh as wireframe
+viewer.add(mesh0,
+           show_faces=False,
            show_points=False,
+           show_edges=True,
            linewidth=1.0,
            color=Color.grey().darkened(10))
 
-# view optimized network
-viewer.add(c_network,
+# view optimized edges colored by force. Force coloring is an FDNetwork artist
+# feature, so we render the mesh's edges through an equivalent network.
+viewer.add(FDNetwork.from_mesh(c_mesh),
            edgewidth=(0.05, 0.2),
            show_nodes=False,
            edgecolor="force",
