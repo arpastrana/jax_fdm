@@ -6,7 +6,6 @@ from itertools import cycle
 from math import radians
 
 import jax.numpy as jnp
-from compas_view2.shapes import Arrow
 
 from compas.colors import ColorMap
 
@@ -16,6 +15,7 @@ from compas.datastructures import network_find_cycles
 
 # compas
 from compas.geometry import Line
+from compas.geometry import Point
 from compas.geometry import Polyline
 from compas.geometry import Translation
 from compas.geometry import add_vectors
@@ -558,8 +558,8 @@ for i, network in networks.items():
         angles_mesh = []
         tangent_angles_mesh = []
         network0_vertices = list(networks[-1].nodes())
-        arrows = []
-        tangent_arrows = []
+        tangent_lines = []
+        tangent_tips = []
         vkeys = []
         for vkey in mesh.vertices():
             xyz = mesh.vertex_coordinates(vkey)
@@ -575,25 +575,24 @@ for i, network in networks.items():
 
             ppoint = project_point_plane(add_vectors(xyz, z_vector), (xyz, normal))
             tangent_vector = normalize_vector(subtract_vectors(ppoint, xyz))
-            tangent_arrow = Arrow(xyz, scale_vector(tangent_vector, 0.25))
-            tangent_arrows.append(tangent_arrow)
+            tip = add_vectors(xyz, scale_vector(tangent_vector, 0.25))
+            tangent_lines.append(Line(xyz, tip))
+            tangent_tips.append(Point(*tip))
 
             vkeys.append(vkey)
 
             angles_mesh.append(angle)
             tangent_angles_mesh.append(angle_vectors(z_vector, tangent_vector, deg=True))
 
-            arrow = Arrow(xyz, normal)
-            arrows.append(arrow)
-
         cmap = ColorMap.from_mpl("plasma")
         min_angle = min(tangent_angles_mesh)
         max_angle = max(tangent_angles_mesh)
         print(f"\nTangent angle\tMin: {min_angle:.2f}\tMax: {max_angle:.2f}\tMean: {sum(tangent_angles_mesh)/len(tangent_angles_mesh):.2f}\n")
 
-        for vkey, angle, tangent_angle, arrow, tarrow in zip(vkeys, angles_mesh, tangent_angles_mesh, arrows, tangent_arrows):
+        for vkey, angle, tangent_angle, line, tip in zip(vkeys, angles_mesh, tangent_angles_mesh, tangent_lines, tangent_tips):
             color = cmap(tangent_angle, minval=min_angle, maxval=max_angle)
-            viewer.add(tarrow, facecolor=color, show_edges=False, opacity=0.8)
+            viewer.add(line, linecolor=color, linewidth=3.0, opacity=0.8)
+            viewer.add(tip, pointcolor=color, size=10.0, opacity=0.8)
             print(f"node: {vkey}\tangle: {angle:.2f}\ttangent angle: {tangent_angle:.2f}\ttangent angle 2: {90-angle:.2f}")
 
 viewer.show()

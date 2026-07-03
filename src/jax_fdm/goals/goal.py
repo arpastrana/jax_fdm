@@ -92,7 +92,8 @@ class Goal:
         prediction = vmap(self.prediction, in_axes=(None, 0))(eqstate, self.index)
         goal = vmap(self.goal)(self.target, prediction)
 
-        assert goal.shape == prediction.shape, f"Goal shape: {goal.shape} vs. Prediction shape: {prediction.shape}"
+        msg = f"Goal {self.__class__.__name__} shape: {goal.shape} vs. prediction shape: {prediction.shape}"
+        assert goal.shape == prediction.shape, msg
 
         return GoalState(goal=goal, prediction=prediction, weight=self.weight)
 

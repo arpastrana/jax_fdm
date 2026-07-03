@@ -1,16 +1,15 @@
 # the essentials
 import os
 
-# pattern-making
-from compas_singular.datastructures import CoarseQuadMesh
-
 # compas
 from compas.colors import Color
+from compas.datastructures import mesh_subdivide_quad
 from compas.topology import dijkstra_path
 from compas.utilities import pairwise
-from jax_fdm.constraints import EdgeLengthConstraint
 
 # jax fdm
+from jax_fdm.constraints import EdgeLengthConstraint
+from jax_fdm.datastructures import FDMesh
 from jax_fdm.datastructures import FDNetwork
 from jax_fdm.equilibrium import constrained_fdm
 from jax_fdm.equilibrium import fdm
@@ -29,13 +28,13 @@ from jax_fdm.visualization import Viewer
 
 name = "monkey_saddle"
 
-n = 4  # 3 densification of coarse mesh
+k = 2  # subdivision levels for coarse mesh densification
 
 q0 = -2.0  # initial force density
 px, py, pz = 0.0, 0.0, -1.0  # loads at each node
 qmin, qmax = -20.0, -0.01  # min and max force densities
 rmin, rmax = 2.0, 10.0  # min and max reaction forces
-r_exp = 0.5  # 1.0  reaction force variation exponent
+r_exp = 0.5  # reaction force variation exponent
 
 add_constraints = True  # input constraints to the optimization problem
 length_min = 0.5  # minimum allowed edge length for length constraint
@@ -54,7 +53,7 @@ export = False  # export result to JSON
 
 HERE = os.path.dirname(__file__)
 FILE_IN = os.path.abspath(os.path.join(HERE, f"../../data/json/{name}.json"))
-mesh = CoarseQuadMesh.from_json(FILE_IN)
+mesh = FDMesh.from_json(FILE_IN)
 
 print('Initial coarse mesh:', mesh)
 
@@ -62,11 +61,7 @@ print('Initial coarse mesh:', mesh)
 # Densify coarse mesh
 # ==========================================================================
 
-mesh.collect_strips()
-mesh.set_strips_density(n)
-mesh.densification()
-mesh = mesh.get_quad_mesh()
-mesh.collect_polyedges()
+mesh = mesh_subdivide_quad(mesh, k=k)
 
 print("Densified mesh:", mesh)
 
@@ -74,32 +69,49 @@ print("Densified mesh:", mesh)
 # Define anchor conditions
 # ==========================================================================
 
+# corners are the degree-2 vertices; they split the boundary into polyedges
+corners = set([vkey for vkey in mesh.vertices() if mesh.vertex_degree(vkey) == 2])
+
+# walk the boundary loop and split it into polyedges at the corners
+boundary = mesh.vertices_on_boundaries()[0]
+if boundary[0] == boundary[-1]:
+    boundary = boundary[:-1]
+start = next(i for i, vkey in enumerate(boundary) if vkey in corners)
+boundary = boundary[start:] + boundary[:start]
+
+polyedges = []
+polyedge = [boundary[0]]
+for vkey in boundary[1:] + [boundary[0]]:
+    polyedge.append(vkey)
+    if vkey in corners:
+        polyedges.append(polyedge)
+        polyedge = [vkey]
+
 polyedge2length = {}
-for pkey, polyedge in mesh.polyedges(data=True):
-    if mesh.is_vertex_on_boundary(polyedge[0]) and mesh.is_vertex_on_boundary(polyedge[1]):
-        length = sum([mesh.edge_length(u, v) for u, v in pairwise(polyedge)])
-        polyedge2length[tuple(polyedge)] = length
+for polyedge in polyedges:
+    length = sum([mesh.edge_length(u, v) for u, v in pairwise(polyedge)])
+    polyedge2length[tuple(polyedge)] = length
 
-anchors = []
-n = sum(polyedge2length.values()) / len(polyedge2length)
+# anchor the polyedges that are shorter than the mean boundary polyedge
+supports = []
+mean_length = sum(polyedge2length.values()) / len(polyedge2length)
 for polyedge, length in polyedge2length.items():
-    if length < n:
-        anchors += polyedge
+    if length < mean_length:
+        supports += polyedge
 
-anchors = set(anchors)
+supports = set(supports)
 
-print("Number of anchored nodes:", len(anchors))
+print("Number of support nodes:", len(supports))
 
 # ==========================================================================
 # Compute assembly sequence (simplified)
 # ==========================================================================
 
 steps = {}
-corners = set([vkey for vkey in mesh.vertices() if mesh.vertex_degree(vkey) == 2])
 adjacency = mesh.adjacency
 weight = {(u, v): 1.0 for u in adjacency for v in adjacency[u]}
 
-for vkey in anchors:
+for vkey in supports:
     if vkey in corners:
         steps[vkey] = 0
     else:
@@ -115,44 +127,34 @@ steps = {vkey: max_step - step for vkey, step in steps.items()}
 # Define structural system
 # ==========================================================================
 
-nodes = [mesh.vertex_coordinates(vkey) for vkey in mesh.vertices()]
-edges = [(u, v) for u, v in mesh.edges() if u not in anchors or v not in anchors]
-network0 = FDNetwork.from_nodes_and_edges(nodes, edges)
+# the densified mesh is already an FDMesh; equip it with supports, loads and
+# initial force densities
+for vkey in supports:
+    mesh.vertex_support(vkey)
+mesh.vertices_loads([px, py, pz])
+mesh.edges_forcedensities(q0)
 
-print("FD network:", network0)
+print("FD mesh:", mesh)
 
-# data
-network0.nodes_anchors(anchors)
-network0.nodes_loads([px, py, pz], keys=network0.nodes())
-network0.edges_forcedensities(q=q0)
+# edges between two anchored vertices are pinned out of the optimization: they
+# stay at their initial force density and are not design variables
+edges_free = [(u, v) for u, v in mesh.edges() if u not in supports or v not in supports]
 
 # ==========================================================================
-# Export FD network with problem definition
+# Export FD mesh with problem definition
 # ==========================================================================
 
 if export:
     FILE_OUT = os.path.join(HERE, f"../../data/json/{name}_base.json")
-    network0.to_json(FILE_OUT)
+    mesh.to_json(FILE_OUT)
     print("Problem definition exported to", FILE_OUT)
-
-# ==========================================================================
-# Form-find network
-# ==========================================================================
-
-network0 = fdm(network0)
-
-# ==========================================================================
-# Report stats
-# ==========================================================================
-
-network0.print_stats()
 
 # ==========================================================================
 # Define parameters
 # ==========================================================================
 
 parameters = []
-for edge in network0.edges():
+for edge in edges_free:
     parameter = EdgeForceDensityParameter(edge, qmin, qmax)
     parameters.append(parameter)
 
@@ -162,7 +164,7 @@ for edge in network0.edges():
 
 # reaction forces
 goals = []
-for key in network0.nodes_anchors():
+for key in mesh.vertices_supports():
     step = steps[key]
     reaction = (1 - step / max_step) ** r_exp * (rmax - rmin) + rmin
     goal = NodeResidualForceGoal(key, reaction)
@@ -175,7 +177,7 @@ for key in network0.nodes_anchors():
 constraints = None
 if add_constraints:
     constraints = []
-    for edge in network0.edges():
+    for edge in edges_free:
         constraint = EdgeLengthConstraint(edge, bound_low=length_min, bound_up=length_max)
         constraints.append(constraint)
 
@@ -187,27 +189,28 @@ squared_error = SquaredError(goals, name="ReactionForceGoal")
 loss = Loss(squared_error)
 
 # ==========================================================================
+# Form-find mesh
+# ==========================================================================
+
+mesh = fdm(mesh)
+
+print(f"Load path: {round(mesh.loadpath(), 3)}")
+
+# ==========================================================================
 # Solve constrained form-finding problem
 # ==========================================================================
 
 optimizer = optimizer()
-
 recorder = OptimizationRecorder(optimizer) if record else None
 
-network = constrained_fdm(network0,
-                          optimizer=optimizer,
-                          loss=loss,
-                          parameters=parameters,
-                          constraints=constraints,
-                          maxiter=maxiter,
-                          tol=tol,
-                          callback=recorder)
-
-# ==========================================================================
-# Report stats
-# ==========================================================================
-
-network.print_stats()
+design = constrained_fdm(mesh,
+                         optimizer=optimizer,
+                         loss=loss,
+                         parameters=parameters,
+                         constraints=constraints,
+                         maxiter=maxiter,
+                         tol=tol,
+                         callback=recorder)
 
 # ==========================================================================
 # Export optimization history
@@ -223,7 +226,7 @@ if record and export:
 # ==========================================================================
 
 if record:
-    plotter = LossPlotter(loss, network, dpi=150)
+    plotter = LossPlotter(loss, design, dpi=150)
     plotter.plot(recorder.history)
     plotter.show()
 
@@ -233,30 +236,45 @@ if record:
 
 if export:
     FILE_OUT = os.path.join(HERE, f"../../data/json/{name}_optimized.json")
-    network.to_json(FILE_OUT)
+    design.to_json(FILE_OUT)
     print("Form found design exported to", FILE_OUT)
+
+# ==========================================================================
+# Report stats
+# ==========================================================================
+
+design.print_stats()
 
 # ==========================================================================
 # Visualization
 # ==========================================================================
 
-viewer = Viewer(width=1600, height=900, show_grid=False)
+viewer = Viewer(width=1600, height=900, show_grid=False, viewmode="lighted")
 
 # modify view
 viewer.view.camera.zoom(-35)  # number of steps, negative to zoom out
 viewer.view.camera.rotation[2] = 0.0  # set rotation around z axis to zero
 
-# optimized network
-viewer.add(network,
-           edgewidth=(0.05, 0.25),
-           edgecolor="fd")
+# view shaded optimized mesh (its vertices already sit at equilibrium)
+viewer.add(design, show_points=False, show_edges=False, opacity=0.4)
 
-# reference network
-viewer.add(network0,
-           as_wireframe=True,
+# view reference mesh as wireframe
+viewer.add(mesh,
+           show_faces=False,
            show_points=False,
+           show_edges=True,
            linewidth=1.0,
            color=Color.grey().darkened())
+
+# view optimized edges colored by force. Force coloring is an FDNetwork artist
+# feature, so we render the mesh's edges through an equivalent network.
+viewer.add(FDNetwork.from_mesh(design),
+           edgewidth=(0.02, 0.2),
+           show_nodes=False,
+           edgecolor="force",
+           show_reactions=False,
+           show_loads=False,
+           reactionscale=0.75)
 
 # show le crème
 viewer.show()
