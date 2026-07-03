@@ -171,13 +171,18 @@ length_vault = 6.0
 course_width = 0.2
 
 num_segments = 10
-num_courses = 1  # 5
+num_courses = 5  # 5
 
 height_arch0 = 1.0
 
 q0_arch = -1.0
 q0_cross = -0.1
 pz_3d = -0.1
+
+optimize = True  # True
+optimizer = LBFGSB
+maxiter = 10000
+tol = 1e-14
 
 # constrained form-finding, unconstrained optimization
 # qmax stays strictly negative so edges keep a compressive force density: a hard
@@ -188,11 +193,6 @@ qmax = -0.001
 include_supports_as_params = True  # False
 xtol = 0.5
 ytol = xtol
-
-optimize = True  # True
-optimizer = LBFGSB
-maxiter = 10000
-tol = 1e-14
 
 # goal length
 target_length_2d = course_width * 0.5  # for middle cross edges in 2D projection
@@ -206,9 +206,9 @@ angle_linear_range = True
 
 # goal weights
 alpha_fitting = 10.0  # 10.0
-alpha_projection = 0.0  # 1.0
+alpha_projection = 1.0  # 1.0
 alpha_length = 0.1  # 0.1
-alpha_direction = 0.0  # 10.0
+alpha_direction = 10.0  # 10.0
 alpha_tangent = 1.0  # 1.0
 
 # I/O
@@ -496,8 +496,8 @@ for i in range(num_courses):
     # vertex tangent goal (the vertex normal requires mesh faces)
     goals_tangent = []
     for node in arch_nodes_set:
-        # if node in anchors:
-        #    continue
+        if node in anchors:
+           continue
         goal = VertexTangentAngleGoal(node, vector=[0.0, 0.0, 1.0], target=radians(angle))
         goals_tangent.append(goal)
     print(f"Number of nodes in goals tangent: {len(goals_tangent)}")
@@ -636,7 +636,8 @@ viewer = Viewer(width=1600, height=900, show_grid=True)
 for i, network in networks.items():
 
     # 3d network
-    T = Translation.from_vector([2.2 * i, 0.0, 0.0])
+    T = Translation.from_vector([3.2 * i, 0.0, 0.0])
+
     network = network.transformed(T)
     viewer.add(network,
                edgewidth=0.01,  # (0.01, 0.05),
