@@ -44,4 +44,4 @@ class EdgeAngleGoal(ScalarGoal, EdgeGoal):
         The angle between the edge and the reference vector.
         """
         vector = eq_state.vectors[index, :]
-        return angle_vectors(vector, self.vector[index, :])
+        return jnp.atleast_1d(angle_vectors(vector, self.vector[index, :]))

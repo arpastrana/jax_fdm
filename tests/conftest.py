@@ -100,6 +100,27 @@ def octa_mesh():
 
 
 @pytest.fixture
+def ragged_mesh():
+    """
+    A quad meshgrid with two internal faces split into triangles.
+
+    The result mixes quad and triangular faces, so its `faces_indexed` rows have
+    unequal valid lengths and the shorter (triangular) rows are `-1`-padded. This
+    is what drives the padding path in the vertex-normal machinery — the all-quad
+    `meshgrid_mesh` never does.
+    """
+    mesh = FDMesh.from_meshgrid(dx=2, nx=5)
+
+    internal = [fkey for fkey in mesh.faces() if not mesh.is_face_on_boundary(fkey)]
+    for fkey in internal[:2]:
+        vertices = mesh.face_vertices(fkey)
+        # split along a diagonal to turn one quad into two triangles
+        mesh.split_face(fkey, vertices[0], vertices[2])
+
+    return mesh
+
+
+@pytest.fixture
 def irregular_mesh():
     """
     An irregular, non-planar quad mesh used as a pillow-fixture substitute.
