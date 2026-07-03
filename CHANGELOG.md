@@ -36,6 +36,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Removed
 
+- Removed `NodeNormalAngleConstraint`/`NodeTangentAngleConstraint`. Like the angle goals, they computed a vertex normal from surrounding faces (so they only worked on a mesh) and read the removed `connectivity_faces`/`face_node_index` accessors, but unlike the goals they had no callers anywhere in the library, examples, tests, or docs. They were deleted rather than moved to the vertex family; add a `VertexNormalAngleConstraint` on demand if a use case appears.
 - Removed the `if __name__ == "__main__"` blocks from `loads.py`, `meshes.py`, and `graphs.py`. Their ad-hoc checks are now real tests in the pytest suite.
 - Removed `MANIFEST.in`, now redundant with `src`-rooted package discovery and `pyproject.toml` metadata.
 - Removed `.bumpversion.cfg`. Moved its configuration to `[tool.bumpversion]` in `pyproject.toml` and dropped the obsolete `setup.py` and Sphinx `docs/conf.py` file targets.
