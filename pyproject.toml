@@ -8,7 +8,7 @@ description = "Auto-differentiable and hardware-accelerated force density method
 readme = "README.md"
 license = { text = "MIT license" }
 authors = [{ name = "Rafael Pastrana", email = "arpastrana@princeton.edu" }]
-requires-python = ">=3.10"
+requires-python = ">=3.10,<3.12"
 keywords = [
     "jax",
     "automatic-differentiation",
