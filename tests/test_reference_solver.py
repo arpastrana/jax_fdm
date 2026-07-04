@@ -54,7 +54,7 @@ def _reference_network(name):
 
     for edge in network.edges():
         force = network.edge_attribute(edge, "f")
-        network.edge_forcedensity(edge, force / network.edge_length(*edge))
+        network.edge_forcedensity(edge, force / network.edge_length(edge))
 
     return network
 

@@ -83,7 +83,7 @@ def _load_path(network):
     """
     Total load path of the network, the sum of absolute force-length products.
     """
-    return sum(abs(network.edge_force(edge)) * network.edge_length(*edge)
+    return sum(abs(network.edge_force(edge)) * network.edge_length(edge)
                for edge in network.edges())
 
 
@@ -91,7 +91,7 @@ def _length_stats(network):
     """
     Edge-length minimum, maximum, mean, and mean deviation from unit length.
     """
-    lengths = np.array([network.edge_length(*edge) for edge in network.edges()])
+    lengths = np.array([network.edge_length(edge) for edge in network.edges()])
 
     return lengths.min(), lengths.max(), lengths.mean(), np.mean(np.abs(lengths - 1.0))
 
