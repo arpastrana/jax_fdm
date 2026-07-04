@@ -1,8 +1,6 @@
 """
 Solve a constrained force density problem using gradient-based optimization.
 """
-import numpy as np
-
 # compas
 from compas.colors import Color
 from compas.geometry import Line
@@ -17,6 +15,8 @@ from jax_fdm.constraints import EdgeLengthConstraint
 # static equilibrium
 from jax_fdm.datastructures import FDNetwork
 from jax_fdm.equilibrium import EquilibriumModel
+from jax_fdm.equilibrium import EquilibriumParametersState
+from jax_fdm.equilibrium import EquilibriumStructure
 from jax_fdm.equilibrium import constrained_fdm
 from jax_fdm.equilibrium import fdm
 from jax_fdm.goals import EdgeAngleGoal
@@ -271,11 +271,12 @@ for config in sweep_configs:
 
     extra_stats = None
     if constraint_angles:
-        model = EquilibriumModel(network)
-        params = [np.array(param) for param in network.parameters()]
-        # q = np.array(network.edges_forcedensities())
-        eqstate = model(*params)
-        a = [constraint.constraint(eqstate, constraint.index_from_model(model)).item() for constraint in constraint_angles]
+        model = EquilibriumModel(tmax=1)
+        structure = EquilibriumStructure.from_network(network)
+        params = EquilibriumParametersState.from_datastructure(network)
+        eqstate = model(params, structure)
+        a = [constraint.constraint(eqstate, constraint.index_from_model(model, structure)).item()
+             for constraint in constraint_angles]
         extra_stats = {"Angles": a}
 
     # Report stats
