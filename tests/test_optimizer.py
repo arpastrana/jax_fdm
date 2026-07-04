@@ -3,8 +3,8 @@ Characterization tests for constrained form-finding optimization.
 """
 
 import jax.numpy as jnp
-from conftest import assert_baseline
 
+from conftest import assert_baseline
 from jax_fdm.equilibrium import constrained_fdm
 from jax_fdm.equilibrium import fdm
 from jax_fdm.goals import EdgeLengthGoal

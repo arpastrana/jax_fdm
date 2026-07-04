@@ -3,8 +3,8 @@ Characterization tests for the force density solver.
 """
 
 import jax.numpy as jnp
-from conftest import assert_baseline
 
+from conftest import assert_baseline
 from jax_fdm.equilibrium import fdm
 
 

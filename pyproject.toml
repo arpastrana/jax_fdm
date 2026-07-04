@@ -34,6 +34,7 @@ dynamic = ["version"]
 dependencies = [
     "jax[cpu]",
     "compas<2.0",
+    "matplotlib",
     "scipy",
     "jaxopt",
     "equinox",
@@ -47,7 +48,7 @@ Repository = "https://github.com/arpastrana/jax_fdm"
 
 [project.optional-dependencies]
 # 3D viewer. compas_view2 ships on conda-forge; you may still need conda for it.
-viz = ["compas_view2==0.7.0", "matplotlib"]
+viz = ["compas_view2==0.7.0"]
 # Interior-point optimizer. cyipopt needs a system Ipopt library.
 ipopt = ["cyipopt"]
 dev = [
