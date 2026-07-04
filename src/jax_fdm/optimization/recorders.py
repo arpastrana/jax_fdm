@@ -13,6 +13,7 @@ class OptimizationRecorder(Data):
     """A recorder that stores data during the optimization process.
     """
     def __init__(self, optimizer=None):
+        super().__init__()
         self.optimizer = optimizer
         self.history = self._init_history()
 
@@ -47,7 +48,7 @@ class OptimizationRecorder(Data):
             append_file(parameters, self.history)
 
     @property
-    def data(self):
+    def __data__(self):
         def leaf_to_list(leaf):
             return np.asarray(leaf, dtype=np.float64).tolist()
 
@@ -60,8 +61,8 @@ class OptimizationRecorder(Data):
 
         return data
 
-    @data.setter
-    def data(self, data):
+    @classmethod
+    def __from_data__(cls, data):
         def leaf_to_array(leaf):
             return np.asarray(leaf, dtype=np.float64)
 
@@ -78,4 +79,7 @@ class OptimizationRecorder(Data):
                                       history_params,
                                       is_leaf=lambda x: isinstance(x, list))
 
-        self.history = history_params
+        obj = cls()
+        obj.history = history_params
+
+        return obj
