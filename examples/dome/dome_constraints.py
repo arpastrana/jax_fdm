@@ -9,7 +9,7 @@ from compas.geometry import Line
 from compas.geometry import Polygon
 from compas.geometry import add_vectors
 from compas.geometry import offset_polygon
-from compas.utilities import pairwise
+from compas.itertools import pairwise
 from jax_fdm.constraints import EdgeAngleConstraint
 from jax_fdm.constraints import EdgeForceConstraint
 from jax_fdm.constraints import EdgeLengthConstraint
@@ -178,7 +178,7 @@ if add_horizontal_projection_goal:
 # edge length goal
 if add_edge_length_goal:
     for edge in edges_cross:
-        length = network.edge_length(*edge)
+        length = network.edge_length(edge)
         goal = EdgeLengthGoal(edge, target=length)
         goals.append(goal)
 

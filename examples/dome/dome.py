@@ -17,7 +17,7 @@ from compas.geometry import offset_polygon
 from compas.geometry import rotate_points
 from compas.geometry import scale_vector
 from compas.geometry import subtract_vectors
-from compas.utilities import pairwise
+from compas.itertools import pairwise
 
 # static equilibrium
 from jax_fdm.datastructures import FDNetwork
@@ -181,7 +181,7 @@ for i, cross_ring in enumerate(edges_cross_rings):
 
         edge = (u, v)
         xyz = network.node_coordinates(u)  # xyz of first node, assumes it is the lowermost
-        normal = cross_vectors(network.edge_vector(u, v), angle_vector)
+        normal = cross_vectors(network.edge_vector((u, v)), angle_vector)
 
         point = add_vectors(xyz, angle_vector)
         end = rotate_points([point], -radians(angle), axis=normal, origin=xyz).pop()
@@ -281,7 +281,7 @@ if export:
 viewer = Viewer(width=1600, height=900, show_grid=False)
 
 # create mesh from edges
-edge_lines = [network.edge_coordinates(*edge) for edge in network.edges()]
+edge_lines = [network.edge_coordinates(edge) for edge in network.edges()]
 mesh = Mesh.from_lines(edge_lines, delete_boundary_face=True)
 
 # remove faces with more than 4 vertices

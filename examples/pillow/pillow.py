@@ -140,7 +140,7 @@ if add_load_path_goal:
 if add_edge_length_goal:
     mesh_loaded = meshes["loaded"]
     for edge in mesh.edges():
-        goal = EdgeLengthGoal(edge, mesh_loaded.edge_length(*edge), weight=weight_edge_length)
+        goal = EdgeLengthGoal(edge, mesh_loaded.edge_length(edge), weight=weight_edge_length)
         goals.append(goal)
 
 loss = Loss(SquaredError(goals=goals))
@@ -152,7 +152,7 @@ loss = Loss(SquaredError(goals=goals))
 constraints = []
 
 if add_edge_length_constraint:
-    average_length = np.mean([mesh.edge_length(*edge) for edge in mesh.edges()])
+    average_length = np.mean([mesh.edge_length(edge) for edge in mesh.edges()])
     length_min = ratio_length_min * average_length
     length_max = ratio_length_max * average_length
 

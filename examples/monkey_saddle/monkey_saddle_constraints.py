@@ -3,9 +3,8 @@ import os
 
 # compas
 from compas.colors import Color
-from compas.datastructures import mesh_subdivide_quad
+from compas.itertools import pairwise
 from compas.topology import dijkstra_path
-from compas.utilities import pairwise
 
 # jax fdm
 from jax_fdm.constraints import EdgeLengthConstraint
@@ -61,7 +60,7 @@ print('Initial coarse mesh:', mesh)
 # Densify coarse mesh
 # ==========================================================================
 
-mesh = mesh_subdivide_quad(mesh, k=k)
+mesh = mesh.subdivided(scheme="quad", k=k)
 
 print("Densified mesh:", mesh)
 
@@ -89,7 +88,7 @@ for vkey in boundary[1:] + [boundary[0]]:
 
 polyedge2length = {}
 for polyedge in polyedges:
-    length = sum([mesh.edge_length(u, v) for u, v in pairwise(polyedge)])
+    length = sum([mesh.edge_length((u, v)) for u, v in pairwise(polyedge)])
     polyedge2length[tuple(polyedge)] = length
 
 # anchor the polyedges that are shorter than the mean boundary polyedge
