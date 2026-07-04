@@ -4,7 +4,7 @@ from math import fabs
 from compas.artists import NetworkArtist
 from compas.colors import Color
 from compas.colors import ColorMap
-from compas.utilities import remap_values
+from compas.itertools import remap_values
 
 __all__ = ["FDNetworkArtist"]
 
