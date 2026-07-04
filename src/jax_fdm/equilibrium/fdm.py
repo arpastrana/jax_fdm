@@ -246,7 +246,7 @@ def datastructure_edges_update(datastructure, eqstate_edges):
     """
     lengths, forces, forcedensities = eqstate_edges
 
-    for idx, edge in datastructure.index_uv().items():
+    for idx, edge in datastructure.index_edge().items():
         datastructure.edge_attribute(edge, name="length", value=lengths[idx].pop())
         datastructure.edge_attribute(edge, name="force", value=forces[idx].pop())
         datastructure.edge_attribute(edge, name="q", value=forcedensities[idx])
@@ -260,12 +260,14 @@ def datastructure_nodes_update(datastructure, eqstate_nodes):
 
     if isinstance(datastructure, FDNetwork):
         nodevertex_updater = datastructure.node_attribute
+        index_key = datastructure.index_node
     elif isinstance(datastructure, FDMesh):
         nodevertex_updater = datastructure.vertex_attribute
+        index_key = datastructure.index_vertex
     else:
         raise ValueError(f"Input datastructure {datastructure} is invalid")
 
-    for idx, key in datastructure.index_key().items():
+    for idx, key in index_key().items():
 
         for name, value in zip("xyz", xyz[idx]):
             nodevertex_updater(key, name=name, value=value)
