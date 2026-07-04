@@ -8,7 +8,7 @@ description = "Auto-differentiable and hardware-accelerated force density method
 readme = "README.md"
 license = { text = "MIT license" }
 authors = [{ name = "Rafael Pastrana", email = "arpastrana@princeton.edu" }]
-requires-python = ">=3.10,<3.12"
+requires-python = ">=3.10,<3.13"
 keywords = [
     "jax",
     "automatic-differentiation",
@@ -28,12 +28,13 @@ classifiers = [
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: Implementation :: CPython",
 ]
 dynamic = ["version"]
 dependencies = [
     "jax[cpu]",
-    "compas<2.0",
+    "compas>=2.15,<3.0",
     "matplotlib",
     "scipy",
     "jaxopt",
