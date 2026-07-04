@@ -46,39 +46,27 @@ Expect sharp edges and possibly some API breaking changes as we continue to supp
 
 ## Installation
 
-First, create a new [Anaconda](https://www.anaconda.com/) environment and then activate it:
-
-```bash
-conda create -n jaxenv
-conda activate jaxenv
-```
-
-Next, install COMPAS and COMPAS VIEW2 via `conda`:
-
-```bash
-conda install -c conda-forge compas==1.17.10 compas_view2==0.7.0
-```
-
-Finally, install JAX FDM with a one-liner via `pip`:
+Install JAX FDM with a one-liner via `pip`:
 
 ```bash
 pip install jax-fdm
 ```
 
-JAX FDM supports Python 3.10 and 3.11 and builds on JAX, NumPy, SciPy, Equinox, and the COMPAS framework. See `pyproject.toml` for the complete dependency list.
-For visualization, it uses COMPAS_VIEW2 0.7.0.
+This pulls in COMPAS 2.x and the other core dependencies automatically.
+
+JAX FDM supports Python 3.10, 3.11, and 3.12 and builds on JAX, NumPy, SciPy, Matplotlib, Equinox, and the COMPAS framework. See `pyproject.toml` for the complete dependency list.
 
 #### Optional extras
 
 JAX FDM declares optional dependency groups you can install from a source checkout with `pip`:
 
 ```bash
-pip install -e ".[viz]"    # 3D viewer (compas_view2) and matplotlib
+pip install -e ".[viz]"    # 3D viewer (compas_viewer)
 pip install -e ".[ipopt]"  # the IPOPT interior-point optimizer (cyipopt)
 pip install -e ".[dev]"     # development tools (ruff, pytest, build, bump-my-version)
 ```
 
-Note that `compas_view2` is distributed through `conda-forge`, so the `viz` extra may still require a `conda` install as shown above. The `ipopt` extra needs a system Ipopt library available on your machine.
+The `ipopt` extra needs a system Ipopt library available on your machine.
 
 ### Are you a Windows user?
 
