@@ -1,11 +1,11 @@
-from compas_plotters import Plotter
+from compas_plotters import Plotter as CompasPlotter
 
 
-class Plotter(Plotter):
+class Plotter(CompasPlotter):
     """
     A thin wrapper on the :class:`compas_plotters.plotter.Plotter`.
 
     This object exists for API consistency.
     """
     def __init__(self, *args, **kwargs):
-        super(Plotter, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
