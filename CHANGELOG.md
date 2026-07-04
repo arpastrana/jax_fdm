@@ -11,6 +11,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Bumped the COMPAS pin from `compas<2.0` to `compas>=2.15,<3.0` and migrated the codebase to the COMPAS 2.x API. The serialization protocol moved from the `data` property to `__data__`/`__from_data__`, so `OptimizationRecorder` now defines those (and calls `super().__init__()` so `Data` sets up its `_name` for `to_json`). The engine's datastructure-update helpers were ported off the removed `index_key()`/`index_uv()`: node/vertex updates dispatch on `index_node()`/`index_vertex()`, and edge updates call `index_edge()` uniformly — for which `FDMesh` grows an `index_edge()` (COMPAS 2.x provides it on `Graph` but not `Mesh`, so `FDMesh` and `FDNetwork` now share the name). `mesh.edge_faces(u, v)` became `mesh.edge_faces((u, v))`. The moved imports in the test suite (`adjacency_matrix` to `compas.matrices`, `remap_values` to `compas.itertools`) and the removed free functions (`mesh_unify_cycles` to `mesh.unify_cycles()`) were updated, the committed JSON fixtures re-serialized into the 2.x format, and the test-side calls migrated (`Polyline.divide`, `edge_length((u, v))`, `split_edge((u, v), ...)`, `mesh.subdivided(scheme="tri")`).
+- Raised the `requires-python` ceiling from `<3.12` to `<3.13` and added the 3.12 classifier, now that COMPAS 2.x (which lists 3.12) and JAX (no upper cap) both support it.
+- Guarded the base visualization artist behind `has_backend("compas.artists")`. `FDNetworkArtist` subclasses `compas.artists.NetworkArtist`, which COMPAS 2.x removed (it moved to `compas.scene`), so importing it unconditionally broke `import jax_fdm.visualization` — and therefore the whole test suite via `conftest.py`. The base is now skipped when the COMPAS 1.x artist API is absent, mirroring the existing backend guards; porting the artists onto `compas.scene` remains future work. `remap_values` in that artist was also moved to `compas.itertools`.
+
 ### Removed
 
 
