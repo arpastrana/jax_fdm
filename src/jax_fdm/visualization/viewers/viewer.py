@@ -1,25 +1,17 @@
-from importlib.util import find_spec
+import numpy as _np
+
+# compas_view2 0.7.0 (the legacy COMPAS<2 viewer) uses ``np.int`` in
+# ``compas_view2/app/selector.py``, an alias NumPy removed in 1.24. We
+# patch it here so the viewer imports under NumPy >= 1.24.
+if not hasattr(_np, "int"):
+    _np.int = int  # type: ignore[attr-defined]
+
+from compas_view2.app import App
 
 from compas.artists import Artist
 from jax_fdm.datastructures import FDNetwork
 
 __all__ = ["Viewer"]
-
-
-if find_spec("compas_view2") is not None:
-    # compas_view2 0.7.0 (the legacy COMPAS<2 viewer) uses ``np.int`` in
-    # ``compas_view2/app/selector.py``, an alias NumPy removed in 1.24. We
-    # patch it here so the viewer imports under NumPy >= 1.24.
-    import numpy as _np
-    if not hasattr(_np, "int"):
-        _np.int = int  # type: ignore[attr-defined]
-
-    from compas_view2.app import App
-else:
-    class App:
-        """
-        A stub for the viewer when compas_view2 is not installed.
-        """
 
 
 class Viewer(App):

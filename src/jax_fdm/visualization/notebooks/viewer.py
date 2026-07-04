@@ -1,13 +1,8 @@
 from math import radians
 
+from compas_notebook.app import App as NotebookApp
+
 from compas.artists import Artist
-
-try:
-    from compas_notebook.app import App as NotebookApp
-except ImportError:
-    class NotebookApp:
-        pass
-
 from jax_fdm.datastructures import FDNetwork
 
 __all__ = ["NotebookViewer"]
