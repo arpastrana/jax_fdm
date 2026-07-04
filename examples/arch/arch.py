@@ -23,7 +23,7 @@ pz = -0.2
 start = [-arch_length / 2.0, 0.0, 0.0]
 end = add_vectors(start, [arch_length, 0.0, 0.0])
 curve = Polyline([start, end])
-points = curve.divide_polyline(num_segments)
+points = curve.divide(num_segments)
 lines = Polyline(points).lines
 
 # ==========================================================================
