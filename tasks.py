@@ -96,7 +96,7 @@ def clean(ctx, bytecode=True, builds=True):
 def lint(ctx):
     """Check the consistency of coding style."""
     log.write('Running ruff linter...')
-    ctx.run('ruff check src')
+    ctx.run('ruff check .')
 
 
 @task(help={
