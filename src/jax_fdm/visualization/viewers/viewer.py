@@ -3,7 +3,10 @@ from compas_viewer.config import Config
 from compas_viewer.config import RendererConfig
 from compas_viewer.config import WindowConfig
 
+from compas.datastructures import Graph
+from jax_fdm.datastructures import FDMesh
 from jax_fdm.datastructures import FDNetwork
+from jax_fdm.visualization.viewers.mesh_artist import FDMeshViewerArtist
 from jax_fdm.visualization.viewers.network_artist import FDNetworkViewerArtist
 
 __all__ = ["Viewer"]
@@ -38,31 +41,47 @@ class Viewer(CompasViewer):
 
         This is a convenience shortcut for ``viewer.scene.add`` that additionally
         routes a :class:`jax_fdm.datastructures.FDNetwork` through an
-        :class:`FDNetworkViewerArtist`. ``compas_viewer.Viewer`` itself has no
-        ``add`` method (objects go through ``viewer.scene``), so this wrapper
+        :class:`FDNetworkViewerArtist` and a :class:`jax_fdm.datastructures.FDMesh`
+        through an :class:`FDMeshViewerArtist`. ``compas_viewer.Viewer`` itself has
+        no ``add`` method (objects go through ``viewer.scene``), so this wrapper
         provides the terser ``viewer.add(obj)`` interface.
+
+        Dispatch is purely by type. To draw a force-density datastructure as plain
+        geometry instead (a bare wireframe or shaded surface), convert it to its
+        COMPAS base first and add that, e.g. ``viewer.add(mesh.copy(cls=Mesh))``
+        or ``viewer.add(network.copy(cls=Network))``.
 
         Parameters
         ----------
-        data : :class:`compas.geometry.Geometry` | :class:`compas.datastructures.Datastructure` | :class:`jax_fdm.datastructures.FDNetwork`
+        data : :class:`compas.geometry.Geometry` | :class:`compas.datastructures.Datastructure` | :class:`jax_fdm.datastructures.FDNetwork` | :class:`jax_fdm.datastructures.FDMesh`
             The object to visualize.
-        as_wireframe : bool, optional
-            If ``True`` and ``data`` is an ``FDNetwork``, draw it as a plain
-            wireframe graph instead of the full force-density artist.
         **kwargs : dict, optional
             Additional visualization options.
 
         Returns
         -------
-        The created scene object, or the :class:`FDNetworkViewerArtist` for an
-        ``FDNetwork``.
+        The created scene object, or the viewer artist for an ``FDNetwork`` /
+        ``FDMesh``.
         """
-        as_wireframe = kwargs.pop("as_wireframe", False)
+        if isinstance(data, FDMesh):
+            return self._add_artist(FDMeshViewerArtist, data, **kwargs)
 
-        if not isinstance(data, FDNetwork) or as_wireframe:
-            return self.scene.add(data, **kwargs)
+        if isinstance(data, FDNetwork):
+            return self._add_artist(FDNetworkViewerArtist, data, **kwargs)
 
-        artist = FDNetworkViewerArtist(data, viewer=self, **kwargs)
+        # COMPAS 2.x aliases ``Network`` to ``Graph``, so a plain network added as
+        # a reference wireframe would otherwise show up as "Graph" in the scene
+        # tree. Default its display name to "Network" to avoid surprising users.
+        if isinstance(data, Graph) and "name" not in kwargs:
+            kwargs["name"] = "Network"
+
+        return self.scene.add(data, **kwargs)
+
+    def _add_artist(self, artist_cls, data, **kwargs):
+        """
+        Build a force-density viewer artist, draw it and add it to the scene.
+        """
+        artist = artist_cls(data, viewer=self, **kwargs)
         self.artists.append(artist)
         artist.draw()
         artist.add()
