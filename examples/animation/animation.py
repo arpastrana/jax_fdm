@@ -6,6 +6,7 @@ from math import pi
 # compas
 from compas.colors import Color
 from compas.colors import ColorMap
+from compas.datastructures import Network
 from compas.geometry import Line
 from compas.geometry import Point
 from compas.geometry import add_vectors
@@ -121,9 +122,8 @@ if modify_view:
     viewer.view.camera.rotation[2] = 2 * pi / 3  # set rotation around z axis to zero
     viewer.view.camera.rotation_delta = (2 / 3) * pi / len(recorder)  # set rotation around z axis to zero
 
-# draw network
-network_obj = viewer.add(network,
-                         as_wireframe=True,
+# draw network as plain geometry
+network_obj = viewer.add(network.copy(cls=Network),
                          show_points=False,
                          linewidth=5.0,
                          color=Color.grey().darkened())

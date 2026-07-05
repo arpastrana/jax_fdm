@@ -6,6 +6,7 @@ import os
 # compas
 from compas.colors import Color
 from compas.datastructures import Mesh
+from compas.datastructures import Network
 from compas.geometry import Line
 from compas.geometry import Translation
 from compas.geometry import add_vectors
@@ -249,9 +250,8 @@ mesh = Mesh.from_lines(edge_lines,
 # view mesh
 viewer.add(mesh, show_points=False, show_lines=False, opacity=0.5)
 
-# view reference network
-viewer.add(network,
-           as_wireframe=True,
+# view reference network as plain geometry
+viewer.add(network.copy(cls=Network),
            show_points=False,
            linewidth=2.0,
            color=Color.grey().darkened())

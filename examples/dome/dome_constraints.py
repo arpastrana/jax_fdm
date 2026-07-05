@@ -3,6 +3,7 @@ Solve a constrained force density problem using gradient-based optimization.
 """
 # compas
 from compas.colors import Color
+from compas.datastructures import Network
 from compas.geometry import Line
 from compas.geometry import Polygon
 from compas.geometry import add_vectors
@@ -255,7 +256,7 @@ for config in sweep_configs:
     print()
     print(config["msg"])
 
-    if fofin_method == fdm:
+    if fofin_method is fdm:
         network = fofin_method(network)
     else:
         network = fofin_method(network,
@@ -294,8 +295,7 @@ networks = list(networks.values())
 for i, network in enumerate(networks):
     if i == (len(networks) - 1):
         continue
-    viewer.add(network,
-               as_wireframe=True,
+    viewer.add(network.copy(cls=Network),
                show_points=False,
                linewidth=1.0,
                color=Color.grey().darkened(i * 10))
