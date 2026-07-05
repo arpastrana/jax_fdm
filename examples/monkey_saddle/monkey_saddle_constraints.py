@@ -248,11 +248,11 @@ design.print_stats()
 # Visualization
 # ==========================================================================
 
-viewer = Viewer(width=1600, height=900, show_grid=False, viewmode="lighted")
+viewer = Viewer(width=1600, height=900, show_grid=False)
 
 # modify view
-viewer.view.camera.zoom(-35)  # number of steps, negative to zoom out
-viewer.view.camera.rotation[2] = 0.0  # set rotation around z axis to zero
+viewer.renderer.camera.zoom(-35)  # number of steps, negative to zoom out
+viewer.renderer.camera.rotation.z = 0.0  # set rotation around z axis to zero
 
 # view shaded optimized mesh (its vertices already sit at equilibrium)
 viewer.add(design, show_points=False, show_edges=False, opacity=0.4)

@@ -1,74 +1,70 @@
-import numpy as _np
+from compas_viewer import Viewer as CompasViewer
+from compas_viewer.config import Config
+from compas_viewer.config import RendererConfig
+from compas_viewer.config import WindowConfig
 
-# compas_view2 0.7.0 (the legacy COMPAS<2 viewer) uses ``np.int`` in
-# ``compas_view2/app/selector.py``, an alias NumPy removed in 1.24. We
-# patch it here so the viewer imports under NumPy >= 1.24.
-if not hasattr(_np, "int"):
-    _np.int = int  # type: ignore[attr-defined]
-
-from compas_view2.app import App
-
-from compas.artists import Artist
 from jax_fdm.datastructures import FDNetwork
+from jax_fdm.visualization.viewers.network_artist import FDNetworkViewerArtist
 
 __all__ = ["Viewer"]
 
 
-class Viewer(App):
+class Viewer(CompasViewer):
     """
-    A thin wrapper on :class:`compas_view2.app.App`.
-    """
-    def __init__(self, *args, **kwargs):
-        kwargs = kwargs or {}
-        if "viewmode" not in kwargs:
-            kwargs["viewmode"] = "lighted"
-        super().__init__(*args, **kwargs)
+    A thin wrapper on :class:`compas_viewer.Viewer`.
 
+    It subclasses the COMPAS viewer so that camera control, the ``on`` frame
+    loop, ``show`` and recording all work natively, and only overrides ``add``
+    to route a :class:`jax_fdm.datastructures.FDNetwork` through an
+    :class:`FDNetworkViewerArtist`.
+
+    For convenience it also accepts the ``width``, ``height`` and ``show_grid``
+    keyword arguments directly and folds them into a :class:`compas_viewer.config.Config`,
+    so the common window setup does not require building a config by hand.
+    """
+    def __init__(self, width=None, height=None, show_grid=None, config=None, **kwargs):
+        if config is None:
+            window = WindowConfig(width=width or 1280, height=height or 720)
+            renderer = RendererConfig(show_grid=show_grid if show_grid is not None else True,
+                                      rendermode="lighted")
+            config = Config(window=window, renderer=renderer)
+
+        super().__init__(config=config, **kwargs)
         self.artists = []
 
     def add(self, data, **kwargs):
         """
-        Add a COMPAS data object to the viewer.
+        Add a data object to the viewer.
 
-        It adds a viewer argument if the object is a :class:`jax_fdm.datastructures.FDNetwork`
+        This is a convenience shortcut for ``viewer.scene.add`` that additionally
+        routes a :class:`jax_fdm.datastructures.FDNetwork` through an
+        :class:`FDNetworkViewerArtist`. ``compas_viewer.Viewer`` itself has no
+        ``add`` method (objects go through ``viewer.scene``), so this wrapper
+        provides the terser ``viewer.add(obj)`` interface.
 
         Parameters
         ----------
-        data: :class:`compas.geometry.Primitive` | :class:`compas.geometry.Shape` | :class:`compas.datastructures.Datastructure`
-            A COMPAS data object.
+        data : :class:`compas.geometry.Geometry` | :class:`compas.datastructures.Datastructure` | :class:`jax_fdm.datastructures.FDNetwork`
+            The object to visualize.
+        as_wireframe : bool, optional
+            If ``True`` and ``data`` is an ``FDNetwork``, draw it as a plain
+            wireframe graph instead of the full force-density artist.
         **kwargs : dict, optional
             Additional visualization options.
 
         Returns
         -------
-        view_data :class:`compas_view2.objects.Object`
-            A visualization object.
+        The created scene object, or the :class:`FDNetworkViewerArtist` for an
+        ``FDNetwork``.
         """
-        if not isinstance(data, (FDNetwork)):
-            return super(Viewer, self).add(data, **kwargs)
+        as_wireframe = kwargs.pop("as_wireframe", False)
 
-        if kwargs.get("as_wireframe"):
-            del kwargs["as_wireframe"]
-            return super(Viewer, self).add(data, **kwargs)
+        if not isinstance(data, FDNetwork) or as_wireframe:
+            return self.scene.add(data, **kwargs)
 
-        artist = Artist(data, viewer=self, context="Viewer", **kwargs)
+        artist = FDNetworkViewerArtist(data, viewer=self, **kwargs)
         self.artists.append(artist)
         artist.draw()
         artist.add()
 
-    def save(self, filepath):
-        """
-        Save the viewer scene as an image to a filepath.
-
-        Notes
-        -----
-        The filepath must include the desired image extension.
-        The viewer must be called manually after calling this function.
-        """
-        ext = filepath.split(".")[-1]
-
-        if not self.started:
-            self.window.show()
-
-        qimage = self.view.grabFramebuffer()
-        qimage.save(filepath, ext)
+        return artist

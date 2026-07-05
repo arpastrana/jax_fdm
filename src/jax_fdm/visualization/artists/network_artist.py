@@ -1,7 +1,6 @@
 from collections.abc import Iterable
 from math import fabs
 
-from compas.artists import NetworkArtist
 from compas.colors import Color
 from compas.colors import ColorMap
 from compas.itertools import remap_values
@@ -9,9 +8,15 @@ from compas.itertools import remap_values
 __all__ = ["FDNetworkArtist"]
 
 
-class FDNetworkArtist(NetworkArtist):
+class FDNetworkArtist:
     """
     The base artist to display a force density network across different contexts.
+
+    This is a plain, COMPAS-free base class: it owns the force-density-specific
+    computation (node/edge colors, edge widths, load and reaction vectors) and
+    exposes it as backend-neutral dictionaries. Concrete backends subclass it and
+    implement the abstract ``draw_*`` methods to turn that data into their own
+    scene objects.
     """
     default_edgecolor = Color.teal()
     default_nodecolor = Color.grey().lightened(factor=100)
@@ -56,12 +61,17 @@ class FDNetworkArtist(NetworkArtist):
                  show_supports=True,
                  *args,
                  **kwargs):
-        super().__init__(network=network,
-                         nodes=nodes,
-                         edges=edges,
-                         nodecolor=nodecolor,
-                         *args,
-                         **kwargs)
+        self.network = network
+
+        # Node and edge iterables, optionally filtered (defaults to all). These
+        # replace the attributes the removed COMPAS ``NetworkArtist`` used to set.
+        self.nodes = list(nodes) if nodes is not None else list(network.nodes())
+        self.edges = list(edges) if edges is not None else list(network.edges())
+
+        self._node_xyz = None
+        self._node_color = None
+        self._edge_color = None
+        self._edge_width = None
 
         self._default_loadcolor = None
         self._default_reactioncolor = None
@@ -74,6 +84,7 @@ class FDNetworkArtist(NetworkArtist):
         self.node_size = nodesize
         self.edge_width = edgewidth
 
+        self.node_color = nodecolor
         self.edge_color = edgecolor
 
         self.load_color = loadcolor or self.default_loadcolor
@@ -310,6 +321,22 @@ class FDNetworkArtist(NetworkArtist):
             self._node_color = color
         elif isinstance(color, Color):
             self._node_color = {node: color for node in self.nodes}
+
+    @property
+    def node_size(self):
+        """
+        The size of the nodes.
+        """
+        if not self._node_size:
+            self.node_size = self.default_nodesize
+        return self._node_size
+
+    @node_size.setter
+    def node_size(self, size):
+        if isinstance(size, dict):
+            self._node_size = size
+        elif isinstance(size, (int, float)):
+            self._node_size = {node: size for node in self.nodes}
 
     @property
     def edge_width(self):
