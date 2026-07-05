@@ -3,13 +3,13 @@ import os
 
 # compas
 from compas.colors import Color
+from compas.datastructures import Mesh
 from compas.itertools import pairwise
 from compas.topology import dijkstra_path
 
 # jax fdm
 from jax_fdm.constraints import EdgeLengthConstraint
 from jax_fdm.datastructures import FDMesh
-from jax_fdm.datastructures import FDNetwork
 from jax_fdm.equilibrium import constrained_fdm
 from jax_fdm.equilibrium import fdm
 from jax_fdm.goals import NodeResidualForceGoal
@@ -254,20 +254,18 @@ viewer = Viewer(width=1600, height=900, show_grid=False)
 viewer.renderer.camera.zoom(-35)  # number of steps, negative to zoom out
 viewer.renderer.camera.rotation.z = 0.0  # set rotation around z axis to zero
 
-# view shaded optimized mesh (its vertices already sit at equilibrium)
-viewer.add(design, show_points=False, show_edges=False, opacity=0.4)
-
-# view reference mesh as wireframe
-viewer.add(mesh,
+# view reference mesh as a plain wireframe (convert to a plain COMPAS mesh so the
+# viewer renders bare geometry instead of the force-density mesh artist)
+viewer.add(mesh.copy(cls=Mesh),
            show_faces=False,
            show_points=False,
            show_edges=True,
            linewidth=1.0,
            color=Color.grey().darkened())
 
-# view optimized edges colored by force. Force coloring is an FDNetwork artist
-# feature, so we render the mesh's edges through an equivalent network.
-viewer.add(FDNetwork.from_mesh(design),
+# view the optimized mesh directly: shaded surface plus edges colored by force,
+# straight from the FDMesh
+viewer.add(design,
            edgewidth=(0.02, 0.2),
            show_nodes=False,
            edgecolor="force",
