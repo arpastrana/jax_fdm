@@ -8,6 +8,43 @@ from compas.itertools import remap_values
 __all__ = ["FDDatastructureArtist"]
 
 
+# The keyword arguments understood by the artists, so that the registered
+# scene-object adapters can split them out of a generic scene.add(**kwargs).
+ARTIST_KWARGS = frozenset((
+    "points",
+    "edges",
+    "nodecolor",
+    "edgecolor",
+    "nodesize",
+    "edgewidth",
+    "loadcolor",
+    "loadscale",
+    "loadtol",
+    "reactioncolor",
+    "reactionscale",
+    "reactiontol",
+    "show_nodes",
+    "show_edges",
+    "show_loads",
+    "show_reactions",
+    "show_supports",
+    "show_faces",
+    "faceopacity",
+))
+
+
+def pop_artist_kwargs(kwargs):
+    """
+    Split the force density artist kwargs out of a scene-object kwargs dict.
+
+    ``None`` values are popped but dropped: scene backends inject explicit
+    ``None`` defaults for some display kwargs (e.g. ``show_faces`` in
+    ``compas_viewer``), which would otherwise clobber the artist defaults.
+    """
+    artist_kwargs = {name: kwargs.pop(name) for name in list(kwargs) if name in ARTIST_KWARGS}
+    return {name: value for name, value in artist_kwargs.items() if value is not None}
+
+
 class FDDatastructureArtist:
     """
     The base artist to display a force density datastructure across contexts.

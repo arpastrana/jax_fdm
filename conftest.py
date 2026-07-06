@@ -16,12 +16,12 @@ if not has_backend("compas_viewer"):
     collect_ignore.append("src/jax_fdm/visualization/viewers/viewer.py")
     collect_ignore.append("src/jax_fdm/visualization/viewers/network_artist.py")
 
-# The notebook backend still targets the compas 1.x notebook API and is pending
-# the compas 2.x port, so it is always skipped from doctest collection (its
-# module-level imports break on compas_notebook 2.x regardless of installation).
-collect_ignore.append("src/jax_fdm/visualization/notebooks/viewer.py")
-collect_ignore.append("src/jax_fdm/visualization/notebooks/network_artist.py")
-collect_ignore.append("src/jax_fdm/visualization/notebooks/register.py")
+if not has_backend("compas_notebook"):
+    collect_ignore.append("src/jax_fdm/visualization/notebooks/datastructure_artist.py")
+    collect_ignore.append("src/jax_fdm/visualization/notebooks/network_artist.py")
+    collect_ignore.append("src/jax_fdm/visualization/notebooks/mesh_artist.py")
+    collect_ignore.append("src/jax_fdm/visualization/notebooks/scene.py")
+    collect_ignore.append("src/jax_fdm/visualization/notebooks/viewer.py")
 
 if not has_backend("compas_plotters"):
     collect_ignore.append("src/jax_fdm/visualization/plotters/network_artist.py")
