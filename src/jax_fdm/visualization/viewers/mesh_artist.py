@@ -1,3 +1,5 @@
+from compas_viewer.scene import MeshObject
+
 from jax_fdm.visualization.artists import FDMeshArtist
 from jax_fdm.visualization.viewers.datastructure_artist import FDDatastructureViewerArtist
 
@@ -22,7 +24,7 @@ class FDMeshViewerArtist(FDDatastructureViewerArtist, FDMeshArtist):
         self.face_opacity = faceopacity or self.default_faceopacity
         self.viewer_faces = None
 
-    def add(self):
+    def add(self, group=None):
         """
         Add the points of the mesh to the viewer scene.
 
@@ -30,13 +32,19 @@ class FDMeshViewerArtist(FDDatastructureViewerArtist, FDMeshArtist):
         drawn as one shaded surface (the mesh itself) under a "Faces" subgroup, so
         the surface toggles independently from the wireframe.
         """
-        super().add()
+        super().add(group=group)
 
-        if self.show_faces:
-            self.viewer_groups["faces"] = self.viewer.scene.add_group(name="Faces", parent=self.viewer_group)
-            self.viewer_faces = self.viewer.scene.add(self.datastructure,
-                                                      show_points=False,
-                                                      show_lines=False,
-                                                      opacity=self.face_opacity,
-                                                      parent=self.viewer_groups["faces"],
-                                                      name="Faces")
+        if not self.show_faces:
+            return
+
+        self.viewer_groups["faces"] = self.viewer.scene.add_group(name="Faces", parent=self.viewer_group)
+        # sceneobject_type pins the native mesh scene object: the FDMesh is
+        # registered with compas.scene, so a plain scene.add would dispatch
+        # right back to the FD adapter and recurse.
+        self.viewer_faces = self.viewer.scene.add(self.datastructure,
+                                                sceneobject_type=MeshObject,
+                                                show_points=False,
+                                                show_lines=False,
+                                                opacity=self.face_opacity,
+                                                parent=self.viewer_groups["faces"],
+                                                name="Faces")

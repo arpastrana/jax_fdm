@@ -25,9 +25,10 @@ class FDDatastructureViewerArtist(FDShapeArtist):
     # tree. Subclasses override with "Nodes" / "Vertices".
     points_group_name = "Points"
 
-    def __init__(self, datastructure, viewer, *args, **kwargs):
+    def __init__(self, datastructure, viewer, *args, name=None, **kwargs):
         super().__init__(datastructure, *args, **kwargs)
         self.viewer = viewer
+        self.name = name
 
         self.viewer_edges = {}
         self.viewer_points = {}
@@ -63,17 +64,24 @@ class FDDatastructureViewerArtist(FDShapeArtist):
     # Add
     # ==========================================================================
 
-    def add(self):
+    def add(self, group=None):
         """
         Add the points of the datastructure to the viewer scene.
 
         Every point is parented to a per-category subgroup (points,
-        "Edges", "Reactions", "Loads") under a single group named after the
-        datastructure, so the whole datastructure reads as one foldable entity in
-        the viewer tree while each category (and each point) stays individually
-        toggleable.
+        "Edges", "Reactions", "Loads") under a single group, so the whole
+        datastructure reads as one foldable entity in the viewer tree while each
+        category (and each point) stays individually toggleable. The group takes
+        the ``name`` passed to the artist (e.g. via ``viewer.add(data, name=...)``),
+        falling back to the datastructure's own name and finally to its type name.
+
+        An existing scene group can be supplied via ``group`` to host the
+        subgroups directly (used by the registered scene-object adapters).
         """
-        self.viewer_group = self.viewer.scene.add_group(name=self.datastructure.name or self.default_name)
+        if group is not None:
+            self.viewer_group = group
+        else:
+            self.viewer_group = self.viewer.scene.add_group(name=self.name or self.datastructure.name or self.default_name)
 
         if self.collection_points:
             self.viewer_groups["points"] = self.viewer.scene.add_group(name=self.points_group_name, parent=self.viewer_group)

@@ -15,6 +15,8 @@ collect_ignore = []
 if not has_backend("compas_viewer"):
     collect_ignore.append("src/jax_fdm/visualization/viewers/viewer.py")
     collect_ignore.append("src/jax_fdm/visualization/viewers/network_artist.py")
+    collect_ignore.append("src/jax_fdm/visualization/viewers/mesh_artist.py")
+    collect_ignore.append("src/jax_fdm/visualization/viewers/scene.py")
 
 if not has_backend("compas_notebook"):
     collect_ignore.append("src/jax_fdm/visualization/notebooks/datastructure_artist.py")

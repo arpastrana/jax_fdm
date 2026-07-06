@@ -3,7 +3,10 @@ from jax_fdm.visualization.backends import null_viewer
 
 # The 3D viewer builds on compas_viewer, an optional dependency.
 if has_backend("compas_viewer"):
+    from .datastructure_artist import *  # noqa F403
     from .network_artist import *  # noqa F403
+    from .mesh_artist import *  # noqa F403
+    from .scene import *  # noqa F403
     from .viewer import *  # noqa F403
 else:
     Viewer = null_viewer("compas_viewer")
