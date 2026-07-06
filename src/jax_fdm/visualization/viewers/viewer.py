@@ -53,7 +53,7 @@ class Viewer(CompasViewer):
 
         Parameters
         ----------
-        data : :class:`compas.geometry.Geometry` | :class:`compas.datastructures.Datastructure` | :class:`jax_fdm.datastructures.FDNetwork` | :class:`jax_fdm.datastructures.FDMesh`
+        data : :class:`compas.data.Data`
             The object to visualize.
         **kwargs : dict, optional
             Additional visualization options.
@@ -74,6 +74,13 @@ class Viewer(CompasViewer):
         # tree. Default its display name to "Network" to avoid surprising users.
         if isinstance(data, Graph) and "name" not in kwargs:
             kwargs["name"] = "Network"
+
+        # compas_viewer's line width kwarg is ``linewidth`` (screen-space pixels);
+        # the ``edgewidth`` it inherits from compas.scene is stored but never
+        # consumed by the render pipeline. Alias it so ``edgewidth`` is the one
+        # edge-width vocabulary across FD and plain adds alike.
+        if "edgewidth" in kwargs and "linewidth" not in kwargs:
+            kwargs["linewidth"] = kwargs.pop("edgewidth")
 
         return self.scene.add(data, **kwargs)
 

@@ -2,7 +2,6 @@
 import os
 
 # compas
-from compas.colors import Color
 from compas.datastructures import Mesh
 from compas.itertools import pairwise
 from compas.topology import dijkstra_path
@@ -263,16 +262,14 @@ viewer.renderer.camera.rotation.z = 0.0  # set rotation around z axis to zero
 viewer.add(mesh.copy(cls=Mesh),
            show_faces=False,
            show_points=False,
-           show_edges=True,
-           linewidth=1.0,
-           color=Color.grey())
+           show_edges=True)
 
 # view the optimized mesh directly
 viewer.add(design,
            edgewidth=(0.02, 0.2),
            show_nodes=True,
            show_loads=True,
-           show_faces=False,
+           show_faces=True,
            edgecolor="fd",
            show_reactions=True,
            reactionscale=0.75)
