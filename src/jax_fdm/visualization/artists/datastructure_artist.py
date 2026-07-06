@@ -49,11 +49,12 @@ class FDDatastructureArtist:
     """
     The base artist to display a force density datastructure across contexts.
 
-    This is a plain, COMPAS-free base class shared by the network and the mesh
-    artists: it owns the force-density-specific computation (point and edge
-    colors, edge widths, load and reaction vectors) and exposes it as
-    backend-neutral dictionaries. Concrete backends subclass it and implement the
-    abstract ``draw_*`` methods to turn that data into their own scene objects.
+    This is a plain base class shared by the network and the mesh artists,
+    independent of any visualization backend (it uses only core COMPAS): it owns
+    the force-density-specific computation (point and edge colors, edge widths,
+    load and reaction vectors) and exposes it as backend-neutral dictionaries.
+    Concrete backends subclass it and implement the abstract ``draw_*`` methods
+    to turn that data into their own scene objects.
 
     The points of the datastructure (nodes for a network, vertices for a
     mesh) are accessed through the ``_point_*`` hooks so that the shared logic

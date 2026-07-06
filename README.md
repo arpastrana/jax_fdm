@@ -1,7 +1,7 @@
 <h1 align='center'>JAX FDM</h1>
 
 <!-- Badges -->
-![build](https://github.com/arpastrana/jax_fdm/workflows/build/badge.svg)
+![build](https://github.com/arpastrana/jax_fdm/actions/workflows/build.yml/badge.svg)
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.7258292.svg)](https://doi.org/10.5281/zenodo.7258292)
 [![PyPI - Latest Release](https://img.shields.io/pypi/v/jax-fdm.svg)](https://pypi.python.org/project/jax-fdm)
 [![PyPI - Python Version](https://img.shields.io/pypi/pyversions/jax-fdm.svg)](https://pypi.python.org/project/jax-fdm)
@@ -54,19 +54,20 @@ pip install jax-fdm
 
 This pulls in COMPAS 2.x and the other core dependencies automatically.
 
-JAX FDM supports Python 3.10, 3.11, and 3.12 and builds on JAX, NumPy, SciPy, Matplotlib, Equinox, and the COMPAS framework. See `pyproject.toml` for the complete dependency list.
+JAX FDM supports Python 3.10, 3.11, and 3.12 and builds on JAX, SciPy, Matplotlib, Equinox, and the COMPAS framework. See `pyproject.toml` for the complete dependency list.
 
 #### Optional extras
 
 JAX FDM declares optional dependency groups you can install from a source checkout with `pip`:
 
 ```bash
-pip install -e ".[viz]"    # 3D viewer (compas_viewer)
+pip install -e ".[viz]"    # 3D viewer (compas_viewer) and notebook viewer (compas_notebook)
 pip install -e ".[ipopt]"  # the IPOPT interior-point optimizer (cyipopt)
-pip install -e ".[dev]"     # development tools (ruff, pytest, build, bump-my-version)
+pip install -e ".[dev]"     # development tools (ruff, pytest, pre-commit, build, bump-my-version)
 ```
 
 The `ipopt` extra needs a system Ipopt library available on your machine.
+In a Jupyter notebook, use `from jax_fdm.visualization import NotebookViewer` to display structures inline.
 
 ### Are you a Windows user?
 
@@ -116,15 +117,16 @@ optimizer = SLSQP()
 c_network = constrained_fdm(network, optimizer, loss, constraints=constraints)
 ```
 
-You finally visualize the unconstrained arch `f_network` (gray) and the constrained one, `c_network` (in teal) with the `Viewer`.
+You finally visualize the constrained arch `c_network` with the `Viewer`, together with the unconstrained arch `f_network` as a plain wireframe (convert it to a COMPAS `Network` to draw it without the force density styling).
 
 ```python
+from compas.datastructures import Network
 from jax_fdm.visualization import Viewer
 
 
 viewer = Viewer(width=1600, height=900)
 viewer.add(c_network)
-viewer.add(f_network, as_wireframe=True)
+viewer.add(f_network.copy(cls=Network))
 viewer.show()
 ```
 
