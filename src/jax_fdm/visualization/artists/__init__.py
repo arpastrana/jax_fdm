@@ -2,6 +2,7 @@
 # removed ``compas.artists.NetworkArtist``), so they always import regardless of
 # which visualization backend, if any, is installed.
 from .datastructure_artist import *  # noqa F403
+from .shape_artist import *  # noqa F403
 from .network_artist import *  # noqa F403
 from .mesh_artist import *  # noqa F403
 

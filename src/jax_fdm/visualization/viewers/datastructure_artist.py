@@ -1,36 +1,25 @@
-from math import fabs
-
-from compas.datastructures import Mesh
 from compas.geometry import Cylinder
 from compas.geometry import Line
-from compas.geometry import Sphere
-from compas.geometry import add_vectors
-from compas.geometry import length_vector
-from compas.geometry import normalize_vector
-from compas.geometry import scale_vector
-from jax_fdm.visualization.shapes import Arrow
+from jax_fdm.visualization.artists import FDShapeArtist
 
 __all__ = ["FDDatastructureViewerArtist"]
 
 
-class FDDatastructureViewerArtist:
+class FDDatastructureViewerArtist(FDShapeArtist):
     """
     An artist that draws a force density datastructure to a :class:`compas_viewer.Viewer`.
 
-    The artist builds plain COMPAS geometry (spheres for points,
-    cylinders for edges, arrow meshes for load and reaction vectors) and pushes it
-    into the viewer scene. It keeps a handle on every scene object so that an
-    animation loop can mutate the geometry in place and re-read it with a single
-    ``scene_object.update(update_data=True)``.
+    The artist builds plain COMPAS geometry via :class:`FDShapeArtist` (spheres
+    for points, cylinders for edges, arrow meshes for load and reaction vectors)
+    and pushes it into the viewer scene. It keeps a handle on every scene object
+    so that an animation loop can mutate the geometry in place and re-read it
+    with a single ``scene_object.update(update_data=True)``.
 
     This is the shared backend base for the network and mesh viewer artists; the
     node-vs-vertex vocabulary is resolved through the ``_point_*`` hooks provided
     by :class:`FDDatastructureArtist`.
     """
     default_opacity = 0.75
-    arrow_bodywidth = 0.012
-    arrow_headportion = 0.12
-    arrow_headwidth = 0.04
 
     # Label of the per-category subgroup for the points in the viewer
     # tree. Subclasses override with "Nodes" / "Vertices".
@@ -127,15 +116,6 @@ class FDDatastructureViewerArtist:
     # Edges
     # ==========================================================================
 
-    def draw_edge(self, edge, width, *args, **kwargs):
-        """
-        Draw an edge as a cylinder.
-        """
-        start, end = self.datastructure.edge_coordinates(edge)
-        line = Line(start, end)
-
-        return Cylinder.from_line_and_radius(line, width / 2.0)
-
     def add_edge(self, cylinder, color, parent=None, name=None):
         """
         Add one edge to the viewer scene.
@@ -195,12 +175,6 @@ class FDDatastructureViewerArtist:
     # Points (nodes / vertices)
     # ==========================================================================
 
-    def draw_point(self, point, size, *args, **kwargs):
-        """
-        Draw a point as a sphere.
-        """
-        return Sphere(radius=size / 2.0, point=self._point_coordinates(point))
-
     def add_point(self, sphere, color, parent=None, name=None):
         """
         Add one point to the viewer scene.
@@ -246,32 +220,6 @@ class FDDatastructureViewerArtist:
     # ==========================================================================
     # Loads
     # ==========================================================================
-
-    def draw_load(self, point, scale, *args, **kwargs):
-        """
-        Draw a load vector at a point.
-        """
-        vector = self._point_load(point)
-
-        if length_vector(vector) < self.load_tol:
-            return
-
-        xyz = self._point_coordinates(point)
-
-        # shift start to make the arrow head touch the point the load is applied to
-        start = add_vectors(xyz, scale_vector(vector, -scale))
-
-        # shift start to account for half the size of the edge thickness
-        widths = []
-        for edge in self._point_edges(point):
-            width = self.edge_width.get(edge)
-            if not width:
-                width = 0.0
-            widths.append(width)
-
-        start = add_vectors(start, scale_vector(normalize_vector(vector), -max(widths)))
-
-        return self.draw_vector(vector, start, scale)
 
     def add_load(self, arrow, color, parent=None, name=None):
         """
@@ -327,29 +275,6 @@ class FDDatastructureViewerArtist:
     # Reaction forces
     # ==========================================================================
 
-    def draw_reaction(self, point, scale, *args, **kwargs):
-        """
-        Draw a reaction vector at a point.
-        """
-        vector = self._point_reaction(point)
-        start = self._point_coordinates(point)
-
-        if length_vector(vector) < self.reaction_tol:
-            return
-
-        # shift the starting point if the max force of connected edges is compressive
-        connected_edges = list(self._point_edges(point))
-        if len(connected_edges) == 0:
-            return
-
-        forces = [self.datastructure.edge_force(e) for e in connected_edges]
-        max_force = max(forces, key=lambda f: fabs(f))
-        if max_force < 0.0:
-            start = add_vectors(start, scale_vector(vector, scale))
-
-        # reverse the vector to display the direction of the reaction forces
-        return self.draw_vector(scale_vector(vector, -1.0), start, scale)
-
     def add_reaction(self, arrow, color, parent=None, name=None):
         """
         Add one reaction force to the viewer scene.
@@ -399,29 +324,3 @@ class FDDatastructureViewerArtist:
         """
         for point in self.collection_reactions.keys():
             self.update_reaction(point, self.reaction_scale)
-
-    # ==========================================================================
-    # Helpers
-    # ==========================================================================
-
-    def draw_vector(self, vector, start, scale):
-        """
-        Build an arrow shape from a vector.
-        """
-        vector_scaled = scale_vector(vector, scale)
-
-        return Arrow(position=start,
-                     direction=vector_scaled,
-                     head_portion=self.arrow_headportion,
-                     head_width=self.arrow_headwidth,
-                     body_width=self.arrow_bodywidth)
-
-    @staticmethod
-    def arrow_to_mesh(arrow):
-        """
-        Convert an :class:`Arrow` shape into a mesh the viewer can render.
-
-        compas_viewer has no registered scene object for our custom ``Arrow``
-        shape, but it renders a :class:`compas.datastructures.Mesh` directly.
-        """
-        return Mesh.from_vertices_and_faces(*arrow.to_vertices_and_faces())

@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Added `FDMeshArtist` and its `compas_viewer` backend `FDMeshViewerArtist`, so an `FDMesh` can be visualized directly with its full force-density metadata (force-density/force edge coloring, edge widths, support colors, load and reaction vectors) plus a shaded surface for its faces. `viewer.add(mesh)` now routes an `FDMesh` through the mesh artist the same way it routes an `FDNetwork`, grouping everything under one foldable "FDMesh" tree node ("Vertices"/"Edges"/"Reactions"/"Loads"/"Faces" subgroups). This removes the `FDNetwork.from_mesh(mesh)` detour that mesh-optimizing scripts previously needed just to render forces (updated the `monkey_saddle`, `monkey_saddle_constraints` and `pillow` examples accordingly).
+- Extracted an `FDShapeArtist` mixin holding the shape-producing draw hooks (edges as cylinders, points as spheres, loads and reactions as arrows) out of the viewer backend, so the notebook backend reuses them without duplicating a line of the arrow-placement logic.
 
 ### Changed
 
