@@ -71,6 +71,8 @@ where = ["src"]
 [tool.ruff]
 line-length = 180
 target-version = "py310"
+# The Colab notebooks carry !pip magics and notebook-style cells.
+extend-exclude = ["notebooks"]
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "W"]
