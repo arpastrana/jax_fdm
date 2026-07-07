@@ -1,15 +1,15 @@
-from PySide6.QtWidgets import QApplication
-
 from compas_viewer import Viewer as CompasViewer
 from compas_viewer.config import Config
 from compas_viewer.config import RendererConfig
 from compas_viewer.config import WindowConfig
 from compas_viewer.singleton import Singleton
 from compas_viewer.singleton import SingletonMeta
+from PySide6.QtWidgets import QApplication
 
 from compas.datastructures import Graph
 from jax_fdm.datastructures import FDMesh
 from jax_fdm.datastructures import FDNetwork
+from jax_fdm.visualization.viewers.buffermanager import FastBufferManager
 from jax_fdm.visualization.viewers.mesh_artist import FDMeshViewerArtist
 from jax_fdm.visualization.viewers.network_artist import FDNetworkViewerArtist
 
@@ -107,6 +107,8 @@ class Viewer(CompasViewer, metaclass=ViewerMeta):
         super().__init__(config=config, **kwargs)
         self.artists = []
         self._spent = False
+        # Swap in the vectorized buffer manager before any GL buffers exist.
+        self.renderer.buffer_manager = FastBufferManager()
 
     def create_app(self):
         """
