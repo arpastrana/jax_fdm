@@ -1,7 +1,11 @@
+from PySide6.QtWidgets import QApplication
+
 from compas_viewer import Viewer as CompasViewer
 from compas_viewer.config import Config
 from compas_viewer.config import RendererConfig
 from compas_viewer.config import WindowConfig
+from compas_viewer.singleton import Singleton
+from compas_viewer.singleton import SingletonMeta
 
 from compas.datastructures import Graph
 from jax_fdm.datastructures import FDMesh
@@ -12,7 +16,70 @@ from jax_fdm.visualization.viewers.network_artist import FDNetworkViewerArtist
 __all__ = ["Viewer"]
 
 
-class Viewer(CompasViewer):
+def retire_viewer(viewer):
+    """
+    Best-effort shutdown of a spent viewer.
+
+    Its timers must stop so they do not resume firing into a dead GL context
+    when the shared ``QApplication`` enters the event loop of the next viewer.
+    Stopping suffices: a retired timer is orphaned and never restarted.
+    """
+    timers = [getattr(viewer, "timer", None)]
+    try:
+        timers.append(viewer.renderer._idle_timer)
+    except AttributeError:
+        pass
+
+    for timer in timers:
+        try:
+            timer.stop()
+        except (AttributeError, RuntimeError):
+            pass
+
+    try:
+        viewer.ui.window.widget.close()
+    except (AttributeError, RuntimeError):
+        pass
+
+    try:
+        viewer.running = False
+    except AttributeError:
+        pass
+
+
+class ViewerMeta(SingletonMeta):
+    """
+    A singleton metaclass that evicts a spent viewer.
+
+    ``compas_viewer.Viewer`` is a process-wide singleton whose ``running``
+    flag is set by ``show()`` and never reset when the window closes. A second
+    ``Viewer()`` in the same process then returns the closed instance, still
+    flagged as running and still holding the previous scene, so every
+    ``scene.add`` triggers a full buffer and sidebar rebuild against a dead GL
+    context (quadratic slowdown, or a crash).
+
+    This metaclass retires such a spent (or foreign, non-jax_fdm) cached
+    instance before construction, so that each sequential ``Viewer()`` starts
+    with a fresh scene, UI and renderer.
+    """
+    def __call__(cls, *args, **kwargs):
+        # SingletonMeta caches instances under the first subclass of Singleton
+        # in the MRO, which for this chain is compas_viewer.Viewer.
+        key_class = cls
+        while key_class.__base__ is not Singleton:
+            key_class = key_class.__base__
+
+        cached = SingletonMeta._instances.get(key_class)
+        if cached is not None:
+            spent = getattr(cached, "running", False) or getattr(cached, "_spent", False)
+            if spent or not isinstance(cached, cls):
+                retire_viewer(cached)
+                del SingletonMeta._instances[key_class]
+
+        return super().__call__(*args, **kwargs)
+
+
+class Viewer(CompasViewer, metaclass=ViewerMeta):
     """
     A thin wrapper on :class:`compas_viewer.Viewer`.
 
@@ -24,6 +91,11 @@ class Viewer(CompasViewer):
     For convenience it also accepts the ``width``, ``height`` and ``show_grid``
     keyword arguments directly and folds them into a :class:`compas_viewer.config.Config`,
     so the common window setup does not require building a config by hand.
+
+    Unlike the parent singleton, this viewer is safe to construct, show and
+    close several times in one process (e.g. one viewer per step of a
+    sequential optimization): a spent instance is evicted by :class:`ViewerMeta`
+    and the next construction starts from a clean scene.
     """
     def __init__(self, width=None, height=None, show_grid=None, config=None, **kwargs):
         if config is None:
@@ -34,6 +106,30 @@ class Viewer(CompasViewer):
 
         super().__init__(config=config, **kwargs)
         self.artists = []
+        self._spent = False
+
+    def create_app(self):
+        """
+        Reuse the process-wide Qt application if one exists.
+
+        A fresh instance built after an eviction must not create a second
+        ``QApplication`` — that is a fatal Qt error.
+        """
+        app = QApplication.instance()
+        if app is not None:
+            return app
+        return super().create_app()
+
+    def show(self):
+        """
+        Show the viewer window and block until it is closed.
+
+        On return the instance is marked as spent: late ``scene.add`` calls
+        skip the live-rebuild path, and the next ``Viewer()`` constructs fresh.
+        """
+        super().show()
+        self.running = False
+        self._spent = True
 
     def add(self, data, **kwargs):
         """
