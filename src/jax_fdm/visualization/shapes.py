@@ -1,4 +1,3 @@
-from compas.datastructures import Mesh
 from compas.geometry import Cone
 from compas.geometry import Cylinder
 from compas.geometry import Line
@@ -31,6 +30,8 @@ class Arrow(Shape):
         self.head_portion = head_portion
         self.head_width = head_width
         self.body_width = body_width
+        # An arrow is a slender shape; the base Shape default of 16 oversamples it.
+        self.resolution_u = 8
 
     # ==========================================================================
     # Data
@@ -55,14 +56,33 @@ class Arrow(Shape):
     # Methods
     # ==========================================================================
 
-    def to_vertices_and_faces(self, u=8, **kwargs):
+    def compute_vertices(self):
+        """
+        Compute the vertices of the discrete representation of the arrow.
+        """
+        vertices, _ = self.to_vertices_and_faces()
+        return vertices
+
+    def compute_faces(self):
+        """
+        Compute the faces of the discrete representation of the arrow.
+        """
+        _, faces = self.to_vertices_and_faces()
+        return faces
+
+    def to_vertices_and_faces(self, triangulated=False, u=None, v=None):
         """
         Returns a list of vertices and faces.
 
         Parameters
         ----------
+        triangulated : bool, optional
+            If ``True``, triangulate the faces.
         u : int, optional
-            Number of faces in the "u" direction. Default is ``8``.
+            Number of faces in the "u" direction.
+            Defaults to ``self.resolution_u``.
+        v : int, optional
+            Ignored. An arrow has no "v" direction.
 
         Returns
         -------
@@ -70,6 +90,7 @@ class Arrow(Shape):
             A list of vertex locations and a list of faces, with each face
             defined as a list of indices into the list of vertices.
         """
+        u = u or self.resolution_u
         if u < 3:
             raise ValueError("The value for u should be u > 3.")
 
@@ -77,24 +98,24 @@ class Arrow(Shape):
         head_vector = self.direction * self.head_portion
         head_base = self.position + self.direction - head_vector
 
+        # Body of the arrow (a cylinder from the start up to the head base).
+        body_line = Line(self.position, head_base)
+        cylinder = Cylinder.from_line_and_radius(body_line, self.body_width * length)
+        vertices, faces = cylinder.to_vertices_and_faces(u=u, triangulated=triangulated)
+
         # Head of the arrow (a cone from the head base up to the tip).
         # ``Cone.from_line_and_radius`` centers the base circle on the line
         # midpoint and puts the apex a full length beyond, so the axis line is
         # centered on ``head_base`` to seat the base there and the tip at the end.
         head_line = Line(head_base - head_vector * 0.5, head_base + head_vector * 0.5)
         cone = Cone.from_line_and_radius(head_line, self.head_width * length)
-        v, f = cone.to_vertices_and_faces(u=u)
-        head = Mesh.from_vertices_and_faces(v, f)
+        head_vertices, head_faces = cone.to_vertices_and_faces(u=u, triangulated=triangulated)
 
-        # Body of the arrow (a cylinder from the start up to the head base).
-        body_line = Line(self.position, head_base)
-        cylinder = Cylinder.from_line_and_radius(body_line, self.body_width * length)
-        v, f = cylinder.to_vertices_and_faces(u=u)
-        body = Mesh.from_vertices_and_faces(v, f)
+        offset = len(vertices)
+        vertices += head_vertices
+        faces += [[index + offset for index in face] for face in head_faces]
 
-        body.join(head)
-
-        return body.to_vertices_and_faces()
+        return vertices, faces
 
     def transform(self, transformation):
         """
