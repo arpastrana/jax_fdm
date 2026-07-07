@@ -39,28 +39,28 @@ def network():
 
 
 def populate(viewer, network):
-    viewer.add(network)
+    obj = viewer.add(network)
     viewer.add(Sphere(radius=1.0))
+    return obj
 
 
-def test_clear_empties_scene_artists_and_picking_colors(viewer, network):
-    populate(viewer, network)
-    assert list(viewer.scene.objects)
-    assert viewer.artists
+def test_clear_empties_scene_and_picking_colors(viewer, network):
+    obj = populate(viewer, network)
+    assert obj in viewer.scene.objects
 
     viewer.clear()
 
     assert not list(viewer.scene.objects)
-    assert not viewer.artists
     assert not viewer.scene.instance_colors
 
 
 def test_clear_then_add_repopulates(viewer, network):
     viewer.clear()
-    populate(viewer, network)
+    obj = populate(viewer, network)
 
-    assert len(viewer.artists) == 1
-    assert list(viewer.scene.objects)
+    assert obj in viewer.scene.objects
+    # the FD network draws through per-category children
+    assert {child.name for child in obj.children} == {"Edges", "Reactions", "Loads"}
 
     viewer.clear()
 

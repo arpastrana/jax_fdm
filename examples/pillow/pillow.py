@@ -235,7 +235,7 @@ mesh0 = designs[0]  # reference (input) mesh
 c_mesh = designs[-1] if len(designs) > 1 else designs[0]  # optimized design
 
 # view reference mesh as a plain wireframe (convert to a plain COMPAS mesh so the
-# viewer renders bare geometry instead of the force-density mesh artist)
+# viewer renders bare geometry instead of the force-density mesh scene object)
 viewer.add(mesh0.copy(cls=Mesh),
            show_faces=False,
            show_points=False,

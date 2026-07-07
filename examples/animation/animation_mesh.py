@@ -60,14 +60,14 @@ if modify_view:
     viewer.renderer.camera.rotation.z = 2 * pi / 3  # rotation around the z axis
 
 # draw mesh
-viewer.add(mesh,
-           edgewidth=(0.05, 0.25),
-           edgecolor="fd",
-           show_nodes=False,
-           nodesize=0.5,
-           show_reactions=True,
-           show_loads=True
-           )
+mesh_obj = viewer.add(mesh,
+                      edgewidth=(0.05, 0.25),
+                      edgecolor="fd",
+                      show_nodes=False,
+                      nodesize=0.5,
+                      show_reactions=True,
+                      show_loads=True
+                      )
 
 # warm start model
 params = recorder[0]
@@ -85,9 +85,8 @@ if animate:
         # update mesh
         datastructure_update(mesh, eqstate, params)
 
-        # update the scene objects drawn by the force density artists
-        for artist in viewer.artists:
-            artist.update()
+        # update the render buffers of the force density scene object in place
+        mesh_obj.update()
 
         if rotate_while_animate:
             viewer.renderer.camera.rotate(dx=1, dy=0)

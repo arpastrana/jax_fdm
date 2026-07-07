@@ -3,12 +3,12 @@ import pytest
 
 from compas.geometry import Cylinder
 from compas.geometry import Line
+from jax_fdm.visualization.buffers import arrows_buffer
+from jax_fdm.visualization.buffers import cylinder_template
+from jax_fdm.visualization.buffers import cylinders_buffer
+from jax_fdm.visualization.buffers import rotations_to
+from jax_fdm.visualization.buffers import spheres_buffer
 from jax_fdm.visualization.shapes import Arrow
-from jax_fdm.visualization.viewers.buffers import arrows_buffer
-from jax_fdm.visualization.viewers.buffers import cylinder_template
-from jax_fdm.visualization.viewers.buffers import cylinders_buffer
-from jax_fdm.visualization.viewers.buffers import rotations_to
-from jax_fdm.visualization.viewers.buffers import spheres_buffer
 
 
 def soup_of(vertices, faces):

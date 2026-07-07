@@ -6,9 +6,7 @@ from compas_viewer.config import WindowConfig
 from compas.datastructures import Graph
 from jax_fdm.datastructures import FDMesh
 from jax_fdm.datastructures import FDNetwork
-from jax_fdm.visualization.viewers.buffermanager import FastBufferManager
-from jax_fdm.visualization.viewers.mesh_artist import FDMeshViewerArtist
-from jax_fdm.visualization.viewers.network_artist import FDNetworkViewerArtist
+from jax_fdm.visualization.viewers.buffer_manager import FastBufferManager
 
 __all__ = ["Viewer"]
 
@@ -18,9 +16,10 @@ class Viewer(CompasViewer):
     A thin wrapper on :class:`compas_viewer.Viewer`.
 
     It subclasses the COMPAS viewer so that camera control, the ``on`` frame
-    loop, ``show`` and recording all work natively, and only overrides ``add``
-    to route a :class:`jax_fdm.datastructures.FDNetwork` through an
-    :class:`FDNetworkViewerArtist`.
+    loop, ``show`` and recording all work natively. The force density
+    datastructures render through their registered scene objects, so ``add``
+    only provides the terser ``viewer.add(obj)`` interface and a couple of
+    kwarg conveniences.
 
     For convenience it also accepts the ``width``, ``height`` and ``show_grid``
     keyword arguments directly and folds them into a :class:`compas_viewer.config.Config`,
@@ -47,7 +46,6 @@ class Viewer(CompasViewer):
             config = Config(window=window, renderer=renderer)
 
         super().__init__(config=config, **kwargs)
-        self.artists = []
         # Swap in the vectorized buffer manager before any GL buffers exist.
         self.renderer.buffer_manager = FastBufferManager()
 
@@ -56,12 +54,11 @@ class Viewer(CompasViewer):
         Empty the scene for the next round of adds.
 
         Call between sequential shows, while the window is closed. Besides the
-        scene objects this also drops the artists and the picking-color
-        registrations, which the parent scene never prunes.
+        scene objects this also drops the picking-color registrations, which
+        the parent scene never prunes.
         """
         self.scene.clear()
         self.scene.instance_colors.clear()
-        self.artists = []
 
     def show(self):
         """
@@ -91,12 +88,10 @@ class Viewer(CompasViewer):
         """
         Add a data object to the viewer.
 
-        This is a convenience shortcut for ``viewer.scene.add`` that additionally
-        routes a :class:`jax_fdm.datastructures.FDNetwork` through an
-        :class:`FDNetworkViewerArtist` and a :class:`jax_fdm.datastructures.FDMesh`
-        through an :class:`FDMeshViewerArtist`. ``compas_viewer.Viewer`` itself has
-        no ``add`` method (objects go through ``viewer.scene``), so this wrapper
-        provides the terser ``viewer.add(obj)`` interface.
+        This is a convenience shortcut for ``viewer.scene.add`` with a couple
+        of kwarg conveniences for plain COMPAS objects. The force density
+        datastructures dispatch through the scene registry to their scene
+        objects (:class:`FDNetworkObject`, :class:`FDMeshObject`).
 
         Dispatch is purely by type. To draw a force-density datastructure as plain
         geometry instead (a bare wireframe or shaded surface), convert it to its
@@ -112,37 +107,20 @@ class Viewer(CompasViewer):
 
         Returns
         -------
-        The created scene object, or the viewer artist for an ``FDNetwork`` /
-        ``FDMesh``.
+        The created scene object.
         """
-        if isinstance(data, FDMesh):
-            return self._add_artist(FDMeshViewerArtist, data, **kwargs)
+        if not isinstance(data, (FDMesh, FDNetwork)):
+            # COMPAS 2.x aliases ``Network`` to ``Graph``, so a plain network added
+            # as a reference wireframe would otherwise show up as "Graph" in the
+            # scene tree. Default its display name to "Network".
+            if isinstance(data, Graph) and "name" not in kwargs:
+                kwargs["name"] = "Network"
 
-        if isinstance(data, FDNetwork):
-            return self._add_artist(FDNetworkViewerArtist, data, **kwargs)
-
-        # COMPAS 2.x aliases ``Network`` to ``Graph``, so a plain network added as
-        # a reference wireframe would otherwise show up as "Graph" in the scene
-        # tree. Default its display name to "Network" to avoid surprising users.
-        if isinstance(data, Graph) and "name" not in kwargs:
-            kwargs["name"] = "Network"
-
-        # compas_viewer's line width kwarg is ``linewidth`` (screen-space pixels);
-        # the ``edgewidth`` it inherits from compas.scene is stored but never
-        # consumed by the render pipeline. Alias it so ``edgewidth`` is the one
-        # edge-width vocabulary across FD and plain adds alike.
-        if "edgewidth" in kwargs and "linewidth" not in kwargs:
-            kwargs["linewidth"] = kwargs.pop("edgewidth")
+            # compas_viewer's line width kwarg is ``linewidth`` (screen-space
+            # pixels); the ``edgewidth`` it inherits from compas.scene is stored
+            # but never consumed by the render pipeline. Alias it so ``edgewidth``
+            # is the one edge-width vocabulary across FD and plain adds alike.
+            if "edgewidth" in kwargs and "linewidth" not in kwargs:
+                kwargs["linewidth"] = kwargs.pop("edgewidth")
 
         return self.scene.add(data, **kwargs)
-
-    def _add_artist(self, artist_cls, data, **kwargs):
-        """
-        Build a force-density viewer artist, draw it and add it to the scene.
-        """
-        artist = artist_cls(data, viewer=self, **kwargs)
-        self.artists.append(artist)
-        artist.draw()
-        artist.add()
-
-        return artist

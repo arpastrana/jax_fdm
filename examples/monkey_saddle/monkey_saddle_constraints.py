@@ -255,7 +255,7 @@ viewer.renderer.camera.zoom(-35)  # number of steps, negative to zoom out
 viewer.renderer.camera.rotation.z = 0.0  # set rotation around z axis to zero
 
 # view reference mesh as a plain wireframe (convert to a plain COMPAS mesh so the
-# viewer renders bare geometry instead of the force-density mesh artist)
+# viewer renders bare geometry instead of the force-density mesh scene object)
 viewer.add(mesh.copy(cls=Mesh),
            show_faces=False,
            show_points=False,

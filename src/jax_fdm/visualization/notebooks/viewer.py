@@ -6,8 +6,6 @@ from compas_notebook.viewer import Viewer as CompasNotebookViewer
 from compas.datastructures import Graph
 from jax_fdm.datastructures import FDMesh
 from jax_fdm.datastructures import FDNetwork
-from jax_fdm.visualization.notebooks.scene import ThreeFDMeshObject
-from jax_fdm.visualization.notebooks.scene import ThreeFDNetworkObject
 
 __all__ = ["NotebookViewer"]
 
@@ -17,8 +15,9 @@ class NotebookViewer(CompasNotebookViewer):
     A thin wrapper on :class:`compas_notebook.viewer.Viewer`.
 
     It subclasses the COMPAS notebook viewer so that the scene, the toolbar and
-    ``show`` all work natively, and only overrides ``add`` to route the force
-    density datastructures through their notebook artists.
+    ``show`` all work natively. The force density datastructures render through
+    their registered scene objects, so ``add`` only provides a couple of kwarg
+    conveniences.
 
     For convenience it also accepts the ``width``, ``height``, ``show_grid``,
     ``viewport``, ``camera_position`` and ``camera_target`` keyword arguments
@@ -49,16 +48,14 @@ class NotebookViewer(CompasNotebookViewer):
                                                   target=list(camera_target) if camera_target else config.view.camera.target)
 
         super().__init__(config=config, **kwargs)
-        self.artists = []
 
     def add(self, data, **kwargs):
         """
         Add a data object to the viewer.
 
-        This is a convenience shortcut for ``viewer.scene.add`` that additionally
-        routes a :class:`jax_fdm.datastructures.FDNetwork` through an
-        :class:`FDNetworkNotebookArtist` and a :class:`jax_fdm.datastructures.FDMesh`
-        through an :class:`FDMeshNotebookArtist`.
+        This is a convenience shortcut for ``viewer.scene.add``. The force
+        density datastructures dispatch through the scene registry to their
+        scene objects (:class:`ThreeFDNetworkObject`, :class:`ThreeFDMeshObject`).
 
         Dispatch is purely by type. To draw a force density datastructure as plain
         geometry instead, convert it to its COMPAS base first and add that, e.g.
@@ -66,34 +63,18 @@ class NotebookViewer(CompasNotebookViewer):
 
         Parameters
         ----------
-        data : :class:`compas.geometry.Geometry` | :class:`compas.datastructures.Datastructure` | :class:`jax_fdm.datastructures.FDNetwork` | :class:`jax_fdm.datastructures.FDMesh`
+        data : :class:`compas.data.Data`
             The object to visualize.
         **kwargs : dict, optional
             Additional visualization options.
 
         Returns
         -------
-        The created scene object, or the notebook artist for an ``FDNetwork`` /
-        ``FDMesh``.
+        The created scene object.
         """
-        if isinstance(data, FDMesh):
-            return self._add_sceneobject(ThreeFDMeshObject, data, **kwargs)
-
-        if isinstance(data, FDNetwork):
-            return self._add_sceneobject(ThreeFDNetworkObject, data, **kwargs)
-
         # COMPAS 2.x aliases ``Network`` to ``Graph``; default the display name
         # to "Network" to mirror the 3D viewer wrapper.
-        if isinstance(data, Graph) and "name" not in kwargs:
+        if isinstance(data, Graph) and not isinstance(data, (FDMesh, FDNetwork)) and "name" not in kwargs:
             kwargs["name"] = "Network"
 
         return self.scene.add(data, **kwargs)
-
-    def _add_sceneobject(self, cls, data, **kwargs):
-        """
-        Add a force density datastructure to the scene through its adapter.
-        """
-        obj = self.scene.add(data, sceneobject_type=cls, **kwargs)
-        self.artists.append(obj.artist)
-
-        return obj.artist
