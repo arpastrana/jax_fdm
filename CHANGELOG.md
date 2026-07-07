@@ -33,11 +33,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Set the viewer's default render mode to `"lighted"` and bumped the `Arrow` mesh resolution default from `u=4` to `u=8`. Also fixed the arrow head detaching from its body under COMPAS 2.x.
 - `Arrow` conforms to the COMPAS 2.x `Shape` protocol: it implements `compute_vertices()`/`compute_faces()` (so the inherited `vertices`/`faces`/`edges` properties work), honors `resolution_u` (default 8), and `to_vertices_and_faces(triangulated=False, u=None, v=None)` matches the base signature.
 - Changed the default node/vertex color of the artists from white to light gray.
-- Grouped the viewer's `FDNetwork` elements into one foldable scene-tree group with "Nodes"/"Edges"/"Reactions"/"Loads" subgroups, instead of hundreds of loose scene objects. Visibility toggles per network, per category, or per element.
+- Grouped the viewer's `FDNetwork` elements into one foldable scene-tree group, instead of hundreds of loose scene objects. Visibility toggles per network or per category.
+- Batched each element category of the viewer artists (edges as cylinders, nodes/vertices as spheres, load and reaction arrows) into a single triangle-soup `BufferGeometry` scene object, built by vectorized numpy template tessellation (`visualization/viewers/buffers.py`). A datastructure now costs a handful of scene objects instead of two per element, and an animation frame updates one render buffer per category in place instead of re-adding hundreds of scene objects — `examples/animation/animation_mesh.py` drops from ~30 s to milliseconds per frame. The soup topology is fixed at add time: arrows are allocated for every candidate node/vertex and collapse to a degenerate soup while below tolerance. Selection granularity changes accordingly, from per element to per category.
+- Swapped the viewer's buffer manager for a `FastBufferManager` that locates an object's slice in the combined render buffers with a numpy lookup instead of compas_viewer 2.0.2's per-vertex Python scan, keeping in-place buffer updates cheap for large scenes.
 
 ### Fixed
 
 - Fixed `viewer.add(fdnetwork, name="...")` ignoring the `name` keyword for an `FDNetwork` or `FDMesh`. An explicit `name=` now takes precedence over the datastructure's own name in the scene tree.
+- Fixed the freeze when showing several viewers in a row in one process (e.g. one viewer per step of a sequential optimization). `compas_viewer.Viewer` is a process-wide singleton whose `running` flag survives closing the window, so every `scene.add` on the next viewer triggered a full buffer and scene-tree rebuild over the accumulated objects (quadratic slowdown, or a crash against the dead GL context). The jax_fdm `Viewer` now evicts a spent singleton on construction — stopping its timers and reusing the one `QApplication` — so each sequential viewer starts with a fresh scene.
 
 ### Removed
 
