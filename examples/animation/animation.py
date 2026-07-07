@@ -101,7 +101,6 @@ viewer = Viewer(width=1600, height=900, show_grid=show_grid)
 # modify view
 if modify_view:
     viewer.renderer.camera.zoom(camera_zoom)  # number of steps, negative to zoom out
-    # viewer.renderer.camera.rotation.z = 2 * pi / 3  # rotation around the z axis
 
 # draw network as plain geometry (keep a handle on the copy to animate it)
 network_plain = network.copy(cls=Network)

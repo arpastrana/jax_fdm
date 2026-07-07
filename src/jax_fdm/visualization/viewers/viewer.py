@@ -2,9 +2,6 @@ from compas_viewer import Viewer as CompasViewer
 from compas_viewer.config import Config
 from compas_viewer.config import RendererConfig
 from compas_viewer.config import WindowConfig
-from compas_viewer.singleton import Singleton
-from compas_viewer.singleton import SingletonMeta
-from PySide6.QtWidgets import QApplication
 
 from compas.datastructures import Graph
 from jax_fdm.datastructures import FDMesh
@@ -16,95 +13,7 @@ from jax_fdm.visualization.viewers.network_artist import FDNetworkViewerArtist
 __all__ = ["Viewer"]
 
 
-def stop_watch_timers(component):
-    """
-    Recursively stop the change-watch timers of bound UI components.
-
-    Every bound sidebar component (number edits, color pickers, toggles) polls
-    its widget on a 100 ms QTimer; left running after retirement, these fire
-    into the next viewer's event loop against deleted C++ widgets.
-    """
-    stop = getattr(component, "stop_watching", None)
-    if callable(stop):
-        try:
-            stop()
-        except (AttributeError, RuntimeError):
-            pass
-    for child in getattr(component, "children", ()):
-        stop_watch_timers(child)
-    for tab in getattr(component, "tabs", {}).values():
-        stop_watch_timers(tab)
-
-
-def retire_viewer(viewer):
-    """
-    Best-effort shutdown of a spent viewer.
-
-    Its timers must stop so they do not resume firing into a dead GL context
-    when the shared ``QApplication`` enters the event loop of the next viewer.
-    Stopping suffices: a retired timer is orphaned and never restarted.
-    """
-    timers = [getattr(viewer, "timer", None)]
-    try:
-        timers.append(viewer.renderer._idle_timer)
-    except AttributeError:
-        pass
-
-    for timer in timers:
-        try:
-            timer.stop()
-        except (AttributeError, RuntimeError):
-            pass
-
-    try:
-        stop_watch_timers(viewer.ui.sidebar)
-    except AttributeError:
-        pass
-
-    try:
-        viewer.ui.window.widget.close()
-    except (AttributeError, RuntimeError):
-        pass
-
-    try:
-        viewer.running = False
-    except AttributeError:
-        pass
-
-
-class ViewerMeta(SingletonMeta):
-    """
-    A singleton metaclass that evicts a spent viewer.
-
-    ``compas_viewer.Viewer`` is a process-wide singleton whose ``running``
-    flag is set by ``show()`` and never reset when the window closes. A second
-    ``Viewer()`` in the same process then returns the closed instance, still
-    flagged as running and still holding the previous scene, so every
-    ``scene.add`` triggers a full buffer and sidebar rebuild against a dead GL
-    context (quadratic slowdown, or a crash).
-
-    This metaclass retires such a spent (or foreign, non-jax_fdm) cached
-    instance before construction, so that each sequential ``Viewer()`` starts
-    with a fresh scene, UI and renderer.
-    """
-    def __call__(cls, *args, **kwargs):
-        # SingletonMeta caches instances under the first subclass of Singleton
-        # in the MRO, which for this chain is compas_viewer.Viewer.
-        key_class = cls
-        while key_class.__base__ is not Singleton:
-            key_class = key_class.__base__
-
-        cached = SingletonMeta._instances.get(key_class)
-        if cached is not None:
-            spent = getattr(cached, "running", False) or getattr(cached, "_spent", False)
-            if spent or not isinstance(cached, cls):
-                retire_viewer(cached)
-                del SingletonMeta._instances[key_class]
-
-        return super().__call__(*args, **kwargs)
-
-
-class Viewer(CompasViewer, metaclass=ViewerMeta):
+class Viewer(CompasViewer):
     """
     A thin wrapper on :class:`compas_viewer.Viewer`.
 
@@ -117,10 +26,18 @@ class Viewer(CompasViewer, metaclass=ViewerMeta):
     keyword arguments directly and folds them into a :class:`compas_viewer.config.Config`,
     so the common window setup does not require building a config by hand.
 
-    Unlike the parent singleton, this viewer is safe to construct, show and
-    close several times in one process (e.g. one viewer per step of a
-    sequential optimization): a spent instance is evicted by :class:`ViewerMeta`
-    and the next construction starts from a clean scene.
+    The viewer is a process-wide singleton (a compas_viewer constraint):
+    a second ``Viewer()`` call returns the same instance with its constructor
+    arguments ignored. To visualize several results in one process — e.g. one
+    per step of a sequential optimization — reuse the instance::
+
+        viewer = Viewer()
+        for step in steps:
+            viewer.clear()
+            viewer.add(...)
+            viewer.show()
+
+    The window closes between shows while the camera carries over.
     """
     def __init__(self, width=None, height=None, show_grid=None, config=None, **kwargs):
         if config is None:
@@ -131,32 +48,44 @@ class Viewer(CompasViewer, metaclass=ViewerMeta):
 
         super().__init__(config=config, **kwargs)
         self.artists = []
-        self._spent = False
         # Swap in the vectorized buffer manager before any GL buffers exist.
         self.renderer.buffer_manager = FastBufferManager()
 
-    def create_app(self):
+    def clear(self):
         """
-        Reuse the process-wide Qt application if one exists.
+        Empty the scene for the next round of adds.
 
-        A fresh instance built after an eviction must not create a second
-        ``QApplication`` — that is a fatal Qt error.
+        Call between sequential shows, while the window is closed. Besides the
+        scene objects this also drops the artists and the picking-color
+        registrations, which the parent scene never prunes.
         """
-        app = QApplication.instance()
-        if app is not None:
-            return app
-        return super().create_app()
+        self.scene.clear()
+        self.scene.instance_colors.clear()
+        self.artists = []
 
     def show(self):
         """
         Show the viewer window and block until it is closed.
 
-        On return the instance is marked as spent: late ``scene.add`` calls
-        skip the live-rebuild path, and the next ``Viewer()`` constructs fresh.
+        The window can be shown again after closing: a re-show rebuilds the GL
+        render buffers for the current scene, and ``running`` is reset on
+        return so that between-show ``add`` calls stay lightweight (no per-add
+        buffer and sidebar rebuild).
         """
-        super().show()
-        self.running = False
-        self._spent = True
+        # On a re-show the GL context already exists (the first show created
+        # the render buffers via initializeGL, which does not run again), so
+        # the buffers must be rebuilt here for the repopulated scene.
+        if getattr(self.renderer, "_vao", None) is not None:
+            self.renderer.makeCurrent()
+            try:
+                self.renderer.rebuild_buffers()
+            finally:
+                self.renderer.doneCurrent()
+
+        try:
+            super().show()
+        finally:
+            self.running = False
 
     def add(self, data, **kwargs):
         """
