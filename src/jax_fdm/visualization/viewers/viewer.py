@@ -16,6 +16,26 @@ from jax_fdm.visualization.viewers.network_artist import FDNetworkViewerArtist
 __all__ = ["Viewer"]
 
 
+def stop_watch_timers(component):
+    """
+    Recursively stop the change-watch timers of bound UI components.
+
+    Every bound sidebar component (number edits, color pickers, toggles) polls
+    its widget on a 100 ms QTimer; left running after retirement, these fire
+    into the next viewer's event loop against deleted C++ widgets.
+    """
+    stop = getattr(component, "stop_watching", None)
+    if callable(stop):
+        try:
+            stop()
+        except (AttributeError, RuntimeError):
+            pass
+    for child in getattr(component, "children", ()):
+        stop_watch_timers(child)
+    for tab in getattr(component, "tabs", {}).values():
+        stop_watch_timers(tab)
+
+
 def retire_viewer(viewer):
     """
     Best-effort shutdown of a spent viewer.
@@ -35,6 +55,11 @@ def retire_viewer(viewer):
             timer.stop()
         except (AttributeError, RuntimeError):
             pass
+
+    try:
+        stop_watch_timers(viewer.ui.sidebar)
+    except AttributeError:
+        pass
 
     try:
         viewer.ui.window.widget.close()
