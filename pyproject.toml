@@ -34,6 +34,7 @@ classifiers = [
 dynamic = ["version"]
 dependencies = [
     "jax[cpu]",
+    "numpy",
     "compas>=2.15,<3.0",
     "matplotlib",
     "scipy",
@@ -49,7 +50,9 @@ Repository = "https://github.com/arpastrana/jax_fdm"
 
 [project.optional-dependencies]
 # 3D viewer and notebook viewer for the COMPAS 2.x scene system.
-viz = ["compas_viewer>=1.0", "compas_notebook>=0.11"]
+# pythreejs comes with compas_notebook; pinned here because the notebook
+# scene objects import it directly to build batched render buffers.
+viz = ["compas_viewer>=1.0", "compas_notebook>=0.11", "pythreejs"]
 # Interior-point optimizer. cyipopt needs a system Ipopt library.
 ipopt = ["cyipopt"]
 dev = [

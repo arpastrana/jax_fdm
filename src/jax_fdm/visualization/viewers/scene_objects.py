@@ -1,13 +1,13 @@
-import numpy as np
 from compas_viewer.scene import MeshObject
 from compas_viewer.scene import ViewerSceneObject
 
 from compas.scene import register
 from jax_fdm.datastructures import FDMesh
 from jax_fdm.datastructures import FDNetwork
-from jax_fdm.visualization import scene as fdscene
+from jax_fdm.visualization import style
 from jax_fdm.visualization.buffers import arrows_buffer
 from jax_fdm.visualization.buffers import cylinders_buffer
+from jax_fdm.visualization.buffers import soup_indices
 from jax_fdm.visualization.buffers import spheres_buffer
 
 __all__ = ["FDDatastructureObject",
@@ -56,13 +56,14 @@ class _FDBufferObject(ViewerSceneObject):
     def _read_frontfaces_data(self):
         self._soup = self._build_soup()
         positions, colors = self._soup
-        return positions, colors, np.arange(len(positions))
+        return positions, colors, soup_indices(self._soup)
 
     def _read_backfaces_data(self):
         # The buffer managers always read the front faces first, so the soup
         # computed there is reused with flipped winding.
-        positions, colors = self._soup if self._soup is not None else self._build_soup()
-        return positions, colors, np.flip(np.arange(len(positions)))
+        soup = self._soup if self._soup is not None else self._build_soup()
+        positions, colors = soup
+        return positions, colors, soup_indices(soup, flipped=True)
 
 
 class _FDEdgesObject(_FDBufferObject):
@@ -82,7 +83,7 @@ class _FDEdgesObject(_FDBufferObject):
             radii.append(parent.edge_width[edge] / 2.0)
             colors.append(parent.edge_color[edge].rgba)
 
-        return cylinders_buffer(starts, ends, radii, np.asarray(colors), u=parent.shape_u)
+        return cylinders_buffer(starts, ends, radii, colors, u=parent.shape_u)
 
 
 class _FDPointsObject(_FDBufferObject):
@@ -95,11 +96,11 @@ class _FDPointsObject(_FDBufferObject):
 
         centers, radii, colors = [], [], []
         for point in parent.points:
-            centers.append(parent.access.coordinates(point))
+            centers.append(parent.point_coordinates(point))
             radii.append(parent.point_size[point] / 2.0)
             colors.append(parent.point_color[point].rgba)
 
-        return spheres_buffer(centers, radii, np.asarray(colors), u=parent.shape_u, v=parent.shape_u)
+        return spheres_buffer(centers, radii, colors, u=parent.shape_u, v=parent.shape_u)
 
 
 class _FDArrowsObject(_FDBufferObject):
@@ -113,9 +114,9 @@ class _FDArrowsObject(_FDBufferObject):
         anchors, vectors, colors = getattr(parent, self.arrows_attr)()
 
         return arrows_buffer(anchors, vectors, colors,
-                             head_portion=fdscene.ARROW_HEADPORTION,
-                             head_width=fdscene.ARROW_HEADWIDTH,
-                             body_width=fdscene.ARROW_BODYWIDTH,
+                             head_portion=style.ARROW_HEADPORTION,
+                             head_width=style.ARROW_HEADWIDTH,
+                             body_width=style.ARROW_BODYWIDTH,
                              u=parent.arrow_u)
 
 
@@ -145,10 +146,13 @@ class FDDatastructureObject(ViewerSceneObject):
     state (computed at construction and re-derived on every ``update``) and
     the frozen candidate lists of the arrow categories.
 
-    Styling is frozen at add time: the force density keyword arguments are
-    constructor parameters, and restyling means re-adding the object.
+    Styling and topology are frozen at add time: the force density keyword
+    arguments are constructor parameters, the point-edge adjacency is cached
+    once, and restyling or reconnecting means re-adding the object.
+
+    Subclasses resolve the point vocabulary (a network addresses its points
+    as nodes, a mesh as vertices) by implementing the ``point_*`` methods.
     """
-    accessors = None
     points_name = "Points"
 
     default_opacity = 0.75
@@ -181,11 +185,16 @@ class FDDatastructureObject(ViewerSceneObject):
         super().__init__(item=item, **kwargs)
 
         self.datastructure = item
-        self.access = self.accessors(item)
 
         # Point and edge iterables, optionally filtered (defaults to all).
-        self.points = list(points) if points is not None else list(self.access.keys())
+        self.points = list(points) if points is not None else list(self.point_keys())
         self.edges = list(edges) if edges is not None else list(item.edges())
+
+        # Connectivity is frozen at add time, like the soup topology: the
+        # point-edge adjacency is cached once so per-frame updates never
+        # re-derive it from the datastructure (Mesh.vertex_edges scans all
+        # mesh edges per call).
+        self._adjacency = {point: list(self.point_edges(point)) for point in self.points}
 
         # Style inputs, kept raw: semantic modes ("force", "fd", (min, max))
         # are re-derived against the live datastructure on every update.
@@ -195,13 +204,13 @@ class FDDatastructureObject(ViewerSceneObject):
         self._edgewidth = edgewidth
         self._show_supports = show_supports if show_supports is not None else True
 
-        self.load_color = loadcolor or fdscene.COLOR_LOAD
-        self.load_scale = loadscale or fdscene.LOAD_SCALE
-        self.load_tol = loadtol or fdscene.LOAD_TOL
+        self.load_color = loadcolor or style.COLOR_LOAD
+        self.load_scale = loadscale or style.LOAD_SCALE
+        self.load_tol = loadtol or style.LOAD_TOL
 
-        self.reaction_color = reactioncolor or fdscene.reaction_color_default(edgecolor)
-        self.reaction_scale = reactionscale or fdscene.REACTION_SCALE
-        self.reaction_tol = reactiontol or fdscene.REACTION_TOL
+        self.reaction_color = reactioncolor or style.reaction_color_default(edgecolor)
+        self.reaction_scale = reactionscale or style.REACTION_SCALE
+        self.reaction_tol = reactiontol or style.REACTION_TOL
 
         self.edge_color = None
         self.edge_width = None
@@ -212,7 +221,7 @@ class FDDatastructureObject(ViewerSceneObject):
         # Candidate point lists of the arrow categories, frozen so the soup
         # membership never changes across updates.
         self._load_points = list(self.points)
-        self._reaction_points = [point for point in self.points if list(self.access.edges(point))]
+        self._reaction_points = [point for point in self.points if self._adjacency[point]]
 
         # One child scene object per shown category. Scene backends may inject
         # explicit None values for the show flags, which mean "default".
@@ -227,6 +236,28 @@ class FDDatastructureObject(ViewerSceneObject):
             self.add(_FDLoadsObject(name="Loads", opacity=opacity))
 
     # ==========================================================================
+    # Point vocabulary
+    # ==========================================================================
+
+    def point_keys(self):
+        raise NotImplementedError
+
+    def point_coordinates(self, key):
+        raise NotImplementedError
+
+    def point_load(self, key):
+        raise NotImplementedError
+
+    def point_reaction(self, key):
+        raise NotImplementedError
+
+    def point_edges(self, key):
+        raise NotImplementedError
+
+    def point_is_support(self, key):
+        raise NotImplementedError
+
+    # ==========================================================================
     # Style state
     # ==========================================================================
 
@@ -239,44 +270,53 @@ class FDDatastructureObject(ViewerSceneObject):
         """
         datastructure = self.datastructure
 
-        self.edge_color = fdscene.edge_colors(datastructure, self.edges, self._edgecolor)
-        self.edge_width = fdscene.edge_widths(datastructure, self.edges, self._edgewidth)
+        self.edge_color = style.edge_colors(datastructure, self.edges, self._edgecolor)
+        self.edge_width = style.edge_widths(datastructure, self.edges, self._edgewidth)
 
-        is_support = self.access.is_support if self._show_supports else (lambda key: False)
-        self.point_color = fdscene.point_colors(self.points, is_support, self._nodecolor)
-        self.point_size = fdscene.point_sizes(self.points, self._nodesize)
+        is_support = self.point_is_support if self._show_supports else (lambda key: False)
+        self.point_color = style.point_colors(self.points, is_support, self._nodecolor)
+        self.point_size = style.point_sizes(self.points, self._nodesize)
 
     def load_arrows(self):
         """
         The anchors, vectors and colors of the load arrows.
         """
-        anchors, vectors = fdscene.load_arrows(self._load_points,
-                                               self.access,
-                                               self.edge_width,
-                                               self.load_scale,
-                                               self.load_tol)
-        colors = self._arrow_colors(self._load_points, self.load_color)
+        points = self._load_points
+        origins = [self.point_coordinates(point) for point in points]
+        loads = [self.point_load(point) for point in points]
+        clearances = [self._point_clearance(point) for point in points]
 
-        return anchors, vectors, colors
+        anchors, vectors = style.load_arrows(origins, loads, clearances,
+                                             self.load_scale, self.load_tol)
+
+        return anchors, vectors, self._arrow_colors(points, self.load_color)
 
     def reaction_arrows(self):
         """
         The anchors, vectors and colors of the reaction arrows.
         """
-        anchors, vectors = fdscene.reaction_arrows(self._reaction_points,
-                                                   self.access,
-                                                   self.datastructure,
-                                                   self.reaction_scale,
-                                                   self.reaction_tol)
-        colors = self._arrow_colors(self._reaction_points, self.reaction_color)
+        points = self._reaction_points
+        origins = [self.point_coordinates(point) for point in points]
+        reactions = [self.point_reaction(point) for point in points]
+        forces = [[self.datastructure.edge_force(edge) for edge in self._adjacency[point]]
+                  for point in points]
 
-        return anchors, vectors, colors
+        anchors, vectors = style.reaction_arrows(origins, reactions, forces,
+                                                 self.reaction_scale, self.reaction_tol)
+
+        return anchors, vectors, self._arrow_colors(points, self.reaction_color)
+
+    def _point_clearance(self, point):
+        """
+        The width of the thickest edge connected to a point.
+        """
+        return max((self.edge_width.get(edge, 0.0) for edge in self._adjacency[point]), default=0.0)
 
     @staticmethod
     def _arrow_colors(points, color):
         if isinstance(color, dict):
-            return np.asarray([color[point].rgba for point in points])
-        return np.asarray([color.rgba] * len(points))
+            return [color[point].rgba for point in points]
+        return [color.rgba] * len(points)
 
     # ==========================================================================
     # Update
@@ -300,8 +340,25 @@ class FDNetworkObject(FDDatastructureObject):
     """
     A scene object that renders a force density network in a compas_viewer scene.
     """
-    accessors = staticmethod(fdscene.network_accessors)
     points_name = "Nodes"
+
+    def point_keys(self):
+        return self.datastructure.nodes()
+
+    def point_coordinates(self, key):
+        return self.datastructure.node_coordinates(key)
+
+    def point_load(self, key):
+        return self.datastructure.node_load(key)
+
+    def point_reaction(self, key):
+        return self.datastructure.node_reaction(key)
+
+    def point_edges(self, key):
+        return self.datastructure.node_edges(key)
+
+    def point_is_support(self, key):
+        return self.datastructure.is_node_support(key)
 
 
 class FDMeshObject(FDDatastructureObject):
@@ -312,7 +369,6 @@ class FDMeshObject(FDDatastructureObject):
     are drawn as one shaded surface (the mesh itself), so the surface toggles
     independently from the wireframe.
     """
-    accessors = staticmethod(fdscene.mesh_accessors)
     points_name = "Vertices"
 
     default_faceopacity = 0.4
@@ -332,6 +388,24 @@ class FDMeshObject(FDDatastructureObject):
                                show_lines=False,
                                opacity=faceopacity or self.default_faceopacity)
             self.add(faces)
+
+    def point_keys(self):
+        return self.datastructure.vertices()
+
+    def point_coordinates(self, key):
+        return self.datastructure.vertex_coordinates(key)
+
+    def point_load(self, key):
+        return self.datastructure.vertex_load(key)
+
+    def point_reaction(self, key):
+        return self.datastructure.vertex_reaction(key)
+
+    def point_edges(self, key):
+        return self.datastructure.vertex_edges(key)
+
+    def point_is_support(self, key):
+        return self.datastructure.is_vertex_support(key)
 
 
 # ==========================================================================

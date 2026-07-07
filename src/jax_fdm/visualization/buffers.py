@@ -6,7 +6,7 @@ from compas.geometry import Cylinder
 from compas.geometry import Sphere
 from jax_fdm.visualization.shapes import Arrow
 
-__all__ = ["cylinders_buffer", "arrows_buffer", "spheres_buffer"]
+__all__ = ["cylinders_buffer", "arrows_buffer", "spheres_buffer", "soup_indices", "soup_colors_rgb"]
 
 
 # ==========================================================================
@@ -108,6 +108,50 @@ def _soup(template, rotations, scales, translations, colors):
 
 def _empty_buffer():
     return np.empty((0, 3), dtype=np.float32), np.empty((0, 4), dtype=np.float32)
+
+
+# ==========================================================================
+# Soup views
+# ==========================================================================
+
+def soup_indices(soup, flipped=False):
+    """
+    The vertex indices of a soup, optionally with flipped winding.
+
+    Parameters
+    ----------
+    soup : (positions, colors)
+        A triangle soup, as built by the buffer builders.
+    flipped : bool, optional
+        Reverse the indices, flipping the winding of every triangle.
+
+    Returns
+    -------
+    array of shape (N * T * 3,)
+    """
+    positions, _ = soup
+    indices = np.arange(len(positions))
+    return np.flip(indices) if flipped else indices
+
+
+def soup_colors_rgb(soup):
+    """
+    The colors of a soup stripped to rgb, as a contiguous array.
+
+    The buffer builders emit rgba; some consumers (e.g. pythreejs buffer
+    attributes) take rgb.
+
+    Parameters
+    ----------
+    soup : (positions, colors)
+        A triangle soup, as built by the buffer builders.
+
+    Returns
+    -------
+    array of shape (N * T * 3, 3), float32
+    """
+    _, colors = soup
+    return np.ascontiguousarray(colors[:, :3])
 
 
 # ==========================================================================

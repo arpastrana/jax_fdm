@@ -1,8 +1,4 @@
 from math import fabs
-from typing import Callable
-from typing import NamedTuple
-
-import numpy as np
 
 from compas.colors import Color
 from compas.colors import ColorMap
@@ -13,9 +9,6 @@ from compas.geometry import scale_vector
 from compas.itertools import remap_values
 
 __all__ = [
-    "PointAccess",
-    "network_accessors",
-    "mesh_accessors",
     "edge_colors",
     "edge_widths",
     "point_colors",
@@ -55,52 +48,6 @@ REACTION_TOL = 1e-3
 ARROW_HEADPORTION = 0.12
 ARROW_HEADWIDTH = 0.04
 ARROW_BODYWIDTH = 0.012
-
-
-# ==========================================================================
-# Point accessors (node-vs-vertex vocabulary)
-# ==========================================================================
-
-class PointAccess(NamedTuple):
-    """
-    The point accessors of a force density datastructure.
-
-    A network addresses its points as nodes and a mesh as vertices; this
-    bundle resolves that vocabulary once so the display functions stay
-    datastructure-agnostic. The edge accessors (``edge_coordinates``,
-    ``edge_force``, ``edge_forcedensity``) already live on the shared
-    :class:`jax_fdm.datastructures.FDDatastructure` and are used directly.
-    """
-    keys: Callable
-    coordinates: Callable
-    load: Callable
-    reaction: Callable
-    edges: Callable
-    is_support: Callable
-
-
-def network_accessors(network):
-    """
-    The point accessors of a force density network (nodes).
-    """
-    return PointAccess(keys=network.nodes,
-                       coordinates=network.node_coordinates,
-                       load=network.node_load,
-                       reaction=network.node_reaction,
-                       edges=network.node_edges,
-                       is_support=lambda key: network.node_attribute(key, "is_support"))
-
-
-def mesh_accessors(mesh):
-    """
-    The point accessors of a force density mesh (vertices).
-    """
-    return PointAccess(keys=mesh.vertices,
-                       coordinates=mesh.vertex_coordinates,
-                       load=mesh.vertex_load,
-                       reaction=mesh.vertex_reaction,
-                       edges=mesh.vertex_edges,
-                       is_support=lambda key: mesh.vertex_attribute(key, "is_support"))
 
 
 # ==========================================================================
@@ -193,7 +140,7 @@ def point_colors(points, is_support, color=None):
     Parameters
     ----------
     is_support : callable
-        The support predicate of the datastructure (from :class:`PointAccess`).
+        The support predicate of the datastructure.
     color : :class:`compas.colors.Color` | dict, optional
         A single color to broadcast or a per-point dict.
     """
@@ -237,80 +184,91 @@ def reaction_color_default(edgecolor):
 # Arrows
 # ==========================================================================
 
-def load_arrows(points, access, widths, scale, tol):
+def load_arrows(origins, loads, clearances, scale, tol):
     """
     Compute the anchor and vector of the load arrow at every point.
 
     The arrow is placed so its head touches the point it loads: the anchor
-    backs away from the point by the scaled vector, plus the widest connected
-    edge so the head clears the edge cylinders.
+    backs away from the point by the scaled vector, plus the clearance so
+    the head clears the edge cylinders.
 
     Points whose load is below tolerance get a degenerate slot (anchor at the
     point, zero vector) so the arrow count stays constant across updates.
 
+    Parameters
+    ----------
+    origins : list of xyz coordinates
+        The loaded points.
+    loads : list of vectors
+        The load vector at every point, aligned with ``origins``.
+    clearances : list of float
+        The back-off distance at every point (the width of the thickest
+        connected edge), aligned with ``origins``.
+
     Returns
     -------
     (anchors, vectors)
-        Arrays of shape (N, 3), aligned with ``points``.
+        Lists of xyz triplets, aligned with ``origins``.
     """
     anchors, vectors = [], []
 
-    for point in points:
-        xyz = access.coordinates(point)
-        vector = access.load(point)
-
+    for xyz, vector, clearance in zip(origins, loads, clearances):
         if length_vector(vector) < tol:
             anchors.append(xyz)
             vectors.append((0.0, 0.0, 0.0))
             continue
 
         # shift start to make the arrow head touch the loaded point,
-        # then back off by the thickest connected edge so the head clears it
+        # then back off by the clearance so the head clears the edge cylinders
         start = add_vectors(xyz, scale_vector(vector, -scale))
-        width = max((widths.get(edge, 0.0) for edge in access.edges(point)), default=0.0)
-        start = add_vectors(start, scale_vector(normalize_vector(vector), -width))
+        start = add_vectors(start, scale_vector(normalize_vector(vector), -clearance))
 
         anchors.append(start)
         vectors.append(scale_vector(vector, scale))
 
-    return np.asarray(anchors, dtype=np.float64), np.asarray(vectors, dtype=np.float64)
+    return anchors, vectors
 
 
-def reaction_arrows(points, access, datastructure, scale, tol):
+def reaction_arrows(origins, reactions, forces, scale, tol):
     """
     Compute the anchor and vector of the reaction arrow at every point.
 
     The vector is reversed to display the direction the reaction pushes
-    against the structure; when the strongest connected edge is compressive,
-    the anchor shifts outward so the arrow points at the support from outside.
+    against the structure; when the strongest force among the edges connected
+    to a point is compressive, the anchor shifts outward so the arrow points
+    at the support from outside.
 
     Points whose reaction is below tolerance (or without connected edges) get
     a degenerate slot so the arrow count stays constant across updates.
 
+    Parameters
+    ----------
+    origins : list of xyz coordinates
+        The supported points.
+    reactions : list of vectors
+        The reaction vector at every point, aligned with ``origins``.
+    forces : list of lists of float
+        The forces of the edges connected to every point, aligned with
+        ``origins``.
+
     Returns
     -------
     (anchors, vectors)
-        Arrays of shape (N, 3), aligned with ``points``.
+        Lists of xyz triplets, aligned with ``origins``.
     """
     anchors, vectors = [], []
 
-    for point in points:
-        xyz = access.coordinates(point)
-        vector = access.reaction(point)
-        edges = list(access.edges(point))
-
-        if length_vector(vector) < tol or not edges:
+    for xyz, vector, edge_forces in zip(origins, reactions, forces):
+        if length_vector(vector) < tol or not edge_forces:
             anchors.append(xyz)
             vectors.append((0.0, 0.0, 0.0))
             continue
 
         start = xyz
-        forces = [datastructure.edge_force(edge) for edge in edges]
-        max_force = max(forces, key=fabs)
-        if max_force < 0.0:
+        if max(edge_forces, key=fabs) < 0.0:
             start = add_vectors(start, scale_vector(vector, scale))
 
         anchors.append(start)
         vectors.append(scale_vector(vector, -scale))
 
-    return np.asarray(anchors, dtype=np.float64), np.asarray(vectors, dtype=np.float64)
+    return anchors, vectors
