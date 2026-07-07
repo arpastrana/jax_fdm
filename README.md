@@ -2,11 +2,11 @@
 
 <!-- Badges -->
 ![build](https://github.com/arpastrana/jax_fdm/actions/workflows/build.yml/badge.svg)
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.7258292.svg)](https://doi.org/10.5281/zenodo.7258292)
+[![CMAME](https://img.shields.io/badge/CMAME-10.1016%2Fj.cma.2026.118783-blue.svg)](https://doi.org/10.1016/j.cma.2026.118783)
 [![PyPI - Latest Release](https://img.shields.io/pypi/v/jax-fdm.svg)](https://pypi.python.org/project/jax-fdm)
 [![PyPI - Python Version](https://img.shields.io/pypi/pyversions/jax-fdm.svg)](https://pypi.python.org/project/jax-fdm)
 [![arXiv](https://img.shields.io/badge/arXiv-2307.12407-b31b1b.svg)](https://arxiv.org/abs/2307.12407)
-[![CMAME](https://img.shields.io/badge/CMAME-10.1016%2Fj.cma.2026.118783-blue.svg)](https://doi.org/10.1016/j.cma.2026.118783)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.7258292.svg)](https://doi.org/10.5281/zenodo.7258292)
 <!-- [![GitHub - License](https://img.shields.io/github/license/arpastrana/jax_fdm.svg)](https://github.com/arpastrana/jax_fdm) -->
 
 A differentiable, hardware-accelerated framework for the structural design of lightweight structures.
@@ -53,15 +53,15 @@ pip install jax-fdm
 ```
 
 This pulls in COMPAS 2.x and the other core dependencies automatically.
-
-JAX FDM supports Python 3.10, 3.11, and 3.12 and builds on JAX, SciPy, Matplotlib, Equinox, and the COMPAS framework. See `pyproject.toml` for the complete dependency list.
+JAX FDM supports Python 3.10 to 3.12, and builds on JAX, SciPy, Equinox, and the COMPAS framework.
+See `pyproject.toml` for the complete dependency list.
 
 #### Optional extras
 
 JAX FDM declares optional dependency groups you can install from a source checkout with `pip`:
 
 ```bash
-pip install -e ".[viz]"    # 3D viewer (compas_viewer) and notebook viewer (compas_notebook)
+pip install -e ".[viz]"    # 3D desktop viewer (compas_viewer) and notebook viewer (compas_notebook)
 pip install -e ".[ipopt]"  # the IPOPT interior-point optimizer (cyipopt)
 pip install -e ".[dev]"     # development tools (ruff, pytest, pre-commit, build, bump-my-version)
 ```
