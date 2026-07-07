@@ -26,7 +26,7 @@ camera_zoom = -10  # number of zoom-out steps, negative to zoom out
 interval = 50  # milliseconds between frames
 
 animate = True
-rotate_while_animate = True
+rotate_while_animate = False
 
 # ==========================================================================
 # Read in force density mesh

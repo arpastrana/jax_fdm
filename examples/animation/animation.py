@@ -1,6 +1,5 @@
 # the essentials
 import os
-from math import pi
 
 # compas
 from compas.colors import Color
@@ -28,12 +27,12 @@ name = "pringle"
 
 modify_view = True
 show_grid = True
-camera_zoom = -6  # number of zoom-out steps, negative to zoom out
+camera_zoom = 5  # number of zoom-out steps, negative to zoom out
 
 interval = 50  # milliseconds between frames
 
 animate = True
-rotate_while_animate = False
+rotate_while_animate = True
 
 
 # ==========================================================================
@@ -102,7 +101,7 @@ viewer = Viewer(width=1600, height=900, show_grid=show_grid)
 # modify view
 if modify_view:
     viewer.renderer.camera.zoom(camera_zoom)  # number of steps, negative to zoom out
-    viewer.renderer.camera.rotation.z = 2 * pi / 3  # rotation around the z axis
+    # viewer.renderer.camera.rotation.z = 2 * pi / 3  # rotation around the z axis
 
 # draw network as plain geometry (keep a handle on the copy to animate it)
 network_plain = network.copy(cls=Network)
@@ -135,6 +134,7 @@ _ = model(params, structure)
 
 # create update function
 if animate:
+
     @viewer.on(interval=interval, frames=len(recorder))
     def wiggle(f):
 
