@@ -64,7 +64,7 @@ class FDDatastructureArtist:
     directly.
     """
     default_edgecolor = Color.teal()
-    default_nodecolor = Color.grey().lightened(factor=100)
+    default_nodecolor = Color.grey().lightened(factor=50)
     default_nodesupportcolor = Color.from_rgb255(0, 150, 10)
 
     default_loadcolor = Color.from_rgb255(0, 150, 10)
