@@ -3,7 +3,6 @@ import pytest
 
 from compas.geometry import Cylinder
 from compas.geometry import Line
-
 from jax_fdm.visualization.shapes import Arrow
 from jax_fdm.visualization.viewers.buffers import arrows_buffer
 from jax_fdm.visualization.viewers.buffers import cylinder_template
