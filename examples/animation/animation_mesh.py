@@ -2,46 +2,43 @@
 import os
 from math import pi
 
-from jax_fdm.datastructures import FDNetwork
+# jax_fdm
+from jax_fdm.datastructures import FDMesh
+from jax_fdm.equilibrium import EquilibriumMeshStructure
 from jax_fdm.equilibrium import EquilibriumModel
-from jax_fdm.equilibrium import EquilibriumStructure
 from jax_fdm.equilibrium import datastructure_update
 from jax_fdm.equilibrium import fdm
-
-# jax_fdm
 from jax_fdm.optimization import OptimizationRecorder
 from jax_fdm.visualization import Viewer
 
 # ==========================================================================
-# Read in optimization history
+# Parameters
 # ==========================================================================
 
+# NOTE: the input files are not committed to the repository. Generate them by
+# running examples/monkey_saddle/monkey_saddle.py with record = True and export = True.
 name = "monkey_saddle"
 
 modify_view = True
 show_grid = True
-camera_zoom = -35  # -35 for monkey saddle, 0 for pringle, 14 for dome, -70 for butt
+camera_zoom = -10  # number of zoom-out steps, negative to zoom out
 
-interval = 50
-timeout = None
-fps = 24
+interval = 50  # milliseconds between frames
 
 animate = True
 rotate_while_animate = True
 
-save = False
-
 # ==========================================================================
-# Read in force density network
+# Read in force density mesh
 # ==========================================================================
 
 HERE = os.path.join(os.path.dirname(__file__), "../../data/json/")
 FILE_IN = os.path.abspath(os.path.join(HERE, f"{name}_base.json"))
 
-network0 = FDNetwork.from_json(FILE_IN)
+mesh0 = FDMesh.from_json(FILE_IN)
 model = EquilibriumModel(tmax=1, eta=1e-6)
-structure = EquilibriumStructure.from_network(network0)
-network = fdm(network0)
+structure = EquilibriumMeshStructure.from_mesh(mesh0)
+mesh = fdm(mesh0)
 
 # ==========================================================================
 # Read in optimization history
@@ -59,15 +56,11 @@ viewer = Viewer(width=1600, height=900, show_grid=show_grid)
 
 # modify view
 if modify_view:
-    # number of steps, negative to zoom out
-    viewer.view.camera.zoom(camera_zoom)
-    # set rotation around z axis to zero
-    viewer.view.camera.rotation[2] = 2 * pi / 3
-    # set rotation around z axis to zero
-    viewer.view.camera.rotation_delta = (2 / 3) * pi / len(recorder)
+    viewer.renderer.camera.zoom(camera_zoom)  # number of steps, negative to zoom out
+    viewer.renderer.camera.rotation.z = 2 * pi / 3  # rotation around the z axis
 
-# draw network
-viewer.add(network,
+# draw mesh
+viewer.add(mesh,
            edgewidth=(0.05, 0.25),
            edgecolor="fd",
            show_nodes=False,
@@ -82,31 +75,22 @@ _ = model(params, structure)
 
 # create update function
 if animate:
-    config_animate = {"interval": interval,
-                      "timeout": timeout,
-                      "frames": len(recorder),
-                      "record": save,
-                      "record_fps": fps,
-                      "record_path": f"temp/{name}_{fps}fps_viewer.gif"}
-
-    @viewer.on(**config_animate)
+    @viewer.on(interval=interval, frames=len(recorder))
     def wiggle(f):
 
         print(f"Current frame: {f + 1}/{len(recorder)}")
         params = recorder[f]
         eqstate = model(params, structure)
 
-        # update network
-        datastructure_update(network, eqstate, params)
+        # update mesh
+        datastructure_update(mesh, eqstate, params)
 
-        # update all buffer objects in the view
+        # update the scene objects drawn by the force density artists
         for artist in viewer.artists:
             artist.update()
-            for obj in artist.objects:
-                obj.update()
 
         if rotate_while_animate:
-            viewer.view.camera.rotate(dx=1, dy=0)
+            viewer.renderer.camera.rotate(dx=1, dy=0)
 
 # show le crème
 viewer.show()

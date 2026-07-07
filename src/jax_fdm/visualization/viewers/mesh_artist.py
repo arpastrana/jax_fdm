@@ -48,3 +48,15 @@ class FDMeshViewerArtist(FDDatastructureViewerArtist, FDMeshArtist):
                                                 opacity=self.face_opacity,
                                                 parent=self.viewer_groups["faces"],
                                                 name="Faces")
+
+    def update(self):
+        """
+        Update the elements of the mesh drawn by this artist in place.
+
+        The faces surface re-reads the mesh it wraps, which an animation loop
+        mutates in place via ``datastructure_update``.
+        """
+        super().update()
+
+        if self.viewer_faces is not None:
+            self.viewer_faces.update(update_data=True)

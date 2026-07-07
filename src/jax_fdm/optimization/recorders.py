@@ -38,6 +38,12 @@ class OptimizationRecorder(Data):
                             self.history,
                             is_leaf=lambda x: isinstance(x, list))
 
+    def __len__(self):
+        if isinstance(self.history, list):
+            return len(self.history)
+
+        return len(self.history.q)
+
     def record(self, parameters):
         def append_file(data, file):
             file.append(data)
