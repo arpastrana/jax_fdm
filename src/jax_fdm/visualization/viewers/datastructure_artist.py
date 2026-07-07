@@ -1,6 +1,10 @@
-from compas.geometry import Cylinder
-from compas.geometry import Line
+import numpy as np
+from compas_viewer.scene import BufferGeometry
+
 from jax_fdm.visualization.artists import FDShapeArtist
+from jax_fdm.visualization.viewers.buffers import arrows_buffer
+from jax_fdm.visualization.viewers.buffers import cylinders_buffer
+from jax_fdm.visualization.viewers.buffers import spheres_buffer
 
 __all__ = ["FDDatastructureViewerArtist"]
 
@@ -9,20 +13,28 @@ class FDDatastructureViewerArtist(FDShapeArtist):
     """
     An artist that draws a force density datastructure to a :class:`compas_viewer.Viewer`.
 
-    The artist builds plain COMPAS geometry via :class:`FDShapeArtist` (spheres
-    for points, cylinders for edges, arrow meshes for load and reaction vectors)
-    and pushes it into the viewer scene. It keeps a handle on every scene object
-    so that an animation loop can mutate the geometry in place and re-read it
-    with a single ``scene_object.update(update_data=True)``.
+    Every element category (edges as cylinders, points as spheres, loads and
+    reactions as arrows) is batched into a single triangle-soup
+    :class:`compas_viewer.scene.BufferGeometry`, so a whole datastructure
+    costs a handful of scene objects instead of two per element, and an
+    animation loop updates one render buffer per category in place.
 
-    This is the shared backend base for the network and mesh viewer artists; the
-    node-vs-vertex vocabulary is resolved through the ``_point_*`` hooks provided
-    by :class:`FDDatastructureArtist`.
+    The soup topology is frozen at add time (the render buffers never change
+    size): arrows are allocated for every candidate point and collapse to a
+    degenerate soup at their anchor while below tolerance, and edge cylinders
+    keep their vertex count as widths and colors change.
+
+    This is the shared backend base for the network and mesh viewer artists;
+    the node-vs-vertex vocabulary is resolved through the ``_point_*`` hooks
+    provided by :class:`FDDatastructureArtist`.
     """
     default_opacity = 0.75
 
-    # Label of the per-category subgroup for the points in the viewer
-    # tree. Subclasses override with "Nodes" / "Vertices".
+    shape_u = 16
+    arrow_u = 8
+
+    # Label of the points scene object in the viewer tree.
+    # Subclasses override with "Nodes" / "Vertices".
     points_group_name = "Points"
 
     def __init__(self, datastructure, viewer, *args, name=None, **kwargs):
@@ -30,16 +42,17 @@ class FDDatastructureViewerArtist(FDShapeArtist):
         self.viewer = viewer
         self.name = name
 
-        self.viewer_edges = {}
-        self.viewer_points = {}
-        self.viewer_loads = {}
-        self.viewer_reactions = {}
+        self.viewer_edges = None
+        self.viewer_points = None
+        self.viewer_loads = None
+        self.viewer_reactions = None
 
-        # Parent scene group and per-category subgroups, so the datastructure
-        # shows up as a single foldable entity in the viewer tree instead of
-        # hundreds of loose cylinders, spheres and arrow meshes.
         self.viewer_group = None
-        self.viewer_groups = {}
+
+        # Candidate point lists for the arrow categories, frozen at draw time
+        # so the soup membership never changes across updates.
+        self._load_points = None
+        self._reaction_points = None
 
     # ==========================================================================
     # Properties
@@ -50,51 +63,12 @@ class FDDatastructureViewerArtist(FDShapeArtist):
         """
         Yield the scene objects drawn by this artist.
         """
-        objects = {}
-
-        objects.update(self.viewer_edges)
-        objects.update(self.viewer_points)
-        objects.update(self.viewer_loads)
-        objects.update(self.viewer_reactions)
-
-        for obj in objects.values():
-            yield obj
-
-    # ==========================================================================
-    # Add
-    # ==========================================================================
-
-    def add(self, group=None):
-        """
-        Add the points of the datastructure to the viewer scene.
-
-        Every point is parented to a per-category subgroup (points,
-        "Edges", "Reactions", "Loads") under a single group, so the whole
-        datastructure reads as one foldable entity in the viewer tree while each
-        category (and each point) stays individually toggleable. The group takes
-        the ``name`` passed to the artist (e.g. via ``viewer.add(data, name=...)``),
-        falling back to the datastructure's own name and finally to its type name.
-
-        An existing scene group can be supplied via ``group`` to host the
-        subgroups directly (used by the registered scene-object adapters).
-        """
-        if group is not None:
-            self.viewer_group = group
-        else:
-            self.viewer_group = self.viewer.scene.add_group(name=self.name or self.datastructure.name or self.default_name)
-
-        if self.collection_points:
-            self.viewer_groups["points"] = self.viewer.scene.add_group(name=self.points_group_name, parent=self.viewer_group)
-            self.viewer_points = self.add_points()
-        if self.collection_edges:
-            self.viewer_groups["edges"] = self.viewer.scene.add_group(name="Edges", parent=self.viewer_group)
-            self.viewer_edges = self.add_edges()
-        if self.collection_reactions:
-            self.viewer_groups["reactions"] = self.viewer.scene.add_group(name="Reactions", parent=self.viewer_group)
-            self.viewer_reactions = self.add_reactions()
-        if self.collection_loads:
-            self.viewer_groups["loads"] = self.viewer.scene.add_group(name="Loads", parent=self.viewer_group)
-            self.viewer_loads = self.add_loads()
+        for obj in (self.viewer_edges,
+                    self.viewer_points,
+                    self.viewer_loads,
+                    self.viewer_reactions):
+            if obj is not None:
+                yield obj
 
     @property
     def default_name(self):
@@ -104,231 +78,177 @@ class FDDatastructureViewerArtist(FDShapeArtist):
         return type(self.datastructure).__name__
 
     # ==========================================================================
+    # Draw one element (lightweight; tessellation happens in the batch builders)
+    # ==========================================================================
+
+    def draw_edge(self, edge, width, *args, **kwargs):
+        """
+        Draw an edge as its axis endpoints and radius.
+        """
+        start, end = self.datastructure.edge_coordinates(edge)
+        return (start, end, width / 2.0)
+
+    def draw_point(self, point, size, *args, **kwargs):
+        """
+        Draw a point as its center and radius.
+        """
+        return (self._point_coordinates(point), size / 2.0)
+
+    # ==========================================================================
+    # Add
+    # ==========================================================================
+
+    def add(self, group=None):
+        """
+        Add the elements of the datastructure to the viewer scene.
+
+        Every category becomes one buffer scene object parented to a single
+        group, so the datastructure reads as one foldable entity in the viewer
+        tree while each category stays individually toggleable. The group takes
+        the ``name`` passed to the artist (e.g. via ``viewer.add(data, name=...)``),
+        falling back to the datastructure's own name and finally to its type name.
+
+        An existing scene group can be supplied via ``group`` to host the
+        category objects directly (used by the registered scene-object adapters).
+        """
+        if group is not None:
+            self.viewer_group = group
+        else:
+            self.viewer_group = self.viewer.scene.add_group(name=self.name or self.datastructure.name or self.default_name)
+
+        if self.collection_points:
+            self.viewer_points = self.add_buffer(*self.points_arrays(), self.points_group_name)
+        if self.collection_edges:
+            self.viewer_edges = self.add_buffer(*self.edges_arrays(), "Edges")
+        if self.collection_reactions is not None:
+            self._reaction_points = [point for point in self.points if list(self._point_edges(point))]
+            self.viewer_reactions = self.add_buffer(*self.reactions_arrays(), "Reactions")
+        if self.collection_loads is not None:
+            self._load_points = list(self.points)
+            self.viewer_loads = self.add_buffer(*self.loads_arrays(), "Loads")
+
+    def add_buffer(self, positions, colors, name):
+        """
+        Add one category batch to the viewer scene as a buffer object.
+        """
+        geometry = BufferGeometry(faces=positions, facecolor=colors)
+
+        return self.viewer.scene.add(geometry,
+                                     name=name,
+                                     parent=self.viewer_group,
+                                     opacity=self.default_opacity,
+                                     show_points=False,
+                                     show_lines=False)
+
+    # ==========================================================================
     # Update
     # ==========================================================================
 
     def update(self):
         """
-        Update the points of the datastructure drawn by this artist in place.
+        Update the render buffers of the datastructure drawn by this artist in place.
         """
-        if self.viewer_points:
-            self.update_points()
-        if self.viewer_edges:
-            self.update_edges()
-        if self.viewer_reactions:
-            self.update_reactions()
-        if self.viewer_loads:
-            self.update_loads()
-
-    # ==========================================================================
-    # Edges
-    # ==========================================================================
-
-    def add_edge(self, cylinder, color, parent=None, name=None):
-        """
-        Add one edge to the viewer scene.
-        """
-        return self.viewer.scene.add(cylinder,
-                                     facecolor=color,
-                                     linecolor=color,
-                                     opacity=self.default_opacity,
-                                     parent=parent,
-                                     name=name)
-
-    def add_edges(self):
-        """
-        Add the edges of the datastructure to the viewer scene.
-        """
-        edges = {}
-        parent = self.viewer_groups.get("edges")
-
-        for edge, cylinder in self.collection_edges.items():
-            color = self.edge_color[edge]
-            u, v = edge
-            edges[edge] = self.add_edge(cylinder, color, parent, f"Edge ({u}, {v})")
-
-        return edges
-
-    def update_edge(self, edge, width, color):
-        """
-        Update an edge in place.
-        """
-        cylinder = self.collection_edges[edge]
-
-        start, end = self.datastructure.edge_coordinates(edge)
-        line = Line(start, end)
-        # Mutate the stored geometry in place so the scene object re-reads it.
-        cylinder.frame = Cylinder.from_line_and_radius(line, width / 2.0).frame
-        cylinder.height = line.length
-        cylinder.radius = width / 2.0
-
-        obj = self.viewer_edges[edge]
-        obj.facecolor = color
-        obj.linecolor = color
-        obj.update(update_data=True)
-
-    def update_edges(self):
-        """
-        Update the edges of the datastructure.
-        """
+        # Re-remap edge colors and widths against the updated force densities
+        # and forces. Widths must precede loads: the load start shift depends
+        # on the width of the connected edges.
         self.edge_color = self._init_edgecolor
         self.edge_width = self._init_edgewidth
 
-        for edge in self.edges:
-            width = self.edge_width[edge]
-            color = self.edge_color[edge]
-            self.update_edge(edge, width, color)
+        if self.viewer_points is not None:
+            self.collection_points = self.draw_points()
+            self.update_buffer(self.viewer_points, *self.points_arrays())
+        if self.viewer_edges is not None:
+            self.collection_edges = self.draw_edges()
+            self.update_buffer(self.viewer_edges, *self.edges_arrays())
+        if self.viewer_reactions is not None:
+            self.update_buffer(self.viewer_reactions, *self.reactions_arrays())
+        if self.viewer_loads is not None:
+            self.update_buffer(self.viewer_loads, *self.loads_arrays())
+
+    @staticmethod
+    def update_buffer(obj, positions, colors):
+        """
+        Write one category batch into its render buffer in place.
+        """
+        obj.buffergeometry.faces = positions
+        obj.buffergeometry.facecolor = colors
+        obj.update(update_data=True)
 
     # ==========================================================================
-    # Points (nodes / vertices)
+    # Category batches
     # ==========================================================================
 
-    def add_point(self, sphere, color, parent=None, name=None):
+    def edges_arrays(self):
         """
-        Add one point to the viewer scene.
+        The triangle soup of the edges of the datastructure.
         """
-        return self.viewer.scene.add(sphere,
-                                     facecolor=color,
-                                     linecolor=color,
-                                     opacity=self.default_opacity,
-                                     parent=parent,
-                                     name=name)
+        edges = list(self.collection_edges.keys())
 
-    def add_points(self):
+        starts, ends, radii = [], [], []
+        for edge in edges:
+            start, end, radius = self.collection_edges[edge]
+            starts.append(start)
+            ends.append(end)
+            radii.append(radius)
+
+        colors = np.array([self.edge_color[edge].rgba for edge in edges])
+
+        return cylinders_buffer(starts, ends, radii, colors, u=self.shape_u)
+
+    def points_arrays(self):
         """
-        Add the points of the datastructure to the viewer scene.
+        The triangle soup of the points of the datastructure.
         """
-        points = {}
-        parent = self.viewer_groups.get("points")
+        points = list(self.collection_points.keys())
 
-        for point, sphere in self.collection_points.items():
-            color = self.point_color[point]
-            points[point] = self.add_point(sphere, color, parent, self._point_label(point))
+        centers, radii = [], []
+        for point in points:
+            center, radius = self.collection_points[point]
+            centers.append(center)
+            radii.append(radius)
 
-        return points
+        colors = np.array([self.point_color[point].rgba for point in points])
 
-    def update_point(self, point, size):
+        return spheres_buffer(centers, radii, colors, u=self.shape_u, v=self.shape_u)
+
+    def loads_arrays(self):
         """
-        Update a point in place.
+        The triangle soup of the load vectors of the datastructure.
         """
-        sphere = self.collection_points[point]
-        sphere.point = self._point_coordinates(point)
-        sphere.radius = size / 2.0
+        return self.vectors_arrays(self._load_points, self.draw_load, self.load_scale, self.load_color)
 
-        self.viewer_points[point].update(update_data=True)
-
-    def update_points(self):
+    def reactions_arrays(self):
         """
-        Update the points of the datastructure.
+        The triangle soup of the reaction vectors of the datastructure.
         """
-        for point in self.collection_points.keys():
-            size = self.point_size[point]
-            self.update_point(point, size)
+        return self.vectors_arrays(self._reaction_points, self.draw_reaction, self.reaction_scale, self.reaction_color)
 
-    # ==========================================================================
-    # Loads
-    # ==========================================================================
-
-    def add_load(self, arrow, color, parent=None, name=None):
+    def vectors_arrays(self, points, draw_vector, scale, color):
         """
-        Add one load to the viewer scene.
+        The triangle soup of one arrow category over its candidate points.
+
+        Every candidate point gets a soup slot: points whose vector is below
+        tolerance yield a degenerate arrow at their coordinates, so the soup
+        size stays constant while vectors grow, shrink or vanish across updates.
         """
-        return self.viewer.scene.add(self.arrow_to_mesh(arrow),
-                                     facecolor=color,
-                                     linecolor=color,
-                                     opacity=self.default_opacity,
-                                     parent=parent,
-                                     name=name)
+        anchors, vectors, colors = [], [], []
 
-    def add_loads(self):
-        """
-        Add the loads of the datastructure to the viewer scene.
-        """
-        loads = {}
-        parent = self.viewer_groups.get("loads")
+        for point in points:
+            arrow = draw_vector(point, scale)
+            if arrow is None:
+                anchors.append(self._point_coordinates(point))
+                vectors.append((0.0, 0.0, 0.0))
+            else:
+                anchors.append(arrow.position)
+                vectors.append(arrow.direction)
 
-        for point, arrow in self.collection_loads.items():
-            color = self.load_color
-            if isinstance(color, dict):
-                color = color[point]
-            loads[point] = self.add_load(arrow, color, parent, f"Load ({point})")
+            _color = color[point] if isinstance(color, dict) else color
+            colors.append(_color.rgba)
 
-        return loads
-
-    def update_load(self, point, scale):
-        """
-        Update a load.
-
-        An arrow changes topology as its vector changes, so the scene object is
-        removed and re-added (clear-and-redraw) rather than mutated in place.
-        """
-        arrow = self.draw_load(point, scale)
-        self.collection_loads[point] = arrow
-
-        color = self.load_color
-        if isinstance(color, dict):
-            color = color[point]
-
-        self.viewer.scene.remove(self.viewer_loads[point])
-        self.viewer_loads[point] = self.add_load(arrow, color, self.viewer_groups.get("loads"), f"Load ({point})")
-
-    def update_loads(self):
-        """
-        Update the loads of the datastructure.
-        """
-        for point in self.collection_loads.keys():
-            self.update_load(point, self.load_scale)
-
-    # ==========================================================================
-    # Reaction forces
-    # ==========================================================================
-
-    def add_reaction(self, arrow, color, parent=None, name=None):
-        """
-        Add one reaction force to the viewer scene.
-        """
-        return self.viewer.scene.add(self.arrow_to_mesh(arrow),
-                                     facecolor=color,
-                                     linecolor=color,
-                                     opacity=self.default_opacity,
-                                     parent=parent,
-                                     name=name)
-
-    def add_reactions(self):
-        """
-        Add the reaction forces of the datastructure to the viewer scene.
-        """
-        reactions = {}
-        parent = self.viewer_groups.get("reactions")
-
-        for point, arrow in self.collection_reactions.items():
-            color = self.reaction_color
-            if isinstance(self.reaction_color, dict):
-                color = color[point]
-            reactions[point] = self.add_reaction(arrow, color, parent, f"Reaction ({point})")
-
-        return reactions
-
-    def update_reaction(self, point, scale):
-        """
-        Update a reaction force.
-
-        An arrow changes topology as its vector changes, so the scene object is
-        removed and re-added (clear-and-redraw) rather than mutated in place.
-        """
-        arrow = self.draw_reaction(point, scale)
-        self.collection_reactions[point] = arrow
-
-        color = self.reaction_color
-        if isinstance(color, dict):
-            color = color[point]
-
-        self.viewer.scene.remove(self.viewer_reactions[point])
-        self.viewer_reactions[point] = self.add_reaction(arrow, color, self.viewer_groups.get("reactions"), f"Reaction ({point})")
-
-    def update_reactions(self):
-        """
-        Update the reaction forces of the datastructure.
-        """
-        for point in self.collection_reactions.keys():
-            self.update_reaction(point, self.reaction_scale)
+        return arrows_buffer(anchors,
+                             vectors,
+                             np.array(colors) if colors else [],
+                             head_portion=self.arrow_headportion,
+                             head_width=self.arrow_headwidth,
+                             body_width=self.arrow_bodywidth,
+                             u=self.arrow_u)

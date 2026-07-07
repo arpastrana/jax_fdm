@@ -10,10 +10,10 @@ class FDMeshViewerArtist(FDDatastructureViewerArtist, FDMeshArtist):
     """
     An artist that draws a force density mesh to a :class:`compas_viewer.Viewer`.
 
-    It reuses all the scene machinery of :class:`FDDatastructureViewerArtist`
+    It reuses all the batched-buffer machinery of :class:`FDDatastructureViewerArtist`
     (edges as cylinders, vertices as spheres, load and reaction arrows) paired
     with the mesh's ``vertex_*`` vocabulary via :class:`FDMeshArtist`, and adds
-    the mesh faces as a shaded surface under a "Faces" subgroup.
+    the mesh faces as a shaded surface.
     """
     points_group_name = "Vertices"
 
@@ -26,32 +26,31 @@ class FDMeshViewerArtist(FDDatastructureViewerArtist, FDMeshArtist):
 
     def add(self, group=None):
         """
-        Add the points of the mesh to the viewer scene.
+        Add the elements of the mesh to the viewer scene.
 
-        On top of the shared edge/vertex/load/reaction groups, the mesh faces are
-        drawn as one shaded surface (the mesh itself) under a "Faces" subgroup, so
-        the surface toggles independently from the wireframe.
+        On top of the shared edge/vertex/load/reaction buffers, the mesh faces
+        are drawn as one shaded surface (the mesh itself), so the surface
+        toggles independently from the wireframe.
         """
         super().add(group=group)
 
         if not self.show_faces:
             return
 
-        self.viewer_groups["faces"] = self.viewer.scene.add_group(name="Faces", parent=self.viewer_group)
         # sceneobject_type pins the native mesh scene object: the FDMesh is
         # registered with compas.scene, so a plain scene.add would dispatch
         # right back to the FD adapter and recurse.
         self.viewer_faces = self.viewer.scene.add(self.datastructure,
-                                                sceneobject_type=MeshObject,
-                                                show_points=False,
-                                                show_lines=False,
-                                                opacity=self.face_opacity,
-                                                parent=self.viewer_groups["faces"],
-                                                name="Faces")
+                                                  sceneobject_type=MeshObject,
+                                                  show_points=False,
+                                                  show_lines=False,
+                                                  opacity=self.face_opacity,
+                                                  parent=self.viewer_group,
+                                                  name="Faces")
 
     def update(self):
         """
-        Update the elements of the mesh drawn by this artist in place.
+        Update the render buffers of the mesh drawn by this artist in place.
 
         The faces surface re-reads the mesh it wraps, which an animation loop
         mutates in place via ``datastructure_update``.
