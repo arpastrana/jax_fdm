@@ -22,6 +22,7 @@ from jax_fdm.visualization import Viewer  # noqa: E402
 from jax_fdm.visualization.viewers.scene_objects import FDGroupObject  # noqa: E402
 from jax_fdm.visualization.viewers.scene_objects import FDMeshObject  # noqa: E402
 from jax_fdm.visualization.viewers.scene_objects import FDNetworkObject  # noqa: E402
+from jax_fdm.visualization.viewers.sidebar import FDObjectSetting  # noqa: E402
 
 # Constructing a scene object lazily creates the process-wide compas_viewer
 # singleton. Create the jax_fdm wrapper first, so tests running later in the
@@ -229,6 +230,31 @@ def test_unfused_tree_shape(network):
     for group in groups.values():
         for child in group.children:
             assert child.fdparent is obj
+
+
+def test_sidebar_readout_installed_and_populates(network):
+    """
+    The viewer installs the force density object settings tab, and selecting
+    an element child populates it with a read-only attribute tree.
+    """
+    assert isinstance(VIEWER.ui.sidebar.object_setting, FDObjectSetting)
+
+    obj = VIEWER.add(network, **NETWORK_KWARGS)
+    setting = VIEWER.ui.sidebar.object_setting
+
+    edge_child = category_groups(obj)["Edges"].children[0]
+    edge_child.is_selected = True
+    try:
+        setting.update()
+        form = setting.children[0]
+        nodes = [node for node in form.tree.traverse() if not node.is_root]
+        assert nodes[0].name == "Edge (0, 1)"
+        attributes = {node.name: node.attributes.get("value") for node in nodes[1:]}
+        assert set(attributes) == {"q", "force", "length"}
+        assert attributes["q"] == "-1"
+    finally:
+        edge_child.is_selected = False
+        VIEWER.clear()
 
 
 def test_point_kwargs_speak_the_datastructure_vocabulary(network, mesh):

@@ -1,3 +1,4 @@
+import compas_viewer.components.sidebar
 from compas_viewer import Viewer as CompasViewer
 from compas_viewer.config import Config
 from compas_viewer.config import RendererConfig
@@ -8,6 +9,7 @@ from jax_fdm.datastructures import FDMesh
 from jax_fdm.datastructures import FDNetwork
 from jax_fdm.visualization.viewers.buffer_manager import FastBufferManager
 from jax_fdm.visualization.viewers.scene_objects import FDObject
+from jax_fdm.visualization.viewers.sidebar import FDObjectSetting
 
 __all__ = ["Viewer"]
 
@@ -46,7 +48,17 @@ class Viewer(CompasViewer):
                                       rendermode="lighted")
             config = Config(window=window, renderer=renderer)
 
-        super().__init__(config=config, **kwargs)
+        # The sidebar constructs its object settings tab from the name in its
+        # module globals, so swapping the class in for the duration of the
+        # construction slots the force density readout into the native tab.
+        sidebar = compas_viewer.components.sidebar
+        native_setting = sidebar.ObjectSetting
+        sidebar.ObjectSetting = FDObjectSetting
+        try:
+            super().__init__(config=config, **kwargs)
+        finally:
+            sidebar.ObjectSetting = native_setting
+
         # Swap in the vectorized buffer manager before any GL buffers exist.
         self.renderer.buffer_manager = FastBufferManager()
         self._warned_unfused_on = False

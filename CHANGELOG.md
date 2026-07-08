@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Aliased `edgewidth` to `linewidth` for plain-geometry adds in the 3D `Viewer`, so `edgewidth` is the one edge-width vocabulary across FD and plain adds alike. An explicit `linewidth=` still wins.
 - Committed the sources of the three Colab notebooks linked in the README to a new `notebooks/` folder, and migrated them to the COMPAS 2.x API.
 - The 3D viewer renders every element of a force density datastructure (edges, nodes/vertices, load and reaction arrows) as its own scene object by default, grouped per category in the scene tree, so single elements are clickable, highlightable and foldable. Fused category batching remains available as an explicit opt-in via `viewer.add(obj, fuse=True)` for fast loading and animation; both render paths build their triangle soups through the same buffer builders, so they are vertex-identical.
+- Selecting a force density element in the 3D viewer shows its attributes in the sidebar's Object tab, read live from the datastructure — an edge shows key, force density, force and length; a node/vertex shows key, coordinates, support flag, load and reaction; an arrow shows its anchor point and vector — plus a one-line summary in the status bar. The readout is read-only.
 - The viewer hints at `fuse=True` when a per-element add crosses 1000 elements, and warns once when `@viewer.on` starts an animation loop with per-element objects in the scene (their buffers update one by one per frame).
 
 ### Changed
