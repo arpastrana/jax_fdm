@@ -203,9 +203,12 @@ class FDMesh(Mesh, FDDatastructure):
     # Maps
     # ----------------------------------------------------------------------
 
-    def index_uv(self):
+    def index_edge(self):
         """
         Returns a dictionary that maps edges in a list to the corresponding vertex key pairs.
+
+        Mirrors ``compas.datastructures.Graph.index_edge``, which compas 2.x does
+        not provide on ``Mesh``, so ``FDMesh`` and ``FDNetwork`` share the API.
         """
         return dict(enumerate(self.edges()))
 

@@ -6,7 +6,7 @@ import os
 # compas
 from compas.colors import Color
 from compas.datastructures import Mesh
-from compas.datastructures import network_transform
+from compas.datastructures import Network
 from compas.geometry import Line
 from compas.geometry import Translation
 from compas.geometry import add_vectors
@@ -111,7 +111,7 @@ for edge in network.edges():
 
 # center vault around origin
 T = Translation.from_vector([-length_vault / 2., -width_vault / 2., 0.])
-network_transform(network, T)
+network.transform(T)
 
 # ==========================================================================
 # Export FD network with problem definition
@@ -166,7 +166,7 @@ for node in network.nodes_free():
 # transversal edge lengths
 goals_c = []
 for edge in cross_edges:
-    target_length = network.edge_length(*edge)
+    target_length = network.edge_length(edge)
     goals_c.append(EdgeLengthGoal(edge, target=target_length, weight=1.0))
 
 # ==========================================================================
@@ -232,7 +232,7 @@ c_network.print_stats()
 # Visualization
 # ==========================================================================
 
-viewer = Viewer(width=1600, height=900, show_grid=False)
+viewer = Viewer()
 
 # optimized network
 viewer.add(c_network,
@@ -243,16 +243,15 @@ viewer.add(c_network,
            show_loads=False)
 
 # create mesh from edges
-edge_lines = [c_network.edge_coordinates(*edge) for edge in c_network.edges()]
+edge_lines = [c_network.edge_coordinates(edge) for edge in c_network.edges()]
 mesh = Mesh.from_lines(edge_lines,
                         delete_boundary_face=True)
 
 # view mesh
 viewer.add(mesh, show_points=False, show_lines=False, opacity=0.5)
 
-# view reference network
-viewer.add(network,
-           as_wireframe=True,
+# view reference network as plain geometry
+viewer.add(network.copy(cls=Network),
            show_points=False,
            linewidth=2.0,
            color=Color.grey().darkened())

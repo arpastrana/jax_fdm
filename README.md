@@ -1,12 +1,12 @@
 <h1 align='center'>JAX FDM</h1>
 
 <!-- Badges -->
-![build](https://github.com/arpastrana/jax_fdm/workflows/build/badge.svg)
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.7258292.svg)](https://doi.org/10.5281/zenodo.7258292)
+![build](https://github.com/arpastrana/jax_fdm/actions/workflows/build.yml/badge.svg)
+[![CMAME](https://img.shields.io/badge/CMAME-10.1016%2Fj.cma.2026.118783-blue.svg)](https://doi.org/10.1016/j.cma.2026.118783)
 [![PyPI - Latest Release](https://img.shields.io/pypi/v/jax-fdm.svg)](https://pypi.python.org/project/jax-fdm)
 [![PyPI - Python Version](https://img.shields.io/pypi/pyversions/jax-fdm.svg)](https://pypi.python.org/project/jax-fdm)
 [![arXiv](https://img.shields.io/badge/arXiv-2307.12407-b31b1b.svg)](https://arxiv.org/abs/2307.12407)
-[![CMAME](https://img.shields.io/badge/CMAME-10.1016%2Fj.cma.2026.118783-blue.svg)](https://doi.org/10.1016/j.cma.2026.118783)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.7258292.svg)](https://doi.org/10.5281/zenodo.7258292)
 <!-- [![GitHub - License](https://img.shields.io/github/license/arpastrana/jax_fdm.svg)](https://github.com/arpastrana/jax_fdm) -->
 
 A differentiable, hardware-accelerated framework for the structural design of lightweight structures.
@@ -46,39 +46,28 @@ Expect sharp edges and possibly some API breaking changes as we continue to supp
 
 ## Installation
 
-First, create a new [Anaconda](https://www.anaconda.com/) environment and then activate it:
-
-```bash
-conda create -n jaxenv
-conda activate jaxenv
-```
-
-Next, install COMPAS and COMPAS VIEW2 via `conda`:
-
-```bash
-conda install -c conda-forge compas==1.17.10 compas_view2==0.7.0
-```
-
-Finally, install JAX FDM with a one-liner via `pip`:
+Install JAX FDM with a one-liner via `pip`:
 
 ```bash
 pip install jax-fdm
 ```
 
-JAX FDM supports Python 3.10 and 3.11 and builds on JAX, NumPy, SciPy, Equinox, and the COMPAS framework. See `pyproject.toml` for the complete dependency list.
-For visualization, it uses COMPAS_VIEW2 0.7.0.
+This pulls in COMPAS 2.x and the other core dependencies automatically.
+JAX FDM supports Python 3.10 to 3.12, and builds on JAX, SciPy, Equinox, and the COMPAS framework.
+See `pyproject.toml` for the complete dependency list.
 
 #### Optional extras
 
 JAX FDM declares optional dependency groups you can install from a source checkout with `pip`:
 
 ```bash
-pip install -e ".[viz]"    # 3D viewer (compas_view2) and matplotlib
+pip install -e ".[viz]"    # 3D desktop viewer (compas_viewer) and notebook viewer (compas_notebook)
 pip install -e ".[ipopt]"  # the IPOPT interior-point optimizer (cyipopt)
-pip install -e ".[dev]"     # development tools (ruff, pytest, build, bump-my-version)
+pip install -e ".[dev]"     # development tools (ruff, pytest, pre-commit, build, bump-my-version)
 ```
 
-Note that `compas_view2` is distributed through `conda-forge`, so the `viz` extra may still require a `conda` install as shown above. The `ipopt` extra needs a system Ipopt library available on your machine.
+The `ipopt` extra needs a system Ipopt library available on your machine.
+In a Jupyter notebook, use `from jax_fdm.visualization import NotebookViewer` to display structures inline.
 
 ### Are you a Windows user?
 
@@ -128,15 +117,16 @@ optimizer = SLSQP()
 c_network = constrained_fdm(network, optimizer, loss, constraints=constraints)
 ```
 
-You finally visualize the unconstrained arch `f_network` (gray) and the constrained one, `c_network` (in teal) with the `Viewer`.
+You finally visualize the constrained arch `c_network` with the `Viewer`, together with the unconstrained arch `f_network` as a plain wireframe (convert it to a COMPAS `Network` to draw it without the force density styling).
 
 ```python
+from compas.datastructures import Network
 from jax_fdm.visualization import Viewer
 
 
 viewer = Viewer(width=1600, height=900)
 viewer.add(c_network)
-viewer.add(f_network, as_wireframe=True)
+viewer.add(f_network.copy(cls=Network))
 viewer.show()
 ```
 
@@ -154,7 +144,7 @@ Documentation is a work in progress. In the meantime, check out the scripts in t
 
 ### Notebooks
 
-> These notebooks run directly from your browser without having to install anything locally!
+> These notebooks run directly from your browser without having to install anything locally! Their sources live in the [`notebooks/`](https://github.com/arpastrana/jax_fdm/tree/main/notebooks) folder.
 
 - [Arch](https://colab.research.google.com/drive/1_SrFuRPWxB0cG-BaZtNqitisQ7M3oUOG?usp=sharing): Control the height and the horizontal projection of a 2D arch.
 - [3D spiral](https://colab.research.google.com/drive/13hi9VsQ2PSLY2otfyDSvlX3xhpfFJ7zJ?usp=sharing): Calculate the loads required to maintain a compression-only 3D spiral in equilibrium [(Angelillo, et al. 2021)](https://doi.org/10.1016/j.engstruct.2021.112176).

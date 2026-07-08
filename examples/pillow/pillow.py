@@ -8,6 +8,7 @@ import numpy as np
 
 # compas
 from compas.colors import Color
+from compas.datastructures import Mesh
 from compas.geometry import Line
 from compas.geometry import add_vectors
 from jax_fdm.constraints import EdgeForceConstraint
@@ -16,7 +17,6 @@ from jax_fdm.constraints import NodeCurvatureConstraint
 
 # jax_fdm
 from jax_fdm.datastructures import FDMesh
-from jax_fdm.datastructures import FDNetwork
 from jax_fdm.equilibrium import constrained_fdm
 from jax_fdm.equilibrium import fdm
 from jax_fdm.goals import EdgeLengthGoal
@@ -140,7 +140,7 @@ if add_load_path_goal:
 if add_edge_length_goal:
     mesh_loaded = meshes["loaded"]
     for edge in mesh.edges():
-        goal = EdgeLengthGoal(edge, mesh_loaded.edge_length(*edge), weight=weight_edge_length)
+        goal = EdgeLengthGoal(edge, mesh_loaded.edge_length(edge), weight=weight_edge_length)
         goals.append(goal)
 
 loss = Loss(SquaredError(goals=goals))
@@ -152,7 +152,7 @@ loss = Loss(SquaredError(goals=goals))
 constraints = []
 
 if add_edge_length_constraint:
-    average_length = np.mean([mesh.edge_length(*edge) for edge in mesh.edges()])
+    average_length = np.mean([mesh.edge_length(edge) for edge in mesh.edges()])
     length_min = ratio_length_min * average_length
     length_max = ratio_length_max * average_length
 
@@ -227,29 +227,27 @@ for mesh_name, design in meshes.items():
 # Visualization
 # ==========================================================================
 
-viewer = Viewer(width=1600, height=900, show_grid=False)
+viewer = Viewer()
 
 designs = list(meshes.values())
 
 mesh0 = designs[0]  # reference (input) mesh
 c_mesh = designs[-1] if len(designs) > 1 else designs[0]  # optimized design
 
-# view shaded optimized mesh (its vertices already sit at equilibrium)
-viewer.add(c_mesh, show_points=False, show_edges=False, opacity=0.6)
-
-# view reference mesh as wireframe
-viewer.add(mesh0,
+# view reference mesh as a plain wireframe (convert to a plain COMPAS mesh so the
+# viewer renders bare geometry instead of the force-density mesh scene object)
+viewer.add(mesh0.copy(cls=Mesh),
            show_faces=False,
            show_points=False,
            show_edges=True,
            linewidth=1.0,
            color=Color.grey().darkened(10))
 
-# view optimized edges colored by force. Force coloring is an FDNetwork artist
-# feature, so we render the mesh's edges through an equivalent network.
-viewer.add(FDNetwork.from_mesh(c_mesh),
+# view the optimized mesh directly: shaded surface plus edges colored by force,
+# straight from the FDMesh
+viewer.add(c_mesh,
            edgewidth=(0.05, 0.2),
-           show_nodes=False,
+           show_vertices=False,
            edgecolor="force",
            show_reactions=False,
            show_loads=False,

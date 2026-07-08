@@ -27,7 +27,7 @@ If applicable, add screenshots to help explain your problem.
 **Environment (please complete the following information):**
 
 - OS: [e.g. Ubuntu 22.04, macOS 14, Windows 11]
-- Python version [e.g. 3.10, 3.11]
+- Python version [e.g. 3.10, 3.11, 3.12]
 - JAX FDM version [e.g. 0.10.0, or a git commit]
 - Installed via [e.g. `pip install jax-fdm`, or `pip install -e ".[viz]"` from source]
 - Accelerator [e.g. CPU, GPU, TPU]

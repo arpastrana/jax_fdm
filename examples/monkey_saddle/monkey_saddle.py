@@ -2,14 +2,12 @@
 import os
 
 # compas
-from compas.colors import Color
-from compas.datastructures import mesh_subdivide_quad
+from compas.datastructures import Mesh
+from compas.itertools import pairwise
 from compas.topology import dijkstra_path
-from compas.utilities import pairwise
 
 # jax fdm
 from jax_fdm.datastructures import FDMesh
-from jax_fdm.datastructures import FDNetwork
 from jax_fdm.equilibrium import constrained_fdm
 from jax_fdm.equilibrium import fdm
 from jax_fdm.goals import EdgeLengthGoal
@@ -66,7 +64,7 @@ print('Initial coarse mesh:', mesh)
 # Densify coarse mesh
 # ==========================================================================
 
-mesh = mesh_subdivide_quad(mesh, k=k)
+mesh = mesh.subdivided(scheme="quad", k=k)
 
 print("Densified mesh:", mesh)
 
@@ -94,7 +92,7 @@ for vkey in boundary[1:] + [boundary[0]]:
 
 polyedge2length = {}
 for polyedge in polyedges:
-    length = sum([mesh.edge_length(u, v) for u, v in pairwise(polyedge)])
+    length = sum([mesh.edge_length((u, v)) for u, v in pairwise(polyedge)])
     polyedge2length[tuple(polyedge)] = length
 
 # anchor the polyedges that are shorter than the mean boundary polyedge
@@ -166,7 +164,7 @@ for edge in mesh.edges():
 # edge lengths
 goals_a = []
 for edge in mesh.edges():
-    length = mesh.edge_length(*edge)
+    length = mesh.edge_length(edge)
     goal = EdgeLengthGoal(edge, length, weight=weight_length)
     goals_a.append(goal)
 
@@ -254,31 +252,26 @@ design.print_stats()
 # Visualization
 # ==========================================================================
 
-viewer = Viewer(width=1600, height=900, show_grid=False, viewmode="lighted")
+viewer = Viewer()
 
 # modify view
-viewer.view.camera.zoom(-35)  # number of steps, negative to zoom out
-viewer.view.camera.rotation[2] = 0.0  # set rotation around z axis to zero
+viewer.renderer.camera.zoom(-35)  # number of steps, negative to zoom out
+viewer.renderer.camera.rotation.z = 0.0  # set rotation around z axis to zero
 
-# view shaded optimized mesh (its vertices already sit at equilibrium)
-viewer.add(design, show_points=False, show_edges=False, opacity=0.4)
-
-# view reference mesh as wireframe
-viewer.add(mesh,
+# view reference mesh as a plain wireframe (convert to a plain COMPAS mesh)
+viewer.add(mesh.copy(cls=Mesh),
            show_faces=False,
            show_points=False,
-           show_edges=True,
-           linewidth=1.0,
-           color=Color.grey().darkened())
+           show_edges=True)
 
-# view optimized edges colored by force. Force coloring is an FDNetwork artist
-# feature, so we render the mesh's edges through an equivalent network.
-viewer.add(FDNetwork.from_mesh(design),
+# view the optimized mesh directly
+viewer.add(design,
            edgewidth=(0.02, 0.2),
-           show_nodes=False,
-           edgecolor="force",
-           show_reactions=False,
-           show_loads=False,
+           show_vertices=True,
+           show_loads=True,
+           show_faces=True,
+           edgecolor="fd",
+           show_reactions=True,
            reactionscale=0.75)
 
 # show le crème

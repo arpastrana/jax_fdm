@@ -8,7 +8,7 @@ description = "Auto-differentiable and hardware-accelerated force density method
 readme = "README.md"
 license = { text = "MIT license" }
 authors = [{ name = "Rafael Pastrana", email = "arpastrana@princeton.edu" }]
-requires-python = ">=3.10,<3.12"
+requires-python = ">=3.10,<3.13"
 keywords = [
     "jax",
     "automatic-differentiation",
@@ -28,12 +28,14 @@ classifiers = [
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: Implementation :: CPython",
 ]
 dynamic = ["version"]
 dependencies = [
     "jax[cpu]",
-    "compas<2.0",
+    "numpy",
+    "compas>=2.15,<3.0",
     "matplotlib",
     "scipy",
     "jaxopt",
@@ -47,8 +49,10 @@ Homepage = "https://github.com/arpastrana/jax_fdm"
 Repository = "https://github.com/arpastrana/jax_fdm"
 
 [project.optional-dependencies]
-# 3D viewer. compas_view2 ships on conda-forge; you may still need conda for it.
-viz = ["compas_view2==0.7.0"]
+# 3D viewer and notebook viewer for the COMPAS 2.x scene system.
+# pythreejs comes with compas_notebook; pinned here because the notebook
+# scene objects import it directly to build batched render buffers.
+viz = ["compas_viewer>=1.0", "compas_notebook>=0.11", "pythreejs"]
 # Interior-point optimizer. cyipopt needs a system Ipopt library.
 ipopt = ["cyipopt"]
 dev = [
@@ -70,6 +74,8 @@ where = ["src"]
 [tool.ruff]
 line-length = 180
 target-version = "py310"
+# The Colab notebooks carry !pip magics and notebook-style cells.
+extend-exclude = ["notebooks"]
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "W"]

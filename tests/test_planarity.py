@@ -1,7 +1,6 @@
 import jax
 import jax.numpy as jnp
 
-from compas.datastructures import mesh_unify_cycles
 from compas.geometry import Polygon
 from compas.geometry import Rotation
 from jax_fdm.datastructures import FDMesh
@@ -35,7 +34,7 @@ def test_planarity_mesh_tri():
     Test the planarity of a tri mesh grid.
     """
     mesh = FDMesh.from_meshgrid(10.0, 10)
-    mesh = mesh.subdivide("tri")
+    mesh = mesh.subdivided(scheme="tri")
     key = jax.random.PRNGKey(1701)
 
     for _ in range(3):
@@ -81,9 +80,9 @@ def test_planarity_mesh_ngon_flat():
     key = jax.random.PRNGKey(1701)
 
     for u, v in mesh.edges_on_boundary():
-        mesh.split_edge(u, v, t=0.5, allow_boundary=True)
+        mesh.split_edge((u, v), t=0.5, allow_boundary=True)
 
-    mesh_unify_cycles(mesh)
+    mesh.unify_cycles()
 
     for _ in range(3):
         key, subkey = jax.random.split(key)
@@ -107,9 +106,9 @@ def test_planarity_mesh_quad_barrel():
     key = jax.random.PRNGKey(1701)
 
     for u, v in mesh.edges_on_boundary():
-        mesh.split_edge(u, v, t=0.5, allow_boundary=True)
+        mesh.split_edge((u, v), t=0.5, allow_boundary=True)
 
-    mesh_unify_cycles(mesh)
+    mesh.unify_cycles()
 
     for _ in range(3):
         key, subkey = jax.random.split(key)

@@ -1,60 +1,43 @@
 # the essentials
 import os
-from math import fabs
-from math import pi
 
 # compas
 from compas.colors import Color
-from compas.colors import ColorMap
+from compas.datastructures import Network
 from compas.geometry import Line
 from compas.geometry import Point
 from compas.geometry import add_vectors
+
+# jax_fdm
 from jax_fdm.datastructures import FDNetwork
 from jax_fdm.equilibrium import EquilibriumModel
 from jax_fdm.equilibrium import EquilibriumStructure
 from jax_fdm.equilibrium import datastructure_update
 from jax_fdm.equilibrium import fdm
-
-# jax_fdm
 from jax_fdm.optimization import OptimizationRecorder
 from jax_fdm.visualization import Viewer
 
 # ==========================================================================
-# Read in optimization history
+# Parameters
 # ==========================================================================
 
-name = "monkey_saddle"
+# NOTE: the input files are not committed to the repository. Generate them by
+# running examples/pringle/pringle.py with record = True and export = True.
+name = "pringle"
 
 modify_view = True
 show_grid = True
-camera_zoom = -35  # -35 for monkey saddle, 0 for pringle, 14 for dome, -70 for butt
+camera_zoom = 5  # number of zoom-out steps, negative to zoom out
 
-interval = 50
-timeout = None
-fps = 24
+interval = 50  # milliseconds between frames
 
 animate = True
-rotate_while_animate = False
-save = False
+rotate_while_animate = True
 
 
 # ==========================================================================
 # Helper functions
 # ==========================================================================
-
-def edge_colors(network, cmap_name="viridis"):
-    cmap = ColorMap.from_mpl(cmap_name)
-    fds = [fabs(network.edge_forcedensity(edge)) for edge in network.edges()]
-    colors = {}
-    for edge in network.edges():
-        fd = fabs(network.edge_forcedensity(edge))
-        try:
-            ratio = (fd - min(fds)) / (max(fds) - min(fds))
-        except ZeroDivisionError:
-            ratio = 1.0
-        colors[edge] = cmap(ratio)
-    return colors
-
 
 def lines_draw(network, func_name):
     lines = {}
@@ -113,35 +96,36 @@ recorder = OptimizationRecorder.from_json(FILE_IN)
 # ==========================================================================
 
 # instantiate viewer
-viewer = Viewer(width=1600, height=900, show_grid=show_grid)
+viewer = Viewer(show_grid=show_grid)
 
 # modify view
 if modify_view:
-    viewer.view.camera.zoom(camera_zoom)  # number of steps, negative to zoom out
-    viewer.view.camera.rotation[2] = 2 * pi / 3  # set rotation around z axis to zero
-    viewer.view.camera.rotation_delta = (2 / 3) * pi / len(recorder)  # set rotation around z axis to zero
+    viewer.renderer.camera.zoom(camera_zoom)  # number of steps, negative to zoom out
 
-# draw network
-network_obj = viewer.add(network,
-                         as_wireframe=True,
-                         show_points=False,
-                         linewidth=5.0,
-                         color=Color.grey().darkened())
+# draw network as plain geometry (keep a handle on the copy to animate it)
+network_plain = network.copy(cls=Network)
+viewer.add(network_plain,
+           show_points=False,
+           linewidth=5.0,
+           linecolor=Color.grey().darkened())
 
 # draw supports
+support_objs = {}
 for node in network.nodes_supports():
     x, y, z = network.node_coordinates(node)
-    viewer.add(Point(x, y, z), color=Color.green(), size=20)
+    support_objs[node] = viewer.add(Point(x, y, z), pointcolor=Color.green(), pointsize=20)
 
 # draw loads
 loads = loads_draw(network)
-for load in loads.values():
-    viewer.add(load, linewidth=4.0, color=Color.green().darkened())
+load_objs = {}
+for node, load in loads.items():
+    load_objs[node] = viewer.add(load, linewidth=4.0, linecolor=Color.green().darkened())
 
 # draw residual forces
 residuals = residuals_draw(network)
-for residual in residuals.values():
-    viewer.add(residual, linewidth=4.0, color=Color.pink())
+residual_objs = {}
+for node, residual in residuals.items():
+    residual_objs[node] = viewer.add(residual, linewidth=4.0, linecolor=Color.pink())
 
 # warm start model
 params = recorder[0]
@@ -149,14 +133,8 @@ _ = model(params, structure)
 
 # create update function
 if animate:
-    config_animate = {"interval": interval,
-                      "timeout": timeout,
-                      "frames": len(recorder),
-                      "record": save,
-                      "record_fps": fps,
-                      "record_path": f"temp/{name}.gif"}
 
-    @viewer.on(**config_animate)
+    @viewer.on(interval=interval, frames=len(recorder))
     def wiggle(f):
 
         print(f"Current frame: {f + 1}/{len(recorder)}")
@@ -165,19 +143,28 @@ if animate:
 
         # update network
         datastructure_update(network, eqstate, params)
-        network_obj.linecolors = edge_colors(network)
 
-        # update loads
+        # sync the plain wireframe copy with the updated network
+        for node in network.nodes():
+            network_plain.node_attributes(node, "xyz", network.node_coordinates(node))
+
+        # update supports
+        for node, obj in support_objs.items():
+            x, y, z = network.node_coordinates(node)
+            obj.geometry.x = x
+            obj.geometry.y = y
+            obj.geometry.z = z
+
+        # update loads and residual forces
         loads_update(loads, network)
-
-        # update residual forces
         residuals_update(residuals, network)
 
-        for _, obj in viewer.view.objects.items():
-            obj.update()
+        # re-read the mutated geometry into the render buffers
+        for obj in viewer.scene.objects:
+            obj.update(update_data=True)
 
         if rotate_while_animate:
-            viewer.view.camera.rotate(dx=1, dy=0)
+            viewer.renderer.camera.rotate(dx=1, dy=0)
 
 # show le crème
 viewer.show()

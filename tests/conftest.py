@@ -55,7 +55,7 @@ def arch_network():
     num_segments = 10
     start = [-2.5, 0.0, 0.0]
     end = [2.5, 0.0, 0.0]
-    points = Polyline([start, end]).divide_polyline(num_segments)
+    points = Polyline([start, end]).divide(num_segments)
     lines = Polyline(points).lines
 
     network = FDNetwork.from_lines(lines)

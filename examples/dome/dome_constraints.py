@@ -1,15 +1,14 @@
 """
 Solve a constrained force density problem using gradient-based optimization.
 """
-import numpy as np
-
 # compas
 from compas.colors import Color
+from compas.datastructures import Network
 from compas.geometry import Line
 from compas.geometry import Polygon
 from compas.geometry import add_vectors
 from compas.geometry import offset_polygon
-from compas.utilities import pairwise
+from compas.itertools import pairwise
 from jax_fdm.constraints import EdgeAngleConstraint
 from jax_fdm.constraints import EdgeForceConstraint
 from jax_fdm.constraints import EdgeLengthConstraint
@@ -17,6 +16,8 @@ from jax_fdm.constraints import EdgeLengthConstraint
 # static equilibrium
 from jax_fdm.datastructures import FDNetwork
 from jax_fdm.equilibrium import EquilibriumModel
+from jax_fdm.equilibrium import EquilibriumParametersState
+from jax_fdm.equilibrium import EquilibriumStructure
 from jax_fdm.equilibrium import constrained_fdm
 from jax_fdm.equilibrium import fdm
 from jax_fdm.goals import EdgeAngleGoal
@@ -178,7 +179,7 @@ if add_horizontal_projection_goal:
 # edge length goal
 if add_edge_length_goal:
     for edge in edges_cross:
-        length = network.edge_length(*edge)
+        length = network.edge_length(edge)
         goal = EdgeLengthGoal(edge, target=length)
         goals.append(goal)
 
@@ -255,7 +256,7 @@ for config in sweep_configs:
     print()
     print(config["msg"])
 
-    if fofin_method == fdm:
+    if fofin_method is fdm:
         network = fofin_method(network)
     else:
         network = fofin_method(network,
@@ -271,11 +272,12 @@ for config in sweep_configs:
 
     extra_stats = None
     if constraint_angles:
-        model = EquilibriumModel(network)
-        params = [np.array(param) for param in network.parameters()]
-        # q = np.array(network.edges_forcedensities())
-        eqstate = model(*params)
-        a = [constraint.constraint(eqstate, constraint.index_from_model(model)).item() for constraint in constraint_angles]
+        model = EquilibriumModel(tmax=1)
+        structure = EquilibriumStructure.from_network(network)
+        params = EquilibriumParametersState.from_datastructure(network)
+        eqstate = model(params, structure)
+        a = [constraint.constraint(eqstate, constraint.index_from_model(model, structure)).item()
+             for constraint in constraint_angles]
         extra_stats = {"Angles": a}
 
     # Report stats
@@ -285,7 +287,7 @@ for config in sweep_configs:
 # Visualization
 # ==========================================================================
 
-viewer = Viewer(width=1600, height=900, show_grid=False)
+viewer = Viewer()
 
 # add all networks except the last one
 networks = list(networks.values())
@@ -293,8 +295,7 @@ networks = list(networks.values())
 for i, network in enumerate(networks):
     if i == (len(networks) - 1):
         continue
-    viewer.add(network,
-               as_wireframe=True,
+    viewer.add(network.copy(cls=Network),
                show_points=False,
                linewidth=1.0,
                color=Color.grey().darkened(i * 10))

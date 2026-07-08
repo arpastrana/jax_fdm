@@ -23,7 +23,7 @@ pz = -0.2
 start = [-arch_length / 2.0, 0.0, 0.0]
 end = add_vectors(start, [arch_length, 0.0, 0.0])
 curve = Polyline([start, end])
-points = curve.divide_polyline(num_segments)
+points = curve.divide(num_segments)
 lines = Polyline(points).lines
 
 # ==========================================================================
@@ -56,7 +56,7 @@ eq_network = fdm(network)
 # Visualization
 # ==========================================================================
 
-viewer = Viewer(width=1600, height=900, show_grid=True)
+viewer = Viewer(show_grid=True)
 
 # equilibrated arch
 viewer.add(eq_network, edgewidth=(0.01, 0.1), loadscale=2.0)

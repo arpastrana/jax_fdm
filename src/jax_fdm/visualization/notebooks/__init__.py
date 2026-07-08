@@ -1,14 +1,20 @@
 from jax_fdm.visualization.backends import has_backend
 from jax_fdm.visualization.backends import null_viewer
 
-# The notebook viewer builds on compas_notebook, an optional dependency.
+# The notebook viewer builds on compas_notebook (>= 0.11, compas 2.x),
+# an optional dependency.
 if has_backend("compas_notebook"):
-    from .shapes import *  # noqa F403
-    from .network_artist import *  # noqa F403
-    from .viewer import *  # noqa F403
-    from .register import register_artists
+    from compas.scene.context import register_scene_objects
 
-    register_artists()
+    from .viewer import *  # noqa F403
+    from .scene_objects import *  # noqa F403
+    from .scene_objects import register_notebook_scene_objects
+
+    # Built-in plugin discovery must run first: compas only auto-discovers into
+    # an empty registry, and jax_fdm cannot register via plugins (discovery
+    # scans only compas* packages).
+    register_scene_objects()
+    register_notebook_scene_objects()
 else:
     NotebookViewer = null_viewer("compas_notebook")
 

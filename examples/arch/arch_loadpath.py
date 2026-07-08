@@ -1,3 +1,4 @@
+from compas.datastructures import Network
 from jax_fdm.constraints import EdgeLengthConstraint
 from jax_fdm.datastructures import FDNetwork
 from jax_fdm.equilibrium import constrained_fdm
@@ -19,7 +20,7 @@ loss = Loss(PredictionError(goals=[NetworkLoadPathGoal()]))
 constraints = [EdgeLengthConstraint(edge, 0.75, 1.0) for edge in network.edges()]
 c_network = constrained_fdm(network, loss=loss, optimizer=SLSQP(), constraints=constraints)
 
-viewer = Viewer(width=1600, height=900)
+viewer = Viewer(show_grid=True)
 viewer.add(c_network)
-viewer.add(f_network, as_wireframe=True)
+viewer.add(f_network.copy(cls=Network))
 viewer.show()

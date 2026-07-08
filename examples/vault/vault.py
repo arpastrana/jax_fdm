@@ -6,6 +6,7 @@ from scipy.spatial.distance import directed_hausdorff
 
 # compas
 from compas.colors import Color
+from compas.datastructures import Network
 from compas.geometry import Line
 
 # jax fdm
@@ -176,11 +177,11 @@ network.print_stats()
 # Visualization
 # ==========================================================================
 
-viewer = Viewer(width=1600, height=900, show_grid=False)
+viewer = Viewer()
 
 # modify view
-viewer.view.camera.zoom(-35)  # number of steps, negative to zoom out
-viewer.view.camera.rotation[2] = 0.0  # set rotation around z axis to zero
+viewer.renderer.camera.zoom(-35)  # number of steps, negative to zoom out
+viewer.renderer.camera.rotation.z = 0.0  # set rotation around z axis to zero
 
 # optimized network
 viewer.add(network,
@@ -188,18 +189,17 @@ viewer.add(network,
            edgecolor="fd",
            loadscale=5.0)
 
-# reference network
-viewer.add(network_target,
-           as_wireframe=True,
+# reference network as plain geometry
+viewer.add(network_target.copy(cls=Network),
            show_points=False,
            linewidth=1.0,
-           color=Color.grey().darkened())
+           color=Color.grey())
 
 # draw lines to target
 for node in network.nodes():
     pt = network.node_coordinates(node)
     line = Line(pt, network_target.node_coordinates(node))
-    viewer.add(line, color=Color.grey())
+    viewer.add(line, color=Color.red())
 
 # show le crème
 viewer.show()

@@ -6,7 +6,7 @@ import jax.numpy as jnp
 import numpy as np
 import pytest
 
-from compas.numerical import adjacency_matrix as adjacency_matrix_compas
+from compas.matrices import adjacency_matrix as adjacency_matrix_compas
 from jax_fdm import DTYPE_INT_NP
 from jax_fdm.equilibrium import mesh_connectivity_edges_faces
 from jax_fdm.equilibrium.structures.graphs import Graph

@@ -197,7 +197,7 @@ def mesh_edges_faces(mesh):
     for u, v in mesh.edges():
 
         findices = []
-        for fkey in mesh.edge_faces(u, v):
+        for fkey in mesh.edge_faces((u, v)):
 
             if fkey is None:
                 continue
