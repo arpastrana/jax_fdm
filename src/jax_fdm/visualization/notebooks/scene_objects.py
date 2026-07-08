@@ -30,7 +30,10 @@ class ThreeFDDatastructureObject(ThreeSceneObject):
     is no scene tree and no in-place update loop for animations.
 
     Subclasses resolve the point vocabulary (a network addresses its points
-    as nodes, a mesh as vertices) by implementing the ``point_*`` methods.
+    as nodes, a mesh as vertices) by implementing the ``point_*`` methods and
+    by exposing it as constructor keyword arguments (``nodecolor``/``nodesize``/
+    ``show_nodes`` on a network, ``vertexcolor``/``vertexsize``/``show_vertices``
+    on a mesh) that map onto the neutral point parameters here.
     """
 
     # Tessellation resolution of the batched shapes. Half the viewer default:
@@ -42,9 +45,9 @@ class ThreeFDDatastructureObject(ThreeSceneObject):
                  item=None,
                  points=None,
                  edges=None,
-                 nodecolor=None,
+                 pointcolor=None,
                  edgecolor=None,
-                 nodesize=None,
+                 pointsize=None,
                  edgewidth=None,
                  loadcolor=None,
                  loadscale=None,
@@ -52,7 +55,7 @@ class ThreeFDDatastructureObject(ThreeSceneObject):
                  reactioncolor=None,
                  reactionscale=None,
                  reactiontol=None,
-                 show_nodes=False,
+                 show_points=False,
                  show_edges=True,
                  show_loads=True,
                  show_reactions=True,
@@ -71,9 +74,9 @@ class ThreeFDDatastructureObject(ThreeSceneObject):
         # all mesh edges per call).
         self._adjacency = {point: list(self.point_edges(point)) for point in self.points}
 
-        self._nodecolor = nodecolor
+        self._pointcolor = pointcolor
         self._edgecolor = edgecolor
-        self._nodesize = nodesize
+        self._pointsize = pointsize
         self._edgewidth = edgewidth
         self._show_supports = show_supports if show_supports is not None else True
 
@@ -85,7 +88,7 @@ class ThreeFDDatastructureObject(ThreeSceneObject):
         self.reaction_scale = reactionscale or style.REACTION_SCALE
         self.reaction_tol = reactiontol or style.REACTION_TOL
 
-        self.show_nodes = show_nodes
+        self.show_points = bool(show_points)
         self.show_edges = show_edges if show_edges is not None else True
         self.show_loads = show_loads if show_loads is not None else True
         self.show_reactions = show_reactions if show_reactions is not None else True
@@ -139,10 +142,10 @@ class ThreeFDDatastructureObject(ThreeSceneObject):
 
             guids.append(self.soup_to_mesh(cylinders_buffer(starts, ends, radii, colors, u=self.shape_u)))
 
-        if self.show_nodes:
+        if self.show_points:
             is_support = self.point_is_support if self._show_supports else (lambda key: False)
-            point_color = style.point_colors(self.points, is_support, self._nodecolor)
-            point_size = style.point_sizes(self.points, self._nodesize)
+            point_color = style.point_colors(self.points, is_support, self._pointcolor)
+            point_size = style.point_sizes(self.points, self._pointsize)
 
             centers = [self.point_coordinates(point) for point in self.points]
             radii = [point_size[point] / 2.0 for point in self.points]
@@ -210,7 +213,24 @@ class ThreeFDDatastructureObject(ThreeSceneObject):
 class ThreeFDNetworkObject(ThreeFDDatastructureObject):
     """
     A scene object that renders a force density network in a notebook scene.
+
+    The network points are styled with the ``nodecolor``, ``nodesize`` and
+    ``show_nodes`` keyword arguments, matching the datastructure vocabulary.
     """
+
+    def __init__(self, item=None, nodecolor=None, nodesize=None, show_nodes=None, **kwargs):
+        # Map the node vocabulary onto the neutral point parameters of the
+        # base. The scene backend injects the neutral names with explicit None
+        # values (meaning "default"), so they are popped and only kept when
+        # no node keyword takes precedence.
+        pointcolor = kwargs.pop("pointcolor", None)
+        pointsize = kwargs.pop("pointsize", None)
+        show_points = kwargs.pop("show_points", None)
+        super().__init__(item=item,
+                         pointcolor=nodecolor if nodecolor is not None else pointcolor,
+                         pointsize=nodesize if nodesize is not None else pointsize,
+                         show_points=show_nodes if show_nodes is not None else show_points,
+                         **kwargs)
 
     def point_keys(self):
         return self.datastructure.nodes()
@@ -238,12 +258,32 @@ class ThreeFDMeshObject(ThreeFDDatastructureObject):
     On top of the shared edge/vertex/load/reaction categories, the mesh faces
     are drawn as one shaded surface (the mesh itself).
 
+    The mesh points are styled with the ``vertexcolor``, ``vertexsize`` and
+    ``show_vertices`` keyword arguments, matching the datastructure vocabulary.
+
     The compas_viewer backend's ``faceopacity`` has no notebook counterpart:
     the pythreejs materials compas_notebook builds do not support opacity.
     """
 
-    def __init__(self, item=None, show_faces=True, **kwargs):
-        super().__init__(item=item, **kwargs)
+    def __init__(self,
+                 item=None,
+                 vertexcolor=None,
+                 vertexsize=None,
+                 show_vertices=None,
+                 show_faces=True,
+                 **kwargs):
+        # Map the vertex vocabulary onto the neutral point parameters of the
+        # base. The scene backend injects the neutral names with explicit None
+        # values (meaning "default"), so they are popped and only kept when
+        # no vertex keyword takes precedence.
+        pointcolor = kwargs.pop("pointcolor", None)
+        pointsize = kwargs.pop("pointsize", None)
+        show_points = kwargs.pop("show_points", None)
+        super().__init__(item=item,
+                         pointcolor=vertexcolor if vertexcolor is not None else pointcolor,
+                         pointsize=vertexsize if vertexsize is not None else pointsize,
+                         show_points=show_vertices if show_vertices is not None else show_points,
+                         **kwargs)
         self.show_faces = show_faces if show_faces is not None else True
 
     def point_keys(self):

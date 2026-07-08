@@ -63,8 +63,8 @@ if modify_view:
 mesh_obj = viewer.add(mesh,
                       edgewidth=(0.05, 0.25),
                       edgecolor="fd",
-                      show_nodes=False,
-                      nodesize=0.5,
+                      show_vertices=False,
+                      vertexsize=0.5,
                       show_reactions=True,
                       show_loads=True
                       )

@@ -247,7 +247,7 @@ viewer.add(mesh0.copy(cls=Mesh),
 # straight from the FDMesh
 viewer.add(c_mesh,
            edgewidth=(0.05, 0.2),
-           show_nodes=False,
+           show_vertices=False,
            edgecolor="force",
            show_reactions=False,
            show_loads=False,

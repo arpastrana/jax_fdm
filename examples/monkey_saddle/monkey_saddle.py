@@ -267,7 +267,7 @@ viewer.add(mesh.copy(cls=Mesh),
 # view the optimized mesh directly
 viewer.add(design,
            edgewidth=(0.02, 0.2),
-           show_nodes=True,
+           show_vertices=True,
            show_loads=True,
            show_faces=True,
            edgecolor="fd",

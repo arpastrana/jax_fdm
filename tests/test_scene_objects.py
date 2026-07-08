@@ -63,10 +63,13 @@ def mesh():
 STYLE_KWARGS = {
     "edgecolor": "force",
     "edgewidth": (0.05, 0.25),
-    "show_nodes": True,
     "show_loads": True,
     "show_reactions": True,
 }
+
+# Each datastructure styles its points in its own vocabulary.
+NETWORK_KWARGS = {"show_nodes": True, **STYLE_KWARGS}
+MESH_KWARGS = {"show_vertices": True, **STYLE_KWARGS}
 
 
 def category_soups(obj):
@@ -102,7 +105,7 @@ def test_network_update_matches_rebuild(network):
         network.edge_attribute((1, 2), "force", -2.0)
 
     assert_update_matches_rebuild(
-        lambda: FDNetworkObject(item=network, context="Viewer", **STYLE_KWARGS),
+        lambda: FDNetworkObject(item=network, context="Viewer", **NETWORK_KWARGS),
         network, move)
 
 
@@ -114,8 +117,22 @@ def test_mesh_update_matches_rebuild(mesh):
         mesh.edge_attribute((0, 1), "force", 2.0)
 
     assert_update_matches_rebuild(
-        lambda: FDMeshObject(item=mesh, context="Viewer", **STYLE_KWARGS),
+        lambda: FDMeshObject(item=mesh, context="Viewer", **MESH_KWARGS),
         mesh, move)
+
+
+def test_point_kwargs_speak_the_datastructure_vocabulary(network, mesh):
+    """
+    A network styles its points as nodes, a mesh as vertices; the vocabulary
+    maps onto the shared point state and spawns the sphere category child.
+    """
+    obj = FDNetworkObject(item=network, context="Viewer", show_nodes=True, nodesize=0.4)
+    assert all(size == 0.4 for size in obj.point_size.values())
+    assert "Nodes" in {child.name for child in obj.children}
+
+    obj = FDMeshObject(item=mesh, context="Viewer", show_vertices=True, vertexsize=0.4)
+    assert all(size == 0.4 for size in obj.point_size.values())
+    assert "Vertices" in {child.name for child in obj.children}
 
 
 def test_adjacency_is_frozen_and_complete(network, mesh):

@@ -1,8 +1,7 @@
-from compas.scene import register
-
 from compas_viewer.scene import MeshObject
 from compas_viewer.scene import ViewerSceneObject
 
+from compas.scene import register
 from jax_fdm.datastructures import FDMesh
 from jax_fdm.datastructures import FDNetwork
 from jax_fdm.visualization import style
@@ -152,7 +151,10 @@ class FDDatastructureObject(ViewerSceneObject):
     once, and restyling or reconnecting means re-adding the object.
 
     Subclasses resolve the point vocabulary (a network addresses its points
-    as nodes, a mesh as vertices) by implementing the ``point_*`` methods.
+    as nodes, a mesh as vertices) by implementing the ``point_*`` methods and
+    by exposing it as constructor keyword arguments (``nodecolor``/``nodesize``/
+    ``show_nodes`` on a network, ``vertexcolor``/``vertexsize``/``show_vertices``
+    on a mesh) that map onto the neutral point parameters here.
     """
     points_name = "Points"
 
@@ -165,9 +167,9 @@ class FDDatastructureObject(ViewerSceneObject):
                  item=None,
                  points=None,
                  edges=None,
-                 nodecolor=None,
+                 pointcolor=None,
                  edgecolor=None,
-                 nodesize=None,
+                 pointsize=None,
                  edgewidth=None,
                  loadcolor=None,
                  loadscale=None,
@@ -175,7 +177,7 @@ class FDDatastructureObject(ViewerSceneObject):
                  reactioncolor=None,
                  reactionscale=None,
                  reactiontol=None,
-                 show_nodes=False,
+                 show_points=False,
                  show_edges=True,
                  show_loads=True,
                  show_reactions=True,
@@ -199,9 +201,9 @@ class FDDatastructureObject(ViewerSceneObject):
 
         # Style inputs, kept raw: semantic modes ("force", "fd", (min, max))
         # are re-derived against the live datastructure on every update.
-        self._nodecolor = nodecolor
+        self._pointcolor = pointcolor
         self._edgecolor = edgecolor
-        self._nodesize = nodesize
+        self._pointsize = pointsize
         self._edgewidth = edgewidth
         self._show_supports = show_supports if show_supports is not None else True
 
@@ -229,7 +231,7 @@ class FDDatastructureObject(ViewerSceneObject):
         opacity = self.default_opacity
         if show_edges or show_edges is None:
             self.add(FDEdgesObject(name="Edges", opacity=opacity))
-        if show_nodes:
+        if show_points:
             self.add(FDPointsObject(name=self.points_name, opacity=opacity))
         if show_reactions or show_reactions is None:
             self.add(FDReactionsObject(name="Reactions", opacity=opacity))
@@ -275,8 +277,8 @@ class FDDatastructureObject(ViewerSceneObject):
         self.edge_width = style.edge_widths(datastructure, self.edges, self._edgewidth)
 
         is_support = self.point_is_support if self._show_supports else (lambda key: False)
-        self.point_color = style.point_colors(self.points, is_support, self._nodecolor)
-        self.point_size = style.point_sizes(self.points, self._nodesize)
+        self.point_color = style.point_colors(self.points, is_support, self._pointcolor)
+        self.point_size = style.point_sizes(self.points, self._pointsize)
 
     def load_arrows(self):
         """
@@ -340,8 +342,25 @@ class FDDatastructureObject(ViewerSceneObject):
 class FDNetworkObject(FDDatastructureObject):
     """
     A scene object that renders a force density network in a compas_viewer scene.
+
+    The network points are styled with the ``nodecolor``, ``nodesize`` and
+    ``show_nodes`` keyword arguments, matching the datastructure vocabulary.
     """
     points_name = "Nodes"
+
+    def __init__(self, item=None, nodecolor=None, nodesize=None, show_nodes=None, **kwargs):
+        # Map the node vocabulary onto the neutral point parameters of the
+        # base. The scene backend injects the neutral names with explicit None
+        # values (meaning "default"), so they are popped and only kept when
+        # no node keyword takes precedence.
+        pointcolor = kwargs.pop("pointcolor", None)
+        pointsize = kwargs.pop("pointsize", None)
+        show_points = kwargs.pop("show_points", None)
+        super().__init__(item=item,
+                         pointcolor=nodecolor if nodecolor is not None else pointcolor,
+                         pointsize=nodesize if nodesize is not None else pointsize,
+                         show_points=show_nodes if show_nodes is not None else show_points,
+                         **kwargs)
 
     def point_keys(self):
         return self.datastructure.nodes()
@@ -369,13 +388,34 @@ class FDMeshObject(FDDatastructureObject):
     On top of the shared edge/vertex/load/reaction categories, the mesh faces
     are drawn as one shaded surface (the mesh itself), so the surface toggles
     independently from the wireframe.
+
+    The mesh points are styled with the ``vertexcolor``, ``vertexsize`` and
+    ``show_vertices`` keyword arguments, matching the datastructure vocabulary.
     """
     points_name = "Vertices"
 
     default_faceopacity = 0.4
 
-    def __init__(self, item=None, faceopacity=None, show_faces=True, **kwargs):
-        super().__init__(item=item, **kwargs)
+    def __init__(self,
+                 item=None,
+                 vertexcolor=None,
+                 vertexsize=None,
+                 show_vertices=None,
+                 faceopacity=None,
+                 show_faces=True,
+                 **kwargs):
+        # Map the vertex vocabulary onto the neutral point parameters of the
+        # base. The scene backend injects the neutral names with explicit None
+        # values (meaning "default"), so they are popped and only kept when
+        # no vertex keyword takes precedence.
+        pointcolor = kwargs.pop("pointcolor", None)
+        pointsize = kwargs.pop("pointsize", None)
+        show_points = kwargs.pop("show_points", None)
+        super().__init__(item=item,
+                         pointcolor=vertexcolor if vertexcolor is not None else pointcolor,
+                         pointsize=vertexsize if vertexsize is not None else pointsize,
+                         show_points=show_vertices if show_vertices is not None else show_points,
+                         **kwargs)
 
         if show_faces or show_faces is None:
             # sceneobject_type pins the native mesh scene object: the FDMesh is
