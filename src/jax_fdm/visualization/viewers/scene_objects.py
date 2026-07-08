@@ -13,11 +13,13 @@ from jax_fdm.visualization.buffers import spheres_buffer
 __all__ = ["FDDatastructureObject",
            "FDNetworkObject",
            "FDMeshObject",
+           "FDGroupObject",
+           "FDObject",
            "register_viewer_scene_objects"]
 
 
 # ==========================================================================
-# Category children
+# Category children: fused soups
 # ==========================================================================
 
 class FDBufferObject(ViewerSceneObject):
@@ -129,6 +131,109 @@ class FDReactionsObject(FDArrowsObject):
 
 
 # ==========================================================================
+# Category children: per-element groups
+# ==========================================================================
+
+class FDGroupObject(ViewerSceneObject):
+    """
+    A non-drawing category node grouping per-element children.
+
+    The group must be a plain scene object rather than a compas Group: the
+    render buffers skip Group instances, which would sever the settings-buffer
+    parent chain the shader walks to inherit show, selection and transform
+    from the force density parent down to every element child.
+    """
+
+    def __new__(cls, *args, **kwargs):
+        # Bypass the SceneObject factory: the group wraps no data item,
+        # so there is nothing to dispatch on (same pattern as compas Group).
+        return object.__new__(cls)
+
+    def __init__(self, name, **kwargs):
+        super().__init__(item=None, name=name, context="Viewer",
+                         show_points=False, show_lines=False, **kwargs)
+
+    def update(self, update_transform=True, update_data=True):
+        for child in self.children:
+            child.update(update_transform=update_transform, update_data=update_data)
+
+
+class FDObject(FDBufferObject):
+    """
+    A single element (edge, point, load or reaction arrow) of a force density
+    datastructure, as its own selectable scene object.
+
+    The element holds only its key: style and geometry are read from the
+    force density parent two levels up, and the soup is built by the same
+    buffer builders as the fused categories with a single-element batch, so
+    both render paths are vertex-identical by construction.
+    """
+
+    def __init__(self, key, name, **kwargs):
+        super().__init__(name=name, **kwargs)
+        self.key = key
+
+    @property
+    def fdparent(self):
+        # The element sits under a category group under the FD parent.
+        return self.parent.parent
+
+
+class FDEdgeObject(FDObject):
+    """
+    One edge of a force density datastructure, as a cylinder.
+    """
+
+    def _build_soup(self):
+        parent = self.fdparent
+        start, end = parent.datastructure.edge_coordinates(self.key)
+
+        return cylinders_buffer([start], [end],
+                                [parent.edge_width[self.key] / 2.0],
+                                [parent.edge_color[self.key].rgba],
+                                u=parent.shape_u)
+
+
+class FDPointObject(FDObject):
+    """
+    One point (node or vertex) of a force density datastructure, as a sphere.
+    """
+
+    def _build_soup(self):
+        parent = self.fdparent
+
+        return spheres_buffer([parent.point_coordinates(self.key)],
+                              [parent.point_size[self.key] / 2.0],
+                              [parent.point_color[self.key].rgba],
+                              u=parent.shape_u, v=parent.shape_u)
+
+
+class FDArrowObject(FDObject):
+    """
+    One arrow (load or reaction) of a force density datastructure.
+    """
+    arrow_attr = None
+
+    def _build_soup(self):
+        parent = self.fdparent
+        anchor, vector, color = getattr(parent, self.arrow_attr)(self.key)
+
+        return arrows_buffer([anchor], [vector], [color],
+                             head_portion=style.ARROW_HEADPORTION,
+                             head_width=style.ARROW_HEADWIDTH,
+                             body_width=style.ARROW_BODYWIDTH,
+                             u=parent.arrow_u)
+
+
+class FDLoadObject(FDArrowObject):
+    arrow_attr = "load_arrow"
+
+
+class FDReactionObject(FDArrowObject):
+    arrow_attr = "reaction_arrow"
+
+
+# ==========================================================================
 # Parent scene objects
 # ==========================================================================
 
@@ -136,11 +241,17 @@ class FDDatastructureObject(ViewerSceneObject):
     """
     A scene object that renders a force density datastructure in a compas_viewer scene.
 
-    Every element category (edges as cylinders, points as spheres, loads and
-    reactions as arrows) is one child scene object holding a single batched
-    triangle soup, so a whole datastructure costs a handful of scene objects,
-    each individually toggleable in the viewer tree, and an animation loop
-    updates one render buffer per category in place via ``update()``.
+    By default every element (edges as cylinders, points as spheres, loads
+    and reactions as arrows) is its own scene object under a per-category
+    group, so single elements are clickable, highlightable and foldable in
+    the viewer tree. Arrows below tolerance at add time are pruned rather
+    than kept as invisible slots.
+
+    With ``fuse=True`` every category batches into one child scene object
+    holding a single triangle soup instead, so a whole datastructure costs a
+    handful of scene objects and an animation loop updates one render buffer
+    per category in place via ``update()``. Both render paths build their
+    soups with the same buffer builders, so they are vertex-identical.
 
     The parent itself draws nothing: it owns the datastructure, the style
     state (computed at construction and re-derived on every ``update``) and
@@ -157,11 +268,14 @@ class FDDatastructureObject(ViewerSceneObject):
     on a mesh) that map onto the neutral point parameters here.
     """
     points_name = "Points"
+    point_name = "Point"
 
     default_opacity = 0.75
 
     shape_u = 16
     arrow_u = 8
+
+    FUSE_HINT_ELEMENTS = 1000
 
     def __init__(self,
                  item=None,
@@ -182,6 +296,7 @@ class FDDatastructureObject(ViewerSceneObject):
                  show_loads=True,
                  show_reactions=True,
                  show_supports=True,
+                 fuse=False,
                  **kwargs):
         # The pin kwarg used to bypass registry dispatch is not a scene kwarg.
         kwargs.pop("sceneobject_type", None)
@@ -226,17 +341,60 @@ class FDDatastructureObject(ViewerSceneObject):
         self._load_points = list(self.points)
         self._reaction_points = [point for point in self.points if self._adjacency[point]]
 
-        # One child scene object per shown category. Scene backends may inject
-        # explicit None values for the show flags, which mean "default".
-        opacity = self.default_opacity
+        # One child per shown category: a fused soup, or a group of
+        # per-element children. Scene backends may inject explicit None
+        # values for the show flags, which mean "default".
+        self.fuse = fuse
         if show_edges or show_edges is None:
-            self.add(FDEdgesObject(name="Edges", opacity=opacity))
+            self._add_category(FDEdgesObject, FDEdgeObject, "Edges",
+                               self.edges, "Edge")
         if show_points:
-            self.add(FDPointsObject(name=self.points_name, opacity=opacity))
+            self._add_category(FDPointsObject, FDPointObject, self.points_name,
+                               self.points, self.point_name)
         if show_reactions or show_reactions is None:
-            self.add(FDReactionsObject(name="Reactions", opacity=opacity))
+            self._add_category(FDReactionsObject, FDReactionObject, "Reactions",
+                               self._arrow_points("reaction_arrow", self._reaction_points), "Reaction")
         if show_loads or show_loads is None:
-            self.add(FDLoadsObject(name="Loads", opacity=opacity))
+            self._add_category(FDLoadsObject, FDLoadObject, "Loads",
+                               self._arrow_points("load_arrow", self._load_points), "Load")
+
+        if not fuse:
+            count = sum(len(child.children) for child in self.children
+                        if isinstance(child, FDGroupObject))
+            if count > self.FUSE_HINT_ELEMENTS:
+                print(f"WARNING: {self.name} has {count} per-element scene objects. "
+                      "Pass fuse=True to viewer.add(...) for fast loading and display")
+
+    def _add_category(self, fused_cls, element_cls, category_name, keys, element_name):
+        """
+        Add one category child: a fused soup, or a group of per-element children.
+
+        Element children spawn in fused soup order and carry the opacity
+        themselves: the shader inherits show, selection and transform through
+        the parent chain, but not opacity.
+        """
+        if self.fuse:
+            self.add(fused_cls(name=category_name, opacity=self.default_opacity))
+            return
+
+        group = FDGroupObject(name=category_name)
+        self.add(group)
+        for key in keys:
+            group.add(element_cls(key, name=f"{element_name} {key}",
+                                  opacity=self.default_opacity))
+
+    def _arrow_points(self, arrow_attr, points):
+        """
+        The candidate points whose arrow is visible at add time.
+
+        The fused soups keep a degenerate slot for every candidate so their
+        topology never changes; per-element children prune instead, so an
+        arrow appearing after add means re-adding the object.
+        """
+        if self.fuse:
+            return points
+        arrow = getattr(self, arrow_attr)
+        return [point for point in points if any(arrow(point)[1])]
 
     # ==========================================================================
     # Point vocabulary
@@ -309,6 +467,29 @@ class FDDatastructureObject(ViewerSceneObject):
 
         return anchors, vectors, self._arrow_colors(points, self.reaction_color)
 
+    def load_arrow(self, point):
+        """
+        The anchor, vector and color of the load arrow at one point.
+        """
+        anchors, vectors = style.load_arrows([self.point_coordinates(point)],
+                                             [self.point_load(point)],
+                                             [self._point_clearance(point)],
+                                             self.load_scale, self.load_tol)
+
+        return anchors[0], vectors[0], self._arrow_colors([point], self.load_color)[0]
+
+    def reaction_arrow(self, point):
+        """
+        The anchor, vector and color of the reaction arrow at one point.
+        """
+        forces = [self.datastructure.edge_force(edge) for edge in self._adjacency[point]]
+        anchors, vectors = style.reaction_arrows([self.point_coordinates(point)],
+                                                 [self.point_reaction(point)],
+                                                 [forces],
+                                                 self.reaction_scale, self.reaction_tol)
+
+        return anchors[0], vectors[0], self._arrow_colors([point], self.reaction_color)[0]
+
     def _point_clearance(self, point):
         """
         The width of the thickest edge connected to a point.
@@ -347,6 +528,7 @@ class FDNetworkObject(FDDatastructureObject):
     ``show_nodes`` keyword arguments, matching the datastructure vocabulary.
     """
     points_name = "Nodes"
+    point_name = "Node"
 
     def __init__(self, item=None, nodecolor=None, nodesize=None, show_nodes=None, **kwargs):
         # Map the node vocabulary onto the neutral point parameters of the
@@ -393,6 +575,7 @@ class FDMeshObject(FDDatastructureObject):
     ``show_vertices`` keyword arguments, matching the datastructure vocabulary.
     """
     points_name = "Vertices"
+    point_name = "Vertex"
 
     default_faceopacity = 0.4
 

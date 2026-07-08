@@ -59,14 +59,15 @@ if modify_view:
     viewer.renderer.camera.zoom(camera_zoom)  # number of steps, negative to zoom out
     viewer.renderer.camera.rotation.z = 2 * pi / 3  # rotation around the z axis
 
-# draw mesh
+# draw mesh, fused into batched mesh "soups" for fast per-frame buffer updates
 mesh_obj = viewer.add(mesh,
                       edgewidth=(0.05, 0.25),
                       edgecolor="fd",
                       show_vertices=False,
                       vertexsize=0.5,
                       show_reactions=True,
-                      show_loads=True
+                      show_loads=True,
+                      fuse=True
                       )
 
 # warm start model

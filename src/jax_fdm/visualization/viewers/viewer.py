@@ -1,13 +1,13 @@
-from compas.datastructures import Graph
-
 from compas_viewer import Viewer as CompasViewer
 from compas_viewer.config import Config
 from compas_viewer.config import RendererConfig
 from compas_viewer.config import WindowConfig
 
+from compas.datastructures import Graph
 from jax_fdm.datastructures import FDMesh
 from jax_fdm.datastructures import FDNetwork
 from jax_fdm.visualization.viewers.buffer_manager import FastBufferManager
+from jax_fdm.visualization.viewers.scene_objects import FDObject
 
 __all__ = ["Viewer"]
 
@@ -49,6 +49,7 @@ class Viewer(CompasViewer):
         super().__init__(config=config, **kwargs)
         # Swap in the vectorized buffer manager before any GL buffers exist.
         self.renderer.buffer_manager = FastBufferManager()
+        self._warned_unfused_on = False
 
     def clear(self):
         """
@@ -84,6 +85,24 @@ class Viewer(CompasViewer):
             super().show()
         finally:
             self.running = False
+
+    def on(self, interval, frames=None):
+        """
+        Decorate a frame callback for the animation loop.
+
+        Warns once when per-element scene objects are in the scene: their
+        buffers update one by one with a full-buffer index lookup each, per
+        frame, so animation slows quadratically with element count. Re-add
+        the datastructure with ``fuse=True`` to animate on batched soups.
+        """
+        if not self._warned_unfused_on:
+            if any(isinstance(obj, FDObject) for obj in self.scene.objects):
+                print("Animating per-element scene objects updates every element buffer "
+                      "one by one, each frame; re-add with viewer.add(..., fuse=True) "
+                      "to animate on batched soups instead.")
+                self._warned_unfused_on = True
+
+        return super().on(interval, frames)
 
     def add(self, data, **kwargs):
         """
