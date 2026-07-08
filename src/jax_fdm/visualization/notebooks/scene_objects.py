@@ -5,11 +5,25 @@ from compas_notebook.scene import ThreeSceneObject
 from compas.scene import register
 from jax_fdm.datastructures import FDMesh
 from jax_fdm.datastructures import FDNetwork
-from jax_fdm.visualization import style
 from jax_fdm.visualization.buffers import arrows_buffer
 from jax_fdm.visualization.buffers import cylinders_buffer
 from jax_fdm.visualization.buffers import soup_colors_rgb
 from jax_fdm.visualization.buffers import spheres_buffer
+from jax_fdm.visualization.style import ARROW_BODYWIDTH
+from jax_fdm.visualization.style import ARROW_HEADPORTION
+from jax_fdm.visualization.style import ARROW_HEADWIDTH
+from jax_fdm.visualization.style import COLOR_LOAD
+from jax_fdm.visualization.style import LOAD_SCALE
+from jax_fdm.visualization.style import LOAD_TOL
+from jax_fdm.visualization.style import REACTION_SCALE
+from jax_fdm.visualization.style import REACTION_TOL
+from jax_fdm.visualization.style import edge_colors
+from jax_fdm.visualization.style import edge_widths
+from jax_fdm.visualization.style import load_arrows
+from jax_fdm.visualization.style import point_colors
+from jax_fdm.visualization.style import point_sizes
+from jax_fdm.visualization.style import reaction_arrows
+from jax_fdm.visualization.style import reaction_color_default
 
 __all__ = ["ThreeFDDatastructureObject",
            "ThreeFDNetworkObject",
@@ -72,21 +86,21 @@ class ThreeFDDatastructureObject(ThreeSceneObject):
         # The point-edge adjacency is cached once at construction, so drawing
         # never re-derives it from the datastructure (Mesh.vertex_edges scans
         # all mesh edges per call).
-        self._adjacency = {point: list(self.point_edges(point)) for point in self.points}
+        self.adjacency = {point: list(self.point_edges(point)) for point in self.points}
 
-        self._pointcolor = pointcolor
-        self._edgecolor = edgecolor
-        self._pointsize = pointsize
-        self._edgewidth = edgewidth
-        self._show_supports = show_supports if show_supports is not None else True
+        self.pointcolor_spec = pointcolor
+        self.edgecolor_spec = edgecolor
+        self.pointsize_spec = pointsize
+        self.edgewidth_spec = edgewidth
+        self.show_supports = show_supports if show_supports is not None else True
 
-        self.load_color = loadcolor or style.COLOR_LOAD
-        self.load_scale = loadscale or style.LOAD_SCALE
-        self.load_tol = loadtol or style.LOAD_TOL
+        self.load_color = loadcolor or COLOR_LOAD
+        self.load_scale = loadscale or LOAD_SCALE
+        self.load_tol = loadtol or LOAD_TOL
 
-        self.reaction_color = reactioncolor or style.reaction_color_default(edgecolor)
-        self.reaction_scale = reactionscale or style.REACTION_SCALE
-        self.reaction_tol = reactiontol or style.REACTION_TOL
+        self.reaction_color = reactioncolor or reaction_color_default(edgecolor)
+        self.reaction_scale = reactionscale or REACTION_SCALE
+        self.reaction_tol = reactiontol or REACTION_TOL
 
         self.show_points = bool(show_points)
         self.show_edges = show_edges if show_edges is not None else True
@@ -125,12 +139,12 @@ class ThreeFDDatastructureObject(ThreeSceneObject):
         """
         datastructure = self.datastructure
 
-        edge_width = style.edge_widths(datastructure, self.edges, self._edgewidth)
+        edge_width = edge_widths(datastructure, self.edges, self.edgewidth_spec)
 
         guids = []
 
         if self.show_edges:
-            edge_color = style.edge_colors(datastructure, self.edges, self._edgecolor)
+            edge_color = edge_colors(datastructure, self.edges, self.edgecolor_spec)
 
             starts, ends, radii, colors = [], [], [], []
             for edge in self.edges:
@@ -143,9 +157,9 @@ class ThreeFDDatastructureObject(ThreeSceneObject):
             guids.append(self.soup_to_mesh(cylinders_buffer(starts, ends, radii, colors, u=self.shape_u)))
 
         if self.show_points:
-            is_support = self.point_is_support if self._show_supports else (lambda key: False)
-            point_color = style.point_colors(self.points, is_support, self._pointcolor)
-            point_size = style.point_sizes(self.points, self._pointsize)
+            is_support = self.point_is_support if self.show_supports else (lambda key: False)
+            point_color = point_colors(self.points, is_support, self.pointcolor_spec)
+            point_size = point_sizes(self.points, self.pointsize_spec)
 
             centers = [self.point_coordinates(point) for point in self.points]
             radii = [point_size[point] / 2.0 for point in self.points]
@@ -156,22 +170,22 @@ class ThreeFDDatastructureObject(ThreeSceneObject):
         if self.show_loads:
             origins = [self.point_coordinates(point) for point in self.points]
             loads = [self.point_load(point) for point in self.points]
-            clearances = [max((edge_width.get(edge, 0.0) for edge in self._adjacency[point]), default=0.0)
+            clearances = [max((edge_width.get(edge, 0.0) for edge in self.adjacency[point]), default=0.0)
                           for point in self.points]
 
-            anchors, vectors = style.load_arrows(origins, loads, clearances,
-                                                 self.load_scale, self.load_tol)
+            anchors, vectors = load_arrows(origins, loads, clearances,
+                                           self.load_scale, self.load_tol)
             guids.append(self.arrows_to_mesh(anchors, vectors, self.load_color))
 
         if self.show_reactions:
-            points = [point for point in self.points if self._adjacency[point]]
+            points = [point for point in self.points if self.adjacency[point]]
             origins = [self.point_coordinates(point) for point in points]
             reactions = [self.point_reaction(point) for point in points]
-            forces = [[datastructure.edge_force(edge) for edge in self._adjacency[point]]
+            forces = [[datastructure.edge_force(edge) for edge in self.adjacency[point]]
                       for point in points]
 
-            anchors, vectors = style.reaction_arrows(origins, reactions, forces,
-                                                     self.reaction_scale, self.reaction_tol)
+            anchors, vectors = reaction_arrows(origins, reactions, forces,
+                                               self.reaction_scale, self.reaction_tol)
             guids.append(self.arrows_to_mesh(anchors, vectors, self.reaction_color))
 
         self._guids = guids
@@ -184,9 +198,9 @@ class ThreeFDDatastructureObject(ThreeSceneObject):
         """
         colors = [color.rgba] * len(anchors)
         soup = arrows_buffer(anchors, vectors, colors,
-                             head_portion=style.ARROW_HEADPORTION,
-                             head_width=style.ARROW_HEADWIDTH,
-                             body_width=style.ARROW_BODYWIDTH,
+                             head_portion=ARROW_HEADPORTION,
+                             head_width=ARROW_HEADWIDTH,
+                             body_width=ARROW_BODYWIDTH,
                              u=self.arrow_u)
 
         return self.soup_to_mesh(soup)

@@ -45,7 +45,7 @@ class FDObjectSetting(ObjectSetting):
         """
         The title and attribute values of one force density element.
         """
-        parent = obj.fdparent
+        parent = obj.fd_parent
         datastructure = parent.datastructure
         key = obj.key
 

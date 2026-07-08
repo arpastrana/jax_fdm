@@ -75,8 +75,8 @@ MESH_KWARGS = {"show_vertices": True, **STYLE_KWARGS}
 
 
 def category_soups(obj):
-    return {child.name: child._build_soup()
-            for child in obj.children if hasattr(child, "_build_soup")}
+    return {child.name: child.build_soup()
+            for child in obj.children if hasattr(child, "build_soup")}
 
 
 def category_groups(obj):
@@ -90,8 +90,8 @@ def category_candidates(obj):
     """
     return {"Edges": obj.edges,
             obj.points_name: obj.points,
-            "Reactions": obj._reaction_points,
-            "Loads": obj._load_points}
+            "Reactions": obj.reaction_points,
+            "Loads": obj.load_points}
 
 
 def fused_slots(fused_obj):
@@ -121,7 +121,7 @@ def assert_elements_match_fused_slots(unfused_obj, fused_obj):
 
     for name, group in groups.items():
         for child in group.children:
-            positions, colors = child._build_soup()
+            positions, colors = child.build_soup()
             expected_positions, expected_colors = slots[name][child.key]
             np.testing.assert_array_equal(positions, expected_positions, err_msg=child.name)
             np.testing.assert_array_equal(colors, expected_colors, err_msg=child.name)
@@ -229,7 +229,7 @@ def test_unfused_tree_shape(network):
 
     for group in groups.values():
         for child in group.children:
-            assert child.fdparent is obj
+            assert child.fd_parent is obj
 
 
 def test_sidebar_readout_installed_and_populates(network):
@@ -276,6 +276,6 @@ def test_adjacency_is_frozen_and_complete(network, mesh):
         FDNetworkObject(item=network, context="Viewer"),
         FDMeshObject(item=mesh, context="Viewer"),
     ):
-        assert set(obj._adjacency) == set(obj.points)
-        for point, edges in obj._adjacency.items():
+        assert set(obj.adjacency) == set(obj.points)
+        for point, edges in obj.adjacency.items():
             assert sorted(edges) == sorted(obj.point_edges(point))

@@ -4,11 +4,25 @@ from compas_viewer.scene import ViewerSceneObject
 from compas.scene import register
 from jax_fdm.datastructures import FDMesh
 from jax_fdm.datastructures import FDNetwork
-from jax_fdm.visualization import style
 from jax_fdm.visualization.buffers import arrows_buffer
 from jax_fdm.visualization.buffers import cylinders_buffer
 from jax_fdm.visualization.buffers import soup_indices
 from jax_fdm.visualization.buffers import spheres_buffer
+from jax_fdm.visualization.style import ARROW_BODYWIDTH
+from jax_fdm.visualization.style import ARROW_HEADPORTION
+from jax_fdm.visualization.style import ARROW_HEADWIDTH
+from jax_fdm.visualization.style import COLOR_LOAD
+from jax_fdm.visualization.style import LOAD_SCALE
+from jax_fdm.visualization.style import LOAD_TOL
+from jax_fdm.visualization.style import REACTION_SCALE
+from jax_fdm.visualization.style import REACTION_TOL
+from jax_fdm.visualization.style import edge_colors
+from jax_fdm.visualization.style import edge_widths
+from jax_fdm.visualization.style import load_arrows as style_load_arrows
+from jax_fdm.visualization.style import point_colors
+from jax_fdm.visualization.style import point_sizes
+from jax_fdm.visualization.style import reaction_arrows as style_reaction_arrows
+from jax_fdm.visualization.style import reaction_color_default
 
 __all__ = ["FDDatastructureObject",
            "FDNetworkObject",
@@ -46,7 +60,7 @@ class FDBufferObject(ViewerSceneObject):
                          show_points=False, show_lines=False, **kwargs)
         self._soup = None
 
-    def _build_soup(self):
+    def build_soup(self):
         """
         Batch the category into (positions, colors) soup arrays.
 
@@ -56,14 +70,14 @@ class FDBufferObject(ViewerSceneObject):
         raise NotImplementedError
 
     def _read_frontfaces_data(self):
-        self._soup = self._build_soup()
+        self._soup = self.build_soup()
         positions, colors = self._soup
         return positions, colors, soup_indices(self._soup)
 
     def _read_backfaces_data(self):
         # The buffer managers always read the front faces first, so the soup
         # computed there is reused with flipped winding.
-        soup = self._soup if self._soup is not None else self._build_soup()
+        soup = self._soup if self._soup is not None else self.build_soup()
         positions, colors = soup
         return positions, colors, soup_indices(soup, flipped=True)
 
@@ -73,7 +87,7 @@ class FDEdgesObject(FDBufferObject):
     The edges of a force density datastructure, batched as cylinders.
     """
 
-    def _build_soup(self):
+    def build_soup(self):
         parent = self.parent
         datastructure = parent.datastructure
 
@@ -93,7 +107,7 @@ class FDPointsObject(FDBufferObject):
     The points (nodes or vertices) of a force density datastructure, batched as spheres.
     """
 
-    def _build_soup(self):
+    def build_soup(self):
         parent = self.parent
 
         centers, radii, colors = [], [], []
@@ -111,14 +125,14 @@ class FDArrowsObject(FDBufferObject):
     """
     arrows_attr = None
 
-    def _build_soup(self):
+    def build_soup(self):
         parent = self.parent
         anchors, vectors, colors = getattr(parent, self.arrows_attr)()
 
         return arrows_buffer(anchors, vectors, colors,
-                             head_portion=style.ARROW_HEADPORTION,
-                             head_width=style.ARROW_HEADWIDTH,
-                             body_width=style.ARROW_BODYWIDTH,
+                             head_portion=ARROW_HEADPORTION,
+                             head_width=ARROW_HEADWIDTH,
+                             body_width=ARROW_BODYWIDTH,
                              u=parent.arrow_u)
 
 
@@ -174,7 +188,7 @@ class FDObject(FDBufferObject):
         self.key = key
 
     @property
-    def fdparent(self):
+    def fd_parent(self):
         # The element sits under a category group under the FD parent.
         return self.parent.parent
 
@@ -184,8 +198,8 @@ class FDEdgeObject(FDObject):
     One edge of a force density datastructure, as a cylinder.
     """
 
-    def _build_soup(self):
-        parent = self.fdparent
+    def build_soup(self):
+        parent = self.fd_parent
         start, end = parent.datastructure.edge_coordinates(self.key)
 
         return cylinders_buffer([start], [end],
@@ -199,8 +213,8 @@ class FDPointObject(FDObject):
     One point (node or vertex) of a force density datastructure, as a sphere.
     """
 
-    def _build_soup(self):
-        parent = self.fdparent
+    def build_soup(self):
+        parent = self.fd_parent
 
         return spheres_buffer([parent.point_coordinates(self.key)],
                               [parent.point_size[self.key] / 2.0],
@@ -214,14 +228,14 @@ class FDArrowObject(FDObject):
     """
     arrow_attr = None
 
-    def _build_soup(self):
-        parent = self.fdparent
+    def build_soup(self):
+        parent = self.fd_parent
         anchor, vector, color = getattr(parent, self.arrow_attr)(self.key)
 
         return arrows_buffer([anchor], [vector], [color],
-                             head_portion=style.ARROW_HEADPORTION,
-                             head_width=style.ARROW_HEADWIDTH,
-                             body_width=style.ARROW_BODYWIDTH,
+                             head_portion=ARROW_HEADPORTION,
+                             head_width=ARROW_HEADWIDTH,
+                             body_width=ARROW_BODYWIDTH,
                              u=parent.arrow_u)
 
 
@@ -312,34 +326,37 @@ class FDDatastructureObject(ViewerSceneObject):
         # point-edge adjacency is cached once so per-frame updates never
         # re-derive it from the datastructure (Mesh.vertex_edges scans all
         # mesh edges per call).
-        self._adjacency = {point: list(self.point_edges(point)) for point in self.points}
+        self.adjacency = {point: list(self.point_edges(point)) for point in self.points}
 
         # Style inputs, kept raw: semantic modes ("force", "fd", (min, max))
-        # are re-derived against the live datastructure on every update.
-        self._pointcolor = pointcolor
-        self._edgecolor = edgecolor
-        self._pointsize = pointsize
-        self._edgewidth = edgewidth
-        self._show_supports = show_supports if show_supports is not None else True
+        # are re-derived against the live datastructure on every update. The
+        # spec suffix keeps them apart from the computed per-element dicts
+        # (edge_color et al.) and from the plain floats the base class owns
+        # (pointsize et al.).
+        self.pointcolor_spec = pointcolor
+        self.edgecolor_spec = edgecolor
+        self.pointsize_spec = pointsize
+        self.edgewidth_spec = edgewidth
+        self.show_supports = show_supports if show_supports is not None else True
 
-        self.load_color = loadcolor or style.COLOR_LOAD
-        self.load_scale = loadscale or style.LOAD_SCALE
-        self.load_tol = loadtol or style.LOAD_TOL
+        self.load_color = loadcolor or COLOR_LOAD
+        self.load_scale = loadscale or LOAD_SCALE
+        self.load_tol = loadtol or LOAD_TOL
 
-        self.reaction_color = reactioncolor or style.reaction_color_default(edgecolor)
-        self.reaction_scale = reactionscale or style.REACTION_SCALE
-        self.reaction_tol = reactiontol or style.REACTION_TOL
+        self.reaction_color = reactioncolor or reaction_color_default(edgecolor)
+        self.reaction_scale = reactionscale or REACTION_SCALE
+        self.reaction_tol = reactiontol or REACTION_TOL
 
         self.edge_color = None
         self.edge_width = None
         self.point_color = None
         self.point_size = None
-        self._recompute()
+        self.recompute()
 
         # Candidate point lists of the arrow categories, frozen so the soup
         # membership never changes across updates.
-        self._load_points = list(self.points)
-        self._reaction_points = [point for point in self.points if self._adjacency[point]]
+        self.load_points = list(self.points)
+        self.reaction_points = [point for point in self.points if self.adjacency[point]]
 
         # One child per shown category: a fused soup, or a group of
         # per-element children. Scene backends may inject explicit None
@@ -353,10 +370,10 @@ class FDDatastructureObject(ViewerSceneObject):
                                self.points, self.point_name)
         if show_reactions or show_reactions is None:
             self._add_category(FDReactionsObject, FDReactionObject, "Reactions",
-                               self._arrow_points("reaction_arrow", self._reaction_points), "Reaction")
+                               self._arrow_points("reaction_arrow", self.reaction_points), "Reaction")
         if show_loads or show_loads is None:
             self._add_category(FDLoadsObject, FDLoadObject, "Loads",
-                               self._arrow_points("load_arrow", self._load_points), "Load")
+                               self._arrow_points("load_arrow", self.load_points), "Load")
 
         if not fuse:
             count = sum(len(child.children) for child in self.children
@@ -422,7 +439,7 @@ class FDDatastructureObject(ViewerSceneObject):
     # Style state
     # ==========================================================================
 
-    def _recompute(self):
+    def recompute(self):
         """
         Derive the per-element style state from the live datastructure.
 
@@ -431,23 +448,23 @@ class FDDatastructureObject(ViewerSceneObject):
         """
         datastructure = self.datastructure
 
-        self.edge_color = style.edge_colors(datastructure, self.edges, self._edgecolor)
-        self.edge_width = style.edge_widths(datastructure, self.edges, self._edgewidth)
+        self.edge_color = edge_colors(datastructure, self.edges, self.edgecolor_spec)
+        self.edge_width = edge_widths(datastructure, self.edges, self.edgewidth_spec)
 
-        is_support = self.point_is_support if self._show_supports else (lambda key: False)
-        self.point_color = style.point_colors(self.points, is_support, self._pointcolor)
-        self.point_size = style.point_sizes(self.points, self._pointsize)
+        is_support = self.point_is_support if self.show_supports else (lambda key: False)
+        self.point_color = point_colors(self.points, is_support, self.pointcolor_spec)
+        self.point_size = point_sizes(self.points, self.pointsize_spec)
 
     def load_arrows(self):
         """
         The anchors, vectors and colors of the load arrows.
         """
-        points = self._load_points
+        points = self.load_points
         origins = [self.point_coordinates(point) for point in points]
         loads = [self.point_load(point) for point in points]
         clearances = [self._point_clearance(point) for point in points]
 
-        anchors, vectors = style.load_arrows(origins, loads, clearances,
+        anchors, vectors = style_load_arrows(origins, loads, clearances,
                                              self.load_scale, self.load_tol)
 
         return anchors, vectors, self._arrow_colors(points, self.load_color)
@@ -456,13 +473,13 @@ class FDDatastructureObject(ViewerSceneObject):
         """
         The anchors, vectors and colors of the reaction arrows.
         """
-        points = self._reaction_points
+        points = self.reaction_points
         origins = [self.point_coordinates(point) for point in points]
         reactions = [self.point_reaction(point) for point in points]
-        forces = [[self.datastructure.edge_force(edge) for edge in self._adjacency[point]]
+        forces = [[self.datastructure.edge_force(edge) for edge in self.adjacency[point]]
                   for point in points]
 
-        anchors, vectors = style.reaction_arrows(origins, reactions, forces,
+        anchors, vectors = style_reaction_arrows(origins, reactions, forces,
                                                  self.reaction_scale, self.reaction_tol)
 
         return anchors, vectors, self._arrow_colors(points, self.reaction_color)
@@ -471,7 +488,7 @@ class FDDatastructureObject(ViewerSceneObject):
         """
         The anchor, vector and color of the load arrow at one point.
         """
-        anchors, vectors = style.load_arrows([self.point_coordinates(point)],
+        anchors, vectors = style_load_arrows([self.point_coordinates(point)],
                                              [self.point_load(point)],
                                              [self._point_clearance(point)],
                                              self.load_scale, self.load_tol)
@@ -482,8 +499,8 @@ class FDDatastructureObject(ViewerSceneObject):
         """
         The anchor, vector and color of the reaction arrow at one point.
         """
-        forces = [self.datastructure.edge_force(edge) for edge in self._adjacency[point]]
-        anchors, vectors = style.reaction_arrows([self.point_coordinates(point)],
+        forces = [self.datastructure.edge_force(edge) for edge in self.adjacency[point]]
+        anchors, vectors = style_reaction_arrows([self.point_coordinates(point)],
                                                  [self.point_reaction(point)],
                                                  [forces],
                                                  self.reaction_scale, self.reaction_tol)
@@ -494,7 +511,7 @@ class FDDatastructureObject(ViewerSceneObject):
         """
         The width of the thickest edge connected to a point.
         """
-        return max((self.edge_width.get(edge, 0.0) for edge in self._adjacency[point]), default=0.0)
+        return max((self.edge_width.get(edge, 0.0) for edge in self.adjacency[point]), default=0.0)
 
     @staticmethod
     def _arrow_colors(points, color):
@@ -514,7 +531,7 @@ class FDDatastructureObject(ViewerSceneObject):
         the style state is re-derived and every category child re-batches
         its soup against the live geometry.
         """
-        self._recompute()
+        self.recompute()
 
         for child in self.children:
             child.update(update_transform=update_transform, update_data=update_data)
