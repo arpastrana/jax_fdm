@@ -278,7 +278,7 @@ if export:
 # Visualization
 # ==========================================================================
 
-viewer = Viewer(width=1600, height=900, show_grid=False)
+viewer = Viewer()
 
 # create mesh from edges
 edge_lines = [network.edge_coordinates(edge) for edge in network.edges()]

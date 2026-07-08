@@ -103,7 +103,7 @@ for vertical_comp in vertical_comps:
 # Instantiate viewer
 # ==========================================================================
 
-viewer = Viewer(width=1600, height=900)
+viewer = Viewer(show_grid=True)
 
 # color map
 cmap = ColorMap.from_mpl("viridis")

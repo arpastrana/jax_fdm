@@ -252,7 +252,7 @@ design.print_stats()
 # Visualization
 # ==========================================================================
 
-viewer = Viewer(width=1600, height=900, show_grid=False)
+viewer = Viewer()
 
 # modify view
 viewer.renderer.camera.zoom(-35)  # number of steps, negative to zoom out

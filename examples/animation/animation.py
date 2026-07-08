@@ -96,7 +96,7 @@ recorder = OptimizationRecorder.from_json(FILE_IN)
 # ==========================================================================
 
 # instantiate viewer
-viewer = Viewer(width=1600, height=900, show_grid=show_grid)
+viewer = Viewer(show_grid=show_grid)
 
 # modify view
 if modify_view:

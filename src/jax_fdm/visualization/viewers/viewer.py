@@ -27,6 +27,8 @@ class Viewer(CompasViewer):
     For convenience it also accepts the ``width``, ``height`` and ``show_grid``
     keyword arguments directly and folds them into a :class:`compas_viewer.config.Config`,
     so the common window setup does not require building a config by hand.
+    The defaults (1200x800, no grid) fit a typical laptop screen and keep the
+    grid from cutting through structures that hang below ``z=0``.
 
     The viewer is a process-wide singleton (a compas_viewer constraint):
     a second ``Viewer()`` call returns the same instance with its constructor
@@ -43,8 +45,8 @@ class Viewer(CompasViewer):
     """
     def __init__(self, width=None, height=None, show_grid=None, config=None, **kwargs):
         if config is None:
-            window = WindowConfig(width=width or 1280, height=height or 720)
-            renderer = RendererConfig(show_grid=show_grid if show_grid is not None else True,
+            window = WindowConfig(width=width or 1200, height=height or 800)
+            renderer = RendererConfig(show_grid=show_grid if show_grid is not None else False,
                                       rendermode="lighted")
             config = Config(window=window, renderer=renderer)
 

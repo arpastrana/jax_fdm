@@ -287,7 +287,7 @@ for config in sweep_configs:
 # Visualization
 # ==========================================================================
 
-viewer = Viewer(width=1600, height=900, show_grid=False)
+viewer = Viewer()
 
 # add all networks except the last one
 networks = list(networks.values())

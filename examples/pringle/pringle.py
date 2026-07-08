@@ -232,7 +232,7 @@ c_network.print_stats()
 # Visualization
 # ==========================================================================
 
-viewer = Viewer(width=1600, height=900, show_grid=False)
+viewer = Viewer()
 
 # optimized network
 viewer.add(c_network,

@@ -56,7 +56,7 @@ eq_network = fdm(network)
 # Visualization
 # ==========================================================================
 
-viewer = Viewer(width=1600, height=900, show_grid=True)
+viewer = Viewer(show_grid=True)
 
 # equilibrated arch
 viewer.add(eq_network, edgewidth=(0.01, 0.1), loadscale=2.0)

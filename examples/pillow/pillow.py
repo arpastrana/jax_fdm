@@ -227,7 +227,7 @@ for mesh_name, design in meshes.items():
 # Visualization
 # ==========================================================================
 
-viewer = Viewer(width=1600, height=900, show_grid=False)
+viewer = Viewer()
 
 designs = list(meshes.values())
 
