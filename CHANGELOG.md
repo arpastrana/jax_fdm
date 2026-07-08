@@ -41,6 +41,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Fixed `viewer.add(fdnetwork, name="...")` ignoring the `name` keyword for an `FDNetwork` or `FDMesh`. An explicit `name=` now takes precedence over the datastructure's own name in the scene tree.
+- The `Viewer` clamps the requested window size to the available screen geometry, silencing Qt's "window position outside any known screen" warning when a script asks for a window larger than the display. The clamp prints a warning with the resized window dimensions.
 - Fixed the freeze when visualizing several results in a row in one process (e.g. one per step of a sequential optimization). `compas_viewer.Viewer` is a process-wide singleton whose `running` flag survives closing the window, so every `scene.add` after the first `show()` triggered a full buffer and scene-tree rebuild over the accumulated objects (quadratic slowdown, or a crash against the dead GL context). The supported pattern is now to reuse one `Viewer` across shows: the new `viewer.clear()` empties the scene (including the picking-color registrations the parent never prunes) between shows, and `show()` rebuilds the GL render buffers on a re-show and resets `running` on return, so between-show adds stay lightweight. Sequential scripts construct the viewer once and run `clear()`/`add()`/`show()` per step; the camera carries over between steps.
 
 ### Removed

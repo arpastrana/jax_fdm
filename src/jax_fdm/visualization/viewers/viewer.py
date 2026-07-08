@@ -63,6 +63,18 @@ class Viewer(CompasViewer):
         self.renderer.buffer_manager = FastBufferManager()
         self._warned_unfused_on = False
 
+        # Clamp the window to the screen: the upstream centering math places
+        # an oversized window at a negative origin, which Qt warns about and
+        # snaps back to the primary screen.
+        rect = self.app.primaryScreen().availableGeometry()
+        window = self.config.window
+        if window.width > rect.width() or window.height > rect.height():
+            width, height = window.width, window.height
+            window.width = min(width, rect.width())
+            window.height = min(height, rect.height())
+            print(f"WARNING: The window size {width}x{height} exceeds the available "
+                  f"screen space. Resizing the window to {window.width}x{window.height}")
+
     def clear(self):
         """
         Empty the scene for the next round of adds.
