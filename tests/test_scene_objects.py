@@ -248,9 +248,10 @@ def test_sidebar_readout_installed_and_populates(network):
         setting.update()
         form = setting.children[0]
         nodes = [node for node in form.tree.traverse() if not node.is_root]
-        assert nodes[0].name == "Edge (0, 1)"
+        assert nodes[0].name == "Edge"
         attributes = {node.name: node.attributes.get("value") for node in nodes[1:]}
-        assert set(attributes) == {"q", "force", "length"}
+        assert set(attributes) == {"key", "q", "force", "length"}
+        assert attributes["key"] == "(0, 1)"
         assert attributes["q"] == "-1"
     finally:
         edge_child.is_selected = False

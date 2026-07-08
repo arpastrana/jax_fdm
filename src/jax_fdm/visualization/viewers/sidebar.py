@@ -50,26 +50,43 @@ class FDObjectSetting(ObjectSetting):
         key = obj.key
 
         if isinstance(obj, FDEdgeObject):
-            return f"Edge {key}", {"q": f"{datastructure.edge_forcedensity(key):.4g}",
-                                   "force": f"{datastructure.edge_force(key):.4g}",
-                                   "length": f"{datastructure.edge_length(key):.4g}"}
+            attrs = {
+                "key": f"{key}",
+                "q": f"{datastructure.edge_forcedensity(key):.4g}",
+                "force": f"{datastructure.edge_force(key):.4g}",
+                "length": f"{datastructure.edge_length(key):.4g}"
+            }
+            return "Edge", attrs
 
         if isinstance(obj, FDPointObject):
             x, y, z = parent.point_coordinates(key)
-            return f"{parent.point_name} {key}", {"xyz": f"({x:.4g}, {y:.4g}, {z:.4g})",
-                                                  "support": f"{parent.point_is_support(key)}",
-                                                  "load": _vector_value(parent.point_load(key)),
-                                                  "reaction": _vector_value(parent.point_reaction(key))}
+            px, py, pz = parent.point_load(key)
+            rx, ry, rz = parent.point_reaction(key)
+            attrs = {
+                "key": f"{key}",
+                "xyz": f"({x:.4g}, {y:.4g}, {z:.4g})",
+                "support": f"{parent.point_is_support(key)}",
+                "load": f"({px:.4g}, {py:.4g}, {pz:.4g})",
+                "reaction": f"({rx:.4g}, {ry:.4g}, {rz:.4g})"
+            }
+            return parent.point_name, attrs
 
         if isinstance(obj, FDLoadObject):
-            return f"Load ({key})", {"vector": _vector_value(parent.point_load(key))}
+            x, y, z = parent.point_load(key)
+            attrs = {
+                "key": f"{key}",
+                "vector": f"({x:.4g}, {y:.4g}, {z:.4g})",
+                "norm": f"{length_vector((x, y, z)):.4g}"
+            }
+            return "Load", attrs
 
         if isinstance(obj, FDReactionObject):
-            return f"Reaction ({key})", {"vector": _vector_value(parent.point_reaction(key))}
+            x, y, z = parent.point_reaction(key)
+            attrs = {
+                "key": f"{key}",
+                "vector": f"({x:.4g}, {y:.4g}, {z:.4g})",
+                "norm": f"{length_vector((x, y, z)):.4g}"
+            }
+            return "Reaction", attrs
 
         return obj.name, {}
-
-
-def _vector_value(vector):
-    x, y, z = vector
-    return f"({x:.4g}, {y:.4g}, {z:.4g}), norm: {length_vector(vector):.4g}"
