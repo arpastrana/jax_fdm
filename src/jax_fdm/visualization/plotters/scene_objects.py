@@ -8,6 +8,7 @@ from matplotlib.collections import LineCollection
 from matplotlib.collections import PatchCollection
 from matplotlib.patches import FancyArrow
 
+from compas.colors import Color
 from compas.scene import register
 from jax_fdm.datastructures import FDMesh
 from jax_fdm.datastructures import FDNetwork
@@ -145,6 +146,14 @@ class FDPlotterObject(PlotterSceneObject):
     def point_is_support(self, key):
         raise NotImplementedError
 
+    def point_marker_radius(self):
+        """
+        The radius of the point markers in data units, for the arrow clearance.
+
+        Zero when the markers are hidden, so the arrows touch the bare points.
+        """
+        raise NotImplementedError
+
     # ==========================================================================
     # Style
     # ==========================================================================
@@ -163,8 +172,12 @@ class FDPlotterObject(PlotterSceneObject):
         self.edge_width = edge_widths(datastructure, self.edges, width)
         self.edgecolor = edge_colors(datastructure, self.edges, self.edgecolor_spec)
 
+        # Free points default to white on the plotter, matching the white
+        # markers of the compas_plotters canvas rather than the grey of the
+        # shaded 3D backends.
         is_support = self.point_is_support if self.show_supports else (lambda key: False)
-        setattr(self, self.point_color_attr, point_colors(self.points, is_support, self.pointcolor_spec))
+        colors = point_colors(self.points, is_support, self.pointcolor_spec, default=Color.white())
+        setattr(self, self.point_color_attr, colors)
 
     # ==========================================================================
     # Draw
@@ -256,24 +269,30 @@ class FDPlotterObject(PlotterSceneObject):
     def _load_arrow_data(self):
         """
         The anchor and vector of the load arrow at every point.
+
+        The arrows clear the point markers by their radius.
         """
         origins = [self.point_coordinates(point) for point in self.points]
         loads = [self.point_load(point) for point in self.points]
-        clearances = [0.0] * len(origins)
+        clearances = [self.point_marker_radius()] * len(origins)
 
         return load_arrows(origins, loads, clearances, self.load_scale, self.load_tol)
 
     def _reaction_arrow_data(self):
         """
         The anchor and vector of the reaction arrow at every connected point.
+
+        The arrows clear the point markers by their radius.
         """
         points = [point for point in self.points if self.adjacency[point]]
         origins = [self.point_coordinates(point) for point in points]
         reactions = [self.point_reaction(point) for point in points]
         forces = [[self.datastructure.edge_force(edge) for edge in self.adjacency[point]]
                   for point in points]
+        clearances = [self.point_marker_radius()] * len(origins)
 
-        return reaction_arrows(origins, reactions, forces, self.reaction_scale, self.reaction_tol)
+        return reaction_arrows(origins, reactions, forces, self.reaction_scale, self.reaction_tol,
+                               clearances=clearances)
 
 
 class FDNetworkPlotterObject(FDPlotterObject, GraphObject):
@@ -322,6 +341,11 @@ class FDNetworkPlotterObject(FDPlotterObject, GraphObject):
 
     def point_is_support(self, key):
         return self.datastructure.is_node_support(key)
+
+    def point_marker_radius(self):
+        if not self.show_nodes:
+            return 0.0
+        return self._node_radius()
 
 
 class FDMeshPlotterObject(FDPlotterObject, MeshObject):
@@ -373,6 +397,13 @@ class FDMeshPlotterObject(FDPlotterObject, MeshObject):
 
     def point_is_support(self, key):
         return self.datastructure.is_vertex_support(key)
+
+    def point_marker_radius(self):
+        # Mirrors the radius of the vertex circles drawn by the
+        # compas_plotters mesh scene object.
+        if not self.show_vertices:
+            return 0.0
+        return self.vertexsize / self.plotter.dpi
 
 
 def register_plotter_scene_objects():

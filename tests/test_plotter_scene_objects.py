@@ -18,6 +18,7 @@ from compas_plotters.scene import MeshObject  # noqa: E402
 from matplotlib.collections import LineCollection  # noqa: E402
 from matplotlib.collections import PatchCollection  # noqa: E402
 
+from compas.colors import Color  # noqa: E402
 from compas.datastructures import Graph  # noqa: E402
 from compas.datastructures import Mesh  # noqa: E402
 from jax_fdm.datastructures import FDMesh  # noqa: E402
@@ -181,6 +182,85 @@ def test_support_nodes_are_green(plotter, network):
         assert obj.nodecolor[node] == expected
     assert obj.nodecolor[0] == COLOR_SUPPORT
     assert obj.nodecolor[1] != COLOR_SUPPORT
+
+
+# ==========================================================================
+# Point colors
+# ==========================================================================
+
+def test_free_points_default_white(plotter, network):
+    obj = plotter.add(network, show_nodes=True)
+
+    assert obj.nodecolor[1] == Color.white()
+
+
+def test_point_colors_default_stays_grey_without_override():
+    # the 3D backends call point_colors without a default and must keep grey
+    from jax_fdm.visualization.style import COLOR_POINT
+    from jax_fdm.visualization.style import point_colors
+
+    colors = point_colors([0, 1], is_support=lambda key: False)
+    assert colors == {0: COLOR_POINT, 1: COLOR_POINT}
+
+
+# ==========================================================================
+# Arrow clearance
+# ==========================================================================
+
+def load_tips(obj):
+    anchors, vectors = obj._load_arrow_data()
+    return [tuple(a + v for a, v in zip(anchor, vector))
+            for anchor, vector in zip(anchors, vectors)]
+
+
+def test_load_arrows_clear_the_node_markers(plotter, network):
+    obj = plotter.add(network, show_nodes=True)
+    radius = obj.point_marker_radius()
+    assert radius > 0.0
+
+    node = 1
+    xyz = network.node_coordinates(node)
+    tip = load_tips(obj)[node]
+    gap = sum((a - b) ** 2 for a, b in zip(tip, xyz)) ** 0.5
+    assert gap == pytest.approx(radius)
+
+
+def test_load_arrows_touch_hidden_nodes(plotter, network):
+    obj = plotter.add(network, show_nodes=False)
+    assert obj.point_marker_radius() == 0.0
+
+    node = 1
+    xyz = network.node_coordinates(node)
+    assert load_tips(obj)[node] == pytest.approx(xyz)
+
+
+def test_reaction_arrows_clear_the_node_markers(plotter, network):
+    obj = plotter.add(network, show_nodes=True)
+    radius = obj.point_marker_radius()
+
+    # the arch is compressive: the reaction tip points at the support and
+    # must stop one marker radius short of it
+    anchors, vectors = obj._reaction_arrow_data()
+    xyz = network.node_coordinates(0)
+    tip = tuple(a + v for a, v in zip(anchors[0], vectors[0]))
+    gap = sum((a - b) ** 2 for a, b in zip(tip, xyz)) ** 0.5
+    assert gap == pytest.approx(radius)
+
+
+def test_reaction_arrows_default_clearance_is_zero():
+    # the 3D backends call reaction_arrows without clearances and must get
+    # the unshifted anchors, for tension and compression alike
+    from jax_fdm.visualization.style import reaction_arrows
+
+    origins = [(0.0, 0.0, 0.0), (5.0, 0.0, 0.0)]
+    reactions = [(1.0, 0.0, 0.0), (-2.0, 0.0, 0.0)]
+    forces = [[1.0], [-1.0]]  # one tension point, one compression point
+
+    anchors, vectors = reaction_arrows(origins, reactions, forces, scale=1.0, tol=1e-3)
+
+    assert tuple(anchors[0]) == origins[0]  # tension: anchored at the point
+    assert tuple(anchors[1]) == (3.0, 0.0, 0.0)  # compression: shifted out by the scaled vector
+    assert [tuple(vector) for vector in vectors] == [(-1.0, 0.0, 0.0), (2.0, 0.0, 0.0)]
 
 
 # ==========================================================================
