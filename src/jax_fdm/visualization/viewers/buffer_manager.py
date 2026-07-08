@@ -1,4 +1,5 @@
 import numpy as np
+
 from compas_viewer.gl import update_vertex_buffer
 from compas_viewer.scene.buffermanager import BufferManager
 

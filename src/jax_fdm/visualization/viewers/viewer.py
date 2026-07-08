@@ -1,9 +1,10 @@
+from compas.datastructures import Graph
+
 from compas_viewer import Viewer as CompasViewer
 from compas_viewer.config import Config
 from compas_viewer.config import RendererConfig
 from compas_viewer.config import WindowConfig
 
-from compas.datastructures import Graph
 from jax_fdm.datastructures import FDMesh
 from jax_fdm.datastructures import FDNetwork
 from jax_fdm.visualization.viewers.buffer_manager import FastBufferManager

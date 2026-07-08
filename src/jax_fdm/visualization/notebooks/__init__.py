@@ -6,16 +6,13 @@ from jax_fdm.visualization.backends import null_viewer
 if has_backend("compas_notebook"):
     from compas.scene.context import register_scene_objects
 
+    from .viewer import *  # noqa F403
     from .scene_objects import *  # noqa F403
     from .scene_objects import register_notebook_scene_objects
-    from .viewer import *  # noqa F403
 
-    # The built-in plugin discovery must run first: compas only auto-discovers
-    # scene objects when its registry is empty, so registering the force
-    # density types into a fresh registry would permanently mask every
-    # built-in type. jax_fdm also cannot register through the plugin system
-    # itself, because discovery only scans packages whose name starts with
-    # "compas".
+    # Built-in plugin discovery must run first: compas only auto-discovers into
+    # an empty registry, and jax_fdm cannot register via plugins (discovery
+    # scans only compas* packages).
     register_scene_objects()
     register_notebook_scene_objects()
 else:

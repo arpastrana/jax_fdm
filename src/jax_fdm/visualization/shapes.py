@@ -30,7 +30,6 @@ class Arrow(Shape):
         self.head_portion = head_portion
         self.head_width = head_width
         self.body_width = body_width
-        # An arrow is a slender shape; the base Shape default of 16 oversamples it.
         self.resolution_u = 8
 
     # ==========================================================================
@@ -98,19 +97,17 @@ class Arrow(Shape):
         head_vector = self.direction * self.head_portion
         head_base = self.position + self.direction - head_vector
 
-        # Body of the arrow (a cylinder from the start up to the head base).
+        # Body of the arrow (a cylinder from the start up to the head base)
         body_line = Line(self.position, head_base)
         cylinder = Cylinder.from_line_and_radius(body_line, self.body_width * length)
         vertices, faces = cylinder.to_vertices_and_faces(u=u, triangulated=triangulated)
 
-        # Head of the arrow (a cone from the head base up to the tip).
-        # ``Cone.from_line_and_radius`` centers the base circle on the line
-        # midpoint and puts the apex a full length beyond, so the axis line is
-        # centered on ``head_base`` to seat the base there and the tip at the end.
+        # Head of the arrow (a cone from the head base up to the tip)
         head_line = Line(head_base - head_vector * 0.5, head_base + head_vector * 0.5)
         cone = Cone.from_line_and_radius(head_line, self.head_width * length)
         head_vertices, head_faces = cone.to_vertices_and_faces(u=u, triangulated=triangulated)
 
+        # Manually join the vertices and faces of the body and the head
         offset = len(vertices)
         vertices += head_vertices
         faces += [[index + offset for index in face] for face in head_faces]

@@ -1,7 +1,8 @@
+from compas.scene import register
+
 from compas_viewer.scene import MeshObject
 from compas_viewer.scene import ViewerSceneObject
 
-from compas.scene import register
 from jax_fdm.datastructures import FDMesh
 from jax_fdm.datastructures import FDNetwork
 from jax_fdm.visualization import style
@@ -20,7 +21,7 @@ __all__ = ["FDDatastructureObject",
 # Category children
 # ==========================================================================
 
-class _FDBufferObject(ViewerSceneObject):
+class FDBufferObject(ViewerSceneObject):
     """
     A category child that batches one element category into a triangle soup.
 
@@ -66,7 +67,7 @@ class _FDBufferObject(ViewerSceneObject):
         return positions, colors, soup_indices(soup, flipped=True)
 
 
-class _FDEdgesObject(_FDBufferObject):
+class FDEdgesObject(FDBufferObject):
     """
     The edges of a force density datastructure, batched as cylinders.
     """
@@ -86,7 +87,7 @@ class _FDEdgesObject(_FDBufferObject):
         return cylinders_buffer(starts, ends, radii, colors, u=parent.shape_u)
 
 
-class _FDPointsObject(_FDBufferObject):
+class FDPointsObject(FDBufferObject):
     """
     The points (nodes or vertices) of a force density datastructure, batched as spheres.
     """
@@ -103,7 +104,7 @@ class _FDPointsObject(_FDBufferObject):
         return spheres_buffer(centers, radii, colors, u=parent.shape_u, v=parent.shape_u)
 
 
-class _FDArrowsObject(_FDBufferObject):
+class FDArrowsObject(FDBufferObject):
     """
     One arrow category (loads or reactions) of a force density datastructure.
     """
@@ -120,11 +121,11 @@ class _FDArrowsObject(_FDBufferObject):
                              u=parent.arrow_u)
 
 
-class _FDLoadsObject(_FDArrowsObject):
+class FDLoadsObject(FDArrowsObject):
     arrows_attr = "load_arrows"
 
 
-class _FDReactionsObject(_FDArrowsObject):
+class FDReactionsObject(FDArrowsObject):
     arrows_attr = "reaction_arrows"
 
 
@@ -227,13 +228,13 @@ class FDDatastructureObject(ViewerSceneObject):
         # explicit None values for the show flags, which mean "default".
         opacity = self.default_opacity
         if show_edges or show_edges is None:
-            self.add(_FDEdgesObject(name="Edges", opacity=opacity))
+            self.add(FDEdgesObject(name="Edges", opacity=opacity))
         if show_nodes:
-            self.add(_FDPointsObject(name=self.points_name, opacity=opacity))
+            self.add(FDPointsObject(name=self.points_name, opacity=opacity))
         if show_reactions or show_reactions is None:
-            self.add(_FDReactionsObject(name="Reactions", opacity=opacity))
+            self.add(FDReactionsObject(name="Reactions", opacity=opacity))
         if show_loads or show_loads is None:
-            self.add(_FDLoadsObject(name="Loads", opacity=opacity))
+            self.add(FDLoadsObject(name="Loads", opacity=opacity))
 
     # ==========================================================================
     # Point vocabulary
