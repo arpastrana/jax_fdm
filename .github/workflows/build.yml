@@ -32,8 +32,14 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
 
+      # PySide6 (via compas_viewer) links against system GL libraries that the
+      # headless Linux runners do not ship.
+      - name: Install GL libraries
+        if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y libegl1 libopengl0
+
       - name: Install package
-        run: pip install -e ".[dev]"
+        run: pip install -e ".[dev,viz]"
 
       - name: Lint with ruff
         run: ruff check .
