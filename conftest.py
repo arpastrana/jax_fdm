@@ -21,7 +21,5 @@ if not has_backend("compas_notebook"):
     collect_ignore.append("src/jax_fdm/visualization/notebooks")
 
 if not has_backend("compas_plotters"):
-    collect_ignore.append("src/jax_fdm/visualization/plotters/network_artist.py")
-    collect_ignore.append("src/jax_fdm/visualization/plotters/vector_artist.py")
+    collect_ignore.append("src/jax_fdm/visualization/plotters/scene_objects.py")
     collect_ignore.append("src/jax_fdm/visualization/plotters/plotter.py")
-    collect_ignore.append("src/jax_fdm/visualization/plotters/register.py")
