@@ -133,7 +133,7 @@ def edge_widths(datastructure, edges, width=None):
 # Point styling
 # ==========================================================================
 
-def point_colors(points, is_support, color=None):
+def point_colors(points, is_support, color=None, default=None):
     """
     Map every point to a color, defaulting supports to green.
 
@@ -143,6 +143,9 @@ def point_colors(points, is_support, color=None):
         The support predicate of the datastructure.
     color : :class:`compas.colors.Color` | dict, optional
         A single color to broadcast or a per-point dict.
+    default : :class:`compas.colors.Color`, optional
+        The fallback color of the free points when no `color` is given,
+        for backends whose canvas asks for something other than the grey.
     """
     if isinstance(color, dict):
         return color
@@ -150,7 +153,9 @@ def point_colors(points, is_support, color=None):
     if isinstance(color, Color):
         return {point: color for point in points}
 
-    return {point: COLOR_SUPPORT if is_support(point) else COLOR_POINT for point in points}
+    default = default if default is not None else COLOR_POINT
+
+    return {point: COLOR_SUPPORT if is_support(point) else default for point in points}
 
 
 def point_sizes(points, size=None):
@@ -229,7 +234,7 @@ def load_arrows(origins, loads, clearances, scale, tol):
     return anchors, vectors
 
 
-def reaction_arrows(origins, reactions, forces, scale, tol):
+def reaction_arrows(origins, reactions, forces, scale, tol, clearances=None):
     """
     Compute the anchor and vector of the reaction arrow at every point.
 
@@ -250,25 +255,39 @@ def reaction_arrows(origins, reactions, forces, scale, tol):
     forces : list of lists of float
         The forces of the edges connected to every point, aligned with
         ``origins``.
+    clearances : list of float, optional
+        The gap to keep between the arrow and its point (mirroring the
+        clearance of :func:`load_arrows`), aligned with ``origins``: the
+        arrow shifts along its drawn direction so its point-touching end
+        (the tail under tension, the tip under compression) stops that far
+        short of the point. Defaults to no gap.
 
     Returns
     -------
     (anchors, vectors)
         Lists of xyz triplets, aligned with ``origins``.
     """
+    if clearances is None:
+        clearances = [0.0] * len(origins)
+
     anchors, vectors = [], []
 
-    for xyz, vector, edge_forces in zip(origins, reactions, forces):
+    for xyz, vector, edge_forces, clearance in zip(origins, reactions, forces, clearances):
         if length_vector(vector) < tol or not edge_forces:
             anchors.append(xyz)
             vectors.append((0.0, 0.0, 0.0))
             continue
 
         start = xyz
+        drawn = scale_vector(vector, -scale)
         if max(edge_forces, key=fabs) < 0.0:
             start = add_vectors(start, scale_vector(vector, scale))
+            if clearance:
+                start = add_vectors(start, scale_vector(normalize_vector(drawn), -clearance))
+        elif clearance:
+            start = add_vectors(start, scale_vector(normalize_vector(drawn), clearance))
 
         anchors.append(start)
-        vectors.append(scale_vector(vector, -scale))
+        vectors.append(drawn)
 
     return anchors, vectors

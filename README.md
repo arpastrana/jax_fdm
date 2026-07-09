@@ -69,6 +69,12 @@ pip install -e ".[dev]"     # development tools (ruff, pytest, pre-commit, build
 The `ipopt` extra needs a system Ipopt library available on your machine.
 In a Jupyter notebook, use `from jax_fdm.visualization import NotebookViewer` to display structures inline.
 
+For 2D matplotlib plots, install the standalone [compas_plotters](https://github.com/compas-dev/compas_plotters) (not on PyPI yet, hence not part of the `viz` extra):
+
+```bash
+pip install git+https://github.com/compas-dev/compas_plotters
+```
+
 ### Are you a Windows user?
 
 JAX now provides official native CPU wheels for Windows, so JAX FDM should work directly.
