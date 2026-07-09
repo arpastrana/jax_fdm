@@ -2,7 +2,7 @@ import jax.numpy as jnp
 import numpy as np
 from jax import vmap
 
-from jax_fdm.geometry import cosine_vectors
+from jax_fdm.geometry import angle_vectors
 from jax_fdm.geometry import normal_polygon
 from jax_fdm.geometry import normalize_vector
 from jax_fdm.goals import ScalarGoal
@@ -99,10 +99,8 @@ class VertexNormalAngleGoal(ScalarGoal, VertexGoal):
         """
         normal = self.vertex_normal(eqstate, index)
 
-        # signed cosine keeps the angle covariant with the normal's orientation,
-        # which the winding of the incident faces determines. Clip guards the
-        # arccos value and gradient, which are singular when the vectors align.
-        cosine = cosine_vectors(normal, self.vector[index, :])
-        angle = jnp.arccos(jnp.clip(cosine, -1.0, 1.0))
+        # the signed angle is covariant with the normal's orientation, which
+        # the winding of the incident faces determines
+        angle = angle_vectors(normal, self.vector[index, :])
 
         return jnp.atleast_1d(angle)

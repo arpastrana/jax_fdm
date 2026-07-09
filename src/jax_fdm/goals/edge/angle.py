@@ -1,7 +1,7 @@
 import jax.numpy as jnp
 import numpy as np
 
-from jax_fdm.geometry import cosine_vectors
+from jax_fdm.geometry import angle_vectors
 from jax_fdm.goals import ScalarGoal
 from jax_fdm.goals.edge import EdgeGoal
 
@@ -45,9 +45,4 @@ class EdgeAngleGoal(ScalarGoal, EdgeGoal):
         """
         vector = eq_state.vectors[index, :]
 
-        # clip guards the arccos value and gradient, which are singular when
-        # the edge is parallel to the reference vector
-        cosine = cosine_vectors(vector, self.vector[index, :])
-        angle = jnp.arccos(jnp.clip(cosine, -1.0, 1.0))
-
-        return jnp.atleast_1d(angle)
+        return jnp.atleast_1d(angle_vectors(vector, self.vector[index, :]))

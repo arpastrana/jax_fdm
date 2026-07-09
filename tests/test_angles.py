@@ -1,5 +1,5 @@
 """
-Unit tests for angles_polygon.
+Unit tests for angle_vectors and angles_polygon.
 """
 from itertools import cycle
 
@@ -11,6 +11,7 @@ from compas.geometry import Polygon
 from compas.geometry import Rotation
 from jax_fdm.datastructures import FDMesh
 from jax_fdm.equilibrium import EquilibriumMeshStructure
+from jax_fdm.geometry import angle_vectors
 from jax_fdm.geometry import angles_polygon
 from jax_fdm.geometry import cosines_angles_polygon
 
@@ -18,6 +19,27 @@ from jax_fdm.geometry import cosines_angles_polygon
 TRIANGLE_ANGLE_RAD = jnp.pi / 3  # 60°
 SQUARE_ANGLE_RAD = jnp.pi / 2   # 90°
 PENTAGON_ANGLE_RAD = 3 * jnp.pi / 5  # 108°
+
+
+def test_angle_vectors_finite_at_exact_parallel():
+    """
+    The angle between parallel and antiparallel vectors is finite.
+
+    In floating point the cosine of two parallel vectors can overshoot 1 by a
+    few ulps, and `arccos` then returns `nan`. The clip inside `angle_vectors`
+    guards the value; every angle goal and constraint funnels through it.
+    The non-unit, axis-skewed vector exercises the normalization round-off
+    that produces the overshoot.
+    """
+    u = jnp.array([0.3, -0.7, 1.9])
+
+    angle_parallel = angle_vectors(u, 2.0 * u)
+    angle_antiparallel = angle_vectors(u, -2.0 * u)
+
+    assert jnp.isfinite(angle_parallel)
+    assert jnp.isfinite(angle_antiparallel)
+    assert jnp.allclose(angle_parallel, 0.0, atol=1e-6)
+    assert jnp.allclose(angle_antiparallel, jnp.pi, atol=1e-6)
 
 
 def test_angles_polygon_triangle():

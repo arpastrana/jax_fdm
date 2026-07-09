@@ -18,9 +18,13 @@ def cosine_vectors(u, v):
 def angle_vectors(u, v, deg=False):
     """
     Compute the smallest angle in degrees between two vectors.
+
+    The cosine is clipped to [-1, 1] before the arccosine, whose value and
+    gradient are singular when the vectors are parallel: in floating point
+    the cosine of two parallel vectors can overshoot 1 by a few ulps.
     """
     cosim = cosine_vectors(u, v)
-    angle = jnp.arccos(cosim)
+    angle = jnp.arccos(jnp.clip(cosim, -1.0, 1.0))
 
     if deg:
         return jnp.degrees(angle)

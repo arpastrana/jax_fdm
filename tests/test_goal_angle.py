@@ -93,9 +93,9 @@ def test_edge_angle_goal_finite_at_exact_parallel(arch_network):
 
     In floating point the cosine of two parallel vectors can overshoot 1 by a
     few ulps, and `arccos` then returns `nan` in the value itself. The clip
-    inside the goal's prediction guards this. Anchoring every node freezes the
-    arch on its initial straight line, so all edges lie exactly along the
-    x axis when the goal is evaluated.
+    inside `angle_vectors` guards this. Anchoring every node freezes the arch
+    on its initial straight line, so all edges lie exactly along the x axis
+    when the goal is evaluated.
     """
     for node in arch_network.nodes():
         arch_network.node_anchor(key=node)
