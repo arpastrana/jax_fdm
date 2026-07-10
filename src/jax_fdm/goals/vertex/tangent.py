@@ -7,7 +7,12 @@ class VertexTangentAngleGoal(VertexNormalAngleGoal):
     """
     Reach a target value for the angle formed by the vertex tangent and a reference vector.
 
-    The vertex tangent is calculated as 90º minus the vertex normal.
+    The tangent angle is calculated as 90 degrees minus the vertex normal
+    angle, so it is signed and spans [-pi / 2, pi / 2]: positive when the
+    vertex normal points within 90 degrees of the reference vector (the
+    surface rises toward it) and negative when the normal is folded away.
+    The sign follows the winding of the mesh faces, which must be unified;
+    see the notes of `VertexNormalAngleGoal`.
     """
     def __init__(self, key, vector, target, weight=1.0):
         super().__init__(key=key, vector=vector, target=target, weight=weight)

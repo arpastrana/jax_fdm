@@ -2,7 +2,7 @@ import jax.numpy as jnp
 import numpy as np
 from jax import vmap
 
-from jax_fdm.geometry import cosine_vectors
+from jax_fdm.geometry import angle_vectors
 from jax_fdm.geometry import normal_polygon
 from jax_fdm.geometry import normalize_vector
 from jax_fdm.goals import ScalarGoal
@@ -18,11 +18,15 @@ class VertexNormalAngleGoal(ScalarGoal, VertexGoal):
     The vertex normal is the unitized average of the normals of the faces
     surrounding the vertex, so this goal only applies to meshes.
 
-    The angle is measured from the absolute cosine, so it lies in [0, pi / 2]
-    and is invariant to the vertex normal's orientation. An averaged vertex
-    normal flips sign with the winding of its incident faces, which is an
-    artifact of how the mesh was built rather than a property of the surface;
-    folding the angle into [0, pi / 2] keeps the goal from chasing that sign.
+    The angle is the arccosine of the signed cosine, so it spans [0, pi] and
+    is covariant with the orientation of the vertex normal: a normal within
+    90 degrees of the reference vector reads as acute, one folded past it as
+    obtuse. Like the edge orientation in `EdgeAngleGoal`, the winding of the
+    mesh faces is treated as data because it sets the normal's orientation.
+    The mesh must therefore have a unified face winding for the averaged
+    vertex normal, and hence the signed angle, to be meaningful. No runtime
+    check is performed; `compas.datastructures.Mesh.unify_cycles` unifies
+    the winding of a mesh upfront if needed.
     """
     def __init__(self, key, vector, target, weight=1.0):
         super().__init__(key=key, target=target, weight=weight)
@@ -95,10 +99,8 @@ class VertexNormalAngleGoal(ScalarGoal, VertexGoal):
         """
         normal = self.vertex_normal(eqstate, index)
 
-        # absolute cosine folds the angle into [0, pi / 2] so the orientation of
-        # the averaged vertex normal (a winding artifact) does not matter. Clip
-        # guards the arccos gradient, which is singular when the vectors align.
-        cosine = jnp.abs(cosine_vectors(normal, self.vector[index, :]))
-        angle = jnp.arccos(jnp.clip(cosine, -1.0, 1.0))
+        # the signed angle is covariant with the normal's orientation, which
+        # the winding of the incident faces determines
+        angle = angle_vectors(normal, self.vector[index, :])
 
         return jnp.atleast_1d(angle)

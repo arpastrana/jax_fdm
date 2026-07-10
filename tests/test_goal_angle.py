@@ -26,6 +26,7 @@ import pytest
 from jax_fdm import DTYPE_JAX
 from jax_fdm.equilibrium import EquilibriumMeshStructure
 from jax_fdm.equilibrium import EquilibriumParametersState
+from jax_fdm.equilibrium import EquilibriumStructure
 from jax_fdm.equilibrium import constrained_fdm
 from jax_fdm.equilibrium.fdm import model_from_sparsity
 from jax_fdm.goals import EdgeAngleGoal
@@ -84,6 +85,41 @@ def test_edge_angle_goal_prediction_shape(arch_network):
                     parameters=[EdgeForceDensityParameter(edge, BOUND_LOW, BOUND_UP)
                                 for edge in edges],
                     maxiter=1)
+
+
+def test_edge_angle_goal_finite_at_exact_parallel(arch_network):
+    """
+    An edge exactly parallel to the reference vector predicts a finite 0 angle.
+
+    In floating point the cosine of two parallel vectors can overshoot 1 by a
+    few ulps, and `arccos` then returns `nan` in the value itself. The clip
+    inside `angle_vectors` guards this. Anchoring every node freezes the arch
+    on its initial straight line, so all edges lie exactly along the x axis
+    when the goal is evaluated.
+    """
+    for node in arch_network.nodes():
+        arch_network.node_anchor(key=node)
+
+    structure = EquilibriumStructure.from_network(arch_network)
+    model = model_from_sparsity(sparse=False,
+                                tmax=1,
+                                eta=1e-6,
+                                is_load_local=False,
+                                itersolve_fn=None,
+                                iterload_fn=None,
+                                implicit_diff=True,
+                                verbose=False)
+    parameters = EquilibriumParametersState.from_datastructure(arch_network,
+                                                               dtype=DTYPE_JAX)
+    eqstate = model(parameters, structure)
+
+    for edge in arch_network.edges():
+        goal = EdgeAngleGoal(edge, vector=[1.0, 0.0, 0.0], target=0.0)
+        goal.init(model, structure)
+        prediction = goal(eqstate).prediction
+
+        assert jnp.all(jnp.isfinite(prediction))
+        assert jnp.allclose(prediction, 0.0, atol=1e-6)
 
 
 # ==============================================================================
@@ -267,23 +303,23 @@ def test_vertex_normal_angle_tilted_plane_at_triangle(ragged_mesh):
 
 
 # ------------------------------------------------------------------------------
-# Winding-invariance: the angle folds into [0, pi / 2], sign of the normal aside
+# Winding-covariance: the signed angle follows the orientation of the normal
 # ------------------------------------------------------------------------------
 
 @pytest.mark.parametrize("goal_cls", [VertexNormalAngleGoal, VertexTangentAngleGoal])
-def test_vertex_angle_invariant_to_face_winding(meshgrid_mesh, goal_cls):
+def test_vertex_angle_covariant_with_face_winding(meshgrid_mesh, goal_cls):
     """
-    Reversing every face's winding must not change the predicted angle.
+    Reversing every face's winding maps the angle to its mirror branch.
 
     The vertex normal is the average of the incident face normals, so flipping
-    the winding flips that normal's sign. A prediction taken from the *signed*
-    cosine would swing by `pi` between the two windings (an inclined normal that
-    read `theta` from `[0, 0, 1]` would read `pi - theta` once flipped); folding
-    the angle into `[0, pi / 2]` via the absolute cosine keeps both windings
-    equal. This is the exact defect that made the pringle tangent goal chase the
-    wrong branch and collapse the surface to a zero tangent angle instead of the
-    target. The mesh is tilted off horizontal so the two branches are distinct
-    (at `theta = 0` they coincide and the test would not discriminate).
+    the winding flips that normal's sign, and the signed angle must follow: the
+    normal angle swings to its supplement `pi - theta`, and the tangent angle
+    to its negation. This directionality is the point of the signed semantics —
+    an angle folded into `[0, pi / 2]` cannot tell a shell surface rising toward
+    the reference vector from one folded past vertical away from it, so an
+    optimizer could converge to the degenerate folded branch. The mesh is tilted
+    off horizontal so the two branches are distinct (at `theta = 0` the normal
+    branches coincide and the test would not discriminate).
     """
     _tilt_onto_plane(meshgrid_mesh, math.radians(30.0))
     interior = [v for v in meshgrid_mesh.vertices()
@@ -298,16 +334,22 @@ def test_vertex_angle_invariant_to_face_winding(meshgrid_mesh, goal_cls):
     predictions_flipped = _predictions_on_fixed_mesh(flipped, goal_cls,
                                                      interior, vector=[0.0, 0.0, 1.0])
 
-    assert jnp.allclose(predictions, predictions_flipped, atol=1e-6)
+    if goal_cls is VertexNormalAngleGoal:
+        expected = jnp.pi - predictions
+    else:
+        expected = -predictions
+
+    assert jnp.allclose(predictions_flipped, expected, atol=1e-6)
 
 
-def test_vertex_normal_angle_in_upper_hemisphere(meshgrid_mesh):
+def test_vertex_normal_angle_obtuse_for_downward_normal(meshgrid_mesh):
     """
-    A downward-pointing vertex normal reports its acute angle, not the obtuse one.
+    A downward-pointing vertex normal reports its obtuse angle, not the acute one.
 
     Tilting the mesh onto `z = tan(theta) * x` and then flipping the winding
-    gives every vertex a normal that points below horizontal. The reported angle
-    to `[0, 0, 1]` must still be `theta` (in `[0, pi / 2]`), not `pi - theta`.
+    gives every vertex a normal that points below horizontal. The signed angle
+    to `[0, 0, 1]` must read `pi - theta`, keeping the downward branch
+    distinguishable from an upward normal at `theta`.
     """
     theta = math.radians(30.0)
     _tilt_onto_plane(meshgrid_mesh, theta)
@@ -319,7 +361,75 @@ def test_vertex_normal_angle_in_upper_hemisphere(meshgrid_mesh):
     predictions = _predictions_on_fixed_mesh(meshgrid_mesh, VertexNormalAngleGoal,
                                              interior, vector=[0.0, 0.0, 1.0])
 
-    assert jnp.allclose(predictions, theta, atol=1e-6)
+    assert jnp.allclose(predictions, jnp.pi - theta, atol=1e-6)
+
+
+def test_vertex_tangent_angle_signed_up_vs_down(meshgrid_mesh):
+    """
+    The tangent angle is positive for an upward normal and negative for a
+    downward one, with the same magnitude.
+
+    On the plane `z = tan(theta) * x` with upward winding, every vertex tangent
+    reads `pi / 2 - theta`; flipping the winding folds the surface's orientation
+    past vertical and the tangent must negate to `-(pi / 2 - theta)`. This is
+    the user-facing contract: a target of `+angle` cannot be satisfied by the
+    degenerate downward-folded surface at `-angle`.
+    """
+    theta = math.radians(30.0)
+    _tilt_onto_plane(meshgrid_mesh, theta)
+    interior = [v for v in meshgrid_mesh.vertices()
+                if not meshgrid_mesh.is_vertex_on_boundary(v)]
+
+    predictions_up = _predictions_on_fixed_mesh(meshgrid_mesh, VertexTangentAngleGoal,
+                                                interior, vector=[0.0, 0.0, 1.0])
+
+    flipped = meshgrid_mesh.copy()
+    for fkey in list(flipped.faces()):
+        flipped.face_vertices(fkey).reverse()
+    predictions_down = _predictions_on_fixed_mesh(flipped, VertexTangentAngleGoal,
+                                                  interior, vector=[0.0, 0.0, 1.0])
+
+    assert jnp.allclose(predictions_up, jnp.pi / 2 - theta, atol=1e-6)
+    assert jnp.allclose(predictions_down, -(jnp.pi / 2 - theta), atol=1e-6)
+
+
+def test_vertex_tangent_angle_optimizes_toward_signed_target(meshgrid_mesh):
+    """
+    Optimization drives the signed tangent toward the target on its own branch.
+
+    An anchored meshgrid under downward load starts near-flat (tangents around
+    `+80 deg` with upward winding). A `+15 deg` tangent target must pull every
+    free vertex toward the target without any tangent crossing to the negative
+    (downward-folded) branch. Under the old absolute-cosine fold this assertion
+    is meaningless: the folded prediction cannot distinguish the branches, so
+    nothing anchors the sign of the result. Compressive-only force density
+    bounds cap how far the surface can steepen, so the test asserts direction
+    of travel and branch, not exact attainment.
+    """
+    mesh, free = _anchored_mesh(meshgrid_mesh)
+    target = math.radians(15.0)
+
+    goals = [VertexTangentAngleGoal(vkey, vector=[0.0, 0.0, 1.0], target=target)
+             for vkey in free]
+    loss = Loss(SquaredError(goals=goals))
+    parameters = [EdgeForceDensityParameter(edge, BOUND_LOW, BOUND_UP)
+                  for edge in mesh.edges()]
+
+    optimized = constrained_fdm(mesh.copy(),
+                                optimizer=LBFGSB(),
+                                loss=loss,
+                                parameters=parameters,
+                                maxiter=MAXITER)
+
+    predictions = _predictions_on_fixed_mesh(optimized, VertexTangentAngleGoal,
+                                             free, vector=[0.0, 0.0, 1.0])
+
+    # near-flat start reads just under +pi / 2; every tangent must have moved
+    # toward the target and stayed on the positive branch
+    initial_bound = math.radians(75.0)
+    assert jnp.all(predictions > 0.0)
+    assert jnp.all(predictions < initial_bound)
+    assert jnp.all(jnp.abs(predictions - target) < initial_bound - target)
 
 
 # ------------------------------------------------------------------------------
