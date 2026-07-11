@@ -13,10 +13,6 @@ authors:
     given-names: Ryan P.
   - family-names: Adriaenssens
     given-names: Sigrid
-identifiers:
-  - type: doi
-    value: 10.5281/zenodo.7258292
-    description: Zenodo archive of the software
 repository-code: "https://github.com/arpastrana/jax_fdm"
 url: "https://arpastrana.github.io/jax_fdm/"
 license: MIT
@@ -26,6 +22,25 @@ keywords:
   - structural design
   - differentiable simulation
   - jax
+references:
+  - type: conference-paper
+    title: "JAX FDM: A differentiable solver for inverse form-finding"
+    authors:
+      - family-names: Pastrana
+        given-names: Rafael
+      - family-names: Oktay
+        given-names: Deniz
+      - family-names: Adams
+        given-names: Ryan P.
+      - family-names: Adriaenssens
+        given-names: Sigrid
+    collection-title: >-
+      Differentiable Almost Everything Workshop of the 40th International
+      Conference on Machine Learning
+    year: 2023
+    location:
+      name: "Hawaii, USA"
+    url: "https://openreview.net/forum?id=Uu9OPgh24d"
 preferred-citation:
   type: article
   title: Differentiable force density method for the design of lightweight structures
