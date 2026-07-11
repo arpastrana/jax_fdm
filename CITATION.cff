@@ -1,0 +1,48 @@
+cff-version: 1.2.0
+message: >-
+  If you use this software, please cite the CMAME article listed under
+  preferred-citation.
+title: "JAX FDM: Auto-differentiable and hardware-accelerated force density method"
+type: software
+authors:
+  - family-names: Pastrana
+    given-names: Rafael
+  - family-names: Oktay
+    given-names: Deniz
+  - family-names: Adams
+    given-names: Ryan P.
+  - family-names: Adriaenssens
+    given-names: Sigrid
+identifiers:
+  - type: doi
+    value: 10.5281/zenodo.7258292
+    description: Zenodo archive of the software
+repository-code: "https://github.com/arpastrana/jax_fdm"
+url: "https://arpastrana.github.io/jax_fdm/"
+license: MIT
+keywords:
+  - form-finding
+  - force density method
+  - structural design
+  - differentiable simulation
+  - jax
+preferred-citation:
+  type: article
+  title: Differentiable force density method for the design of lightweight structures
+  authors:
+    - family-names: Pastrana
+      given-names: Rafael
+    - family-names: Oktay
+      given-names: Deniz
+    - family-names: Bletzinger
+      given-names: Kai-Uwe
+    - family-names: Adams
+      given-names: Ryan P.
+    - family-names: Adriaenssens
+      given-names: Sigrid
+  journal: Computer Methods in Applied Mechanics and Engineering
+  volume: 458
+  start: 118783
+  year: 2026
+  issn: 0045-7825
+  doi: 10.1016/j.cma.2026.118783
