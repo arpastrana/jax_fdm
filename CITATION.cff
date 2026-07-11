@@ -1,0 +1,63 @@
+cff-version: 1.2.0
+message: >-
+  If you use this software, please cite the CMAME article listed under
+  preferred-citation.
+title: "JAX FDM: Auto-differentiable and hardware-accelerated force density method"
+type: software
+authors:
+  - family-names: Pastrana
+    given-names: Rafael
+  - family-names: Oktay
+    given-names: Deniz
+  - family-names: Adams
+    given-names: Ryan P.
+  - family-names: Adriaenssens
+    given-names: Sigrid
+repository-code: "https://github.com/arpastrana/jax_fdm"
+url: "https://arpastrana.github.io/jax_fdm/"
+license: MIT
+keywords:
+  - form-finding
+  - force density method
+  - structural design
+  - differentiable simulation
+  - jax
+references:
+  - type: conference-paper
+    title: "JAX FDM: A differentiable solver for inverse form-finding"
+    authors:
+      - family-names: Pastrana
+        given-names: Rafael
+      - family-names: Oktay
+        given-names: Deniz
+      - family-names: Adams
+        given-names: Ryan P.
+      - family-names: Adriaenssens
+        given-names: Sigrid
+    collection-title: >-
+      Differentiable Almost Everything Workshop of the 40th International
+      Conference on Machine Learning
+    year: 2023
+    location:
+      name: "Hawaii, USA"
+    url: "https://openreview.net/forum?id=Uu9OPgh24d"
+preferred-citation:
+  type: article
+  title: Differentiable force density method for the design of lightweight structures
+  authors:
+    - family-names: Pastrana
+      given-names: Rafael
+    - family-names: Oktay
+      given-names: Deniz
+    - family-names: Bletzinger
+      given-names: Kai-Uwe
+    - family-names: Adams
+      given-names: Ryan P.
+    - family-names: Adriaenssens
+      given-names: Sigrid
+  journal: Computer Methods in Applied Mechanics and Engineering
+  volume: 458
+  start: 118783
+  year: 2026
+  issn: 0045-7825
+  doi: 10.1016/j.cma.2026.118783

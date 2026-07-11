@@ -7,7 +7,7 @@ Contributions are welcome and very much appreciated!
 We accept code contributions through pull requests.
 In short, this is how that works.
 
-1. Fork [the repository](https://github.com//jax_fdm) and clone the fork.
+1. Fork [the repository](https://github.com/arpastrana/jax_fdm) and clone the fork.
 2. Create a virtual environment using your tool of choice (e.g. `virtualenv`, `conda`, etc).
 3. Install development dependencies:
 
@@ -27,7 +27,7 @@ In short, this is how that works.
    invoke test
    ```
 
-6. Start making your changes to the **master** branch (or branch off of it).
+6. Start making your changes to the **main** branch (or branch off of it).
 7. Make sure all tests still pass:
 
    ```bash
@@ -42,14 +42,14 @@ During development, use [pyinvoke](http://docs.pyinvoke.org/) tasks on the
 command line to ease recurring operations:
 
 * `invoke clean`: Clean all generated artifacts.
-* `invoke check`: Run various code and documentation style checks.
-* `invoke docs`: Generate documentation.
+* `invoke lint`: Check the coding style with ruff.
+* `invoke docs`: Build the documentation site with mkdocs. Pass `--serve` to preview it locally with live reload.
 * `invoke test`: Run all tests and checks in one swift command.
 * `invoke`: Show available tasks.
 
 ## Bug reports
 
-When [reporting a bug](https://github.com//jax_fdm/issues) please include:
+When [reporting a bug](https://github.com/arpastrana/jax_fdm/issues) please include:
 
 * Operating system name and version.
 * Any details about your local setup that might be helpful in troubleshooting.
@@ -57,7 +57,7 @@ When [reporting a bug](https://github.com//jax_fdm/issues) please include:
 
 ## Feature requests
 
-When [proposing a new feature](https://github.com//jax_fdm/issues) please include:
+When [proposing a new feature](https://github.com/arpastrana/jax_fdm/issues) please include:
 
 * Explain in detail how it would work.
 * Keep the scope as narrow as possible, to make it easier to implement.

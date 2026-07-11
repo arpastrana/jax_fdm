@@ -114,6 +114,14 @@ def test(ctx, checks=False, doctest=False):
         ctx.run(' '.join(cmd))
 
 
+@task(help={
+      'serve': 'True to serve the docs locally with live reload, otherwise build them.'})
+def docs(ctx, serve=False):
+    """Build the documentation site with mkdocs."""
+    with chdir(BASE_FOLDER):
+        ctx.run('mkdocs serve' if serve else 'mkdocs build --strict')
+
+
 @task
 def prepare_changelog(ctx):
     """Prepare changelog for next release."""
