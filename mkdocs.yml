@@ -118,6 +118,10 @@ nav:
       - api/jax_fdm.optimization.md
       - api/jax_fdm.parameters.md
       - api/jax_fdm.geometry.md
-      - api/jax_fdm.visualization.md
+      - Visualization:
+          - api/jax_fdm.visualization.md
+          - api/jax_fdm.visualization.viewers.md
+          - api/jax_fdm.visualization.notebooks.md
+          - api/jax_fdm.visualization.plotters.md
   - Citation: citation.md
   - License: license.md

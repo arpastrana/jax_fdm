@@ -12,52 +12,11 @@ notebook, or a 2D matplotlib plot.
     2D plotter. Without them, the corresponding class degrades to a null
     object that warns on use.
 
-## 3D viewer
+Pick a backend:
 
-::: jax_fdm.visualization.viewers.viewer.Viewer
-    options:
-      heading_level: 3
-
-::: jax_fdm.visualization.viewers.scene_objects.FDNetworkObject
-    options:
-      heading_level: 3
-
-::: jax_fdm.visualization.viewers.scene_objects.FDMeshObject
-    options:
-      heading_level: 3
-
----
-
-## Notebook viewer
-
-::: jax_fdm.visualization.notebooks.viewer.NotebookViewer
-    options:
-      heading_level: 3
-
-::: jax_fdm.visualization.notebooks.scene_objects.ThreeFDNetworkObject
-    options:
-      heading_level: 3
-
-::: jax_fdm.visualization.notebooks.scene_objects.ThreeFDMeshObject
-    options:
-      heading_level: 3
-
----
-
-## 2D plotter
-
-::: jax_fdm.visualization.plotters.plotter.Plotter
-    options:
-      heading_level: 3
-
-::: jax_fdm.visualization.plotters.scene_objects.FDNetworkPlotterObject
-    options:
-      heading_level: 3
-
-::: jax_fdm.visualization.plotters.scene_objects.FDMeshPlotterObject
-    options:
-      heading_level: 3
-
-::: jax_fdm.visualization.plotters.loss_plotter.LossPlotter
-    options:
-      heading_level: 3
+- **[3D viewer](jax_fdm.visualization.viewers.md)** — an interactive desktop
+  viewer with a scene tree, element selection, and animation support.
+- **[Notebook viewer](jax_fdm.visualization.notebooks.md)** — a draw-once
+  pythreejs widget for Jupyter notebooks and Colab.
+- **[2D plotter](jax_fdm.visualization.plotters.md)** — matplotlib drawings
+  for figures and papers, plus a plotter for loss histories.
