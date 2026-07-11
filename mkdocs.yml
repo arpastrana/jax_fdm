@@ -106,10 +106,10 @@ plugins:
             signature_crossrefs: true
 
 nav:
-  - Home: index.md
+  - Overview: index.md
   - Installation: installation.md
+  - Examples: examples.md
   - API reference:
-      - api/index.md
       - api/jax_fdm.datastructures.md
       - api/jax_fdm.equilibrium.md
       - api/jax_fdm.goals.md
@@ -119,7 +119,6 @@ nav:
       - api/jax_fdm.parameters.md
       - api/jax_fdm.geometry.md
       - Visualization:
-          - api/jax_fdm.visualization.md
           - api/jax_fdm.visualization.viewers.md
           - api/jax_fdm.visualization.notebooks.md
           - api/jax_fdm.visualization.plotters.md

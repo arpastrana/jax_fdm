@@ -16,7 +16,7 @@ A differentiable, hardware-accelerated framework for the structural design of li
 
 ![](images/jax_logo.gif)
 
-Lightweight span long distances with slender cross-sections due to their mechanically efficient shapes.
+Lightweight structures span long distances with slender cross-sections due to their mechanically efficient shapes.
 However, simulating these structures and turning them into feasible designs that satisfy technical constraints remains challenging due to geometrically nonlinear mechanical behaviors and high-dimensional search spaces.
 
 JAX FDM enables the solution of inverse problems for lightweight structures modeled as pin-jointed bar systems using the force density method (FDM) and gradient-based optimization.
@@ -164,7 +164,7 @@ The documentation lives at [arpastrana.github.io/jax_fdm](https://arpastrana.git
 
 - [Pointy dome](https://github.com/arpastrana/jax_fdm/blob/main/examples/dome/dome.py): Control the tilt and the coarse width of a brick dome.
 - [Triple-branching saddle](https://github.com/arpastrana/jax_fdm/blob/main/examples/monkey_saddle/monkey_saddle.py): Design the distribution of thrusts at the supports of a monkey saddle network while constraining the edge lengths.
-- [Saddle bridge](https://github.com/arpastrana/jax_fdm/blob/main/examples/pringle/pringle.py): Create a crease in the middle of the bridge while constraining to transversal edges of the network to a target plane.
+- [Saddle bridge](https://github.com/arpastrana/jax_fdm/blob/main/examples/pringle/pringle.py): Create a crease in the middle of the bridge while constraining the transversal edges of the network to a target plane.
 
 ## Citation
 

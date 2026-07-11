@@ -1,24 +1,22 @@
-# 2D plotter
+# Plotters
 
-Matplotlib drawings of force density datastructures for figures and papers,
-built on the standalone
-[compas_plotters](https://github.com/compas-dev/compas_plotters), plus a
-plotter for the loss histories recorded during optimization.
+Vectorized drawings of force density datastructures for figures and papers.
+The 2D plotter is built on the standalone
+[compas_plotters](https://github.com/compas-dev/compas_plotters). A second
+plotter, built with [matplotlib](https://matplotlib.org), charts the loss
+histories recorded during optimization.
+
+!!! note
+
+    The plotter needs the standalone [compas_plotters](https://github.com/compas-dev/compas_plotters) for use.
+    Without it, the plotter degrades to a null object that warns on use.
+
 
 ::: jax_fdm.visualization.plotters.plotter.Plotter
     options:
       heading_level: 2
 
-::: jax_fdm.visualization.plotters.scene_objects.FDNetworkPlotterObject
-    options:
-      heading_level: 2
-
-::: jax_fdm.visualization.plotters.scene_objects.FDMeshPlotterObject
-    options:
-      heading_level: 2
-
-## Loss plotter
 
 ::: jax_fdm.visualization.plotters.loss_plotter.LossPlotter
     options:
-      heading_level: 3
+      heading_level: 2
