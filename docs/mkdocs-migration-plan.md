@@ -443,3 +443,43 @@ with the strict build as the quality gate.
    plain `jax.Array`, and how to annotate scalar-or-array unions and
    COMPAS-or-array inputs. Decide per-subpackage during the phase-5 pass; don't
    let it block — plain annotations are an acceptable fallback anywhere.
+
+## 9. Math-first API pages (adopted 2026-07-11, from exponax audit)
+
+Pattern taken from [exponax](https://github.com/Ceyron/exponax) (equinox-lineage
+JAX library): every API page for a mathematical object opens with the governing
+equation in LaTeX *before* the `:::` directive. An exponax stepper page is:
+
+```markdown
+# Advection
+
+$$ \frac{\partial u}{\partial t} + c \frac{\partial u}{\partial x} = 0 $$
+
+::: exponax.stepper.Advection
+```
+
+Apply this during the phase 4–5 per-subpackage passes. MathJax is already wired
+(phase 1), so this is pure content work:
+
+- **goals**: state the residual each goal minimizes above its directive — e.g.
+  `NodePointGoal` as $\|\mathbf{x} - \mathbf{x}^\*\|$, length/force/load-path
+  goals as their scalar targets, the signed vertex angle goals with the signed
+  normal/tangent angle definition (see 1a67848).
+- **constraints**: the inequality each constraint enforces and its bounds.
+- **equilibrium**: the force density equation $\mathbf{x}_{\text{free}} =
+  \mathbf{D}^{-1} (\mathbf{p} - \mathbf{D}_f \mathbf{x}_{\text{fixed}})$ on the
+  models page; the fixed-point iteration on the solvers section.
+- **losses**: each error term's formula ($L_2$, MSE, RMSE, log-max, ...).
+
+Keep the equation short (one display block, define symbols in one following
+sentence); the prose docstring still carries the full story. Where the math
+lives naturally in the *docstring* instead (griffe renders LaTeX in numpy
+sections fine), prefer the docstring — the stub-page equation is for objects
+whose docstring shouldn't carry a display equation (e.g. one-line goal classes).
+
+Related but NOT yet adopted from the same audit: mermaid workflow diagram on
+`api/index.md` (extension enabled in mkdocs.yml, diagram undecided);
+`members: [__init__, __call__]` trimming (see CHANGELOG discussion / session
+notes for trade-offs). Rejected: one-page-per-class nav (142 objects → nav
+sprawl), `show_if_no_docstring` (our bare signatures are unannotated noise),
+artifact-flow Pages deploy (incompatible with mike's gh-pages branch).
