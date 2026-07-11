@@ -26,3 +26,16 @@ repos:
       - id: check-yaml
       - id: check-toml
       - id: check-merge-conflict
+
+  - repo: local
+    hooks:
+      # The docs citation page is generated from CITATION.cff, but GitHub
+      # renders the README raw, so its hand-written BibTeX can drift. Fail if
+      # the README stops citing the preferred DOI from CITATION.cff.
+      - id: readme-cites-preferred-doi
+        name: README cites the preferred DOI from CITATION.cff
+        entry: python docs/hooks/citation.py
+        language: python
+        additional_dependencies: [pyyaml]
+        files: ^(README\.md|CITATION\.cff)$
+        pass_filenames: false

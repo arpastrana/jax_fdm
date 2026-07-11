@@ -13,9 +13,17 @@ extra:
     provider: mike
     default: latest
 
-# Internal planning documents are kept out of the built site.
+# Internal planning documents and build hooks are kept out of the built site.
 exclude_docs: |
   mkdocs-migration-plan.md
+  hooks/
+
+# The citation page's BibTeX is generated from CITATION.cff at build time.
+hooks:
+  - docs/hooks/citation.py
+
+watch:
+  - CITATION.cff
 
 theme:
   name: material
