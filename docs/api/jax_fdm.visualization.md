@@ -1,4 +1,4 @@
-# jax_fdm.visualization
+# Visualization
 
 Draw force density datastructures — edges colored by force or force density,
 support markers, load and reaction arrows — in a 3D desktop viewer, a Jupyter

@@ -1,4 +1,4 @@
-# jax_fdm.constraints
+# Constraints
 
 A constraint bounds a quantity of an equilibrium state between a lower and an
 upper limit during constrained form-finding with

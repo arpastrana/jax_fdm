@@ -1,4 +1,4 @@
-# jax_fdm.goals
+# Goals
 
 A goal describes a target property of an equilibrium state — a coordinate, a
 length, a force, an angle — that an optimizer should steer the structure toward.

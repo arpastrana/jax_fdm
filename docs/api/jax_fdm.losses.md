@@ -1,4 +1,4 @@
-# jax_fdm.losses
+# Losses
 
 A loss function scalarizes the deviation between the current equilibrium state
 and the [goals](jax_fdm.goals.md) into the objective that an

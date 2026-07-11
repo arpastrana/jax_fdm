@@ -2,6 +2,7 @@
 
 <!-- Badges -->
 ![build](https://github.com/arpastrana/jax_fdm/actions/workflows/build.yml/badge.svg)
+[![docs](https://github.com/arpastrana/jax_fdm/actions/workflows/docs.yml/badge.svg)](https://arpastrana.github.io/jax_fdm/)
 [![CMAME](https://img.shields.io/badge/CMAME-10.1016%2Fj.cma.2026.118783-blue.svg)](https://doi.org/10.1016/j.cma.2026.118783)
 [![PyPI - Latest Release](https://img.shields.io/pypi/v/jax-fdm.svg)](https://pypi.python.org/project/jax-fdm)
 [![PyPI - Python Version](https://img.shields.io/pypi/pyversions/jax-fdm.svg)](https://pypi.python.org/project/jax-fdm)
@@ -143,7 +144,7 @@ The length of the arch segments also varies within the prescribed bounds to mini
 
 ## Documentation
 
-Documentation is a work in progress. In the meantime, check out the scripts in the [`examples/`](https://github.com/arpastrana/jax_fdm/tree/main/examples) folder.
+The documentation lives at [arpastrana.github.io/jax_fdm](https://arpastrana.github.io/jax_fdm/), including an API reference organized by subpackage. For worked-out use cases, check out the scripts in the [`examples/`](https://github.com/arpastrana/jax_fdm/tree/main/examples) folder.
 
 ## More examples
 

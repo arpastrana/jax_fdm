@@ -1,4 +1,4 @@
-# jax_fdm.geometry
+# Geometry
 
 Differentiable geometric primitives written in JAX, used by the
 [goals](jax_fdm.goals.md) and [constraints](jax_fdm.constraints.md) to measure

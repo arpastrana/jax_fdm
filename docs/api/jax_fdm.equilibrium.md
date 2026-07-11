@@ -1,4 +1,4 @@
-# jax_fdm.equilibrium
+# Equilibrium
 
 The heart of JAX FDM: compute states of static equilibrium with the force
 density method, differentiably.

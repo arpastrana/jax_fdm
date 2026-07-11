@@ -1,4 +1,4 @@
-# jax_fdm.parameters
+# Parameters
 
 A parameter marks a quantity of the structure — a force density, a load
 component, a support coordinate — as a variable the

@@ -1,4 +1,4 @@
-# jax_fdm.datastructures
+# Datastructures
 
 The force density datastructures: COMPAS-based networks and meshes that carry
 force densities, supports, and loads, ready for an equilibrium calculation.

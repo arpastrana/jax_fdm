@@ -1,4 +1,4 @@
-# jax_fdm.optimization
+# Optimization
 
 The optimizers that solve constrained form-finding problems, plus recorders to
 replay an optimization history.

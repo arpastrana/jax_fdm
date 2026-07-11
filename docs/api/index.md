@@ -1,4 +1,4 @@
-# API reference
+# Overview
 
 The public API of JAX FDM, organized by subpackage. A typical workflow touches
 them in this order:
