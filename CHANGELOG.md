@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+### Changed
+
+- Deduplicated the README against the docs site: the deeper content (optional extras, Windows notes, the full quick example, the notebook/script galleries) now lives only in the docs, and the README links out to it. The pitch and key features are wrapped in `pymdownx.snippets` section markers — invisible on GitHub — and transcluded into `docs/index.md` at build time, making the README the single source of that prose.
+
 ### Added
 
 - Split the visualization API page into one page per backend — 3D viewer, notebook viewer, and 2D plotter (which also carries the loss plotter) — nested under a foldable "Visualization" group in the docs navigation, following the per-topic foldable menus of [exponax](https://fkoehler.site/exponax/)'s API reference. The landing page for the group stays as an overview that routes to the three backends.
