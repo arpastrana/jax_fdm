@@ -25,16 +25,32 @@ class EquilibriumModel:
 
     Parameters
     ----------
-    `tmax`: The maximum number of iterations to calculate an equilibrium state.
-    If `tmax=1`, the model is equivalent to doing one linear FDM step, and the rest of the
-    parameters of this model are ignored. The edge and face loads are discarded too. Defaults to `100`.
-    `eta`: The convergence tolerance for calculating an equilibrium state. Defaults to `1e-6`.
-    `is_load_local`: If set to `True`, the face and edge loads are applied in their local coordinate system at every iteration (follower loads). Defaults to `False`.
-    `itersolve_fn`: The function that calculates an equilibrium state iteratively. If `None`, the model defaults to forward fixed-point iteration.
-    Note that only the solver must be consistent with the choice of residual function. Defaults to `None`.
-    `iterload_fn`: A load callback that is invoked before starting iterative equilibrium computation. Defaults to `None`.
-    `implicit_diff`: If set to `True`, it applies implicit differentiation to speed up backpropagation. Defaults to `True`.
-    `verbose`: Whether to print out calculation info to the terminal. Defaults to `False`.
+    tmax : `int`, optional
+        The maximum number of iterations to calculate an equilibrium state.
+        If `tmax=1`, the model is equivalent to doing one linear FDM step, and the rest of the
+        parameters of this model are ignored. The edge and face loads are discarded too.
+        Defaults to `100`.
+    eta : `float`, optional
+        The convergence tolerance for calculating an equilibrium state.
+        Defaults to `1e-6`.
+    is_load_local : `bool`, optional
+        If set to `True`, the face and edge loads are applied in their local
+        coordinate system at every iteration (follower loads).
+        Defaults to `False`.
+    itersolve_fn : `Callable`, optional
+        The function that calculates an equilibrium state iteratively.
+        If `None`, the model defaults to forward fixed-point iteration.
+        Note that the solver must be consistent with the choice of residual function.
+        Defaults to `None`.
+    iterload_fn : `Callable`, optional
+        A load callback that is invoked before starting iterative equilibrium computation.
+        Defaults to `None`.
+    implicit_diff : `bool`, optional
+        If set to `True`, it applies implicit differentiation to speed up backpropagation.
+        Defaults to `True`.
+    verbose : `bool`, optional
+        Whether to print out calculation info to the terminal.
+        Defaults to `False`.
     """
     def __init__(self,
                  tmax=100,

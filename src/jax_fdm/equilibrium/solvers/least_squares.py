@@ -22,10 +22,10 @@ def solver_gauss_newton(fn, theta, x_init, solver_config):
 
     Parameters
     ----------
-    f : The function to iterate upon.
-    a : The function parameters.
-    x_init: An initial guess for the values of the solution vector.
-    solver_config: The configuration options of the solver.
+    fn : The function to iterate upon.
+    theta : The function parameters.
+    x_init : An initial guess for the values of the solution vector.
+    solver_config : The configuration options of the solver.
 
     Returns
     -------
@@ -44,10 +44,10 @@ def solver_levenberg_marquardt(fn, theta, x_init, solver_config):
 
     Parameters
     ----------
-    f : The function to iterate upon.
-    a : The function parameters.
-    x_init: An initial guess for the values of the solution vector.
-    solver_config: The configuration options of the solver.
+    fn : The function to iterate upon.
+    theta : The function parameters.
+    x_init : An initial guess for the values of the solution vector.
+    solver_config : The configuration options of the solver.
 
     Returns
     -------

@@ -15,7 +15,7 @@ class Parameter:
     bound_low : `float`, optional
         The lower bound of this parameter for optimization.
         Defaults to `-inf`.
-    bound_ip : `float`, optional
+    bound_up : `float`, optional
         The upper bound of this parameter for optimization.
         Defaults to `+inf`.
     """

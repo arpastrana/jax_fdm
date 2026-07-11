@@ -1,5 +1,5 @@
 site_name: JAX FDM
-site_description: A differentiable, hardware-accelerated framework for the structural design of lightweight structures.
+site_description: Auto-differentiable and hardware-accelerated force density method
 site_author: Rafael Pastrana
 site_url: https://arpastrana.github.io/jax_fdm/
 repo_url: https://github.com/arpastrana/jax_fdm
@@ -81,6 +81,7 @@ plugins:
             separate_signature: true
             show_bases: false
             show_root_heading: true
+            show_root_full_path: false
             show_signature_annotations: true
             show_source: false
             show_symbol_type_heading: true
@@ -90,5 +91,16 @@ plugins:
 nav:
   - Home: index.md
   - Installation: installation.md
+  - API reference:
+      - api/index.md
+      - api/jax_fdm.datastructures.md
+      - api/jax_fdm.equilibrium.md
+      - api/jax_fdm.goals.md
+      - api/jax_fdm.constraints.md
+      - api/jax_fdm.losses.md
+      - api/jax_fdm.optimization.md
+      - api/jax_fdm.parameters.md
+      - api/jax_fdm.geometry.md
+      - api/jax_fdm.visualization.md
   - Citation: citation.md
   - License: license.md
