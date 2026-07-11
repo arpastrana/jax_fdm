@@ -14,7 +14,7 @@ A differentiable, hardware-accelerated framework for the structural design of li
 
 > Crafted with care in the [AI Lab](http://ai.princeton.edu/) at [Princeton University](https://princeton.edu) ❤️🇺🇸
 
-![](images/jax_logo.gif)
+![](docs/assets/images/jax_logo.gif)
 
 <!-- --8<-- [start:pitch] -->
 Lightweight structures span long distances with slender cross-sections due to their mechanically efficient shapes.
