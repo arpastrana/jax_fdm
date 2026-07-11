@@ -1,2 +1,0 @@
-
-.. automodule:: jax_fdm

@@ -47,6 +47,7 @@ dependencies = [
 [project.urls]
 Homepage = "https://github.com/arpastrana/jax_fdm"
 Repository = "https://github.com/arpastrana/jax_fdm"
+Documentation = "https://arpastrana.github.io/jax_fdm/"
 
 [project.optional-dependencies]
 # 3D viewer and notebook viewer for the COMPAS 2.x scene system.
@@ -63,6 +64,12 @@ dev = [
     "twine",
     "invoke >=0.14",
     "pre-commit",
+]
+# Exact pins: the mkdocs/mkdocstrings/griffe trio breaks across versions.
+docs = [
+    "mkdocs==1.6.1",
+    "mkdocs-material==9.7.6",
+    "mkdocstrings[python]==1.0.5",
 ]
 
 [tool.setuptools.dynamic]
