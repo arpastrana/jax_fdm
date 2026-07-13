@@ -7,10 +7,10 @@
 [![PyPI - Latest Release](https://img.shields.io/pypi/v/jax-fdm.svg)](https://pypi.python.org/project/jax-fdm)
 [![PyPI - Python Version](https://img.shields.io/pypi/pyversions/jax-fdm.svg)](https://pypi.python.org/project/jax-fdm)
 [![arXiv](https://img.shields.io/badge/arXiv-2307.12407-b31b1b.svg)](https://arxiv.org/abs/2307.12407)
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.7258292.svg)](https://doi.org/10.5281/zenodo.7258292)
+[![DOI](https://img.shields.io/badge/DOI-10.5281%2Fzenodo.7258292-blue.svg)](https://doi.org/10.5281/zenodo.7258292)
 <!-- [![GitHub - License](https://img.shields.io/github/license/arpastrana/jax_fdm.svg)](https://github.com/arpastrana/jax_fdm) -->
 
-A differentiable, hardware-accelerated framework for the structural design of lightweight structures.
+Auto-differentiable and hardware accelerated force density method.
 
 > Crafted with care in the [AI Lab](http://ai.princeton.edu/) at [Princeton University](https://princeton.edu) ❤️🇺🇸
 
@@ -61,7 +61,7 @@ pip install jax-fdm
 
 This pulls in COMPAS 2.x and the other core dependencies automatically.
 JAX FDM supports Python 3.10 to 3.12, and builds on JAX, SciPy, Equinox, and the COMPAS framework.
-For the optional extras (3D and notebook viewers, 2D plotters, the IPOPT optimizer, development tools) and platform notes for Windows, see the [installation guide](https://arpastrana.github.io/jax_fdm/installation/).
+For the optional extras (3D and notebook viewers, a 2D plotter, the IPOPT optimizer, development tools) and platform notes for Windows, see the [installation guide](https://arpastrana.github.io/jax_fdm/installation/).
 
 ## Quick example
 

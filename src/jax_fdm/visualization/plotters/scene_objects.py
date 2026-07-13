@@ -1,9 +1,9 @@
 from math import hypot
 
-from compas_plotters.scene import GraphObject
-from compas_plotters.scene import MeshObject
-from compas_plotters.scene import PlotterSceneObject
-from compas_plotters.scene.plotterobject import to_rgb
+from compas_plotter.scene import GraphObject
+from compas_plotter.scene import MeshObject
+from compas_plotter.scene import PlotterSceneObject
+from compas_plotter.scene.plotterobject import to_rgb
 from matplotlib.collections import LineCollection
 from matplotlib.collections import PatchCollection
 from matplotlib.patches import FancyArrow
@@ -55,7 +55,7 @@ class FDPlotterObject(PlotterSceneObject):
     collection per category. Out-of-plane arrows project to zero length and
     are skipped.
 
-    Subclasses pair this class with the matching compas_plotters drawable and
+    Subclasses pair this class with the matching compas_plotter drawable and
     resolve the point vocabulary (a network addresses its points as nodes, a
     mesh as vertices) by implementing the ``point_*`` methods and by exposing
     it as constructor keyword arguments (``nodecolor``/``nodesize``/
@@ -64,7 +64,7 @@ class FDPlotterObject(PlotterSceneObject):
     here.
 
     The ``points`` and ``edges`` filters drive the styling and the arrows;
-    the point markers themselves are drawn by the compas_plotters base for
+    the point markers themselves are drawn by the compas_plotter base for
     all points of the datastructure.
     """
 
@@ -173,7 +173,7 @@ class FDPlotterObject(PlotterSceneObject):
         self.edgecolor = edge_colors(datastructure, self.edges, self.edgecolor_spec)
 
         # Free points default to white on the plotter, matching the white
-        # markers of the compas_plotters canvas rather than the grey of the
+        # markers of the compas_plotter canvas rather than the grey of the
         # shaded 3D backends.
         is_support = self.point_is_support if self.show_supports else (lambda key: False)
         colors = point_colors(self.points, is_support, self.pointcolor_spec, default=Color.white())
@@ -353,7 +353,7 @@ class FDMeshPlotterObject(FDPlotterObject, MeshObject):
     A scene object that draws a force density mesh in a plotter.
 
     On top of the shared edge/load/reaction categories, the mesh faces are
-    drawn by the inherited compas_plotters face pass.
+    drawn by the inherited compas_plotter face pass.
 
     The mesh points are styled with the ``vertexcolor``, ``vertexsize`` and
     ``show_vertices`` keyword arguments, matching the datastructure vocabulary.
@@ -400,7 +400,7 @@ class FDMeshPlotterObject(FDPlotterObject, MeshObject):
 
     def point_marker_radius(self):
         # Mirrors the radius of the vertex circles drawn by the
-        # compas_plotters mesh scene object.
+        # compas_plotter mesh scene object.
         if not self.show_vertices:
             return 0.0
         return self.vertexsize / self.plotter.dpi

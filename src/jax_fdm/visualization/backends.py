@@ -9,7 +9,7 @@ def has_backend(name):
     Check whether an optional visualization backend is installed.
 
     The 3D viewer (``compas_viewer``), the notebook viewer (``compas_notebook``)
-    and the 2D plotter (``compas_plotters``) are optional dependencies. Their
+    and the 2D plotter (``compas_plotter``) are optional dependencies. Their
     absence should degrade gracefully instead of breaking ``import jax_fdm``.
 
     Parameters
