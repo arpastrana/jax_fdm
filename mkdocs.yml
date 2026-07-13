@@ -29,6 +29,8 @@ theme:
   name: material
   icon:
     repo: fontawesome/brands/github
+  logo: assets/images/jax_logo.svg
+  favicon: assets/images/jax_logo.svg
   features:
     - navigation.sections
     - navigation.top
