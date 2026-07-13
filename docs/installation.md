@@ -8,26 +8,19 @@ pip install jax-fdm
 
 This pulls in COMPAS 2.x and the other core dependencies automatically.
 JAX FDM supports Python 3.10 to 3.12, and builds on JAX, SciPy, Equinox, and the COMPAS framework.
-See [`pyproject.toml`](https://github.com/arpastrana/jax_fdm/blob/main/pyproject.toml) for the complete dependency list.
+See the complete [dependency list](https://github.com/arpastrana/jax_fdm/blob/main/pyproject.toml).
 
 ## Optional extras
 
 JAX FDM declares optional dependency groups you can install from a source checkout with `pip`:
 
 ```bash
-pip install -e ".[viz]"    # 3D desktop viewer (compas_viewer) and notebook viewer (compas_notebook)
+pip install -e ".[viz]"    # 3D desktop viewer (compas_viewer), notebook viewer (compas_notebook) and 2D plotter (compas_plotter)
 pip install -e ".[ipopt]"  # the IPOPT interior-point optimizer (cyipopt)
 pip install -e ".[dev]"    # development tools (ruff, pytest, pre-commit, build, bump-my-version)
 ```
 
-The `ipopt` extra needs a system Ipopt library available on your machine.
-In a Jupyter notebook, use `from jax_fdm.visualization import NotebookViewer` to display structures inline.
-
-For 2D matplotlib plots, install the standalone [compas_plotters](https://github.com/compas-dev/compas_plotters) (not on PyPI yet, hence not part of the `viz` extra):
-
-```bash
-pip install git+https://github.com/compas-dev/compas_plotters
-```
+The `ipopt` extra might need a system Ipopt library available on your machine.
 
 ## Are you a Windows user?
 

@@ -4,8 +4,8 @@ from jax_fdm.visualization.backends import null_viewer
 # LossPlotter only needs matplotlib, so it is always available.
 from .loss_plotter import *  # noqa F403
 
-# The 2D plotter builds on compas_plotters, an optional dependency.
-if has_backend("compas_plotters"):
+# The 2D plotter builds on compas_plotter, an optional dependency.
+if has_backend("compas_plotter"):
     from compas.scene.context import register_scene_objects
 
     from .plotter import *  # noqa F403
@@ -18,6 +18,6 @@ if has_backend("compas_plotters"):
     register_scene_objects()
     register_plotter_scene_objects()
 else:
-    Plotter = null_viewer("compas_plotters")
+    Plotter = null_viewer("compas_plotter")
 
 __all__ = [name for name in dir() if not name.startswith('_')]

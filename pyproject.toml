@@ -53,7 +53,7 @@ Documentation = "https://arpastrana.github.io/jax_fdm/"
 # 3D viewer and notebook viewer for the COMPAS 2.x scene system.
 # pythreejs comes with compas_notebook; pinned here because the notebook
 # scene objects import it directly to build batched render buffers.
-viz = ["compas_viewer>=1.0", "compas_notebook>=0.11", "pythreejs"]
+viz = ["compas_viewer>=1.0", "compas_notebook>=0.11", "pythreejs", "compas_plotter>=1.0"]
 # Interior-point optimizer. cyipopt needs a system Ipopt library.
 ipopt = ["cyipopt"]
 dev = [

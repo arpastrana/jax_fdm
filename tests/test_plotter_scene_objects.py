@@ -11,10 +11,10 @@ matplotlib.use("Agg")
 
 import pytest  # noqa: E402
 
-compas_plotters = pytest.importorskip("compas_plotters")
+compas_plotter = pytest.importorskip("compas_plotter")
 
-from compas_plotters.scene import GraphObject  # noqa: E402
-from compas_plotters.scene import MeshObject  # noqa: E402
+from compas_plotter.scene import GraphObject  # noqa: E402
+from compas_plotter.scene import MeshObject  # noqa: E402
 from matplotlib.collections import LineCollection  # noqa: E402
 from matplotlib.collections import PatchCollection  # noqa: E402
 
