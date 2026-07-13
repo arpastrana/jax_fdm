@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Pointed the docs' Colab notebook links at the repo instead of Google Drive copies: the "Jupyter notebooks" list in `docs/examples.md` now uses `colab.research.google.com/github/...` URLs that open `notebooks/{arch,spiral,vault}.ipynb` straight from the repo, so Colab always loads the current committed (COMPAS 2.x) version and the stale Drive uploads are retired. Each notebook's install cell is now active (`!pip install -q -U jax-fdm compas_notebook`) so "Open in Colab → Run all" works on a fresh runtime.
 - Deduplicated the README against the docs site: the deeper content (optional extras, Windows notes, the full quick example, the notebook/script galleries) now lives only in the docs, and the README links out to it. The pitch and key features are wrapped in `pymdownx.snippets` section markers — invisible on GitHub — and transcluded into `docs/index.md` at build time, making the README the single source of that prose.
 
 ### Added
