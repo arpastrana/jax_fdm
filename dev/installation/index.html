@@ -965,18 +965,14 @@
 </code></pre></div>
 <p>This pulls in COMPAS 2.x and the other core dependencies automatically.
 JAX FDM supports Python 3.10 to 3.12, and builds on JAX, SciPy, Equinox, and the COMPAS framework.
-See <a href="https://github.com/arpastrana/jax_fdm/blob/main/pyproject.toml"><code>pyproject.toml</code></a> for the complete dependency list.</p>
+See the complete <a href="https://github.com/arpastrana/jax_fdm/blob/main/pyproject.toml">dependency list</a>.</p>
 <h2 id="optional-extras">Optional extras<a class="headerlink" href="#optional-extras" title="Permanent link">¤</a></h2>
 <p>JAX FDM declares optional dependency groups you can install from a source checkout with <code>pip</code>:</p>
-<div class="highlight"><pre><span></span><code>pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </span><span class="s2">&quot;.[viz]&quot;</span><span class="w">    </span><span class="c1"># 3D desktop viewer (compas_viewer) and notebook viewer (compas_notebook)</span>
+<div class="highlight"><pre><span></span><code>pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </span><span class="s2">&quot;.[viz]&quot;</span><span class="w">    </span><span class="c1"># 3D desktop viewer (compas_viewer), notebook viewer (compas_notebook) and 2D plotter (compas_plotter)</span>
 pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </span><span class="s2">&quot;.[ipopt]&quot;</span><span class="w">  </span><span class="c1"># the IPOPT interior-point optimizer (cyipopt)</span>
 pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </span><span class="s2">&quot;.[dev]&quot;</span><span class="w">    </span><span class="c1"># development tools (ruff, pytest, pre-commit, build, bump-my-version)</span>
 </code></pre></div>
-<p>The <code>ipopt</code> extra needs a system Ipopt library available on your machine.
-In a Jupyter notebook, use <code>from jax_fdm.visualization import NotebookViewer</code> to display structures inline.</p>
-<p>For 2D matplotlib plots, install the standalone <a href="https://github.com/compas-dev/compas_plotters">compas_plotters</a> (not on PyPI yet, hence not part of the <code>viz</code> extra):</p>
-<div class="highlight"><pre><span></span><code>pip<span class="w"> </span>install<span class="w"> </span>git+https://github.com/compas-dev/compas_plotters
-</code></pre></div>
+<p>The <code>ipopt</code> extra might need a system Ipopt library available on your machine.</p>
 <h2 id="are-you-a-windows-user">Are you a Windows user?<a class="headerlink" href="#are-you-a-windows-user" title="Permanent link">¤</a></h2>
 <p>JAX now provides official native CPU wheels for Windows, so JAX FDM should work directly.
 On Windows you may also need to install the <a href="https://learn.microsoft.com/en-us/cpp/windows/latest-supported-vc-redist">Microsoft Visual Studio 2019 Redistributable</a>.</p>
