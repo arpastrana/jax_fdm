@@ -14,6 +14,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Changed `area_polygon`, `area_triangle` and `planarity_triangle` in `geometry` to return a scalar array `Float[Array, ""]` instead of a shape `(1,)` array or a Python float.
+
 ### Removed
 
 
