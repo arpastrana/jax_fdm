@@ -42,6 +42,7 @@ dependencies = [
     "equinox",
     "lineax",
     "optimistix",
+    "jaxtyping>=0.2.20",
 ]
 
 [project.urls]
@@ -65,6 +66,9 @@ dev = [
     "invoke >=0.14",
     "pre-commit",
 ]
+# Exact pin: pyright basic-mode default diagnostics can shift between releases,
+# which would fail CI with no code change.
+typecheck = ["pyright==1.1.411"]
 # Exact pins: the mkdocs/mkdocstrings/griffe trio breaks across versions.
 docs = [
     "mkdocs==1.6.1",
@@ -89,6 +93,12 @@ extend-exclude = ["notebooks"]
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "W"]
+# jaxtyping shape strings (e.g. Float[Array, "nodes 3"]) are not valid forward
+# references, tripping pyflakes' F722 everywhere jaxtyping is used. F722 has no
+# legitimate hit in this codebase, so it is silenced globally rather than
+# per-file. F821 stays scoped per-file (see per-file-ignores) since it is a
+# real undefined-name check elsewhere.
+ignore = ["F722"]
 
 [tool.ruff.lint.isort]
 force-single-line = true
@@ -97,8 +107,16 @@ known-first-party = ["compas", "jax_fdm"]
 [tool.ruff.lint.per-file-ignores]
 # Re-exports and the jax x64 config run before the submodule imports.
 "src/jax_fdm/__init__.py" = ["E402", "F401"]
-# jaxtyping string-shape annotations (e.g. Float[Array, "n 3"]) trip pyflakes.
-"src/jax_fdm/equilibrium/states.py" = ["F722", "F821"]
+# jaxtyping shape strings reference dimension names (nodes, edges, ...) that
+# pyflakes treats as undefined identifiers (F821). Scoped to the shape-annotated
+# numerical-core subpackages.
+"src/jax_fdm/geometry/geometry.py" = ["F821"]
+"src/jax_fdm/equilibrium/*.py" = ["F821"]
+"src/jax_fdm/equilibrium/solvers/*.py" = ["F821"]
+"src/jax_fdm/equilibrium/structures/*.py" = ["F821"]
+"src/jax_fdm/goals/**/*.py" = ["F821"]
+"src/jax_fdm/losses/*.py" = ["F821"]
+"src/jax_fdm/constraints/**/*.py" = ["F821"]
 
 [tool.bumpversion]
 current_version = "0.12.0"
@@ -127,3 +145,17 @@ markers = [
     # Slow tests; skip them with -m "not slow".
     "slow: a slow-running test",
 ]
+
+[tool.pyright]
+include = ["src/jax_fdm"]
+# The notebook viz objects import optional viz-extra packages (pythreejs,
+# compas_notebook) that the typecheck CI job does not install.
+exclude = ["**/__pycache__", "src/jax_fdm/visualization/notebooks"]
+# Validate against the minimum supported Python, independent of the CI runner.
+pythonVersion = "3.10"
+typeCheckingMode = "basic"
+# compas, jaxopt and lineax ship no py.typed marker.
+reportMissingModuleSource = "none"
+reportMissingTypeStubs = "none"
+# COMPAS datastructures expose attributes dynamically that pyright cannot see.
+reportAttributeAccessIssue = "warning"

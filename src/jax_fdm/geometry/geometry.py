@@ -1,6 +1,8 @@
 import jax.numpy as jnp
 from jax import vmap
 from jax.lax import cond
+from jaxtyping import Array
+from jaxtyping import Float
 
 WORLD_X = jnp.array([1.0, 0.0, 0.0])
 WORLD_Y = jnp.array([0.0, 1.0, 0.0])
@@ -8,14 +10,14 @@ WORLD_Z = jnp.array([0.0, 0.0, 1.0])
 WORLD_XYZ = jnp.eye(3)
 
 
-def cosine_vectors(u, v):
+def cosine_vectors(u: Float[Array, "3"], v: Float[Array, "3"]) -> Float[Array, ""]:
     """
     Compute the signed cosine of the angle between two vectors.
     """
     return normalize_vector(u) @ normalize_vector(v)
 
 
-def angle_vectors(u, v, deg=False):
+def angle_vectors(u: Float[Array, "3"], v: Float[Array, "3"], deg: bool = False) -> Float[Array, ""]:
     """
     Compute the smallest angle in degrees between two vectors.
 
@@ -32,7 +34,7 @@ def angle_vectors(u, v, deg=False):
     return angle
 
 
-def length_vector(u):
+def length_vector(u: Float[Array, "3"]) -> Float[Array, "1"]:
     """
     Calculate the length of a vector.
     """
@@ -41,14 +43,14 @@ def length_vector(u):
     return length
 
 
-def length_vector_sqrd(u):
+def length_vector_sqrd(u: Float[Array, "3"]) -> Float[Array, "1"]:
     """
     Calculate the squared length of a vector.
     """
     return jnp.sum(u * u, axis=-1, keepdims=True)
 
 
-def normalize_vector(u, safe_nan=True):
+def normalize_vector(u: Float[Array, "3"], safe_nan: bool = True) -> Float[Array, "3"]:
     """
     Scale a vector such that it has a unit length.
 
@@ -69,21 +71,21 @@ def normalize_vector(u, safe_nan=True):
     return u / length
 
 
-def vector_unitized(u):
+def vector_unitized(u: Float[Array, "3"]) -> Float[Array, "3"]:
     """
     Scale a vector such that it has a unit length.
     """
     return u / length_vector(u)
 
 
-def subtract_vectors(u, v):
+def subtract_vectors(u: Float[Array, "3"], v: Float[Array, "3"]) -> Float[Array, "3"]:
     """
     Subtract two vectors.
     """
     return u - v
 
 
-def line_vector(line, normalized=True):
+def line_vector(line: Float[Array, "2 3"], normalized: bool = True) -> Float[Array, "3"]:
     """
     Calculate the (normalized) vector formed by the difference of the line end points.
     """
@@ -94,7 +96,7 @@ def line_vector(line, normalized=True):
     return vector
 
 
-def vector_projection(u, v):
+def vector_projection(u: Float[Array, "3"], v: Float[Array, "3"]) -> Float[Array, "3"]:
     """
     Calculates the orthogonal projection of u onto v.
     """
@@ -104,7 +106,7 @@ def vector_projection(u, v):
     return v * x
 
 
-def closest_point_on_plane(point, plane):
+def closest_point_on_plane(point: Float[Array, "3"], plane: Float[Array, "2 3"]) -> Float[Array, "3"]:
     """
     Computes the closest location on a plane to a supplied point.
     """
@@ -117,7 +119,7 @@ def closest_point_on_plane(point, plane):
     return point - normal * k
 
 
-def closest_point_on_line(point, line):
+def closest_point_on_line(point: Float[Array, "3"], line: Float[Array, "2 3"]) -> Float[Array, "3"]:
     """
     Computes the closest location on a line to a supplied point.
     """
@@ -129,7 +131,7 @@ def closest_point_on_line(point, line):
     return a + c
 
 
-def closest_point_on_segment(point, segment):
+def closest_point_on_segment(point: Float[Array, "3"], segment: Float[Array, "2 3"]) -> Float[Array, "3"]:
     """
     Calculate the closest location on a segment to an input point.
     """
@@ -158,7 +160,7 @@ def closest_point_on_segment(point, segment):
     return cond(jnp.logical_or(d1 > d, d2 > d), point_is_outside, middle_point)
 
 
-def distance_point_point_sqrd(u, v):
+def distance_point_point_sqrd(u: Float[Array, "3"], v: Float[Array, "3"]) -> Float[Array, ""]:
     """
     Calculate the square of the distance between two points.
     """
@@ -167,7 +169,7 @@ def distance_point_point_sqrd(u, v):
     return jnp.sum(jnp.square(vector))
 
 
-def normal_polygon_2(polygon, unitized=False):
+def normal_polygon_2(polygon: Float[Array, "points 3"], unitized: bool = False) -> Float[Array, "3"]:
     """
     Computes the unit-length normal of a polygon.
 
@@ -186,7 +188,7 @@ def normal_polygon_2(polygon, unitized=False):
     return n
 
 
-def normal_polygon(polygon, unitized=True):
+def normal_polygon(polygon: Float[Array, "points 3"], unitized: bool = True) -> Float[Array, "3"]:
     """
     Computes the normal of a closed polygon.
 
@@ -208,7 +210,7 @@ def normal_polygon(polygon, unitized=True):
     return normal
 
 
-def area_polygon(polygon):
+def area_polygon(polygon: Float[Array, "points 3"]) -> Float[Array, "1"]:
     """
     Computes the area of a polygon.
 
@@ -218,7 +220,7 @@ def area_polygon(polygon):
     return length_vector(normal_polygon(polygon, unitized=False))
 
 
-def normal_triangle(triangle, unitize=False):
+def normal_triangle(triangle: Float[Array, "3 3"], unitize: bool = False) -> Float[Array, "3"]:
     """
     Computes the normal vector of a triangle.
 
@@ -237,7 +239,7 @@ def normal_triangle(triangle, unitize=False):
     return normal
 
 
-def area_triangle(triangle):
+def area_triangle(triangle: Float[Array, "3 3"]) -> Float[Array, "1"]:
     """
     Calculate the area of a triangle.
 
@@ -248,7 +250,7 @@ def area_triangle(triangle):
     return 0.5 * length_vector(normal_triangle(triangle))
 
 
-def planarity_polygon(polygon):
+def planarity_polygon(polygon: Float[Array, "points 3"]) -> Float[Array, ""]:
     """
     Calculate the planarity of a polygon.
 
@@ -273,7 +275,7 @@ def planarity_polygon(polygon):
     return planarity
 
 
-def planarity_triangle(triangle):
+def planarity_triangle(triangle: Float[Array, "3 3"]) -> float:
     """
     Calculate the planarity of a triangle.
 
@@ -284,7 +286,7 @@ def planarity_triangle(triangle):
     return 0.0
 
 
-def curvature_point_polygon(point, polygon):
+def curvature_point_polygon(point: Float[Array, "3"], polygon: Float[Array, "points 3"]) -> Float[Array, ""]:
     """
     Compute the discrete curvature at a point based on a polygon surrounding it.
     The discrete curvature of a node equals 2 * pi - sum(alphas).
@@ -307,7 +309,7 @@ def curvature_point_polygon(point, polygon):
     return 2 * jnp.pi - jnp.sum(angles)
 
 
-def line_lcs(line):
+def line_lcs(line: Float[Array, "2 3"]) -> Float[Array, "3 3"]:
     """
     Returns the local coordinate system (LCS) of a line.
 
@@ -335,7 +337,7 @@ def line_lcs(line):
     return jnp.vstack((u, v, w))
 
 
-def polygon_lcs(polygon):
+def polygon_lcs(polygon: Float[Array, "points 3"]) -> Float[Array, "3 3"]:
     """
     Returns the local coordinate system (LCS) of a polygon.
 
@@ -363,7 +365,7 @@ def polygon_lcs(polygon):
     return jnp.vstack((u, v, w))
 
 
-def colinearity_points(points):
+def colinearity_points(points: Float[Array, "points 3"]) -> Float[Array, ""]:
     """
     Calculate the colinearity of a sequence of points.
 
@@ -400,7 +402,7 @@ def colinearity_points(points):
     return jnp.sum(dtdt / lbar) / jnp.maximum(n_interior, 1)
 
 
-def curvature_points(points):
+def curvature_points(points: Float[Array, "points 3"]) -> Float[Array, ""]:
     """
     Compute the curvature (turning) energy of a sequence of points.
 
@@ -432,7 +434,7 @@ def curvature_points(points):
     return jnp.sum(dt**2) / jnp.maximum(n_interior, 1)
 
 
-def _unit_edge_vectors_polygon(polygon):
+def _unit_edge_vectors_polygon(polygon: Float[Array, "points 3"]) -> tuple[Float[Array, "points 3"], Float[Array, "points 3"]]:
     """
     Return unit vectors from each vertex to its prev and next neighbors.
 
@@ -453,7 +455,7 @@ def _unit_edge_vectors_polygon(polygon):
     return unit_to_prev, unit_to_next
 
 
-def angles_polygon(polygon, deg=False):
+def angles_polygon(polygon: Float[Array, "points 3"], deg: bool = False) -> Float[Array, "points"]:
     """
     Calculate the internal angles of a polygon.
 
@@ -473,7 +475,7 @@ def angles_polygon(polygon, deg=False):
     return vmap(angle_vectors, in_axes=(0, 0, None))(unit_to_prev, unit_to_next, deg)
 
 
-def cosines_angles_polygon(polygon):
+def cosines_angles_polygon(polygon: Float[Array, "points 3"]) -> Float[Array, "points"]:
     """
     Calculate the internal angle cosines of a polygon.
 

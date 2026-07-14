@@ -9,6 +9,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Added type-annotated signatures across the library, using jaxtyping shape annotations (for example `Float[Array, "nodes 3"]`) in the numerical core and plain type hints at the periphery.
+- Added a pyright type-checking gate that runs in CI on pull requests.
+
 ### Changed
 
 ### Removed
