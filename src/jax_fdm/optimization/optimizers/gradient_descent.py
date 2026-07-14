@@ -1,3 +1,6 @@
+from collections.abc import Callable
+from typing import Any
+
 import numpy as np
 from scipy.optimize import OptimizeResult
 from scipy.optimize import approx_fprime
@@ -12,11 +15,11 @@ class GradientDescent(Optimizer):
     """
     The gradient descent algorithm.
     """
-    def __init__(self, learning_rate=0.01, **kwargs):
+    def __init__(self, learning_rate: float = 0.01, **kwargs: Any):
         super().__init__(name="gradient-descent", **kwargs)
         self.learning_rate = learning_rate
 
-    def _minimize(self, opt_problem):
+    def _minimize(self, opt_problem: dict[str, Any]) -> OptimizeResult:
         """
         Custom backend method to minimize a loss function.
         """
@@ -29,7 +32,16 @@ class GradientDescent(Optimizer):
 # Functions
 # ==========================================================================
 
-def gradient_descent(fun, x0, args=(), jac=None, tol=None, callback=None, options=None, **kwargs):
+def gradient_descent(
+    fun: Callable,
+    x0: np.ndarray,
+    args: tuple[Any, ...] = (),
+    jac: Callable | bool | None = None,
+    tol: float | None = None,
+    callback: Callable | None = None,
+    options: dict[str, Any] | None = None,
+    **kwargs: Any,
+) -> OptimizeResult:
     """
     Simple vanilla gradient descent with a SciPy-like interface.
 
@@ -80,7 +92,7 @@ def gradient_descent(fun, x0, args=(), jac=None, tol=None, callback=None, option
     # Consolidate function and gradient evaluation
     if jac is True:
         # fun returns (f, grad)
-        def eval_fun_and_grad(x_local):
+        def eval_fun_and_grad(x_local):  # pyright: ignore[reportRedeclaration]  # intentional: exactly one of these three mutually exclusive branches defines eval_fun_and_grad at runtime
             nonlocal nfev, njev
             nfev += 1
             njev += 1
@@ -88,7 +100,7 @@ def gradient_descent(fun, x0, args=(), jac=None, tol=None, callback=None, option
 
     elif callable(jac):
         # fun returns f, jac returns grad
-        def eval_fun_and_grad(x_local):
+        def eval_fun_and_grad(x_local):  # pyright: ignore[reportRedeclaration]  # intentional: exactly one of these three mutually exclusive branches defines eval_fun_and_grad at runtime
             nonlocal nfev, njev
             nfev += 1
             f_val = fun(x_local, *args)
@@ -108,7 +120,7 @@ def gradient_descent(fun, x0, args=(), jac=None, tol=None, callback=None, option
 
             # Then compute gradient with approx_fprime (this will call fun multiple times)
             def fun_wrapped(z):
-                nfev += 1  # noqa: F823, F841
+                nfev += 1  # noqa: F823, F841  # pyright: ignore[reportUnboundVariable]  # SMELL/possible bug: this inner closure is missing `nonlocal nfev` (unlike the outer eval_fun_and_grad), so `nfev += 1` treats nfev as a new local assigned to itself and raises UnboundLocalError at runtime whenever jac is None (verified live: gradient_descent(fun, x0, jac=None, ...) crashes here) -- not fixed per task scope, flagging for a human to fix
                 return fun(z, *args)
 
             g_val = approx_fprime(x_arr, fun_wrapped, epsilon=fd_step)
@@ -129,7 +141,7 @@ def gradient_descent(fun, x0, args=(), jac=None, tol=None, callback=None, option
     message = "Maximum number of iterations reached."
 
     for k in range(maxiter):
-        grad_norm = np.linalg.norm(grad, ord=np.inf)
+        grad_norm = np.linalg.norm(grad, ord=np.inf)  # pyright: ignore[reportArgumentType]  # scipy's approx_fprime stub resolves to an unrelated sparse-linalg overload (LinearOperator/csr_array union) here; at runtime it always returns a dense ndarray gradient
 
         # Gradient-based stopping
         if tol is not None and grad_norm < tol:

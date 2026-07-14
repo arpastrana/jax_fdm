@@ -4,10 +4,15 @@ A gradient-based optimizer that deals with equality and inequality constraints.
 from functools import partial
 from itertools import groupby
 
+import jax
 from jax import jacfwd
 from jax import jit
 from scipy.optimize import NonlinearConstraint
 
+from jax_fdm.constraints import Constraint
+from jax_fdm.equilibrium import EquilibriumModel
+from jax_fdm.equilibrium import EquilibriumParametersState
+from jax_fdm.equilibrium import EquilibriumStructure
 from jax_fdm.optimization import Collection
 from jax_fdm.optimization.optimizers import Optimizer
 
@@ -19,7 +24,13 @@ class ConstrainedOptimizer(Optimizer):
     """
     A gradient-based optimizer that handles constraints.
     """
-    def constraints(self, constraints, model, structure, params_opt):
+    def constraints(
+        self,
+        constraints: list[Constraint],
+        model: EquilibriumModel,
+        structure: EquilibriumStructure,
+        params_opt: jax.Array,
+    ) -> list[NonlinearConstraint] | None:
         """
         Returns the defined constraints in a format amenable to `scipy.minimize`.
         """
@@ -27,7 +38,7 @@ class ConstrainedOptimizer(Optimizer):
             return
 
         print(f"Constraints: {len(constraints)}")
-        constraints = self.collect_constraints(constraints)
+        constraints = self.collect_constraints(constraints)  # pyright: ignore[reportAssignmentType]  # reused as a local for the resulting Collection list, shadowing the incoming list[Constraint] parameter type
         print(f"\tConstraint colections: {len(constraints)}")
 
         clist = []
@@ -53,20 +64,26 @@ class ConstrainedOptimizer(Optimizer):
             jac(params_opt)
 
             # store non linear constraint
-            clist.append(NonlinearConstraint(fun=fun, jac=jac, lb=lb, ub=ub))
+            clist.append(NonlinearConstraint(fun=fun, jac=jac, lb=lb, ub=ub))  # pyright: ignore[reportArgumentType]  # scipy's NonlinearConstraint stub types `jac` as a literal string mode selector; a callable Jacobian is also valid per scipy docs
 
         return clist
 
-    def constraint(self, params_opt, constraint, model, structure):
+    def constraint(
+        self,
+        params_opt: jax.Array,
+        constraint: Constraint,
+        model: EquilibriumModel,
+        structure: EquilibriumStructure,
+    ) -> jax.Array:
         """
         A wrapper around a constraint callable object.
         """
-        params = self.parameters_fdm(params_opt)
+        params: EquilibriumParametersState = self.parameters_fdm(params_opt)
 
         return constraint(params, model, structure)
 
     @staticmethod
-    def collect_constraints(constraints):
+    def collect_constraints(constraints: list[Constraint]) -> list[Collection]:
         """
         Convert a list of constraints into a list of constraint collections.
         """

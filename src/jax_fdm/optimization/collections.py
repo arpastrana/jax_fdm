@@ -1,12 +1,13 @@
 import inspect
 from collections import defaultdict
+from typing import Any
 
 
 class Collection:
     """
     A collection of goals of the same type to speed up optimization.
     """
-    def __new__(cls, collectibles):
+    def __new__(cls, collectibles: list[Any]) -> Any:
         """
         Gather a collection of objects into a single vectorized object.
         """

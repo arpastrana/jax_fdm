@@ -1,9 +1,13 @@
+from typing import Any
+
+import jax
 import jax.tree_util as jtu
 import numpy as np
 
 from compas.data import Data
 from jax_fdm.equilibrium import EquilibriumParametersState
 from jax_fdm.equilibrium import LoadState
+from jax_fdm.optimization.optimizers import Optimizer
 
 # ==========================================================================
 # Recorder
@@ -12,40 +16,41 @@ from jax_fdm.equilibrium import LoadState
 class OptimizationRecorder(Data):
     """A recorder that stores data during the optimization process.
     """
-    def __init__(self, optimizer=None):
+    def __init__(self, optimizer: Optimizer | None = None):
         super().__init__()
         self.optimizer = optimizer
         self.history = self._init_history()
 
-    def _init_history(self):
+    def _init_history(self) -> EquilibriumParametersState | list[Any]:
         if self.optimizer:
-            loads = LoadState(nodes=[], edges=[], faces=[])
-            return EquilibriumParametersState(q=[], xyz_fixed=[], loads=loads)
+            loads = LoadState(nodes=[], edges=[], faces=[])  # pyright: ignore[reportArgumentType]  # lists are grown in-place via record(); LoadState/EquilibriumParametersState fields are declared as Array but populated incrementally
+            return EquilibriumParametersState(q=[], xyz_fixed=[], loads=loads)  # pyright: ignore[reportArgumentType]  # see above
 
-        history = []
+        history: list[Any] = []
         return history
 
-    def __call__(self, xk, *args, **kwargs):
+    def __call__(self, xk: jax.Array, *args: Any, **kwargs: Any) -> None:
+        parameters: jax.Array | EquilibriumParametersState = xk
         if self.optimizer:
-            xk = self.optimizer.parameters_fdm(xk)
-        self.record(xk)
+            parameters = self.optimizer.parameters_fdm(xk)
+        self.record(parameters)
 
-    def __getitem__(self, index):
-        def index_from_leaf(leaf):
+    def __getitem__(self, index: int) -> Any:
+        def index_from_leaf(leaf: Any) -> Any:
             return leaf[index]
 
         return jtu.tree_map(index_from_leaf,
                             self.history,
                             is_leaf=lambda x: isinstance(x, list))
 
-    def __len__(self):
+    def __len__(self) -> int:
         if isinstance(self.history, list):
             return len(self.history)
 
         return len(self.history.q)
 
-    def record(self, parameters):
-        def append_file(data, file):
+    def record(self, parameters: Any) -> None:
+        def append_file(data: Any, file: Any) -> None:
             file.append(data)
 
         if self.optimizer:
@@ -54,8 +59,8 @@ class OptimizationRecorder(Data):
             append_file(parameters, self.history)
 
     @property
-    def __data__(self):
-        def leaf_to_list(leaf):
+    def __data__(self) -> dict[str, Any]:
+        def leaf_to_list(leaf: Any) -> list[Any]:
             return np.asarray(leaf, dtype=np.float64).tolist()
 
         data = {}
@@ -68,8 +73,8 @@ class OptimizationRecorder(Data):
         return data
 
     @classmethod
-    def __from_data__(cls, data):
-        def leaf_to_array(leaf):
+    def __from_data__(cls, data: dict[str, Any]) -> "OptimizationRecorder":
+        def leaf_to_array(leaf: Any) -> np.ndarray:
             return np.asarray(leaf, dtype=np.float64)
 
         # q, xyz_fixed, loads = data["history"]

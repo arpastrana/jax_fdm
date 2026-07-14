@@ -1,7 +1,11 @@
 """
 A collection of evolutionary optimizers.
 """
+from typing import Any
+
+import jax
 from jax import vmap
+from scipy.optimize import OptimizeResult
 from scipy.optimize import differential_evolution
 from scipy.optimize import dual_annealing
 
@@ -17,20 +21,20 @@ class DifferentialEvolution(GradientFreeOptimizer):
 
     This algorithm has stochastic components, so mind the seed for reproducibility.
     """
-    def __init__(self, popsize=20, vectorized=False, num_workers=1, seed=43, display=False, **kwargs):
+    def __init__(self, popsize: int = 20, vectorized: bool = False, num_workers: int = 1, seed: int = 43, display: bool = False, **kwargs: Any):
         super().__init__(name="DifferentialEvolution", disp=display, **kwargs)
         self.popsize = popsize
         self.vectorized = vectorized
         self.num_workers = num_workers
         self.seed = seed
 
-    def _minimize(self, opt_problem):
+    def _minimize(self, opt_problem: dict[str, Any]) -> OptimizeResult:
         """
         Scipy backend method to minimize a loss function.
         """
         func = opt_problem["fun"]
 
-        def func_vmap(x):
+        def func_vmap(x: jax.Array) -> jax.Array:
             result = vmap(func, in_axes=(1))(x)
             return result
 
@@ -65,18 +69,18 @@ class DualAnnealing(GradientFreeOptimizer):
 
     This algorithm has stochastic components, so mind the seed for reproducibility.
     """
-    def __init__(self, no_local_search=True, seed=42, display=False, **kwargs):
+    def __init__(self, no_local_search: bool = True, seed: int = 42, display: bool = False, **kwargs: Any):
         super().__init__(name="DualAnnealing", disp=display, **kwargs)
         self.no_local_search = no_local_search
         self.seed = seed
 
-    def _minimize(self, opt_problem):
+    def _minimize(self, opt_problem: dict[str, Any]) -> OptimizeResult:
         """
         Scipy backend method to minimize a loss function.
         """
         fun = opt_problem["fun"]
 
-        def func(x, *args, **kwargs):
+        def func(x: jax.Array, *args: Any, **kwargs: Any) -> jax.Array:
             return fun(x)
 
         opt_problem["func"] = func

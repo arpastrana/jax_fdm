@@ -1,13 +1,22 @@
 """
 A collection of scipy-powered, gradient-free optimizers.
 """
+from collections.abc import Callable
 from time import perf_counter
+from typing import Any
 
+import jax
 from jax import jit
 
+from jax_fdm.datastructures import FDMesh
+from jax_fdm.datastructures import FDNetwork
+from jax_fdm.equilibrium import EquilibriumModel
+from jax_fdm.equilibrium import EquilibriumStructure
 from jax_fdm.equilibrium import LoadState
+from jax_fdm.losses import Loss
 from jax_fdm.optimization.optimizers import Optimizer
 from jax_fdm.parameters import EdgeForceDensityParameter
+from jax_fdm.parameters import Parameter
 from jax_fdm.parameters import ParameterManager
 
 # ==========================================================================
@@ -19,16 +28,16 @@ class GradientFreeOptimizer(Optimizer):
     An optimizer based on evolutionary principles.
     """
     def problem(self,
-                model,
-                structure,
-                network,
-                loss,
-                parameters=None,
-                constraints=None,
-                maxiter=100,
-                tol=1e-6,
-                callback=None,
-                jit_fn=True):
+                model: EquilibriumModel,
+                structure: EquilibriumStructure,
+                network: FDNetwork | FDMesh,
+                loss: Loss,
+                parameters: list[Parameter] | None = None,
+                constraints: list[Any] | None = None,
+                maxiter: int = 100,
+                tol: float = 1e-6,
+                callback: Callable | None = None,
+                jit_fn: bool = True) -> dict[str, Any]:
         """
         Set up an optimization problem.
         """
@@ -57,7 +66,7 @@ class GradientFreeOptimizer(Optimizer):
         self.loads_static = loads.edges, loads.faces
 
         # closure over static parameters
-        def loss_fn(x):
+        def loss_fn(x: jax.Array) -> jax.Array | float:
             return self.loss(x, loss, model, structure)
 
         if jit_fn:
@@ -85,7 +94,7 @@ class GradientFreeOptimizer(Optimizer):
 
         return opt_kwargs
 
-    def solve(self, opt_problem):
+    def solve(self, opt_problem: dict[str, Any]) -> jax.Array:
         """
         Solve an optimization problem by minimizing a loss function.
         """
@@ -111,13 +120,13 @@ class Powell(GradientFreeOptimizer):
     """
     The modified Powell algorithm for gradient-free optimization with box constraints.
     """
-    def __init__(self, **kwargs):
-        super().__init__(name="Powell", disp=0, **kwargs)
+    def __init__(self, **kwargs: Any):
+        super().__init__(name="Powell", disp=0, **kwargs)  # pyright: ignore[reportArgumentType]  # disp is declared as bool but scipy accepts an int verbosity level too; 0 is falsy and behaves like False here
 
 
 class NelderMead(GradientFreeOptimizer):
     """
     The Nelder-Mead gradient-free optimizer with box constraints.
     """
-    def __init__(self, **kwargs):
-        super().__init__(name="Nelder-Mead", disp=0, **kwargs)
+    def __init__(self, **kwargs: Any):
+        super().__init__(name="Nelder-Mead", disp=0, **kwargs)  # pyright: ignore[reportArgumentType]  # disp is declared as bool but scipy accepts an int verbosity level too; 0 is falsy and behaves like False here

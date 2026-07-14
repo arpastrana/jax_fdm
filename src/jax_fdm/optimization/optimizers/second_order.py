@@ -1,3 +1,5 @@
+from collections.abc import Callable
+
 from jax import jacfwd
 from jax import jacrev
 
@@ -11,7 +13,7 @@ class SecondOrderOptimizer(Optimizer):
     """
     A gradient-based optimizer that uses the hessian to accelerate convergence.
     """
-    def hessian(self, loss):
+    def hessian(self, loss: Callable) -> Callable:
         """
         Compute the hessian function of a loss function.
         """
