@@ -1,3 +1,7 @@
+from collections.abc import Callable
+from typing import Any
+
+import jax
 from jaxopt import GaussNewton
 
 from jax_fdm.equilibrium.solvers.jaxopt import solver_jaxopt
@@ -16,7 +20,12 @@ except ImportError:
 # JAXOPT solvers
 # ==========================================================================
 
-def solver_gauss_newton(fn, theta, x_init, solver_config):
+def solver_gauss_newton(
+    fn: Callable,
+    theta: jax.Array,
+    x_init: jax.Array,
+    solver_config: dict[str, Any],
+) -> jax.Array:
     """
     Minimize the residual of function f(theta, x) = 0 using the Gauss Newton algorithm.
 
@@ -38,7 +47,12 @@ def solver_gauss_newton(fn, theta, x_init, solver_config):
 # Optimistix solvers
 # ==========================================================================
 
-def solver_levenberg_marquardt(fn, theta, x_init, solver_config):
+def solver_levenberg_marquardt(
+    fn: Callable,
+    theta: jax.Array,
+    x_init: jax.Array,
+    solver_config: dict[str, Any],
+) -> jax.Array:
     """
     Minimize the residual of function f(theta, x) = 0 using the Levenberg Marquardt algorithm.
 
@@ -73,7 +87,12 @@ def solver_levenberg_marquardt(fn, theta, x_init, solver_config):
     return solution
 
 
-def solver_dogleg(fn, theta, x_init, solver_config):
+def solver_dogleg(
+    fn: Callable,
+    theta: jax.Array,
+    x_init: jax.Array,
+    solver_config: dict[str, Any],
+) -> jax.Array:
     """
     """
     solver_kwargs = {}
@@ -95,7 +114,7 @@ def solver_dogleg(fn, theta, x_init, solver_config):
 # Helper functions
 # ==========================================================================
 
-def is_solver_leastsquares(solver_fn):
+def is_solver_leastsquares(solver_fn: Callable) -> bool:
     """
     Test if a solver function is a least squares solver.
 

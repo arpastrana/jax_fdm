@@ -1,3 +1,5 @@
+from collections.abc import Callable
+
 import numpy as np
 
 from jax_fdm import DTYPE_JAX
@@ -8,14 +10,23 @@ from jax_fdm.equilibrium import EquilibriumMeshStructureSparse
 from jax_fdm.equilibrium import EquilibriumModel
 from jax_fdm.equilibrium import EquilibriumModelSparse
 from jax_fdm.equilibrium import EquilibriumParametersState
+from jax_fdm.equilibrium import EquilibriumState
 from jax_fdm.equilibrium import EquilibriumStructure
 from jax_fdm.equilibrium import EquilibriumStructureSparse
+from jax_fdm.losses import Loss
+from jax_fdm.optimization import Optimizer
+from jax_fdm.parameters import Parameter
 
 # ==========================================================================
 # Form-finding
 # ==========================================================================
 
-def _fdm(model, params, structure, datastructure):
+def _fdm(
+    model: EquilibriumModel,
+    params: EquilibriumParametersState,
+    structure: EquilibriumStructure,
+    datastructure: FDNetwork | FDMesh,
+) -> FDNetwork | FDMesh:
     """
     Compute a datastructure in a state of static equilibrium using the force density method.
     """
@@ -26,15 +37,15 @@ def _fdm(model, params, structure, datastructure):
     return datastructure_updated(datastructure, eq_state, params)
 
 
-def fdm(datastructure,
-        sparse=True,
-        is_load_local=False,
-        tmax=1,
-        eta=1e-6,
-        itersolve_fn=None,
-        iterload_fn=None,
-        implicit_diff=True,
-        verbose=False):
+def fdm(datastructure: FDNetwork | FDMesh,
+        sparse: bool = True,
+        is_load_local: bool = False,
+        tmax: int = 1,
+        eta: float = 1e-6,
+        itersolve_fn: Callable | None = None,
+        iterload_fn: Callable | None = None,
+        implicit_diff: bool = True,
+        verbose: bool = False) -> FDNetwork | FDMesh:
     """
     Compute a datastructure in a state of static equilibrium using the force density method.
     """
@@ -61,24 +72,24 @@ def fdm(datastructure,
 # Constrained form-finding
 # ==========================================================================
 
-def constrained_fdm(datastructure,
-                    optimizer,
-                    loss,
-                    parameters=None,
-                    constraints=None,
-                    maxiter=100,
-                    tol=1e-6,
-                    tmax=1,
-                    eta=1e-6,
-                    callback=None,
-                    sparse=True,
-                    is_load_local=False,
-                    itersolve_fn=None,
-                    iterload_fn=None,
-                    implicit_diff=True,
-                    nd=False,
-                    verbose=False,
-                    jit=True):
+def constrained_fdm(datastructure: FDNetwork | FDMesh,
+                    optimizer: Optimizer,
+                    loss: Loss,
+                    parameters: list[Parameter] | None = None,
+                    constraints: list | None = None,
+                    maxiter: int = 100,
+                    tol: float = 1e-6,
+                    tmax: int = 1,
+                    eta: float = 1e-6,
+                    callback: Callable | None = None,
+                    sparse: bool = True,
+                    is_load_local: bool = False,
+                    itersolve_fn: Callable | None = None,
+                    iterload_fn: Callable | None = None,
+                    implicit_diff: bool = True,
+                    nd: bool = False,
+                    verbose: bool = False,
+                    jit: bool = True) -> FDNetwork | FDMesh:
     """
     Generate a network in a constrained state of static equilibrium using the force density method.
     """
@@ -124,18 +135,18 @@ def constrained_fdm(datastructure,
 # ==========================================================================
 
 def model_from_sparsity(
-        sparse,
-        tmax,
-        eta,
-        is_load_local=False,
-        itersolve_fn=None,
-        iterload_fn=None,
-        implicit_diff=True,
-        verbose=False):
+        sparse: bool,
+        tmax: int,
+        eta: float,
+        is_load_local: bool = False,
+        itersolve_fn: Callable | None = None,
+        iterload_fn: Callable | None = None,
+        implicit_diff: bool = True,
+        verbose: bool = False) -> EquilibriumModel:
     """
     Create an equilibrium model from a sparsity flag.
     """
-    model = EquilibriumModel
+    model: type[EquilibriumModel] = EquilibriumModel
     if sparse:
         model = EquilibriumModelSparse
 
@@ -151,7 +162,7 @@ def model_from_sparsity(
     return model_instance
 
 
-def structure_from_datastructure(datastructure, sparse):
+def structure_from_datastructure(datastructure: FDNetwork | FDMesh, sparse: bool) -> EquilibriumStructure:
     """
     Create a structure from a force density datastructure.
     """
@@ -162,32 +173,32 @@ def structure_from_datastructure(datastructure, sparse):
     else:
         raise ValueError(f"Input datastructure {datastructure} is invalid")
 
-    return structure_factory(datastructure, sparse)
+    return structure_factory(datastructure, sparse)  # pyright: ignore[reportArgumentType]  # structure_factory is narrowed to structure_from_network/structure_from_mesh by the isinstance checks above, but pyright does not carry that correlation across the reassigned datastructure param; the two branches match datastructure's actual runtime type
 
 
-def structure_from_network(network, sparse):
+def structure_from_network(network: FDNetwork, sparse: bool) -> EquilibriumStructure:
     """
     Create a structure from a network.
     """
-    structure = EquilibriumStructure
+    structure: type[EquilibriumStructure] = EquilibriumStructure
     if sparse:
         structure = EquilibriumStructureSparse
 
     return structure.from_network(network)
 
 
-def structure_from_mesh(mesh, sparse):
+def structure_from_mesh(mesh: FDMesh, sparse: bool) -> EquilibriumMeshStructure:
     """
     Create a structure from a mesh.
     """
-    structure = EquilibriumMeshStructure
+    structure: type[EquilibriumMeshStructure] = EquilibriumMeshStructure
     if sparse:
         structure = EquilibriumMeshStructureSparse
 
     return structure.from_mesh(mesh)
 
 
-def datastructure_validate(datastructure):
+def datastructure_validate(datastructure: FDNetwork | FDMesh) -> None:
     """
     Check that the network is healthy.
     """
@@ -204,7 +215,12 @@ def datastructure_validate(datastructure):
         assert datastructure.number_of_vertices() > 0, "The FD datastructure has no nodes"
 
 
-def datastructure_updated(datastructure, eq_state, params, use_loadsfromparams=False):
+def datastructure_updated(
+    datastructure: FDNetwork | FDMesh,
+    eq_state: EquilibriumState,
+    params: EquilibriumParametersState,
+    use_loadsfromparams: bool = False,
+) -> FDNetwork | FDMesh:
     """
     Return a copy of a datastructure whose attributes are updated with an equilibrium state.
     """
@@ -214,7 +230,12 @@ def datastructure_updated(datastructure, eq_state, params, use_loadsfromparams=F
     return datastructure
 
 
-def datastructure_update(datastructure, eq_state, params, use_loadsfromparams=False):
+def datastructure_update(
+    datastructure: FDNetwork | FDMesh,
+    eq_state: EquilibriumState,
+    params: EquilibriumParametersState,
+    use_loadsfromparams: bool = False,
+) -> None:
     """
     Update in-place the attributes of a datastructure with an equilibrium state.
     """
@@ -240,7 +261,10 @@ def datastructure_update(datastructure, eq_state, params, use_loadsfromparams=Fa
                                (xyz, residuals, loads))
 
 
-def datastructure_edges_update(datastructure, eqstate_edges):
+def datastructure_edges_update(
+    datastructure: FDNetwork | FDMesh,
+    eqstate_edges: tuple[list, list, list],
+) -> None:
     """
     Update the edge attributes of a datastructure.
     """
@@ -252,7 +276,10 @@ def datastructure_edges_update(datastructure, eqstate_edges):
         datastructure.edge_attribute(edge, name="q", value=forcedensities[idx])
 
 
-def datastructure_nodes_update(datastructure, eqstate_nodes):
+def datastructure_nodes_update(
+    datastructure: FDNetwork | FDMesh,
+    eqstate_nodes: tuple[list, list, list],
+) -> None:
     """
     Update the nodes or vertex attributes of a datastructure.
     """

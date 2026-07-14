@@ -1,4 +1,5 @@
 import jax.numpy as jnp
+from jaxtyping import Array
 
 from jax_fdm import DTYPE_INT_JAX
 
@@ -8,20 +9,20 @@ from jax_fdm import DTYPE_INT_JAX
 
 class IndexingMixins:
     @property
-    def node_index(self):
+    def node_index(self) -> dict[int, int]:
         """
         A dictionary between node keys and their enumeration indices.
         """
         return {int(node): index for index, node in enumerate(self.nodes)}
 
     @property
-    def edge_index(self):
+    def edge_index(self) -> dict[tuple[int, int], int]:
         """
         A dictionary between edge keys and their enumeration indices.
         """
         return {(int(u), int(v)): index for index, (u, v) in enumerate(self.edges)}
 
-    def _edges_indexed(self):
+    def _edges_indexed(self) -> Array:
         """
         An iterable with the edges pointing to the indices of the node keys.
         """
@@ -37,20 +38,20 @@ class IndexingMixins:
 
 class MeshIndexingMixins:
     @property
-    def vertex_index(self):
+    def vertex_index(self) -> dict[int, int]:
         """
         A dictionary between vertex keys and their enumeration indices.
         """
         return {int(vkey): index for index, vkey in enumerate(self.vertices)}
 
     @property
-    def face_index(self):
+    def face_index(self) -> dict[int, int]:
         """
         A dictionary between face keys and their enumeration indices.
         """
         return {int(fkey): index for index, fkey in enumerate(self.face_keys)}
 
-    def _faces_indexed(self):
+    def _faces_indexed(self) -> Array:
         """
         An array of the faces pointing to the indices of the node keys.
         """

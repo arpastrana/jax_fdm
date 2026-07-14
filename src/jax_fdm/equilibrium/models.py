@@ -1,7 +1,11 @@
+from collections.abc import Callable
+
 import jax.numpy as jnp
 from equinox import is_array
 from jax.debug import print as jax_print
 from jax.experimental.sparse import CSC
+from jaxtyping import Array
+from jaxtyping import Float
 
 from jax_fdm.equilibrium.loads import nodes_load_from_edges
 from jax_fdm.equilibrium.loads import nodes_load_from_faces
@@ -14,6 +18,9 @@ from jax_fdm.equilibrium.solvers import solver_nonlinear_implicit
 from jax_fdm.equilibrium.sparse import sparse_solve as spsolve
 from jax_fdm.equilibrium.states import EquilibriumParametersState
 from jax_fdm.equilibrium.states import EquilibriumState
+from jax_fdm.equilibrium.states import LoadState
+from jax_fdm.equilibrium.structures import EquilibriumStructure
+from jax_fdm.equilibrium.structures import EquilibriumStructureSparse
 
 # ==========================================================================
 # Equilibrium model
@@ -53,13 +60,13 @@ class EquilibriumModel:
         Defaults to `False`.
     """
     def __init__(self,
-                 tmax=100,
-                 eta=1e-6,
-                 is_load_local=False,
-                 itersolve_fn=None,
-                 iterload_fn=None,
-                 implicit_diff=True,
-                 verbose=False):
+                 tmax: int = 100,
+                 eta: float = 1e-6,
+                 is_load_local: bool = False,
+                 itersolve_fn: Callable | None = None,
+                 iterload_fn: Callable | None = None,
+                 implicit_diff: bool = True,
+                 verbose: bool = False):
         self.tmax = tmax
         self.eta = eta
         self.is_load_local = is_load_local
@@ -75,21 +82,21 @@ class EquilibriumModel:
     # ----------------------------------------------------------------------
 
     @staticmethod
-    def edges_vectors(xyz, connectivity):
+    def edges_vectors(xyz: Float[Array, "nodes 3"], connectivity: Float[Array, "edges nodes"]) -> Float[Array, "edges 3"]:
         """
         Calculate the unnormalized edge directions (nodal coordinate differences).
         """
         return connectivity @ xyz
 
     @staticmethod
-    def edges_lengths(vectors):
+    def edges_lengths(vectors: Float[Array, "edges 3"]) -> Float[Array, "edges 1"]:
         """
         Compute the length of the edges.
         """
         return jnp.linalg.norm(vectors, axis=1, keepdims=True)
 
     @staticmethod
-    def edges_forces(q, lengths):
+    def edges_forces(q: Float[Array, "edges"], lengths: Float[Array, "edges 1"]) -> Float[Array, "edges 1"]:
         """
         Calculate the force in the edges.
         """
@@ -100,14 +107,23 @@ class EquilibriumModel:
     # ----------------------------------------------------------------------
 
     @staticmethod
-    def nodes_residuals(q, loads, vectors, connectivity):
+    def nodes_residuals(
+        q: Float[Array, "edges"],
+        loads: Float[Array, "nodes 3"],
+        vectors: Float[Array, "edges 3"],
+        connectivity: Float[Array, "edges nodes"],
+    ) -> Float[Array, "nodes 3"]:
         """
         Compute the residual forces on the nodes of the structure.
         """
         return loads - connectivity.T @ (q[:, None] * vectors)
 
     @staticmethod
-    def nodes_positions(xyz_free, xyz_fixed, structure):
+    def nodes_positions(
+        xyz_free: Float[Array, "nodes_free 3"],
+        xyz_fixed: Float[Array, "nodes_fixed 3"],
+        structure: EquilibriumStructure,
+    ) -> Float[Array, "nodes 3"]:
         """
         Concatenate in order the position of the free and the fixed nodes.
         """
@@ -115,7 +131,13 @@ class EquilibriumModel:
 
         return jnp.concatenate((xyz_free, xyz_fixed))[indices, :]
 
-    def nodes_free_positions(self, q, xyz_fixed, loads, structure):
+    def nodes_free_positions(
+        self,
+        q: Float[Array, "edges"],
+        xyz_fixed: Float[Array, "nodes_fixed 3"],
+        loads: Float[Array, "nodes 3"],
+        structure: EquilibriumStructure,
+    ) -> Float[Array, "nodes_free 3"]:
         """
         Calculate the XYZ coordinates of the free nodes.
         """
@@ -124,7 +146,13 @@ class EquilibriumModel:
 
         return self.linearsolve_fn(K, P)
 
-    def nodes_equilibrium(self, q, xyz_fixed, loads_nodes, structure):
+    def nodes_equilibrium(
+        self,
+        q: Float[Array, "edges"],
+        xyz_fixed: Float[Array, "nodes_fixed 3"],
+        loads_nodes: Float[Array, "nodes 3"],
+        structure: EquilibriumStructure,
+    ) -> Float[Array, "nodes_free 3"]:
         """
         Calculate static equilibrium on the nodes of a structure.
         """
@@ -134,7 +162,12 @@ class EquilibriumModel:
     #  Load it up!
     # --------------------------------------------------------------------
 
-    def nodes_load(self, xyz, load_state, structure):
+    def nodes_load(
+        self,
+        xyz: Float[Array, "nodes 3"],
+        load_state: LoadState,
+        structure: EquilibriumStructure,
+    ) -> Float[Array, "nodes 3"]:
         """
         Calculate the loads applied to the nodes of the structure.
         """
@@ -142,25 +175,35 @@ class EquilibriumModel:
 
         if is_array(edges_load):
             if edges_load.size > 1:
-                edges_load_ = self.edges_load(xyz, edges_load, structure, self.is_load_local)
+                edges_load_ = self.edges_load(xyz, edges_load, structure, self.is_load_local)  # pyright: ignore[reportArgumentType]  # is_array() is a plain bool-returning check, not a TypeGuard, so pyright cannot narrow LoadState.edges from Array | float to Array here
                 nodes_load = nodes_load + edges_load_
 
         if is_array(faces_load):
             if faces_load.size > 1:
-                faces_load_ = self.faces_load(xyz, faces_load, structure, self.is_load_local)
+                faces_load_ = self.faces_load(xyz, faces_load, structure, self.is_load_local)  # pyright: ignore[reportArgumentType]  # is_array() is a plain bool-returning check, not a TypeGuard, so pyright cannot narrow LoadState.faces from Array | float to Array here
                 nodes_load = nodes_load + faces_load_
 
         return nodes_load
 
     @staticmethod
-    def faces_load(xyz, faces_load, structure, is_local=False):
+    def faces_load(
+        xyz: Float[Array, "nodes 3"],
+        faces_load: Float[Array, "faces 3"],
+        structure: EquilibriumStructure,
+        is_local: bool = False,
+    ) -> Float[Array, "nodes 3"]:
         """
         Calculate the tributary face loads aplied to the nodes of a structure.
         """
         return nodes_load_from_faces(xyz, faces_load, structure, is_local)
 
     @staticmethod
-    def edges_load(xyz, edges_load, structure, is_local=False):
+    def edges_load(
+        xyz: Float[Array, "nodes 3"],
+        edges_load: Float[Array, "edges 3"],
+        structure: EquilibriumStructure,
+        is_local: bool = False,
+    ) -> Float[Array, "nodes 3"]:
         """
         Calculate the tributary edge loads aplied to the nodes of a structure.
         """
@@ -170,7 +213,7 @@ class EquilibriumModel:
     #  Call me, maybe
     # ------------------------------------------------------------------------------
 
-    def __call__(self, params, structure):
+    def __call__(self, params: EquilibriumParametersState, structure: EquilibriumStructure) -> EquilibriumState:
         """
         Compute an equilibrium state using the force density method (FDM).
         """
@@ -218,7 +261,13 @@ class EquilibriumModel:
     #  Equilibrium modes
     # ------------------------------------------------------------------------------
 
-    def equilibrium(self, q, xyz_fixed, loads_nodes, structure):
+    def equilibrium(
+        self,
+        q: Float[Array, "edges"],
+        xyz_fixed: Float[Array, "nodes_fixed 3"],
+        loads_nodes: Float[Array, "nodes 3"],
+        structure: EquilibriumStructure,
+    ) -> Float[Array, "nodes_free 3"]:
         """
         Calculate static equilibrium on a structure.
         """
@@ -226,16 +275,16 @@ class EquilibriumModel:
 
     def equilibrium_iterative_xyz(
             self,
-            q,
-            xyz_fixed,
-            load_state,
-            structure,
-            xyz_free_init=None,
-            tmax=100,
-            eta=1e-6,
-            solver=None,
-            implicit_diff=True,
-            verbose=False):
+            q: Float[Array, "edges"],
+            xyz_fixed: Float[Array, "nodes_fixed 3"],
+            load_state: LoadState,
+            structure: EquilibriumStructure,
+            xyz_free_init: Float[Array, "nodes_free 3"] | None = None,
+            tmax: int = 100,
+            eta: float = 1e-6,
+            solver: Callable | None = None,
+            implicit_diff: bool = True,
+            verbose: bool = False) -> Float[Array, "nodes_free 3"]:
         """
         Calculate static equilibrium on a structure iteratively.
 
@@ -294,16 +343,16 @@ class EquilibriumModel:
         return solver(**solver_kwargs)
 
     def equilibrium_iterative_residual(self,
-                                       q,
-                                       xyz_fixed,
-                                       load_state,
-                                       structure,
-                                       xyz_free_init=None,
-                                       tmax=100,
-                                       eta=1e-6,
-                                       solver=None,
-                                       implicit_diff=True,
-                                       verbose=False):
+                                       q: Float[Array, "edges"],
+                                       xyz_fixed: Float[Array, "nodes_fixed 3"],
+                                       load_state: LoadState,
+                                       structure: EquilibriumStructure,
+                                       xyz_free_init: Float[Array, "nodes_free 3"] | None = None,
+                                       tmax: int = 100,
+                                       eta: float = 1e-6,
+                                       solver: Callable | None = None,
+                                       implicit_diff: bool = True,
+                                       verbose: bool = False) -> Float[Array, "nodes_free 3"]:
         """
         Calculate static equilibrium on a structure iteratively.
 
@@ -349,11 +398,11 @@ class EquilibriumModel:
         else:
             xyz_free_star = solver(**solver_kwargs)
 
-        xyz_free_star = jnp.reshape(xyz_free_star, (-1, 3))
+        xyz_free_star = jnp.reshape(xyz_free_star, (-1, 3))  # pyright: ignore[reportArgumentType]  # solver_nonlinear_implicit's return type is opaque to pyright (custom_vjp wrapper defined in the out-of-scope solvers/nonlinear.py); xyz_free_star is a jax.Array at runtime
 
         return xyz_free_star
 
-    def select_equilibrium_iterative_fn(self, solver):
+    def select_equilibrium_iterative_fn(self, solver: Callable) -> Callable:
         """
         Pick the equilibrium function that is compatible with the input solver function.
         """
@@ -369,7 +418,13 @@ class EquilibriumModel:
     # Equilibrium state
     # ----------------------------------------------------------------------
 
-    def equilibrium_state(self, q, xyz, loads_nodes, structure):
+    def equilibrium_state(
+        self,
+        q: Float[Array, "edges"],
+        xyz: Float[Array, "nodes 3"],
+        loads_nodes: Float[Array, "nodes 3"],
+        structure: EquilibriumStructure,
+    ) -> EquilibriumState:
         """
         Assembles an equilibrium state object.
         """
@@ -392,7 +447,7 @@ class EquilibriumModel:
     # ----------------------------------------------------------------------
 
     @staticmethod
-    def stiffness_matrix(q, structure):
+    def stiffness_matrix(q: Float[Array, "edges"], structure: EquilibriumStructure) -> Array:
         """
         The stiffness matrix of the structure.
         """
@@ -404,7 +459,13 @@ class EquilibriumModel:
     # Load matrices
     # ----------------------------------------------------------------------
 
-    def load_matrix(self, q, xyz_fixed, load_nodes, structure):
+    def load_matrix(
+        self,
+        q: Float[Array, "edges"],
+        xyz_fixed: Float[Array, "nodes_fixed 3"],
+        load_nodes: Float[Array, "nodes 3"],
+        structure: EquilibriumStructure,
+    ) -> Float[Array, "nodes_free 3"]:
         """
         The load matrix of the structure.
         """
@@ -412,7 +473,12 @@ class EquilibriumModel:
 
         return load_nodes[structure.indices_free, :] - R_fixed
 
-    def load_xyz_matrix(self, params, xyz_free, structure):
+    def load_xyz_matrix(
+        self,
+        params: EquilibriumParametersState,
+        xyz_free: Float[Array, "nodes_free 3"],
+        structure: EquilibriumStructure,
+    ) -> Float[Array, "nodes_free 3"]:
         """
         Calculate loads matrix of the free nodes of the system for shape-dependent loads.
         """
@@ -428,7 +494,12 @@ class EquilibriumModel:
         # Assemble load matrix
         return self.load_matrix(q, xyz_fixed, loads_nodes, structure)
 
-    def load_xyz_matrix_from_r_fixed(self, params, xyz_free, structure):
+    def load_xyz_matrix_from_r_fixed(
+        self,
+        params: tuple[Array, Float[Array, "nodes_free 3"], Float[Array, "nodes_fixed 3"], LoadState],
+        xyz_free: Float[Array, "nodes_free 3"],
+        structure: EquilibriumStructure,
+    ) -> Float[Array, "nodes_free 3"]:
         """
         Calculate loads matrix of the free nodes of the system for shape-dependent loads.
         """
@@ -450,7 +521,11 @@ class EquilibriumModel:
     # ----------------------------------------------------------------------
 
     @staticmethod
-    def residual_fixed_matrix(q, xyz_fixed, structure):
+    def residual_fixed_matrix(
+        q: Float[Array, "edges"],
+        xyz_fixed: Float[Array, "nodes_fixed 3"],
+        structure: EquilibriumStructure,
+    ) -> Float[Array, "nodes_free 3"]:
         """
         The load matrix with the contribution of the fixed nodes's residuals.
         """
@@ -459,7 +534,12 @@ class EquilibriumModel:
 
         return c_free.T @ (q[:, None] * (c_fixed @ xyz_fixed))
 
-    def residual_free_matrix(self, params, xyz_free, structure):
+    def residual_free_matrix(
+        self,
+        params: EquilibriumParametersState,
+        xyz_free: Float[Array, "nodes_free 3"],
+        structure: EquilibriumStructure,
+    ) -> Float[Array, "nodes_free 3"]:
         """
         The residuals of the free nodes of the structure.
         """
@@ -491,7 +571,7 @@ class EquilibriumModelSparse(EquilibriumModel):
         self.linearsolve_fn = spsolve
 
     @staticmethod
-    def stiffness_matrix(q, structure):
+    def stiffness_matrix(q: Float[Array, "edges"], structure: EquilibriumStructureSparse) -> CSC:
         """
         Computes the LHS matrix in CSC format from a vector of force densities.
         """

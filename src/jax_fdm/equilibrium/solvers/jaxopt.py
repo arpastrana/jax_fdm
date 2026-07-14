@@ -1,4 +1,17 @@
-def solver_jaxopt(solver_cls, fn, a, x_init, solver_config, solver_kwargs=None):
+from collections.abc import Callable
+from typing import Any
+
+import jax
+
+
+def solver_jaxopt(
+    solver_cls: Callable,
+    fn: Callable,
+    a: jax.Array,
+    x_init: jax.Array,
+    solver_config: dict[str, Any],
+    solver_kwargs: dict[str, Any] | None = None,
+) -> jax.Array:
     """
     Solve for a fixed point of a function f(a, x) using a jaxopt solver.
 

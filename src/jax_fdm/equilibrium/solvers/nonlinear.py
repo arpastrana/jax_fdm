@@ -1,5 +1,8 @@
+from collections.abc import Callable
 from functools import partial
+from typing import Any
 
+import jax
 from jax import custom_vjp
 from jax import vjp
 from jaxopt.linear_solve import solve_normal_cg
@@ -9,14 +12,26 @@ from jaxopt.linear_solve import solve_normal_cg
 # ==========================================================================
 
 @partial(custom_vjp, nondiff_argnums=(0, 1, 2))
-def solver_nonlinear_implicit(solver, solver_config, fn, theta, x_init):
+def solver_nonlinear_implicit(
+    solver: Callable,
+    solver_config: Any,
+    fn: Callable,
+    theta: jax.Array,
+    x_init: jax.Array,
+) -> jax.Array:
     """
     Find a minimum of f(theta, x) in a least-squares sense using an iterative solver.
     """
     return solver(fn, theta, x_init, solver_config)
 
 
-def nonlinear_fwd(solver, solver_config, fn, theta, x_init):
+def nonlinear_fwd(
+    solver: Callable,
+    solver_config: Any,
+    fn: Callable,
+    theta: jax.Array,
+    x_init: jax.Array,
+) -> tuple[jax.Array, tuple[jax.Array, jax.Array]]:
     """
     The forward pass of an iterative least squares solver.
 
@@ -35,10 +50,16 @@ def nonlinear_fwd(solver, solver_config, fn, theta, x_init):
     """
     x_star = solver_nonlinear_implicit(solver, solver_config, fn, theta, x_init)
 
-    return x_star, (theta, x_star)
+    return x_star, (theta, x_star)  # pyright: ignore[reportReturnType]  # custom_vjp wrapper's return type is opaque to pyright; x_star is a jax.Array at runtime
 
 
-def nonlinear_bwd(solver, solver_config, fn, res, vec):
+def nonlinear_bwd(
+    solver: Callable,
+    solver_config: Any,
+    fn: Callable,
+    res: tuple[jax.Array, jax.Array],
+    vec: jax.Array,
+) -> tuple[jax.Array, None]:
     """
     The backward pass of an iterative least squares solver.
 

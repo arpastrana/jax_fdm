@@ -1,3 +1,8 @@
+from collections.abc import Callable
+from typing import Any
+
+import jax
+
 try:
     from lineax import SVD
     from optimistix import Newton
@@ -12,7 +17,12 @@ from jax_fdm.equilibrium.solvers import solver_optimistix
 # Optimistix solvers
 # ==========================================================================
 
-def solver_newton(fn, theta, x_init, solver_config):
+def solver_newton(
+    fn: Callable,
+    theta: jax.Array,
+    x_init: jax.Array,
+    solver_config: dict[str, Any],
+) -> jax.Array:
     """
     """
     solver_config["verbose"] = False
@@ -35,7 +45,7 @@ def solver_newton(fn, theta, x_init, solver_config):
 # Helper functions
 # ==========================================================================
 
-def is_solver_root_finding(solver):
+def is_solver_root_finding(solver: Callable) -> bool:
     """
     Tests if a solver function is a root finding solver.
 

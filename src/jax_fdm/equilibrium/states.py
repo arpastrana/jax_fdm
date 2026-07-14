@@ -3,6 +3,7 @@ from typing import Union
 
 import jax
 import jax.numpy as jnp
+from jax.typing import DTypeLike
 
 from jax_fdm import DTYPE_JAX
 from jax_fdm.datastructures import FDMesh
@@ -26,12 +27,12 @@ class EquilibriumState(NamedTuple):
 # ==========================================================================
 
 class LoadState(NamedTuple):
-    nodes: Union[jax.Array]
+    nodes: Union[jax.Array]  # pyright: ignore[reportInvalidTypeArguments]  # SMELL: single-arg Union[jax.Array] is vestigial, equivalent to plain jax.Array; left as-is per scope
     edges: Union[jax.Array, float]
     faces: Union[jax.Array, float]
 
     @classmethod
-    def from_datastructure(cls, datastructure, dtype=None):
+    def from_datastructure(cls, datastructure: FDNetwork | FDMesh, dtype: DTypeLike | None = None) -> "LoadState":
         """
         Create a load state from a datastructure.
         """
@@ -81,5 +82,5 @@ class EquilibriumParametersState(NamedTuple):
             dtype = DTYPE_JAX
 
         return cls(q=jnp.asarray(q, dtype),
-                   xyz_fixed=jnp.asarray(xyz_fixed, dtype),
+                   xyz_fixed=jnp.asarray(xyz_fixed, dtype),  # pyright: ignore[reportPossiblyUnboundVariable]  # SMELL: xyz_fixed unbound if datastructure is neither FDNetwork nor FDMesh (no else branch); cannot occur in practice, left as-is per scope
                    loads=LoadState.from_datastructure(datastructure))

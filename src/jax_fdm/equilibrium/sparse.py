@@ -1,11 +1,17 @@
 """
 NOTE: Sparse solver does not support forward mode auto-differentiation yet.
 """
+from collections.abc import Callable
+
 import jax
 import jax.numpy as jnp
 import numpy as np
 from jax.experimental.sparse import CSC
+from jax.experimental.sparse import JAXSparse
 from jax.experimental.sparse.linalg import spsolve as spsolve_jax
+from jaxtyping import Array
+from jaxtyping import Float
+from jaxtyping import Int
 from scipy.sparse import csc_matrix
 from scipy.sparse.linalg import splu as splu_scipy
 from scipy.sparse.linalg import spsolve as spsolve_scipy
@@ -14,7 +20,7 @@ from scipy.sparse.linalg import spsolve as spsolve_scipy
 # Sparse linear solver on GPU
 # ==========================================================================
 
-def spsolve_gpu_ravel(A, b):
+def spsolve_gpu_ravel(A: JAXSparse, b: Float[Array, "nodes 3"]) -> Float[Array, "nodes 3"]:
     """
     A wrapper around cuda sparse linear solver that is GPU friendly.
 
@@ -41,7 +47,7 @@ def spsolve_gpu_ravel(A, b):
     return jnp.reshape(X, (3, -1)).T
 
 
-def spsolve_gpu_stack(A, b):
+def spsolve_gpu_stack(A: JAXSparse, b: Float[Array, "nodes 3"]) -> Float[Array, "nodes 3"]:
     """
     A wrapper around cuda sparse linear solver that is GPU friendly.
 
@@ -77,7 +83,7 @@ spsolve_gpu = spsolve_gpu_ravel
 # Sparse linear solver on CPU
 # ==========================================================================
 
-def spsolve_cpu(A, b):
+def spsolve_cpu(A: JAXSparse, b: Float[Array, "nodes 3"]) -> Float[Array, "nodes 3"]:
     """
     A wrapper around scipy sparse linear solver that acts as a JAX pure callback.
     """
@@ -98,7 +104,7 @@ def spsolve_cpu(A, b):
 # Register sparse linear solvers
 # ==========================================================================
 
-def register_sparse_solver(solvers):
+def register_sparse_solver(solvers: dict) -> Callable:
     """
     Register the sparse solver used by the FDM model based on JAX default backend.
     """
@@ -122,7 +128,7 @@ spsolve = register_sparse_solver(solvers)
 # ==========================================================================
 
 @jax.custom_vjp
-def sparse_solve(A, b):
+def sparse_solve(A: JAXSparse, b: Float[Array, "nodes 3"]) -> Float[Array, "nodes 3"]:
     """
     The sparse linear solver.
     """
@@ -133,7 +139,7 @@ def sparse_solve(A, b):
 # Forward and backward passes
 # ==========================================================================
 
-def sparse_solve_fwd(A, b):
+def sparse_solve_fwd(A: JAXSparse, b: Float[Array, "nodes 3"]) -> tuple[Float[Array, "nodes 3"], tuple]:
     """
     Forward pass of the sparse linear solver.
 
@@ -144,7 +150,7 @@ def sparse_solve_fwd(A, b):
     return xk, (xk, A, b)
 
 
-def sparse_solve_bwd(res, g):
+def sparse_solve_bwd(res: tuple, g: Float[Array, "nodes 3"]) -> tuple:
     """
     Backward pass of the sparse linear solver.
     """
@@ -172,7 +178,7 @@ def sparse_solve_bwd(res, g):
 # Sparse matrix helpers
 # ==========================================================================
 
-def blockdiag_matrix_sparse(A, num=2, format=CSC):
+def blockdiag_matrix_sparse(A: JAXSparse, num: int = 2, format: type = CSC) -> JAXSparse:
     """
     Build a block diagonal sparse matrix in the input format by repeating
     a square sparse matrix a prescribed number of times.
@@ -224,7 +230,7 @@ sparse_solve.defvjp(sparse_solve_fwd, sparse_solve_bwd)
 _SPLU_CACHE = {'factorization': None, 'session_id': 0}
 
 
-def splu_clear():
+def splu_clear() -> None:
     """
     Clear the SPLU cache to free memory.
     """
@@ -232,7 +238,7 @@ def splu_clear():
     _SPLU_CACHE['factorization'] = None
 
 
-def splu_cpu(A, session_id=None):
+def splu_cpu(A: JAXSparse, session_id: int | None = None) -> Int[Array, ""]:
     """
     A wrapper around scipy sparse LU factorization that acts as a JAX pure callback.
 
@@ -290,7 +296,7 @@ def splu_cpu(A, session_id=None):
     return sid
 
 
-def splu_solve_cpu(session_id, b):
+def splu_solve_cpu(session_id: Int[Array, ""], b: Float[Array, "nodes 3"]) -> Float[Array, "nodes 3"]:
     """
     A wrapper around scipy sparse LU solve that acts as a JAX pure callback.
 

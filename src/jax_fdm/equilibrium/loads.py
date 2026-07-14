@@ -1,6 +1,9 @@
 import jax.numpy as jnp
 from jax import vmap
+from jaxtyping import Array
+from jaxtyping import Float
 
+from jax_fdm.equilibrium.structures import EquilibriumStructure
 from jax_fdm.geometry import area_triangle
 from jax_fdm.geometry import length_vector
 from jax_fdm.geometry import line_lcs
@@ -12,7 +15,12 @@ from jax_fdm.geometry import polygon_lcs
 # ==========================================================================
 
 
-def nodes_load_from_faces(xyz, faces_load, structure, is_local=False):
+def nodes_load_from_faces(
+    xyz: Float[Array, "nodes 3"],
+    faces_load: Float[Array, "faces 3"],
+    structure: EquilibriumStructure,
+    is_local: bool = False,
+) -> Float[Array, "nodes 3"]:
     """
     Calculate the tributary face loads aplied to the nodes of a structure.
     """
@@ -24,7 +32,12 @@ def nodes_load_from_faces(xyz, faces_load, structure, is_local=False):
     return nodes_load
 
 
-def calculate_faces_load(xyz, faces, faces_load, is_local):
+def calculate_faces_load(
+    xyz: Float[Array, "nodes 3"],
+    faces: Float[Array, "faces vertices"],
+    faces_load: Float[Array, "faces 3"],
+    is_local: bool,
+) -> Float[Array, "faces 3"]:
     """
     Transform the face loads to the XYZ cartesian coordinate system if needed.
     """
@@ -37,7 +50,7 @@ def calculate_faces_load(xyz, faces, faces_load, is_local):
     return loads
 
 
-def face_xyz(xyz, face):
+def face_xyz(xyz: Float[Array, "nodes 3"], face: Float[Array, "vertices"]) -> Float[Array, "vertices 3"]:
     """
     Get this face XYZ coordinates from XYZ vertices array.
     """
@@ -54,7 +67,11 @@ def face_xyz(xyz, face):
     return xyz_face
 
 
-def face_load_lcs(xyz, face, face_load):
+def face_load_lcs(
+    xyz: Float[Array, "nodes 3"],
+    face: Float[Array, "vertices"],
+    face_load: Float[Array, "3"],
+) -> Float[Array, "3"]:
     """
     Transform the load vector applied to the face to a vector in its local coordinate system.
     """
@@ -70,7 +87,11 @@ def face_load_lcs(xyz, face, face_load):
     return load
 
 
-def edges_tributary_faces_load(xyz, faces_load, structure):
+def edges_tributary_faces_load(
+    xyz: Float[Array, "nodes 3"],
+    faces_load: Float[Array, "faces 3"],
+    structure: EquilibriumStructure,
+) -> Float[Array, "edges 3"]:
     """
     Calculate the face area load taken by every edge in a datastructure.
     """
@@ -84,7 +105,13 @@ def edges_tributary_faces_load(xyz, faces_load, structure):
     return loads_fn(c_vertices, c_edges_faces, xyz, faces_load, face_centroids)
 
 
-def edge_tributary_faces_load(c_edge_nodes, c_edge_faces, xyz, faces_load, face_centroids):
+def edge_tributary_faces_load(
+    c_edge_nodes: Float[Array, "nodes"],
+    c_edge_faces: Float[Array, "faces"],
+    xyz: Float[Array, "nodes 3"],
+    faces_load: Float[Array, "faces 3"],
+    face_centroids: Float[Array, "faces 3"],
+) -> Float[Array, "3"]:
     """
     Calculate the face area load taken by one edge in a datastructure.
     """
@@ -103,7 +130,7 @@ def edge_tributary_faces_load(c_edge_nodes, c_edge_faces, xyz, faces_load, face_
     return areas @ floads
 
 
-def edge_tributary_face_area(line, centroid):
+def edge_tributary_face_area(line: Float[Array, "2 3"], centroid: Float[Array, "3"]) -> Float[Array, "1"]:
     """
     The triangle-based, face tributary area of an edge.
     """
@@ -117,7 +144,12 @@ def edge_tributary_face_area(line, centroid):
 # ==========================================================================
 
 
-def nodes_load_from_edges(xyz, edges_load, structure, is_local=False):
+def nodes_load_from_edges(
+    xyz: Float[Array, "nodes 3"],
+    edges_load: Float[Array, "edges 3"],
+    structure: EquilibriumStructure,
+    is_local: bool = False,
+) -> Float[Array, "nodes 3"]:
     """
     Calculate the tributary edge loads aplied to the nodes of a structure.
     """
@@ -128,7 +160,12 @@ def nodes_load_from_edges(xyz, edges_load, structure, is_local=False):
     return nodes_tributary_edges_load(edges_load, structure)
 
 
-def calculate_edges_load(xyz, edges, edges_load, is_local):
+def calculate_edges_load(
+    xyz: Float[Array, "nodes 3"],
+    edges: Float[Array, "edges 2"],
+    edges_load: Float[Array, "edges 3"],
+    is_local: bool,
+) -> Float[Array, "edges 3"]:
     """
     Transform the edges load to the XYZ cartesian coordinate system if needed.
     """
@@ -140,7 +177,11 @@ def calculate_edges_load(xyz, edges, edges_load, is_local):
     return edges_load_lcs(xyz, edges, edges_load)
 
 
-def edge_load_lcs(xyz, edge, edge_load):
+def edge_load_lcs(
+    xyz: Float[Array, "nodes 3"],
+    edge: Float[Array, "2"],
+    edge_load: Float[Array, "3"],
+) -> Float[Array, "3"]:
     """
     Transform the load vector applied to an edge to a vector in its local coordinate system.
     """
@@ -153,7 +194,11 @@ def edge_load_lcs(xyz, edge, edge_load):
     return edge_load @ lcs
 
 
-def edges_tributary_edges_load(xyz, edges_load, structure):
+def edges_tributary_edges_load(
+    xyz: Float[Array, "nodes 3"],
+    edges_load: Float[Array, "edges 3"],
+    structure: EquilibriumStructure,
+) -> Float[Array, "edges 3"]:
     """
     Calculate the face area load taken by every edge in a datastructure.
     """
@@ -169,7 +214,10 @@ def edges_tributary_edges_load(xyz, edges_load, structure):
 # Node helpers
 # ==========================================================================
 
-def nodes_tributary_edges_load(edges_load, structure):
+def nodes_tributary_edges_load(
+    edges_load: Float[Array, "edges 3"],
+    structure: EquilibriumStructure,
+) -> Float[Array, "nodes 3"]:
     """
     Calculate the load vector applied to the nodes based on the edge loads.
     """

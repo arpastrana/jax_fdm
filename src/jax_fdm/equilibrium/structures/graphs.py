@@ -3,7 +3,11 @@ import jax
 import jax.numpy as jnp
 import numpy as np
 from jax.experimental.sparse import BCOO
+from jaxtyping import Array
+from jaxtyping import Int
 from scipy.sparse import coo_matrix
+from scipy.sparse import csc_matrix
+from scipy.sparse import spmatrix
 
 from jax_fdm import DTYPE_JAX
 from jax_fdm import DTYPE_NP
@@ -23,7 +27,7 @@ class Graph(eqx.Module, IndexingMixins):
     connectivity: jax.Array
     adjacency: jax.Array
 
-    def __init__(self, nodes, edges):
+    def __init__(self, nodes: Int[np.ndarray, "nodes"], edges: Int[np.ndarray, "edges 2"]):
         self.nodes = nodes
 
         assert edges.shape[1] == 2, "Edges in graph must connect exactly 2 nodes"
@@ -34,20 +38,20 @@ class Graph(eqx.Module, IndexingMixins):
         self.adjacency = self._adjacency_matrix()
 
     @property
-    def num_nodes(self):
+    def num_nodes(self) -> int:
         """
         The number of nodes.
         """
         return self.nodes.size
 
     @property
-    def num_edges(self):
+    def num_edges(self) -> int:
         """
         The number of edges.
         """
         return self.edges.shape[0]
 
-    def _connectivity_matrix(self):
+    def _connectivity_matrix(self) -> Array:
         """
         The connectivity matrix between edges and nodes.
         """
@@ -55,7 +59,7 @@ class Graph(eqx.Module, IndexingMixins):
 
         return jnp.asarray(connectivity_matrix(edges_indexed, "array"), dtype=DTYPE_JAX)
 
-    def _adjacency_matrix(self):
+    def _adjacency_matrix(self) -> Array:
         """
         The adjacency matrix between nodes and nodes.
         """
@@ -72,7 +76,7 @@ class GraphSparse(Graph):
     """
     A sparse graph.
     """
-    def _connectivity_matrix(self):
+    def _connectivity_matrix(self) -> Array:
         """
         The connectivity matrix between edges and nodes in JAX format.
 
@@ -111,16 +115,16 @@ class GraphSparse(Graph):
         return super()._connectivity_matrix()
 
     @property
-    def connectivity_scipy(self):
+    def connectivity_scipy(self) -> csc_matrix:
         """
         The connectivity matrix between edges and nodes in SciPy CSC format.
         """
         # TODO: Refactor GraphSparse to return a JAX sparse matrix instead
         edges_indexed = self.edges_indexed
 
-        return connectivity_matrix(edges_indexed, "csc")
+        return connectivity_matrix(edges_indexed, "csc")  # pyright: ignore[reportReturnType]  # rtype="csc" always yields a csc_matrix; connectivity_matrix's return type is a broader union across all rtype literals
 
-    def _adjacency_matrix(self):
+    def _adjacency_matrix(self) -> Array:
         """
         The adjacency matrix between nodes and nodes.
         """
@@ -135,7 +139,7 @@ class GraphSparse(Graph):
 # Helper functions
 # ==========================================================================
 
-def connectivity_matrix(edges, rtype="array"):
+def connectivity_matrix(edges: Int[Array, "edges 2"], rtype: str = "array") -> np.ndarray | list | spmatrix:
     """
     Creates a connectivity matrix from a list of vertex index pairs.
 
@@ -152,7 +156,7 @@ def connectivity_matrix(edges, rtype="array"):
     return build_matrix(C, rtype)
 
 
-def adjacency_matrix(edges, rtype="array"):
+def adjacency_matrix(edges: Int[Array, "edges 2"], rtype: str = "array") -> np.ndarray | list | spmatrix:
     """
     Creates a vertex-vertex adjacency matrix.
 
@@ -178,7 +182,7 @@ def adjacency_matrix(edges, rtype="array"):
     return build_matrix(A.asfptype(), rtype)
 
 
-def build_matrix(M, rtype):
+def build_matrix(M: spmatrix, rtype: str) -> np.ndarray | list | spmatrix:
     """
     Returns a scipy sparse matrix in the requested format.
     """
