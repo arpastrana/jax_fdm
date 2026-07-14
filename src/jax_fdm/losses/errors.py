@@ -1,4 +1,3 @@
-import jax
 import jax.numpy as jnp
 from jaxtyping import Array
 from jaxtyping import Float
@@ -22,11 +21,16 @@ class Error:
         self.collections = []
 
     @staticmethod
-    def error(gstate: GoalState) -> jax.Array:
+    def error(gstate: GoalState) -> Float[Array, ""]:
+        """
+        The value of the error term.
+        """
         raise NotImplementedError
 
-    @staticmethod
-    def errors(errors: jax.Array) -> Float[Array, ""]:
+    def errors(self, errors: Float[Array, "errors"]) -> Float[Array, ""]:
+        """
+        The sum of the individual error terms.
+        """
         return jnp.sum(errors)
 
     def __call__(self, eqstate: EquilibriumState) -> Float[Array, ""]:
@@ -75,7 +79,10 @@ class MeanSquaredError(SquaredError):
 
     Average out all errors because no single error is important enough.
     """
-    def errors(self, errors: Float[Array, "collections"]) -> Float[Array, ""]:
+    def errors(self, errors: Float[Array, "errors"]) -> Float[Array, ""]:
+        """
+        The mean of the individual error terms.
+        """
         return super(MeanSquaredError, self).errors(errors) / self.number_of_goals()
 
 
@@ -83,7 +90,10 @@ class RootMeanSquaredError(MeanSquaredError):
     """
     The root mean squared error.
     """
-    def errors(self, errors: Float[Array, "collections"]) -> Float[Array, ""]:
+    def errors(self, errors: Float[Array, "errors"]) -> Float[Array, ""]:
+        """
+        The root of the mean of the individual error terms.
+        """
         error = super(RootMeanSquaredError, self).errors(errors)
         return jnp.sqrt(error)
 
@@ -95,8 +105,11 @@ class PredictionError(Error):
     You lose when you get too much of something.
     """
     @staticmethod
-    def error(gstate: GoalState) -> jax.Array:
-        return gstate.prediction * gstate.weight
+    def error(gstate: GoalState) -> Float[Array, ""]:
+        """
+        The value of the prediction error.
+        """
+        return jnp.sum(gstate.prediction * gstate.weight)
 
 
 class MeanPredictionError(PredictionError):
@@ -105,8 +118,11 @@ class MeanPredictionError(PredictionError):
 
     Average out all errors because no single error is important enough.
     """
-    def errors(self, errors: jax.Array) -> Float[Array, ""]:
-        return super(PredictionError, self).errors(errors) / self.number_of_goals()
+    def errors(self, errors: Float[Array, "errors"]) -> Float[Array, ""]:
+        """
+        The mean of the individual prediction error terms.
+        """
+        return super().errors(errors) / self.number_of_goals()
 
 
 class AbsoluteError(Error):
@@ -117,6 +133,9 @@ class AbsoluteError(Error):
     """
     @staticmethod
     def error(gstate: GoalState) -> Float[Array, ""]:
+        """
+        The value of the absolute error.
+        """
         return jnp.sum(gstate.weight * jnp.abs(gstate.prediction - gstate.goal))
 
 
@@ -124,8 +143,11 @@ class MeanAbsoluteError(AbsoluteError):
     """
     The canonical mean absolute error.
     """
-    def errors(self, errors: Float[Array, "collections"]) -> Float[Array, ""]:
-        return super(MeanAbsoluteError, self).errors(errors) / self.number_of_goals()
+    def errors(self, errors: Float[Array, "errors"]) -> Float[Array, ""]:
+        """
+        The mean of the individual absolute error terms.
+        """
+        return super().errors(errors) / self.number_of_goals()
 
 
 class LogMaxError(Error):
@@ -136,10 +158,16 @@ class LogMaxError(Error):
     """
     @staticmethod
     def error(gstate: GoalState) -> Float[Array, ""]:
+        """
+        The log error.
+        """
         difference = gstate.prediction - gstate.goal
-        violation = jnp.maximum(difference, 0.0)  # TODO: consider softplus as a smooth alternative
+        # TODO: consider softplus as a smooth alternative
+        violation = jnp.maximum(difference, 0.0)
         # NOTE: shifting difference via (x + 1.0) so that error is log(1) = 0.0 at least.
         # jnp.log1p(x) is equivalent but more numerically stable than jnp.log(x + 1.0)
-        error = jnp.log1p(violation)  # TODO: consider changing to quadratic error for large violations later
+
+        # TODO: consider changing to quadratic error for large violations later
+        error = jnp.log1p(violation)
 
         return jnp.sum(gstate.weight * error)

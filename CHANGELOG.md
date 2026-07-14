@@ -15,6 +15,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Changed `area_polygon`, `area_triangle` and `planarity_triangle` in `geometry` to return a scalar array `Float[Array, ""]` instead of a shape `(1,)` array or a Python float.
+- Changed `PredictionError.error` in `losses` to sum over the goal state so it returns a scalar array, matching its sibling error terms.
+- Changed `Error.errors` in `losses` from a static method to an instance method, unifying the signature across the error term family.
+- Changed `Loss.__call__` in `losses` to always return a scalar array `Float[Array, ""]`, seeding the accumulator with a jax array so an empty loss no longer returns a Python float.
 
 ### Removed
 

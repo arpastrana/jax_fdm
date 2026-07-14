@@ -1,3 +1,6 @@
+from collections.abc import Sequence
+
+import jax.numpy as jnp
 from jaxtyping import Array
 from jaxtyping import Float
 
@@ -16,8 +19,8 @@ class Loss:
     A function composed of error and regularization terms.
     """
     def __init__(self, *args: Error | Regularizer, name: str | None = None):
-        self._terms_error = None
-        self._terms_regularization = None
+        self._error_terms: list[Error] = []
+        self._regularization_terms: list[Regularizer] = []
 
         self.terms_error = args
         self.terms_regularization = args
@@ -28,18 +31,18 @@ class Loss:
         params: EquilibriumParametersState,
         model: EquilibriumModel,
         structure: EquilibriumStructure,
-    ) -> Float[Array, ""] | float:
+    ) -> Float[Array, ""]:
         """
         Compute the scalar output of the loss function.
         """
         eq_state = model(params, structure)
 
-        loss = 0.0
+        loss = jnp.asarray(0.0)
         for error_term in self.terms_error:
             loss = loss + error_term(eq_state)
 
         for reg_term in self.terms_regularization:
-            loss = loss + reg_term(params)  # pyright: ignore[reportCallIssue]  # Regularizer defines __call__ only on its subclasses, not on the base class
+            loss = loss + reg_term(params)
 
         return loss
 
@@ -51,7 +54,7 @@ class Loss:
         return self._error_terms
 
     @terms_error.setter
-    def terms_error(self, terms: tuple[Error | Regularizer, ...]) -> None:
+    def terms_error(self, terms: Sequence[Error | Regularizer]) -> None:
         self._error_terms = [term for term in terms if isinstance(term, Error)]
 
     @property
@@ -62,7 +65,7 @@ class Loss:
         return self._regularization_terms
 
     @terms_regularization.setter
-    def terms_regularization(self, terms: tuple[Error | Regularizer, ...]) -> None:
+    def terms_regularization(self, terms: Sequence[Error | Regularizer]) -> None:
         self._regularization_terms = [term for term in terms if isinstance(term, Regularizer)]
 
     @property
