@@ -210,14 +210,14 @@ def normal_polygon(polygon: Float[Array, "points 3"], unitized: bool = True) -> 
     return normal
 
 
-def area_polygon(polygon: Float[Array, "points 3"]) -> Float[Array, "1"]:
+def area_polygon(polygon: Float[Array, "points 3"]) -> Float[Array, ""]:
     """
     Computes the area of a polygon.
 
     A polygon that is defined as a sequence of unique points and must be
     defined by at least 3 points.
     """
-    return length_vector(normal_polygon(polygon, unitized=False))
+    return jnp.squeeze(length_vector(normal_polygon(polygon, unitized=False)))
 
 
 def normal_triangle(triangle: Float[Array, "3 3"], unitize: bool = False) -> Float[Array, "3"]:
@@ -239,7 +239,7 @@ def normal_triangle(triangle: Float[Array, "3 3"], unitize: bool = False) -> Flo
     return normal
 
 
-def area_triangle(triangle: Float[Array, "3 3"]) -> Float[Array, "1"]:
+def area_triangle(triangle: Float[Array, "3 3"]) -> Float[Array, ""]:
     """
     Calculate the area of a triangle.
 
@@ -247,7 +247,7 @@ def area_triangle(triangle: Float[Array, "3 3"]) -> Float[Array, "1"]:
     -----
     A triangle is defined as a set of exactly three points.
     """
-    return 0.5 * length_vector(normal_triangle(triangle))
+    return 0.5 * jnp.squeeze(length_vector(normal_triangle(triangle)))
 
 
 def planarity_polygon(polygon: Float[Array, "points 3"]) -> Float[Array, ""]:
@@ -275,7 +275,7 @@ def planarity_polygon(polygon: Float[Array, "points 3"]) -> Float[Array, ""]:
     return planarity
 
 
-def planarity_triangle(triangle: Float[Array, "3 3"]) -> float:
+def planarity_triangle(triangle: Float[Array, "3 3"]) -> Float[Array, ""]:
     """
     Calculate the planarity of a triangle.
 
@@ -283,7 +283,7 @@ def planarity_triangle(triangle: Float[Array, "3 3"]) -> float:
     -----
     The planarity of a triangle is 0.0 by construction.
     """
-    return 0.0
+    return jnp.asarray(0.0)
 
 
 def curvature_point_polygon(point: Float[Array, "3"], polygon: Float[Array, "points 3"]) -> Float[Array, ""]:

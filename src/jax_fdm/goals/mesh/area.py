@@ -48,7 +48,7 @@ class MeshAreaGoal(ScalarGoal, MeshGoal):
 
             return xyz_face
 
-        def face_area(face: Int[Array, "vertices"], xyz: Float[Array, "nodes 3"]) -> Float[Array, "1"]:
+        def face_area(face: Int[Array, "vertices"], xyz: Float[Array, "nodes 3"]) -> Float[Array, ""]:
             fxyz = face_xyz(face, xyz)
             return area_polygon(fxyz)
 
@@ -91,7 +91,7 @@ class MeshFacesAreaEqualizeGoal(ScalarGoal, MeshGoal):
 
             return xyz_face
 
-        def face_area(face: Int[Array, "vertices"], xyz: Float[Array, "nodes 3"]) -> Float[Array, "1"]:
+        def face_area(face: Int[Array, "vertices"], xyz: Float[Array, "nodes 3"]) -> Float[Array, ""]:
             fxyz = face_xyz(face, xyz)
             return area_polygon(fxyz)
 

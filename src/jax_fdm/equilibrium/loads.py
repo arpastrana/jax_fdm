@@ -130,7 +130,7 @@ def edge_tributary_faces_load(
     return areas @ floads
 
 
-def edge_tributary_face_area(line: Float[Array, "2 3"], centroid: Float[Array, "3"]) -> Float[Array, "1"]:
+def edge_tributary_face_area(line: Float[Array, "2 3"], centroid: Float[Array, "3"]) -> Float[Array, ""]:
     """
     The triangle-based, face tributary area of an edge.
     """
