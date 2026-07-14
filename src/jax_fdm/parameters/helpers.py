@@ -1,8 +1,16 @@
+from collections.abc import Callable
+from collections.abc import Generator
+from collections.abc import Iterable
+
+import jax
 import jax.numpy as jnp
 import numpy as np
 
 
-def split_parameters(parray, func):
+def split_parameters(
+    parray: jax.Array,
+    func: Callable[[jax.Array], tuple[np.ndarray, ...]],
+) -> tuple[list[jax.Array], np.ndarray]:
     """
     Split a flat array into flat subarrays given a filter function.
     """
@@ -14,14 +22,17 @@ def split_parameters(parray, func):
     return sarrays, adef
 
 
-def combine_parameters(parrays, adef):
+def combine_parameters(parrays: tuple[jax.Array, ...], adef: np.ndarray) -> jax.Array:
     """
     Combine a sequence of flat arrays given a filter function.
     """
     return jnp.concatenate(parrays)[adef]
 
 
-def reshape_parameters(sarrays, shapes):
+def reshape_parameters(
+    sarrays: Iterable[jax.Array],
+    shapes: Iterable[tuple[int, ...]],
+) -> Generator[jax.Array, None, None]:
     """
     Reshape a sequence of flat arrays.
     """
