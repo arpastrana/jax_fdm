@@ -1,4 +1,9 @@
+from jaxtyping import Array
+from jaxtyping import Float
+from jaxtyping import Int
+
 from jax_fdm.constraints.edge import EdgeConstraint
+from jax_fdm.equilibrium import EquilibriumState
 
 
 class EdgeLengthConstraint(EdgeConstraint):
@@ -6,7 +11,7 @@ class EdgeLengthConstraint(EdgeConstraint):
     Constraints the length of an edge between a lower and an upper bound.
     """
     @staticmethod
-    def constraint(eqstate, index):
+    def constraint(eqstate: EquilibriumState, index: Int[Array, ""]) -> Float[Array, "1"]:
         """
         Returns the length of an edge from an equilibrium state.
         """
