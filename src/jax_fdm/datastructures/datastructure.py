@@ -1,6 +1,7 @@
 """
 A force density mesh.
 """
+from collections.abc import Generator
 from math import fabs
 from statistics import stdev
 
@@ -15,25 +16,25 @@ class FDDatastructure(Datastructure):
     # Edges
     # ----------------------------------------------------------------------
 
-    def edge_load(self, key, load=None):
+    def edge_load(self, key: tuple[int, int], load: list[float] | None = None) -> list[float] | None:
         """
         Gets or sets a load on an edge.
         """
         return self.edge_attributes(key, names=("px", "py", "pz"), values=load)
 
-    def edge_forcedensity(self, key, q=None):
+    def edge_forcedensity(self, key: tuple[int, int], q: float | None = None) -> float | None:
         """
         Gets or sets the force density on a single edge.
         """
         return self.edge_attribute(key, name="q", value=q)
 
-    def edge_force(self, key):
+    def edge_force(self, key: tuple[int, int]) -> float | None:
         """
         Gets the forces at a single edge the network.
         """
         return self.edge_attribute(key, name="force")
 
-    def edge_loadpath(self, key):
+    def edge_loadpath(self, key: tuple[int, int]) -> float:
         """
         Gets the load path at a single edge the network.
         """
@@ -41,31 +42,31 @@ class FDDatastructure(Datastructure):
         length = self.edge_attribute(key, name="length")
         return fabs(force * length)
 
-    def edges_forcedensities(self, q=None, keys=None):
+    def edges_forcedensities(self, q: list[float] | None = None, keys: list[tuple[int, int]] | None = None) -> list[float] | None:
         """
         Gets or sets the force densities on a list of edges.
         """
         return self.edges_attribute(name="q", value=q, keys=keys)
 
-    def edges_forces(self, keys=None):
+    def edges_forces(self, keys: list[tuple[int, int]] | None = None) -> list[float]:
         """
         Gets the forces on the edges of the network.
         """
         return self.edges_attribute(keys=keys, name="force")
 
-    def edges_lengths(self, keys=None):
+    def edges_lengths(self, keys: list[tuple[int, int]] | None = None) -> list[float]:
         """
         Gets the lengths on the edges of the network.
         """
         return self.edges_attribute(keys=keys, name="length")
 
-    def edges_loads(self, load=None, keys=None):
+    def edges_loads(self, load: list[float] | None = None, keys: list[tuple[int, int]] | None = None) -> list[list[float]] | None:
         """
         Gets or sets a load to the edges of the datastructure.
         """
         return self.edges_attributes(names=("px", "py", "pz"), values=load, keys=keys)
 
-    def edges_loadpaths(self, keys=None):
+    def edges_loadpaths(self, keys: list[tuple[int, int]] | None = None) -> Generator[float, None, None]:
         """
         Gets the load path on the edges of the network.
         """
@@ -77,13 +78,13 @@ class FDDatastructure(Datastructure):
     # Datastructure properties
     # ----------------------------------------------------------------------
 
-    def loadpath(self):
+    def loadpath(self) -> float:
         """
         Gets the total load path of the network.
         """
         return sum(list(self.edges_loadpaths()))
 
-    def print_stats(self, other_stats=None, ndigits=3):
+    def print_stats(self, other_stats: dict[str, list[float]] | None = None, ndigits: int = 3) -> None:
         """
         Print information aboud the equilibrium state of the network.
         """
@@ -91,7 +92,7 @@ class FDDatastructure(Datastructure):
         edges_neg = []
         for edge in self.edges():
             _edges = edges_neg
-            if self.edge_forcedensity(edge) > 0.0:
+            if self.edge_forcedensity(edge) > 0.0:  # pyright: ignore[reportOptionalOperand]  # getter-mode call always returns float
                 _edges = edges_pos
             _edges.append(edge)
 
