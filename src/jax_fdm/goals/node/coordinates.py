@@ -1,3 +1,8 @@
+from jaxtyping import Array
+from jaxtyping import Float
+from jaxtyping import Int
+
+from jax_fdm.equilibrium import EquilibriumState
 from jax_fdm.goals import ScalarGoal
 from jax_fdm.goals.node import NodeGoal
 
@@ -7,7 +12,7 @@ class NodeXCoordinateGoal(ScalarGoal, NodeGoal):
     Make a node of a network to reach a target X coordinate.
     """
     @staticmethod
-    def prediction(eq_state, index):
+    def prediction(eq_state: EquilibriumState, index: Int[Array, ""]) -> Float[Array, "1"]:
         """
         The current X coordinate of the node in a network.
         """
@@ -19,7 +24,7 @@ class NodeYCoordinateGoal(ScalarGoal, NodeGoal):
     Make a node of a network to reach a target Y coordinate.
     """
     @staticmethod
-    def prediction(eq_state, index):
+    def prediction(eq_state: EquilibriumState, index: Int[Array, ""]) -> Float[Array, "1"]:
         """
         The current Y coordinate of the node in a network.
         """
@@ -31,7 +36,7 @@ class NodeZCoordinateGoal(ScalarGoal, NodeGoal):
     Make a node of a network to reach a target Z coordinate.
     """
     @staticmethod
-    def prediction(eq_state, index):
+    def prediction(eq_state: EquilibriumState, index: Int[Array, ""]) -> Float[Array, "1"]:
         """
         The current Z coordinate of the node in a network.
         """

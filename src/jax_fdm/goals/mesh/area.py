@@ -1,6 +1,12 @@
 import jax.numpy as jnp
 from jax import vmap
+from jaxtyping import Array
+from jaxtyping import Float
+from jaxtyping import Int
 
+from jax_fdm.equilibrium import EquilibriumMeshStructure
+from jax_fdm.equilibrium import EquilibriumModel
+from jax_fdm.equilibrium import EquilibriumState
 from jax_fdm.geometry import area_polygon
 from jax_fdm.goals import ScalarGoal
 from jax_fdm.goals.mesh import MeshGoal
@@ -10,22 +16,22 @@ class MeshAreaGoal(ScalarGoal, MeshGoal):
     """
     Maximize the negative area of a mesh.
     """
-    def __init__(self, target=0.0, weight=1.0):
+    def __init__(self, target: float | Float[Array, "..."] = 0.0, weight: float = 1.0):
         super().__init__(key=-1, target=target, weight=weight)
         self.faces = None
 
-    def init(self, model, structure):
+    def init(self, model: EquilibriumModel, structure: EquilibriumMeshStructure) -> None:
         """
         Initialize the goal with information of a model and a structure.
         """
         super().init(model, structure)
         self.faces = structure.faces_indexed
 
-    def prediction(self, eq_state, index):
+    def prediction(self, eq_state: EquilibriumState, index: Int[Array, ""]) -> Float[Array, "1"]:
         """
         The current load path of the network.
         """
-        def face_xyz(face, xyz):
+        def face_xyz(face: Int[Array, "vertices"], xyz: Float[Array, "nodes 3"]) -> Float[Array, "vertices 3"]:
             """
             Get this face XYZ coordinates from XYZ vertices array.
             """
@@ -42,12 +48,12 @@ class MeshAreaGoal(ScalarGoal, MeshGoal):
 
             return xyz_face
 
-        def face_area(face, xyz):
+        def face_area(face: Int[Array, "vertices"], xyz: Float[Array, "nodes 3"]) -> Float[Array, "1"]:
             fxyz = face_xyz(face, xyz)
             return area_polygon(fxyz)
 
         faces_area = vmap(face_area, in_axes=(0, None))
-        areas = faces_area(self.faces, eq_state.xyz)
+        areas = faces_area(self.faces, eq_state.xyz)  # pyright: ignore[reportArgumentType]  # self.faces is Optional by declaration but always set in init() before this runs
 
         area = jnp.sum(areas) * -1.0
 
@@ -58,22 +64,22 @@ class MeshFacesAreaEqualizeGoal(ScalarGoal, MeshGoal):
     """
     Maximize the negative area of a mesh.
     """
-    def __init__(self, target=0.0, weight=1.0):
+    def __init__(self, target: float | Float[Array, "..."] = 0.0, weight: float = 1.0):
         super().__init__(key=-1, target=target, weight=weight)
         self.faces = None
 
-    def init(self, model, structure):
+    def init(self, model: EquilibriumModel, structure: EquilibriumMeshStructure) -> None:
         """
         Initialize the goal with information of a model and a structure.
         """
         super().init(model, structure)
         self.faces = structure.faces_indexed
 
-    def prediction(self, eq_state, index):
+    def prediction(self, eq_state: EquilibriumState, index: Int[Array, ""]) -> Float[Array, "1"]:
         """
         The current load path of the network.
         """
-        def face_xyz(face, xyz):
+        def face_xyz(face: Int[Array, "vertices"], xyz: Float[Array, "nodes 3"]) -> Float[Array, "vertices 3"]:
             """
             Get this face XYZ coordinates from XYZ vertices array.
             """
@@ -85,11 +91,11 @@ class MeshFacesAreaEqualizeGoal(ScalarGoal, MeshGoal):
 
             return xyz_face
 
-        def face_area(face, xyz):
+        def face_area(face: Int[Array, "vertices"], xyz: Float[Array, "nodes 3"]) -> Float[Array, "1"]:
             fxyz = face_xyz(face, xyz)
             return area_polygon(fxyz)
 
         faces_area = vmap(face_area, in_axes=(0, None))
-        areas = faces_area(self.faces, eq_state.xyz)
+        areas = faces_area(self.faces, eq_state.xyz)  # pyright: ignore[reportArgumentType]  # self.faces is Optional by declaration but always set in init() before this runs
 
         return jnp.atleast_1d(jnp.var(areas) / jnp.mean(areas))

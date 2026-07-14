@@ -1,10 +1,11 @@
 from typing import NamedTuple
 
-import jax.numpy as jnp
 import numpy as np
+from jaxtyping import Array
+from jaxtyping import Float
 
 
 class GoalState(NamedTuple):
-    goal: np.ndarray
-    weight: np.ndarray
-    prediction: jnp.ndarray
+    goal: Float[np.ndarray, "..."]
+    weight: Float[np.ndarray, "..."]
+    prediction: Float[Array, "..."]

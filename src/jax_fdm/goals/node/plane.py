@@ -1,4 +1,6 @@
 import numpy as np
+from jaxtyping import Array
+from jaxtyping import Float
 
 from jax_fdm.geometry import closest_point_on_plane
 from jax_fdm.goals.node import NodePointGoal
@@ -16,11 +18,11 @@ class NodePlaneGoal(NodePointGoal):
         return self._target
 
     @target.setter
-    def target(self, target):
+    def target(self, target: Float[Array, "..."] | Float[np.ndarray, "..."]) -> None:
         self._target = np.reshape(target, (-1, 2, 3))
 
     @staticmethod
-    def goal(target, prediction):
+    def goal(target: Float[Array, "2 3"], prediction: Float[Array, "3"]) -> Float[Array, "3"]:
         """
         Calculate the closest point on the target plane given the current node coordinates.
         """

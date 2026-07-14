@@ -1,6 +1,11 @@
 """
 A bunch of goals to strive for.
 """
+from jaxtyping import Array
+from jaxtyping import Float
+from jaxtyping import Int
+
+from jax_fdm.equilibrium import EquilibriumState
 from jax_fdm.geometry import length_vector
 from jax_fdm.geometry import normalize_vector
 from jax_fdm.goals import ScalarGoal
@@ -13,7 +18,7 @@ class NodeResidualForceGoal(ScalarGoal, NodeGoal):
     Make the residual force in a network to match a non-negative magnitude.
     """
     @staticmethod
-    def prediction(eq_state, index):
+    def prediction(eq_state: EquilibriumState, index: Int[Array, ""]) -> Float[Array, "1"]:
         """
         The residual at the the predicted node of the network.
         """
@@ -27,7 +32,7 @@ class NodeResidualVectorGoal(VectorGoal, NodeGoal):
     Make the residual force in a network to match the magnitude and direction of a vector.
     """
     @staticmethod
-    def prediction(eq_state, index):
+    def prediction(eq_state: EquilibriumState, index: Int[Array, ""]) -> Float[Array, "3"]:
         """
         The residual at the the predicted node of the network.
         """
@@ -50,7 +55,7 @@ class NodeResidualDirectionGoal(VectorGoal, NodeGoal):
     a proper metric.
     """
     @staticmethod
-    def prediction(eq_state, index):
+    def prediction(eq_state: EquilibriumState, index: Int[Array, ""]) -> Float[Array, "3"]:
         """
         The residual at the the predicted node of the network.
         """
@@ -59,7 +64,7 @@ class NodeResidualDirectionGoal(VectorGoal, NodeGoal):
         return normalize_vector(residual)
 
     @staticmethod
-    def goal(target, prediction):
+    def goal(target: Float[Array, "3"], prediction: Float[Array, "3"]) -> Float[Array, "3"]:
         """
         """
         return normalize_vector(target)

@@ -1,6 +1,12 @@
 import jax.numpy as jnp
 from jax import vmap
+from jaxtyping import Array
+from jaxtyping import Float
+from jaxtyping import Int
 
+from jax_fdm.equilibrium import EquilibriumMeshStructure
+from jax_fdm.equilibrium import EquilibriumModel
+from jax_fdm.equilibrium import EquilibriumState
 from jax_fdm.geometry import cosines_angles_polygon
 from jax_fdm.goals import ScalarGoal
 from jax_fdm.goals.face import FaceGoal
@@ -14,11 +20,16 @@ class FaceRectangularGoal(ScalarGoal, FaceGoal):
     -----
     This goal is only applicable to quadrilateral mesh faces.
     """
-    def __init__(self, key, weight=1.0, target=0.0):
+    def __init__(
+        self,
+        key: int | tuple[int, int] | list,
+        weight: float = 1.0,
+        target: float | Float[Array, "..."] = 0.0,
+    ):
         super().__init__(key=key, target=target, weight=weight)
         self.face_indices = None
 
-    def init(self, model, structure):
+    def init(self, model: EquilibriumModel, structure: EquilibriumMeshStructure) -> None:
         """
         Initialize the goal with information of a model and a structure.
         """
@@ -26,7 +37,7 @@ class FaceRectangularGoal(ScalarGoal, FaceGoal):
         face_indices = structure.faces_indexed[self.index]
         self.face_indices = face_indices[:, :4]
 
-    def prediction(self, eq_state, index):
+    def prediction(self, eq_state: EquilibriumState, index: Int[Array, ""]) -> Float[Array, "1"]:
         """
         The sum of the cosine of the internal angles of a face.
         """

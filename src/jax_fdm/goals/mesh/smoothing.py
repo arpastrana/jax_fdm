@@ -1,6 +1,12 @@
 import jax.numpy as jnp
 from jax import vmap
+from jaxtyping import Array
+from jaxtyping import Float
+from jaxtyping import Int
 
+from jax_fdm.equilibrium import EquilibriumMeshStructure
+from jax_fdm.equilibrium import EquilibriumModel
+from jax_fdm.equilibrium import EquilibriumState
 from jax_fdm.goals import ScalarGoal
 from jax_fdm.goals.mesh import MeshGoal
 
@@ -24,7 +30,7 @@ class MeshSmoothGoal(ScalarGoal, MeshGoal):
         self.adjacency = None
         self.indices_free = None
 
-    def init(self, model, structure):
+    def init(self, model: EquilibriumModel, structure: EquilibriumMeshStructure) -> None:
         """
         Initialize the constraint with information from an equilibrium model.
         """
@@ -32,7 +38,7 @@ class MeshSmoothGoal(ScalarGoal, MeshGoal):
         self.adjacency = structure.adjacency
         self.indices_free = structure.indices_free
 
-    def prediction(self, eq_state, index):
+    def prediction(self, eq_state: EquilibriumState, index: Int[Array, ""]) -> Float[Array, "1"]:
         """
         The current smoothness of the vertex.
         """
@@ -40,14 +46,18 @@ class MeshSmoothGoal(ScalarGoal, MeshGoal):
         adjacency = self.adjacency
         fairness_fn = vmap(vertex_nbrs_fairness_ngon, in_axes=(None, 0, 0))
 
-        fairness_vertices = fairness_fn(xyz, xyz, adjacency)
+        fairness_vertices = fairness_fn(xyz, xyz, adjacency)  # pyright: ignore[reportArgumentType]  # self.adjacency is Optional by declaration but always set in init() before this runs
         fairness_vertices = fairness_vertices[self.indices_free]
         fairness = jnp.mean(fairness_vertices)
 
         return jnp.atleast_1d(fairness)
 
 
-def vertex_nbrs_fairness_ngon(xyz_all, xyz_vertex, adjacency_vertex):
+def vertex_nbrs_fairness_ngon(
+    xyz_all: Float[Array, "vertices 3"],
+    xyz_vertex: Float[Array, "3"],
+    adjacency_vertex: Float[Array, "vertices"],
+) -> Float[Array, ""]:
     """
     Compute the fairness of an n-gon vertex neighborhood.
     """

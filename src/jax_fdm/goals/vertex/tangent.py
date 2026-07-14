@@ -1,5 +1,9 @@
 import numpy as np
+from jaxtyping import Array
+from jaxtyping import Float
+from jaxtyping import Int
 
+from jax_fdm.equilibrium import EquilibriumState
 from jax_fdm.goals.vertex import VertexNormalAngleGoal
 
 
@@ -14,10 +18,16 @@ class VertexTangentAngleGoal(VertexNormalAngleGoal):
     The sign follows the winding of the mesh faces, which must be unified;
     see the notes of `VertexNormalAngleGoal`.
     """
-    def __init__(self, key, vector, target, weight=1.0):
+    def __init__(
+        self,
+        key: int | tuple[int, int] | list,
+        vector: Float[Array, "..."] | Float[np.ndarray, "..."],
+        target: float | Float[Array, "..."],
+        weight: float = 1.0,
+    ):
         super().__init__(key=key, vector=vector, target=target, weight=weight)
 
-    def prediction(self, eqstate, index):
+    def prediction(self, eqstate: EquilibriumState, index: Int[Array, ""]) -> Float[Array, "1"]:
         """
         Returns the angle between the vertex tangent and the reference vector.
         """

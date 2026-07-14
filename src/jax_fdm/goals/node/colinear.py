@@ -1,5 +1,11 @@
 import jax.numpy as jnp
+from jaxtyping import Array
+from jaxtyping import Float
+from jaxtyping import Int
 
+from jax_fdm.equilibrium import EquilibriumModel
+from jax_fdm.equilibrium import EquilibriumState
+from jax_fdm.equilibrium import EquilibriumStructure
 from jax_fdm.geometry import colinearity_points
 from jax_fdm.geometry import curvature_points
 from jax_fdm.goals import ScalarGoal
@@ -16,17 +22,17 @@ class NodesColinearGoal(ScalarGoal, NodeGoal):
     - The goal applies to a *collection* of ordered nodes and is therefore not collectible.
     - The start and end points are assumed to be fixed.
     """
-    def __init__(self, key, weight=1.0):
+    def __init__(self, key: int | tuple[int, int] | list, weight: float = 1.0):
         super().__init__(key=key, target=0.0, weight=weight)
         self.is_collectible = False
 
-    def init(self, model, structure):
+    def init(self, model: EquilibriumModel, structure: EquilibriumStructure) -> None:
         """
         Initialize the goal with information from an equilibrium model.
         """
         self.index = [super().index_from_model(model, structure)]
 
-    def prediction(self, eq_state, index):
+    def prediction(self, eq_state: EquilibriumState, index: Int[Array, "points"]) -> Float[Array, "1"]:
         """
         Length-normalized colinearity energy of the ordered points.
         """
@@ -44,17 +50,17 @@ class NodesCurvatureGoal(ScalarGoal, NodeGoal):
     - The goal applies to a *collection* of ordered nodes and is therefore not collectible.
     - The start and end points are assumed to be fixed.
     """
-    def __init__(self, key, weight=1.0):
+    def __init__(self, key: int | tuple[int, int] | list, weight: float = 1.0):
         super().__init__(key=key, target=0.0, weight=weight)
         self.is_collectible = False
 
-    def init(self, model, structure):
+    def init(self, model: EquilibriumModel, structure: EquilibriumStructure) -> None:
         """
         Initialize the goal with information from an equilibrium model.
         """
         self.index = [super().index_from_model(model, structure)]
 
-    def prediction(self, eq_state, index):
+    def prediction(self, eq_state: EquilibriumState, index: Int[Array, "points"]) -> Float[Array, "1"]:
         """
         Curvature energy of the ordered points.
         """

@@ -1,7 +1,13 @@
 import numpy as np
 from jax import vmap
+from jaxtyping import Array
+from jaxtyping import Float
+from jaxtyping import Int
 
 from jax_fdm import DTYPE_NP
+from jax_fdm.equilibrium import EquilibriumModel
+from jax_fdm.equilibrium import EquilibriumState
+from jax_fdm.equilibrium import EquilibriumStructure
 from jax_fdm.goals import GoalState
 
 # ==========================================================================
@@ -14,7 +20,12 @@ class Goal:
 
     All goal subclasses must inherit from this class.
     """
-    def __init__(self, key, target, weight):
+    def __init__(
+        self,
+        key: int | tuple[int, int] | list,
+        target: float | Float[Array, "..."] | Float[np.ndarray, "..."],
+        weight: float,
+    ):
         self._key = None
         self._weight = None
         self._target = None
@@ -34,7 +45,7 @@ class Goal:
         return self._key
 
     @key.setter
-    def key(self, key):
+    def key(self, key: int | tuple[int, int] | list) -> None:
         if isinstance(key, int) or (isinstance(key, tuple) and len(key) == 2):
             key = key
         elif sum(isinstance(i, list) for i in key) > 0:
@@ -49,9 +60,9 @@ class Goal:
         return self._index
 
     @index.setter
-    def index(self, index):
+    def index(self, index: int | Int[np.ndarray, "elements"]) -> None:
         if isinstance(index, int):
-            index = [index]
+            index = [index]  # pyright: ignore[reportAssignmentType]  # reassigned to a list only to feed np.array below, not the annotated element type
         self._index = np.array(index)
 
     @property
@@ -62,7 +73,7 @@ class Goal:
         return self._weight
 
     @weight.setter
-    def weight(self, weight):
+    def weight(self, weight: float | Float[Array, "..."] | Float[np.ndarray, "..."]) -> None:
         self._weight = np.reshape(np.asarray(weight, dtype=DTYPE_NP), (-1, 1))
 
     @property
@@ -73,29 +84,29 @@ class Goal:
         raise NotImplementedError
 
     @staticmethod
-    def goal(target, prediction):
+    def goal(target: Float[Array, "..."], prediction: Float[Array, "..."]) -> Float[Array, "..."]:
         """
         The target to achieve.
         """
         return target
 
-    def init(self, model, structure):
+    def init(self, model: EquilibriumModel, structure: EquilibriumStructure) -> None:
         """
         Initialize the goal with information from an equilibrium model.
         """
-        self.index = self.index_from_model(model, structure)
+        self.index = self.index_from_model(model, structure)  # pyright: ignore[reportAttributeAccessIssue]  # index_from_model is defined by concrete Goal subclasses (edge/face/mesh/network/node/vertex), not on this base class
 
-    def __call__(self, eqstate):
+    def __call__(self, eqstate: EquilibriumState) -> GoalState:
         """
         Return the current goal state.
         """
-        prediction = vmap(self.prediction, in_axes=(None, 0))(eqstate, self.index)
+        prediction = vmap(self.prediction, in_axes=(None, 0))(eqstate, self.index)  # pyright: ignore[reportAttributeAccessIssue]  # prediction is defined by concrete Goal subclasses, not on this base class
         goal = vmap(self.goal)(self.target, prediction)
 
         msg = f"Goal {self.__class__.__name__} shape: {goal.shape} vs. prediction shape: {prediction.shape}"
         assert goal.shape == prediction.shape, msg
 
-        return GoalState(goal=goal, prediction=prediction, weight=self.weight)
+        return GoalState(goal=goal, prediction=prediction, weight=self.weight)  # pyright: ignore[reportArgumentType]  # self.weight is Optional by declaration but always populated in __init__ before __call__ runs
 
 
 # ==========================================================================
@@ -114,9 +125,9 @@ class ScalarGoal:
         return self._target
 
     @target.setter
-    def target(self, target):
+    def target(self, target: float | Float[Array, "..."] | Float[np.ndarray, "..."]) -> None:
         if isinstance(target, (int, float)):
-            target = [target]
+            target = [target]  # pyright: ignore[reportAssignmentType]  # reassigned to a list only to feed np.array below, not the annotated element type
         self._target = np.reshape(np.array(target), (-1, 1))
 
 
@@ -136,5 +147,5 @@ class VectorGoal:
         return self._target
 
     @target.setter
-    def target(self, target):
+    def target(self, target: Float[Array, "..."] | Float[np.ndarray, "..."]) -> None:
         self._target = np.reshape(np.asarray(target, dtype=DTYPE_NP), (-1, 3))

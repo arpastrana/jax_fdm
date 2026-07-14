@@ -1,7 +1,13 @@
 import jax.numpy as jnp
 import numpy as np
 from jax import vmap
+from jaxtyping import Array
+from jaxtyping import Float
+from jaxtyping import Int
 
+from jax_fdm.equilibrium import EquilibriumMeshStructure
+from jax_fdm.equilibrium import EquilibriumModel
+from jax_fdm.equilibrium import EquilibriumState
 from jax_fdm.geometry import angle_vectors
 from jax_fdm.geometry import normal_polygon
 from jax_fdm.geometry import normalize_vector
@@ -28,7 +34,13 @@ class VertexNormalAngleGoal(ScalarGoal, VertexGoal):
     check is performed; `compas.datastructures.Mesh.unify_cycles` unifies
     the winding of a mesh upfront if needed.
     """
-    def __init__(self, key, vector, target, weight=1.0):
+    def __init__(
+        self,
+        key: int | tuple[int, int] | list,
+        vector: Float[Array, "..."] | Float[np.ndarray, "..."],
+        target: float | Float[Array, "..."],
+        weight: float = 1.0,
+    ):
         super().__init__(key=key, target=target, weight=weight)
         self._vector = None
         self.vector = vector
@@ -44,19 +56,19 @@ class VertexNormalAngleGoal(ScalarGoal, VertexGoal):
         return self._vector
 
     @vector.setter
-    def vector(self, vector):
+    def vector(self, vector: Float[Array, "..."] | Float[np.ndarray, "..."]) -> None:
         self._vector = jnp.reshape(jnp.asarray(vector), (-1, 3))
 
-    def vectors(self):
+    def vectors(self) -> Float[np.ndarray, "elements 3"]:
         """
         Create a matrix of vectors.
         """
-        matrix = np.zeros((max(self.index) + 1, 3))
-        for vec, idx in zip(self.vector, self.index):
+        matrix = np.zeros((max(self.index) + 1, 3))  # pyright: ignore[reportArgumentType]  # self.index is Optional by declaration but always populated by init() before this runs
+        for vec, idx in zip(self.vector, self.index):  # pyright: ignore[reportArgumentType]  # self.vector/self.index are always arrays by the time vectors() runs
             matrix[idx, :] = vec
         return matrix
 
-    def init(self, model, structure):
+    def init(self, model: EquilibriumModel, structure: EquilibriumMeshStructure) -> None:
         """
         Initialize the goal with information from an equilibrium model.
         """
@@ -65,11 +77,11 @@ class VertexNormalAngleGoal(ScalarGoal, VertexGoal):
         self.faces_indexed = structure.faces_indexed
         self.connectivity_faces_vertices = structure.connectivity_faces_vertices
 
-    def face_normals(self, xyz):
+    def face_normals(self, xyz: Float[Array, "nodes 3"]) -> Float[Array, "faces 3"]:
         """
         Compute the (unnormalized) normal of every face in the mesh.
         """
-        def face_normal(face, xyz):
+        def face_normal(face: Int[Array, "vertices"], xyz: Float[Array, "nodes 3"]) -> Float[Array, "3"]:
             face = jnp.ravel(face)
             xyz_face = xyz[face, :]
             xyz_repl = xyz_face[0, :]
@@ -81,19 +93,19 @@ class VertexNormalAngleGoal(ScalarGoal, VertexGoal):
 
             return normal_polygon(fxyz, unitized=False)
 
-        return vmap(face_normal, in_axes=(0, None))(self.faces_indexed, xyz)
+        return vmap(face_normal, in_axes=(0, None))(self.faces_indexed, xyz)  # pyright: ignore[reportArgumentType]  # self.faces_indexed is Optional by declaration but always set in init() before this runs
 
-    def vertex_normal(self, eqstate, index):
+    def vertex_normal(self, eqstate: EquilibriumState, index: Int[Array, ""]) -> Float[Array, "3"]:
         """
         Get the unitized normal vector at a vertex.
         """
         face_normals = self.face_normals(eqstate.xyz)
-        mask = jnp.where(self.connectivity_faces_vertices[:, index] > 0.0, 1.0, 0.0)
+        mask = jnp.where(self.connectivity_faces_vertices[:, index] > 0.0, 1.0, 0.0)  # pyright: ignore[reportOptionalSubscript]  # self.connectivity_faces_vertices is Optional by declaration but always set in init() before this runs
         normal = jnp.sum(jnp.reshape(mask, (-1, 1)) * face_normals, axis=0)
 
         return normalize_vector(normal)
 
-    def prediction(self, eqstate, index):
+    def prediction(self, eqstate: EquilibriumState, index: Int[Array, ""]) -> Float[Array, "1"]:
         """
         Returns the angle between the vertex normal and the reference vector.
         """
@@ -101,6 +113,6 @@ class VertexNormalAngleGoal(ScalarGoal, VertexGoal):
 
         # the signed angle is covariant with the normal's orientation, which
         # the winding of the incident faces determines
-        angle = angle_vectors(normal, self.vector[index, :])
+        angle = angle_vectors(normal, self.vector[index, :])  # pyright: ignore[reportOptionalSubscript]  # self.vector is Optional by declaration but always set in __init__ before this runs
 
         return jnp.atleast_1d(angle)
