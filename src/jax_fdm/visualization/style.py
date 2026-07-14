@@ -1,3 +1,4 @@
+from collections.abc import Callable
 from math import fabs
 
 from compas.colors import Color
@@ -7,6 +8,8 @@ from compas.geometry import length_vector
 from compas.geometry import normalize_vector
 from compas.geometry import scale_vector
 from compas.itertools import remap_values
+from jax_fdm.datastructures import FDMesh
+from jax_fdm.datastructures import FDNetwork
 
 __all__ = [
     "edge_colors",
@@ -54,7 +57,11 @@ ARROW_BODYWIDTH = 0.012
 # Edge styling
 # ==========================================================================
 
-def edge_colors(datastructure, edges, color=None):
+def edge_colors(
+    datastructure: FDNetwork | FDMesh,
+    edges: list[tuple[int, int]],
+    color: Color | dict[tuple[int, int], Color] | str | None = None,
+) -> dict[tuple[int, int], Color]:
     """
     Map every edge to a color.
 
@@ -74,7 +81,7 @@ def edge_colors(datastructure, edges, color=None):
 
     if color == "fd":
         cmap = COLORMAP_FD
-        values = [fabs(datastructure.edge_forcedensity(edge)) for edge in edges]
+        values = [fabs(datastructure.edge_forcedensity(edge)) for edge in edges]  # pyright: ignore[reportArgumentType]  # getter-mode call (no q kwarg) always returns a float
         try:
             ratios = remap_values(values)
         except ZeroDivisionError:
@@ -82,13 +89,17 @@ def edge_colors(datastructure, edges, color=None):
         return {edge: cmap(ratio) for edge, ratio in zip(edges, ratios)}
 
     if color == "force":
-        return {edge: COLOR_TENSION if datastructure.edge_force(edge) > 0.0 else COLOR_COMPRESSION
+        return {edge: COLOR_TENSION if datastructure.edge_force(edge) > 0.0 else COLOR_COMPRESSION  # pyright: ignore[reportOptionalOperand]  # getter-mode call always returns a float
                 for edge in edges}
 
     return {edge: COLOR_EDGE for edge in edges}
 
 
-def edge_widths(datastructure, edges, width=None):
+def edge_widths(
+    datastructure: FDNetwork | FDMesh,
+    edges: list[tuple[int, int]],
+    width: float | dict[tuple[int, int], float] | tuple[float, float] | None = None,
+) -> dict[tuple[int, int], float]:
     """
     Map every edge to a width.
 
@@ -114,7 +125,7 @@ def edge_widths(datastructure, edges, width=None):
         if not edges:
             return {}
 
-        forces = [fabs(datastructure.edge_force(edge)) for edge in edges]
+        forces = [fabs(datastructure.edge_force(edge)) for edge in edges]  # pyright: ignore[reportArgumentType]  # getter-mode call always returns a float
 
         if min(forces) == max(forces):
             widths = [width_max] * len(edges)
@@ -133,7 +144,12 @@ def edge_widths(datastructure, edges, width=None):
 # Point styling
 # ==========================================================================
 
-def point_colors(points, is_support, color=None, default=None):
+def point_colors(
+    points: list[int],
+    is_support: Callable[[int], bool],
+    color: Color | dict[int, Color] | None = None,
+    default: Color | None = None,
+) -> dict[int, Color]:
     """
     Map every point to a color, defaulting supports to green.
 
@@ -158,7 +174,7 @@ def point_colors(points, is_support, color=None, default=None):
     return {point: COLOR_SUPPORT if is_support(point) else default for point in points}
 
 
-def point_sizes(points, size=None):
+def point_sizes(points: list[int], size: float | dict[int, float] | None = None) -> dict[int, float]:
     """
     Map every point to a size.
 
@@ -173,7 +189,7 @@ def point_sizes(points, size=None):
     return {point: size if size is not None else POINT_SIZE for point in points}
 
 
-def reaction_color_default(edgecolor):
+def reaction_color_default(edgecolor: Color | dict | str | None) -> Color:
     """
     The default reaction color, given the edge color mode.
 
@@ -189,7 +205,13 @@ def reaction_color_default(edgecolor):
 # Arrows
 # ==========================================================================
 
-def load_arrows(origins, loads, clearances, scale, tol):
+def load_arrows(
+    origins: list[list[float]],
+    loads: list[list[float]],
+    clearances: list[float],
+    scale: float,
+    tol: float,
+) -> tuple[list[list[float]], list[list[float]]]:
     """
     Compute the anchor and vector of the load arrow at every point.
 
@@ -234,7 +256,14 @@ def load_arrows(origins, loads, clearances, scale, tol):
     return anchors, vectors
 
 
-def reaction_arrows(origins, reactions, forces, scale, tol, clearances=None):
+def reaction_arrows(
+    origins: list[list[float]],
+    reactions: list[list[float]],
+    forces: list[list[float]],
+    scale: float,
+    tol: float,
+    clearances: list[float] | None = None,
+) -> tuple[list[list[float]], list[list[float]]]:
     """
     Compute the anchor and vector of the reaction arrow at every point.
 

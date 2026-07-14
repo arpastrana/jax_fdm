@@ -1,10 +1,15 @@
+from typing import Any
+from typing import Callable
+
 import compas_viewer.components.sidebar
 from compas_viewer import Viewer as CompasViewer
 from compas_viewer.config import Config
 from compas_viewer.config import RendererConfig
 from compas_viewer.config import WindowConfig
 
+from compas.datastructures import Datastructure
 from compas.datastructures import Graph
+from compas.geometry import Geometry
 from jax_fdm.datastructures import FDMesh
 from jax_fdm.datastructures import FDNetwork
 from jax_fdm.visualization.viewers.buffer_manager import FastBufferManager
@@ -43,7 +48,8 @@ class Viewer(CompasViewer):
 
     The window closes between shows while the camera carries over.
     """
-    def __init__(self, width=None, height=None, show_grid=None, config=None, **kwargs):
+    def __init__(self, width: int | None = None, height: int | None = None, show_grid: bool | None = None,
+                 config: Config | None = None, **kwargs: Any) -> None:
         if config is None:
             window = WindowConfig(width=width or 1200, height=height or 800)
             renderer = RendererConfig(show_grid=show_grid if show_grid is not None else False,
@@ -77,7 +83,7 @@ class Viewer(CompasViewer):
             print(f"WARNING: The window size {width}x{height} exceeds the available "
                   f"screen space. Resizing the window to {window.width}x{window.height}")
 
-    def clear(self):
+    def clear(self) -> None:
         """
         Empty the scene for the next round of adds.
 
@@ -88,7 +94,7 @@ class Viewer(CompasViewer):
         self.scene.clear()
         self.scene.instance_colors.clear()
 
-    def show(self):
+    def show(self) -> None:
         """
         Show the viewer window and block until it is closed.
 
@@ -112,7 +118,7 @@ class Viewer(CompasViewer):
         finally:
             self.running = False
 
-    def on(self, interval, frames=None):
+    def on(self, interval: int, frames: int | None = None) -> Callable:
         """
         Decorate a frame callback for the animation loop.
 
@@ -130,7 +136,7 @@ class Viewer(CompasViewer):
 
         return super().on(interval, frames)
 
-    def add(self, data, **kwargs):
+    def add(self, data: Geometry | Datastructure, **kwargs: Any) -> Any:
         """
         Add a data object to the viewer.
 

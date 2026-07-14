@@ -1,10 +1,13 @@
 from functools import lru_cache
 
 import numpy as np
+import numpy.typing as npt
 
 from compas.geometry import Cylinder
 from compas.geometry import Sphere
 from jax_fdm.visualization.shapes import Arrow
+
+Soup = tuple[np.ndarray, np.ndarray]
 
 __all__ = ["cylinders_buffer", "arrows_buffer", "spheres_buffer", "soup_indices", "soup_colors_rgb"]
 
@@ -19,7 +22,7 @@ __all__ = ["cylinders_buffer", "arrows_buffer", "spheres_buffer", "soup_indices"
 # fully vectorized. Templates are cached per resolution.
 
 @lru_cache(maxsize=None)
-def cylinder_template(u=16):
+def cylinder_template(u: int = 16) -> np.ndarray:
     """
     The triangle soup of a unit cylinder (radius 1, height 1, centered at
     the origin, axis along z), as an array of shape (T * 3, 3).
@@ -29,7 +32,7 @@ def cylinder_template(u=16):
 
 
 @lru_cache(maxsize=None)
-def sphere_template(u=16, v=16):
+def sphere_template(u: int = 16, v: int = 16) -> np.ndarray:
     """
     The triangle soup of a unit sphere centered at the origin,
     as an array of shape (T * 3, 3).
@@ -39,7 +42,7 @@ def sphere_template(u=16, v=16):
 
 
 @lru_cache(maxsize=None)
-def arrow_template(u=8, head_portion=0.12, head_width=0.04, body_width=0.012):
+def arrow_template(u: int = 8, head_portion: float = 0.12, head_width: float = 0.04, body_width: float = 0.012) -> np.ndarray:
     """
     The triangle soup of a unit arrow anchored at the origin and pointing
     along z, as an array of shape (T * 3, 3).
@@ -61,7 +64,7 @@ def arrow_template(u=8, head_portion=0.12, head_width=0.04, body_width=0.012):
 # Vectorized transforms
 # ==========================================================================
 
-def rotations_to(directions):
+def rotations_to(directions: np.ndarray) -> np.ndarray:
     """
     Per-row rotation matrices mapping the z axis onto each direction.
 
@@ -90,7 +93,7 @@ def rotations_to(directions):
     return np.stack((x, y, z), axis=-1)
 
 
-def _soup(template, rotations, scales, translations, colors):
+def _soup(template: np.ndarray, rotations: np.ndarray, scales: np.ndarray, translations: np.ndarray, colors: npt.ArrayLike) -> Soup:
     """
     Transform a template per element and expand colors per soup vertex.
 
@@ -106,7 +109,7 @@ def _soup(template, rotations, scales, translations, colors):
     return positions, facecolors
 
 
-def _empty_buffer():
+def _empty_buffer() -> Soup:
     return np.empty((0, 3), dtype=np.float32), np.empty((0, 4), dtype=np.float32)
 
 
@@ -114,7 +117,7 @@ def _empty_buffer():
 # Soup views
 # ==========================================================================
 
-def soup_indices(soup, flipped=False):
+def soup_indices(soup: Soup, flipped: bool = False) -> np.ndarray:
     """
     The vertex indices of a soup, optionally with flipped winding.
 
@@ -134,7 +137,7 @@ def soup_indices(soup, flipped=False):
     return np.flip(indices) if flipped else indices
 
 
-def soup_colors_rgb(soup):
+def soup_colors_rgb(soup: Soup) -> np.ndarray:
     """
     The colors of a soup stripped to rgb, as a contiguous array.
 
@@ -158,7 +161,7 @@ def soup_colors_rgb(soup):
 # Buffer builders
 # ==========================================================================
 
-def cylinders_buffer(starts, ends, radii, colors, u=16):
+def cylinders_buffer(starts: npt.ArrayLike, ends: npt.ArrayLike, radii: npt.ArrayLike, colors: npt.ArrayLike, u: int = 16) -> Soup:
     """
     Batch cylinders spanning pairs of points into one triangle soup.
 
@@ -205,7 +208,8 @@ def cylinders_buffer(starts, ends, radii, colors, u=16):
     return _soup(cylinder_template(u), rotations, scales, midpoints, colors)
 
 
-def arrows_buffer(anchors, vectors, colors, head_portion=0.12, head_width=0.04, body_width=0.012, u=8, tol=1e-12):
+def arrows_buffer(anchors: npt.ArrayLike, vectors: npt.ArrayLike, colors: npt.ArrayLike, head_portion: float = 0.12,
+                  head_width: float = 0.04, body_width: float = 0.012, u: int = 8, tol: float = 1e-12) -> Soup:
     """
     Batch arrows anchored at points into one triangle soup.
 
@@ -250,7 +254,7 @@ def arrows_buffer(anchors, vectors, colors, head_portion=0.12, head_width=0.04, 
     return _soup(template, rotations, scales, anchors, colors)
 
 
-def spheres_buffer(centers, radii, colors, u=16, v=16):
+def spheres_buffer(centers: npt.ArrayLike, radii: npt.ArrayLike, colors: npt.ArrayLike, u: int = 16, v: int = 16) -> Soup:
     """
     Batch spheres centered at points into one triangle soup.
 

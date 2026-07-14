@@ -1,10 +1,11 @@
 import warnings
 from importlib.util import find_spec
+from typing import Any
 
 __all__ = ["has_backend", "null_viewer"]
 
 
-def has_backend(name):
+def has_backend(name: str) -> bool:
     """
     Check whether an optional visualization backend is installed.
 
@@ -34,26 +35,26 @@ class _NullObject:
     ``viewer.view.camera.zoom(-35)`` or ``for artist in viewer.artists`` runs
     without error.
     """
-    def __getattr__(self, _):
+    def __getattr__(self, _: str) -> "_NullObject":
         return self
 
-    def __setattr__(self, _, __):
+    def __setattr__(self, _: str, __: Any) -> None:
         pass
 
-    def __call__(self, *args, **kwargs):
+    def __call__(self, *args: Any, **kwargs: Any) -> "_NullObject":
         return self
 
-    def __iter__(self):
+    def __iter__(self) -> Any:
         return iter(())
 
-    def __getitem__(self, _):
+    def __getitem__(self, _: Any) -> "_NullObject":
         return self
 
-    def __setitem__(self, _, __):
+    def __setitem__(self, _: Any, __: Any) -> None:
         pass
 
 
-def null_viewer(name):
+def null_viewer(name: str) -> type:
     """
     Build an inert viewer class to use when its backend is not installed.
 
@@ -72,7 +73,7 @@ def null_viewer(name):
     type
         A null viewer class that warns on construction and no-ops thereafter.
     """
-    def _init(self, *args, **kwargs):
+    def _init(self, *args: Any, **kwargs: Any) -> None:
         warnings.warn(f"The '{name}' backend is not installed. "
                       "Install it to visualize.", stacklevel=2)
 

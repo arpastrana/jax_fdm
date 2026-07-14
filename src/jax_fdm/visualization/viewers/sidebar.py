@@ -1,3 +1,5 @@
+from typing import Any
+
 from compas_viewer.components import Treeform
 from compas_viewer.components.objectsetting import ObjectSetting
 
@@ -23,7 +25,7 @@ class FDObjectSetting(ObjectSetting):
     native settings widgets.
     """
 
-    def populate(self, obj):
+    def populate(self, obj: Any) -> None:
         if not isinstance(obj, FDObject):
             return super().populate(obj)
 
@@ -41,7 +43,7 @@ class FDObjectSetting(ObjectSetting):
             statusbar.widget.showMessage(summary, 5000)
 
     @staticmethod
-    def _element_attributes(obj):
+    def _element_attributes(obj: Any) -> tuple[str, dict[str, str]]:
         """
         The title and attribute values of one force density element.
         """

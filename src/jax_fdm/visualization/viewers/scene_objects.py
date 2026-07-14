@@ -1,9 +1,13 @@
+from typing import Any
+
 from compas_viewer.scene import MeshObject
 from compas_viewer.scene import ViewerSceneObject
 
+from compas.colors import Color
 from compas.scene import register
 from jax_fdm.datastructures import FDMesh
 from jax_fdm.datastructures import FDNetwork
+from jax_fdm.visualization.buffers import Soup
 from jax_fdm.visualization.buffers import arrows_buffer
 from jax_fdm.visualization.buffers import cylinders_buffer
 from jax_fdm.visualization.buffers import soup_indices
@@ -50,17 +54,17 @@ class FDBufferObject(ViewerSceneObject):
     count as widths change, so in-place buffer updates never resize.
     """
 
-    def __new__(cls, *args, **kwargs):
+    def __new__(cls, *args: Any, **kwargs: Any) -> "FDBufferObject":
         # Bypass the SceneObject factory: category children wrap no data item,
         # so there is nothing to dispatch on (same pattern as compas Group).
         return object.__new__(cls)
 
-    def __init__(self, name, **kwargs):
+    def __init__(self, name: str, **kwargs: Any) -> None:
         super().__init__(item=None, name=name, context="Viewer",
                          show_points=False, show_lines=False, **kwargs)
-        self._soup = None
+        self._soup: Soup | None = None
 
-    def build_soup(self):
+    def build_soup(self) -> Soup:
         """
         Batch the category into (positions, colors) soup arrays.
 
@@ -69,12 +73,12 @@ class FDBufferObject(ViewerSceneObject):
         """
         raise NotImplementedError
 
-    def _read_frontfaces_data(self):
+    def _read_frontfaces_data(self) -> tuple:
         self._soup = self.build_soup()
         positions, colors = self._soup
         return positions, colors, soup_indices(self._soup)
 
-    def _read_backfaces_data(self):
+    def _read_backfaces_data(self) -> tuple:
         # The buffer managers always read the front faces first, so the soup
         # computed there is reused with flipped winding.
         soup = self._soup if self._soup is not None else self.build_soup()
@@ -87,17 +91,18 @@ class FDEdgesObject(FDBufferObject):
     The edges of a force density datastructure, batched as cylinders.
     """
 
-    def build_soup(self):
-        parent = self.parent
+    def build_soup(self) -> Soup:
+        parent: FDDatastructureObject = self.parent  # pyright: ignore[reportAttributeAccessIssue,reportAssignmentType]  # a category child is always added under an FDDatastructureObject parent
+
         datastructure = parent.datastructure
 
         starts, ends, radii, colors = [], [], [], []
         for edge in parent.edges:
-            start, end = datastructure.edge_coordinates(edge)
+            start, end = datastructure.edge_coordinates(edge)  # pyright: ignore[reportOptionalMemberAccess]  # populated before draw()
             starts.append(start)
             ends.append(end)
-            radii.append(parent.edge_width[edge] / 2.0)
-            colors.append(parent.edge_color[edge].rgba)
+            radii.append(parent.edge_width[edge] / 2.0)  # pyright: ignore[reportOptionalSubscript]  # populated by recompute() before draw()
+            colors.append(parent.edge_color[edge].rgba)  # pyright: ignore[reportOptionalSubscript]  # populated by recompute() before draw()
 
         return cylinders_buffer(starts, ends, radii, colors, u=parent.shape_u)
 
@@ -107,14 +112,14 @@ class FDPointsObject(FDBufferObject):
     The points (nodes or vertices) of a force density datastructure, batched as spheres.
     """
 
-    def build_soup(self):
-        parent = self.parent
+    def build_soup(self) -> Soup:
+        parent: FDDatastructureObject = self.parent  # pyright: ignore[reportAttributeAccessIssue,reportAssignmentType]  # a category child is always added under an FDDatastructureObject parent
 
         centers, radii, colors = [], [], []
         for point in parent.points:
             centers.append(parent.point_coordinates(point))
-            radii.append(parent.point_size[point] / 2.0)
-            colors.append(parent.point_color[point].rgba)
+            radii.append(parent.point_size[point] / 2.0)  # pyright: ignore[reportOptionalSubscript]  # populated by recompute() before draw()
+            colors.append(parent.point_color[point].rgba)  # pyright: ignore[reportOptionalSubscript]  # populated by recompute() before draw()
 
         return spheres_buffer(centers, radii, colors, u=parent.shape_u, v=parent.shape_u)
 
@@ -123,17 +128,17 @@ class FDArrowsObject(FDBufferObject):
     """
     One arrow category (loads or reactions) of a force density datastructure.
     """
-    arrows_attr = None
+    arrows_attr: str | None = None
 
-    def build_soup(self):
+    def build_soup(self) -> Soup:
         parent = self.parent
-        anchors, vectors, colors = getattr(parent, self.arrows_attr)()
+        anchors, vectors, colors = getattr(parent, self.arrows_attr)()  # pyright: ignore[reportArgumentType]  # subclasses always set arrows_attr to a str before instantiation
 
         return arrows_buffer(anchors, vectors, colors,
                              head_portion=ARROW_HEADPORTION,
                              head_width=ARROW_HEADWIDTH,
                              body_width=ARROW_BODYWIDTH,
-                             u=parent.arrow_u)
+                             u=parent.arrow_u)  # pyright: ignore[reportAttributeAccessIssue]  # a category child is always added under an FDDatastructureObject parent
 
 
 class FDLoadsObject(FDArrowsObject):
@@ -158,16 +163,16 @@ class FDGroupObject(ViewerSceneObject):
     from the force density parent down to every element child.
     """
 
-    def __new__(cls, *args, **kwargs):
+    def __new__(cls, *args: Any, **kwargs: Any) -> "FDGroupObject":
         # Bypass the SceneObject factory: the group wraps no data item,
         # so there is nothing to dispatch on (same pattern as compas Group).
         return object.__new__(cls)
 
-    def __init__(self, name, **kwargs):
+    def __init__(self, name: str, **kwargs: Any) -> None:
         super().__init__(item=None, name=name, context="Viewer",
                          show_points=False, show_lines=False, **kwargs)
 
-    def update(self, update_transform=True, update_data=True):
+    def update(self, update_transform: bool = True, update_data: bool = True) -> None:
         for child in self.children:
             child.update(update_transform=update_transform, update_data=update_data)
 
@@ -183,14 +188,14 @@ class FDObject(FDBufferObject):
     both render paths are vertex-identical by construction.
     """
 
-    def __init__(self, key, name, **kwargs):
+    def __init__(self, key: int | tuple[int, int], name: str, **kwargs: Any) -> None:
         super().__init__(name=name, **kwargs)
         self.key = key
 
     @property
-    def fd_parent(self):
+    def fd_parent(self) -> "FDDatastructureObject":
         # The element sits under a category group under the FD parent.
-        return self.parent.parent
+        return self.parent.parent  # pyright: ignore[reportAttributeAccessIssue]  # an element always sits under a group under an FDDatastructureObject parent
 
 
 class FDEdgeObject(FDObject):
@@ -198,13 +203,17 @@ class FDEdgeObject(FDObject):
     One edge of a force density datastructure, as a cylinder.
     """
 
-    def build_soup(self):
-        parent = self.fd_parent
-        start, end = parent.datastructure.edge_coordinates(self.key)
+    # Narrows the base class's int | tuple[int, int] key to the edge key
+    # this subclass actually holds.
+    key: tuple[int, int]
 
-        return cylinders_buffer([start], [end],
-                                [parent.edge_width[self.key] / 2.0],
-                                [parent.edge_color[self.key].rgba],
+    def build_soup(self) -> Soup:
+        parent = self.fd_parent
+        start, end = parent.datastructure.edge_coordinates(self.key)  # pyright: ignore[reportOptionalMemberAccess]  # populated before draw()
+
+        return cylinders_buffer([start], [end],  # pyright: ignore[reportArgumentType]  # edge_coordinates always returns plain xyz lists, not compas attribute views
+                                [parent.edge_width[self.key] / 2.0],  # pyright: ignore[reportOptionalSubscript]  # populated by recompute() before draw()
+                                [parent.edge_color[self.key].rgba],  # pyright: ignore[reportOptionalSubscript]  # populated by recompute() before draw()
                                 u=parent.shape_u)
 
 
@@ -213,12 +222,16 @@ class FDPointObject(FDObject):
     One point (node or vertex) of a force density datastructure, as a sphere.
     """
 
-    def build_soup(self):
+    # Narrows the base class's int | tuple[int, int] key to the point key
+    # this subclass actually holds.
+    key: int
+
+    def build_soup(self) -> Soup:
         parent = self.fd_parent
 
         return spheres_buffer([parent.point_coordinates(self.key)],
-                              [parent.point_size[self.key] / 2.0],
-                              [parent.point_color[self.key].rgba],
+                              [parent.point_size[self.key] / 2.0],  # pyright: ignore[reportOptionalSubscript]  # populated by recompute() before draw()
+                              [parent.point_color[self.key].rgba],  # pyright: ignore[reportOptionalSubscript]  # populated by recompute() before draw()
                               u=parent.shape_u, v=parent.shape_u)
 
 
@@ -226,11 +239,15 @@ class FDArrowObject(FDObject):
     """
     One arrow (load or reaction) of a force density datastructure.
     """
-    arrow_attr = None
+    arrow_attr: str | None = None
 
-    def build_soup(self):
+    # Narrows the base class's int | tuple[int, int] key to the point key
+    # this subclass actually holds.
+    key: int
+
+    def build_soup(self) -> Soup:
         parent = self.fd_parent
-        anchor, vector, color = getattr(parent, self.arrow_attr)(self.key)
+        anchor, vector, color = getattr(parent, self.arrow_attr)(self.key)  # pyright: ignore[reportArgumentType]  # subclasses always set arrow_attr to a str before instantiation
 
         return arrows_buffer([anchor], [vector], [color],
                              head_portion=ARROW_HEADPORTION,
@@ -292,35 +309,38 @@ class FDDatastructureObject(ViewerSceneObject):
     FUSE_HINT_ELEMENTS = 1000
 
     def __init__(self,
-                 item=None,
-                 points=None,
-                 edges=None,
-                 pointcolor=None,
-                 edgecolor=None,
-                 pointsize=None,
-                 edgewidth=None,
-                 loadcolor=None,
-                 loadscale=None,
-                 loadtol=None,
-                 reactioncolor=None,
-                 reactionscale=None,
-                 reactiontol=None,
-                 show_points=False,
-                 show_edges=True,
-                 show_loads=True,
-                 show_reactions=True,
-                 show_supports=True,
-                 fuse=False,
-                 **kwargs):
+                 item: FDNetwork | FDMesh | None = None,
+                 points: list[int] | None = None,
+                 edges: list[tuple[int, int]] | None = None,
+                 pointcolor: Color | dict | str | None = None,
+                 edgecolor: Color | dict | str | None = None,
+                 pointsize: float | dict | None = None,
+                 edgewidth: float | dict | tuple | None = None,
+                 loadcolor: Color | None = None,
+                 loadscale: float | None = None,
+                 loadtol: float | None = None,
+                 reactioncolor: Color | None = None,
+                 reactionscale: float | None = None,
+                 reactiontol: float | None = None,
+                 show_points: bool = False,
+                 show_edges: bool = True,
+                 show_loads: bool = True,
+                 show_reactions: bool = True,
+                 show_supports: bool = True,
+                 fuse: bool = False,
+                 **kwargs: Any) -> None:
         # The pin kwarg used to bypass registry dispatch is not a scene kwarg.
         kwargs.pop("sceneobject_type", None)
         super().__init__(item=item, **kwargs)
 
-        self.datastructure = item
+        # The scene registry always dispatches a real datastructure to this
+        # constructor; the Optional in the signature only matches the base
+        # class default.
+        self.datastructure: FDNetwork | FDMesh = item  # pyright: ignore[reportAttributeAccessIssue]  # always populated before draw()
 
         # Point and edge iterables, optionally filtered (defaults to all).
-        self.points = list(points) if points is not None else list(self.point_keys())
-        self.edges = list(edges) if edges is not None else list(item.edges())
+        self.points: list[int] = list(points) if points is not None else list(self.point_keys())
+        self.edges: list[tuple[int, int]] = list(edges) if edges is not None else list(item.edges())  # pyright: ignore[reportOptionalMemberAccess,reportArgumentType,reportAttributeAccessIssue]  # item is always populated before draw(); edges() with data=False always yields plain (u, v) keys
 
         # Connectivity is frozen at add time, like the soup topology: the
         # point-edge adjacency is cached once so per-frame updates never
@@ -347,10 +367,10 @@ class FDDatastructureObject(ViewerSceneObject):
         self.reaction_scale = reactionscale or REACTION_SCALE
         self.reaction_tol = reactiontol or REACTION_TOL
 
-        self.edge_color = None
-        self.edge_width = None
-        self.point_color = None
-        self.point_size = None
+        self.edge_color: dict[tuple[int, int], Color] | None = None
+        self.edge_width: dict[tuple[int, int], float] | None = None
+        self.point_color: dict[int, Color] | None = None
+        self.point_size: dict[int, float] | None = None
         self.recompute()
 
         # Candidate point lists of the arrow categories, frozen so the soup
@@ -382,7 +402,7 @@ class FDDatastructureObject(ViewerSceneObject):
                 print(f"WARNING: {self.name} has {count} per-element scene objects. "
                       "Pass fuse=True to viewer.add(...) for fast loading and display")
 
-    def _add_category(self, fused_cls, element_cls, category_name, keys, element_name):
+    def _add_category(self, fused_cls: type, element_cls: type, category_name: str, keys: list[int] | list[tuple[int, int]], element_name: str) -> None:
         """
         Add one category child: a fused soup, or a group of per-element children.
 
@@ -400,7 +420,7 @@ class FDDatastructureObject(ViewerSceneObject):
             group.add(element_cls(key, name=f"{element_name} {key}",
                                   opacity=self.default_opacity))
 
-    def _arrow_points(self, arrow_attr, points):
+    def _arrow_points(self, arrow_attr: str, points: list[int]) -> list[int]:
         """
         The candidate points whose arrow is visible at add time.
 
@@ -417,29 +437,29 @@ class FDDatastructureObject(ViewerSceneObject):
     # Point vocabulary
     # ==========================================================================
 
-    def point_keys(self):
+    def point_keys(self) -> list[int]:
         raise NotImplementedError
 
-    def point_coordinates(self, key):
+    def point_coordinates(self, key: int) -> list[float]:
         raise NotImplementedError
 
-    def point_load(self, key):
+    def point_load(self, key: int) -> list[float]:
         raise NotImplementedError
 
-    def point_reaction(self, key):
+    def point_reaction(self, key: int) -> list[float]:
         raise NotImplementedError
 
-    def point_edges(self, key):
+    def point_edges(self, key: int) -> list[tuple[int, int]]:
         raise NotImplementedError
 
-    def point_is_support(self, key):
+    def point_is_support(self, key: int) -> bool:
         raise NotImplementedError
 
     # ==========================================================================
     # Style state
     # ==========================================================================
 
-    def recompute(self):
+    def recompute(self) -> None:
         """
         Derive the per-element style state from the live datastructure.
 
@@ -452,10 +472,10 @@ class FDDatastructureObject(ViewerSceneObject):
         self.edge_width = edge_widths(datastructure, self.edges, self.edgewidth_spec)
 
         is_support = self.point_is_support if self.show_supports else (lambda key: False)
-        self.point_color = point_colors(self.points, is_support, self.pointcolor_spec)
+        self.point_color = point_colors(self.points, is_support, self.pointcolor_spec)  # pyright: ignore[reportArgumentType]  # point_colors treats a str spec as an unrecognized dict/Color and falls back to default
         self.point_size = point_sizes(self.points, self.pointsize_spec)
 
-    def load_arrows(self):
+    def load_arrows(self) -> tuple[list[list[float]], list[list[float]], list]:
         """
         The anchors, vectors and colors of the load arrows.
         """
@@ -469,22 +489,22 @@ class FDDatastructureObject(ViewerSceneObject):
 
         return anchors, vectors, self._arrow_colors(points, self.load_color)
 
-    def reaction_arrows(self):
+    def reaction_arrows(self) -> tuple[list[list[float]], list[list[float]], list]:
         """
         The anchors, vectors and colors of the reaction arrows.
         """
         points = self.reaction_points
         origins = [self.point_coordinates(point) for point in points]
         reactions = [self.point_reaction(point) for point in points]
-        forces = [[self.datastructure.edge_force(edge) for edge in self.adjacency[point]]
+        forces = [[self.datastructure.edge_force(edge) for edge in self.adjacency[point]]  # pyright: ignore[reportOptionalMemberAccess]  # getter-mode call always returns a float
                   for point in points]
 
-        anchors, vectors = style_reaction_arrows(origins, reactions, forces,
+        anchors, vectors = style_reaction_arrows(origins, reactions, forces,  # pyright: ignore[reportArgumentType]  # edge_force getter-mode call always returns a float
                                                  self.reaction_scale, self.reaction_tol)
 
         return anchors, vectors, self._arrow_colors(points, self.reaction_color)
 
-    def load_arrow(self, point):
+    def load_arrow(self, point: int) -> tuple[list[float], list[float], Any]:
         """
         The anchor, vector and color of the load arrow at one point.
         """
@@ -495,26 +515,26 @@ class FDDatastructureObject(ViewerSceneObject):
 
         return anchors[0], vectors[0], self._arrow_colors([point], self.load_color)[0]
 
-    def reaction_arrow(self, point):
+    def reaction_arrow(self, point: int) -> tuple[list[float], list[float], Any]:
         """
         The anchor, vector and color of the reaction arrow at one point.
         """
-        forces = [self.datastructure.edge_force(edge) for edge in self.adjacency[point]]
+        forces = [self.datastructure.edge_force(edge) for edge in self.adjacency[point]]  # pyright: ignore[reportOptionalMemberAccess]  # getter-mode call always returns a float
         anchors, vectors = style_reaction_arrows([self.point_coordinates(point)],
                                                  [self.point_reaction(point)],
-                                                 [forces],
+                                                 [forces],  # pyright: ignore[reportArgumentType]  # edge_force getter-mode call always returns a float
                                                  self.reaction_scale, self.reaction_tol)
 
         return anchors[0], vectors[0], self._arrow_colors([point], self.reaction_color)[0]
 
-    def _point_clearance(self, point):
+    def _point_clearance(self, point: int) -> float:
         """
         The width of the thickest edge connected to a point.
         """
-        return max((self.edge_width.get(edge, 0.0) for edge in self.adjacency[point]), default=0.0)
+        return max((self.edge_width.get(edge, 0.0) for edge in self.adjacency[point]), default=0.0)  # pyright: ignore[reportOptionalMemberAccess]  # populated by recompute() before draw()
 
     @staticmethod
-    def _arrow_colors(points, color):
+    def _arrow_colors(points: list[int], color: Color | dict[int, Color]) -> list:
         if isinstance(color, dict):
             return [color[point].rgba for point in points]
         return [color.rgba] * len(points)
@@ -523,7 +543,7 @@ class FDDatastructureObject(ViewerSceneObject):
     # Update
     # ==========================================================================
 
-    def update(self, update_transform=True, update_data=True):
+    def update(self, update_transform: bool = True, update_data: bool = True) -> None:
         """
         Update the render buffers of the datastructure in place.
 
@@ -547,7 +567,13 @@ class FDNetworkObject(FDDatastructureObject):
     points_name = "Nodes"
     point_name = "Node"
 
-    def __init__(self, item=None, nodecolor=None, nodesize=None, show_nodes=None, **kwargs):
+    # Narrows the base class's FDNetwork | FDMesh attribute to the type this
+    # subclass actually holds, so the network-vocabulary accessors below
+    # type-check against the right datastructure.
+    datastructure: FDNetwork
+
+    def __init__(self, item: FDNetwork | None = None, nodecolor: Color | dict | str | None = None,
+                 nodesize: float | dict | None = None, show_nodes: bool | None = None, **kwargs: Any) -> None:
         # Map the node vocabulary onto the neutral point parameters of the
         # base. The scene backend injects the neutral names with explicit None
         # values (meaning "default"), so they are popped and only kept when
@@ -561,22 +587,22 @@ class FDNetworkObject(FDDatastructureObject):
                          show_points=show_nodes if show_nodes is not None else show_points,
                          **kwargs)
 
-    def point_keys(self):
-        return self.datastructure.nodes()
+    def point_keys(self) -> list[int]:
+        return self.datastructure.nodes()  # pyright: ignore[reportReturnType]  # data=False getter always yields plain node keys
 
-    def point_coordinates(self, key):
+    def point_coordinates(self, key: int) -> list[float]:
         return self.datastructure.node_coordinates(key)
 
-    def point_load(self, key):
-        return self.datastructure.node_load(key)
+    def point_load(self, key: int) -> list[float]:
+        return self.datastructure.node_load(key)  # pyright: ignore[reportReturnType]  # getter-mode call always returns a list
 
-    def point_reaction(self, key):
+    def point_reaction(self, key: int) -> list[float]:
         return self.datastructure.node_reaction(key)
 
-    def point_edges(self, key):
+    def point_edges(self, key: int) -> list[tuple[int, int]]:
         return self.datastructure.node_edges(key)
 
-    def point_is_support(self, key):
+    def point_is_support(self, key: int) -> bool:
         return self.datastructure.is_node_support(key)
 
 
@@ -596,14 +622,19 @@ class FDMeshObject(FDDatastructureObject):
 
     default_faceopacity = 0.4
 
+    # Narrows the base class's FDNetwork | FDMesh attribute to the type this
+    # subclass actually holds, so the vertex-vocabulary accessors below
+    # type-check against the right datastructure.
+    datastructure: FDMesh
+
     def __init__(self,
-                 item=None,
-                 vertexcolor=None,
-                 vertexsize=None,
-                 show_vertices=None,
-                 faceopacity=None,
-                 show_faces=True,
-                 **kwargs):
+                 item: FDMesh | None = None,
+                 vertexcolor: Color | dict | str | None = None,
+                 vertexsize: float | dict | None = None,
+                 show_vertices: bool | None = None,
+                 faceopacity: float | None = None,
+                 show_faces: bool = True,
+                 **kwargs: Any) -> None:
         # Map the vertex vocabulary onto the neutral point parameters of the
         # base. The scene backend injects the neutral names with explicit None
         # values (meaning "default"), so they are popped and only kept when
@@ -630,22 +661,22 @@ class FDMeshObject(FDDatastructureObject):
                                opacity=faceopacity or self.default_faceopacity)
             self.add(faces)
 
-    def point_keys(self):
-        return self.datastructure.vertices()
+    def point_keys(self) -> list[int]:
+        return self.datastructure.vertices()  # pyright: ignore[reportReturnType]  # data=False getter always yields plain vertex keys
 
-    def point_coordinates(self, key):
-        return self.datastructure.vertex_coordinates(key)
+    def point_coordinates(self, key: int) -> list[float]:
+        return self.datastructure.vertex_coordinates(key)  # pyright: ignore[reportReturnType]  # getter-mode call always returns a list
 
-    def point_load(self, key):
-        return self.datastructure.vertex_load(key)
+    def point_load(self, key: int) -> list[float]:
+        return self.datastructure.vertex_load(key)  # pyright: ignore[reportReturnType]  # getter-mode call always returns a list
 
-    def point_reaction(self, key):
+    def point_reaction(self, key: int) -> list[float]:
         return self.datastructure.vertex_reaction(key)
 
-    def point_edges(self, key):
+    def point_edges(self, key: int) -> list[tuple[int, int]]:
         return self.datastructure.vertex_edges(key)
 
-    def point_is_support(self, key):
+    def point_is_support(self, key: int) -> bool:
         return self.datastructure.is_vertex_support(key)
 
 
@@ -653,7 +684,7 @@ class FDMeshObject(FDDatastructureObject):
 # Registration
 # ==========================================================================
 
-def register_viewer_scene_objects():
+def register_viewer_scene_objects() -> None:
     """
     Register the force density scene objects to the Viewer context.
     """

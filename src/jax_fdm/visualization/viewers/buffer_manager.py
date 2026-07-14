@@ -1,3 +1,5 @@
+from typing import Any
+
 import numpy as np
 from compas_viewer.gl import update_vertex_buffer
 from compas_viewer.scene.buffermanager import BufferManager
@@ -21,7 +23,7 @@ class FastBufferManager(BufferManager):
 
     data_types = ("_points_data", "_lines_data", "_frontfaces_data", "_backfaces_data")
 
-    def update_object_data(self, obj):
+    def update_object_data(self, obj: Any) -> None:
         """
         Update the position and color buffers for a single object.
         """
@@ -41,7 +43,7 @@ class FastBufferManager(BufferManager):
             self._write_buffers(data_type, index, *self._pack_vertex_arrays(positions, colors))
 
     @staticmethod
-    def _refresh_data(obj, data_type):
+    def _refresh_data(obj: Any, data_type: str) -> Any:
         """
         Re-read one data category from the object and store it back on it.
 
@@ -56,7 +58,7 @@ class FastBufferManager(BufferManager):
         return data
 
     @staticmethod
-    def _pack_vertex_arrays(positions, colors):
+    def _pack_vertex_arrays(positions: list | np.ndarray, colors: list | np.ndarray) -> tuple[np.ndarray, np.ndarray]:
         """
         Pack positions and colors into the flat float32 arrays the GL buffers expect.
 
@@ -76,7 +78,7 @@ class FastBufferManager(BufferManager):
 
         return pos_array, col_array
 
-    def _write_buffers(self, data_type, index, pos_array, col_array):
+    def _write_buffers(self, data_type: str, index: int, pos_array: np.ndarray, col_array: np.ndarray) -> None:
         """
         Write the packed arrays into the combined buffers at the object's slice.
         """
