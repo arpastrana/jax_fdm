@@ -2,12 +2,14 @@ from functools import lru_cache
 
 import numpy as np
 import numpy.typing as npt
+from jaxtyping import Float
+from jaxtyping import Int
 
 from compas.geometry import Cylinder
 from compas.geometry import Sphere
 from jax_fdm.visualization.shapes import Arrow
 
-Soup = tuple[np.ndarray, np.ndarray]
+Soup = tuple[Float[np.ndarray, "vertices 3"], Float[np.ndarray, "vertices 4"]]
 
 __all__ = ["cylinders_buffer", "arrows_buffer", "spheres_buffer", "soup_indices", "soup_colors_rgb"]
 
@@ -22,7 +24,7 @@ __all__ = ["cylinders_buffer", "arrows_buffer", "spheres_buffer", "soup_indices"
 # fully vectorized. Templates are cached per resolution.
 
 @lru_cache(maxsize=None)
-def cylinder_template(u: int = 16) -> np.ndarray:
+def cylinder_template(u: int = 16) -> Float[np.ndarray, "vertices 3"]:
     """
     The triangle soup of a unit cylinder (radius 1, height 1, centered at
     the origin, axis along z), as an array of shape (T * 3, 3).
@@ -32,7 +34,7 @@ def cylinder_template(u: int = 16) -> np.ndarray:
 
 
 @lru_cache(maxsize=None)
-def sphere_template(u: int = 16, v: int = 16) -> np.ndarray:
+def sphere_template(u: int = 16, v: int = 16) -> Float[np.ndarray, "vertices 3"]:
     """
     The triangle soup of a unit sphere centered at the origin,
     as an array of shape (T * 3, 3).
@@ -42,7 +44,7 @@ def sphere_template(u: int = 16, v: int = 16) -> np.ndarray:
 
 
 @lru_cache(maxsize=None)
-def arrow_template(u: int = 8, head_portion: float = 0.12, head_width: float = 0.04, body_width: float = 0.012) -> np.ndarray:
+def arrow_template(u: int = 8, head_portion: float = 0.12, head_width: float = 0.04, body_width: float = 0.012) -> Float[np.ndarray, "vertices 3"]:
     """
     The triangle soup of a unit arrow anchored at the origin and pointing
     along z, as an array of shape (T * 3, 3).
@@ -64,7 +66,7 @@ def arrow_template(u: int = 8, head_portion: float = 0.12, head_width: float = 0
 # Vectorized transforms
 # ==========================================================================
 
-def rotations_to(directions: np.ndarray) -> np.ndarray:
+def rotations_to(directions: Float[np.ndarray, "elements 3"]) -> Float[np.ndarray, "elements 3 3"]:
     """
     Per-row rotation matrices mapping the z axis onto each direction.
 
@@ -93,7 +95,13 @@ def rotations_to(directions: np.ndarray) -> np.ndarray:
     return np.stack((x, y, z), axis=-1)
 
 
-def _soup(template: np.ndarray, rotations: np.ndarray, scales: np.ndarray, translations: np.ndarray, colors: npt.ArrayLike) -> Soup:
+def _soup(
+    template: Float[np.ndarray, "vertices 3"],
+    rotations: Float[np.ndarray, "elements 3 3"],
+    scales: Float[np.ndarray, "elements 3"],
+    translations: Float[np.ndarray, "elements 3"],
+    colors: npt.ArrayLike,
+) -> Soup:
     """
     Transform a template per element and expand colors per soup vertex.
 
@@ -117,7 +125,7 @@ def _empty_buffer() -> Soup:
 # Soup views
 # ==========================================================================
 
-def soup_indices(soup: Soup, flipped: bool = False) -> np.ndarray:
+def soup_indices(soup: Soup, flipped: bool = False) -> Int[np.ndarray, "vertices"]:
     """
     The vertex indices of a soup, optionally with flipped winding.
 
@@ -137,7 +145,7 @@ def soup_indices(soup: Soup, flipped: bool = False) -> np.ndarray:
     return np.flip(indices) if flipped else indices
 
 
-def soup_colors_rgb(soup: Soup) -> np.ndarray:
+def soup_colors_rgb(soup: Soup) -> Float[np.ndarray, "vertices 3"]:
     """
     The colors of a soup stripped to rgb, as a contiguous array.
 

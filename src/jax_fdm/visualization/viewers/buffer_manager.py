@@ -3,6 +3,7 @@ from typing import Any
 import numpy as np
 from compas_viewer.gl import update_vertex_buffer
 from compas_viewer.scene.buffermanager import BufferManager
+from jaxtyping import Float
 
 from compas.colors import Color
 
@@ -58,7 +59,7 @@ class FastBufferManager(BufferManager):
         return data
 
     @staticmethod
-    def _pack_vertex_arrays(positions: list | np.ndarray, colors: list | np.ndarray) -> tuple[np.ndarray, np.ndarray]:
+    def _pack_vertex_arrays(positions: list | np.ndarray, colors: list | np.ndarray) -> tuple[Float[np.ndarray, "positions"], Float[np.ndarray, "colors"]]:
         """
         Pack positions and colors into the flat float32 arrays the GL buffers expect.
 
@@ -78,7 +79,7 @@ class FastBufferManager(BufferManager):
 
         return pos_array, col_array
 
-    def _write_buffers(self, data_type: str, index: int, pos_array: np.ndarray, col_array: np.ndarray) -> None:
+    def _write_buffers(self, data_type: str, index: int, pos_array: Float[np.ndarray, "positions"], col_array: Float[np.ndarray, "colors"]) -> None:
         """
         Write the packed arrays into the combined buffers at the object's slice.
         """

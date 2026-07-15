@@ -2,12 +2,13 @@ from collections.abc import Iterable
 from time import perf_counter
 from typing import Any
 
-import jax
 import jax.numpy as jnp
 import jax.tree_util as jtu
 import matplotlib.pyplot as plt
 import numpy as np
 from jax import vmap
+from jaxtyping import Array
+from jaxtyping import Float
 
 from jax_fdm import DTYPE_JAX
 from jax_fdm.datastructures import FDMesh
@@ -34,7 +35,7 @@ class LossPlotter:
         plot_legend: bool = True,
         yscale: str = "log",
         **eq_kwargs: Any,
-    ) -> jax.Array:
+    ) -> Float[Array, "iterations"]:
         """
         Plot the loss function and its error components on a list of fdm parameter states.
         """
@@ -56,7 +57,7 @@ class LossPlotter:
         eq_states = equilibrium_vmap(params, self.structure)
 
         # Calculate error and regularization contributions
-        errors_all: dict[str, jax.Array] = {}
+        errors_all: dict[str, Float[Array, "iterations"]] = {}
 
         for error_term in self.loss.terms_error:
             errors = vmap(error_term)(eq_states)
@@ -101,7 +102,7 @@ class LossPlotter:
         plt.show()
 
     @staticmethod
-    def print_error_stats(errors: jax.Array | np.ndarray, error_name: str) -> None:
+    def print_error_stats(errors: Float[Array, "iterations"] | Float[np.ndarray, "iterations"], error_name: str) -> None:
         """
         Print error statistics
         """

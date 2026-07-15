@@ -5,8 +5,9 @@ from collections.abc import Callable
 from time import perf_counter
 from typing import Any
 
-import jax
 from jax import jit
+from jaxtyping import Array
+from jaxtyping import Float
 
 from jax_fdm.datastructures import FDMesh
 from jax_fdm.datastructures import FDNetwork
@@ -66,7 +67,7 @@ class GradientFreeOptimizer(Optimizer):
         self.loads_static = loads.edges, loads.faces
 
         # closure over static parameters
-        def loss_fn(x: jax.Array) -> jax.Array | float:
+        def loss_fn(x: Float[Array, "parameters"]) -> Float[Array, ""]:
             return self.loss(x, loss, model, structure)
 
         if jit_fn:
@@ -94,7 +95,7 @@ class GradientFreeOptimizer(Optimizer):
 
         return opt_kwargs
 
-    def solve(self, opt_problem: dict[str, Any]) -> jax.Array:
+    def solve(self, opt_problem: dict[str, Any]) -> Float[Array, "parameters"]:
         """
         Solve an optimization problem by minimizing a loss function.
         """

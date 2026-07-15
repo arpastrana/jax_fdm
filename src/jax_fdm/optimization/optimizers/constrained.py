@@ -4,9 +4,10 @@ A gradient-based optimizer that deals with equality and inequality constraints.
 from functools import partial
 from itertools import groupby
 
-import jax
 from jax import jacfwd
 from jax import jit
+from jaxtyping import Array
+from jaxtyping import Float
 from scipy.optimize import NonlinearConstraint
 
 from jax_fdm.constraints import Constraint
@@ -29,7 +30,7 @@ class ConstrainedOptimizer(Optimizer):
         constraints: list[Constraint],
         model: EquilibriumModel,
         structure: EquilibriumStructure,
-        params_opt: jax.Array,
+        params_opt: Float[Array, "parameters"],
     ) -> list[NonlinearConstraint] | None:
         """
         Returns the defined constraints in a format amenable to `scipy.minimize`.
@@ -70,11 +71,11 @@ class ConstrainedOptimizer(Optimizer):
 
     def constraint(
         self,
-        params_opt: jax.Array,
+        params_opt: Float[Array, "parameters"],
         constraint: Constraint,
         model: EquilibriumModel,
         structure: EquilibriumStructure,
-    ) -> jax.Array:
+    ) -> Float[Array, "constraints"]:
         """
         A wrapper around a constraint callable object.
         """

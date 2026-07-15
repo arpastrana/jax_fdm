@@ -108,15 +108,11 @@ known-first-party = ["compas", "jax_fdm"]
 # Re-exports and the jax x64 config run before the submodule imports.
 "src/jax_fdm/__init__.py" = ["E402", "F401"]
 # jaxtyping shape strings reference dimension names (nodes, edges, ...) that
-# pyflakes treats as undefined identifiers (F821). Scoped to the shape-annotated
-# numerical-core subpackages.
-"src/jax_fdm/geometry/geometry.py" = ["F821"]
-"src/jax_fdm/equilibrium/*.py" = ["F821"]
-"src/jax_fdm/equilibrium/solvers/*.py" = ["F821"]
-"src/jax_fdm/equilibrium/structures/*.py" = ["F821"]
-"src/jax_fdm/goals/**/*.py" = ["F821"]
-"src/jax_fdm/losses/*.py" = ["F821"]
-"src/jax_fdm/constraints/**/*.py" = ["F821"]
+# pyflakes treats as undefined identifiers (F821). Now that jaxtyping shapes are
+# used across the whole library and pyright (reportUndefinedVariable) checks
+# undefined names package-wide, F821 here is redundant, so it is silenced for the
+# entire package rather than enumerated per shape-annotated subpackage.
+"src/jax_fdm/**/*.py" = ["F821"]
 
 [tool.bumpversion]
 current_version = "0.12.0"

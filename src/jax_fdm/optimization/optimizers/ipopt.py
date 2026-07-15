@@ -2,11 +2,12 @@ from collections.abc import Callable
 from functools import partial
 from typing import Any
 
-import jax
 import jax.numpy as jnp
 from jax import jacfwd
 from jax import jit
 from jax import vjp
+from jaxtyping import Array
+from jaxtyping import Float
 
 from jax_fdm.constraints import Constraint
 from jax_fdm.equilibrium import EquilibriumModel
@@ -45,30 +46,30 @@ class IPOPT(ConstrainedOptimizer, SecondOrderOptimizer):
 
         return minimize_ipopt(**opt_problem)
 
-    def constraint_eq(self, params_opt: jax.Array, constraint: Constraint, model: EquilibriumModel) -> jax.Array:
+    def constraint_eq(self, params_opt: Float[Array, "parameters"], constraint: Constraint, model: EquilibriumModel) -> Float[Array, "constraints"]:
         """
         A wrapper function for an equality constraint on the parameters.
         """
         return self.constraint_ineq_low(params_opt, constraint, model)
 
-    def constraint_ineq_up(self, params_opt: jax.Array, constraint: Constraint, model: EquilibriumModel) -> jax.Array:
+    def constraint_ineq_up(self, params_opt: Float[Array, "parameters"], constraint: Constraint, model: EquilibriumModel) -> Float[Array, "constraints"]:
         """
         A wrapper function for an inequality constraint on an upper bound of the parameters.
         """
         return constraint.bound_up - self.constraint(params_opt, constraint, model)  # pyright: ignore[reportCallIssue]  # ConstrainedOptimizer.constraint() also requires a `structure` arg; this IPOPT-specific 3-arg wrapper predates that signature
 
-    def constraint_ineq_low(self, params_opt: jax.Array, constraint: Constraint, model: EquilibriumModel) -> jax.Array:
+    def constraint_ineq_low(self, params_opt: Float[Array, "parameters"], constraint: Constraint, model: EquilibriumModel) -> Float[Array, "constraints"]:
         """
         A wrapper function for an inequality constraint on a lower bound of the parameters.
         """
         return self.constraint(params_opt, constraint, model) - constraint.bound_low  # pyright: ignore[reportCallIssue]  # ConstrainedOptimizer.constraint() also requires a `structure` arg; this IPOPT-specific 3-arg wrapper predates that signature
 
     @staticmethod
-    def hvp(x: jax.Array, v: jax.Array, f: Callable) -> jax.Array:
+    def hvp(x: Float[Array, "parameters"], v: Float[Array, "constraints"], f: Callable) -> Float[Array, "parameters"]:
         """
         Calculate the product of the second derivatives of the vector-valued constraint function and a vector of Lagrange multipliers.
         """
-        def _vjp(s: jax.Array) -> jax.Array:
+        def _vjp(s: Float[Array, "parameters"]) -> Float[Array, "parameters"]:
             _, vjp_fun = vjp(f, s)
             return vjp_fun(v)[0]
 
@@ -80,7 +81,7 @@ class IPOPT(ConstrainedOptimizer, SecondOrderOptimizer):
         """
         return list(zip(self.pm.bounds_low, self.pm.bounds_up))  # pyright: ignore[reportOptionalMemberAccess]  # self.pm is Optional by declaration but populated by problem() before this is called
 
-    def constraints(self, constraints: list[Constraint], model: EquilibriumModel, params_opt: jax.Array) -> list[dict[str, Any]]:
+    def constraints(self, constraints: list[Constraint], model: EquilibriumModel, params_opt: Float[Array, "parameters"]) -> list[dict[str, Any]]:
         """
         Returns the defined constraints in a format amenable to `cyipopt`.
         """

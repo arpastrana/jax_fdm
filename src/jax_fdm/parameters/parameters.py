@@ -27,7 +27,12 @@ class Parameter:
         The upper bound of this parameter for optimization.
         Defaults to `+inf`.
     """
-    def __init__(self, key: int | tuple[int, ...], bound_low: float | None = None, bound_up: float | None = None):
+    def __init__(
+        self,
+        key: int | tuple[int, ...],
+        bound_low: float | None = None,
+        bound_up: float | None = None,
+    ) -> None:
         """
         Initialize the parameter.
         """
@@ -66,7 +71,11 @@ class Parameter:
             value = inf
         self._bound_up = value
 
-    def index(self, model: EquilibriumModel, structure: EquilibriumStructure | None = None) -> int | list[int]:
+    def index(
+        self,
+        model: EquilibriumModel,
+        structure: EquilibriumStructure,
+    ) -> int:
         """
         Get the index of the parameter key in the structure of a model.
         """
@@ -74,7 +83,7 @@ class Parameter:
 
     def value(self, model: EquilibriumModel, network: FDNetwork | FDMesh) -> float:
         """
-        Get the current value of a paramter from the structure of a model.
+        Get the current value of a parameter from the structure of a model.
         """
         raise NotImplementedError
 
@@ -91,13 +100,15 @@ class NodeParameter(Parameter):
         """
         Get the index of the key of the node parameter in the structure of a model.
         """
-        return structure.node_index[self.key]  # pyright: ignore[reportArgumentType]  # a non-group parameter's key is always a bare int at runtime
+        # a non-group parameter's key is always a bare int at runtime
+        return structure.node_index[self.key]  # pyright: ignore[reportArgumentType]
 
     def value(self, model: EquilibriumModel, network: FDNetwork) -> float:
         """
         Get the current value of the node parameter.
         """
-        return network.node_attribute(self.key, name=self.attr_name)  # pyright: ignore[reportArgumentType, reportReturnType]  # key is a bare int; compas returns Any/None but the attribute always holds a float here
+        # key is a bare int; compas returns Any/None but the attribute always holds a float here
+        return network.node_attribute(self.key, name=self.attr_name)  # pyright: ignore[reportArgumentType, reportReturnType]
 
 
 class VertexParameter(Parameter):
@@ -108,13 +119,15 @@ class VertexParameter(Parameter):
         """
         Get the index of the key of the node parameter in the structure of a model.
         """
-        return structure.vertex_index[self.key]  # pyright: ignore[reportArgumentType]  # a non-group parameter's key is always a bare int at runtime
+        # a non-group parameter's key is always a bare int at runtime
+        return structure.vertex_index[self.key]  # pyright: ignore[reportArgumentType]
 
     def value(self, model: EquilibriumModel, mesh: FDMesh) -> float:
         """
         Get the current value of the node parameter.
         """
-        return mesh.vertex_attribute(self.key, name=self.attr_name)  # pyright: ignore[reportReturnType]  # compas returns Any/None but the attribute always holds a float here
+        # compas returns Any/None but the attribute always holds a float here
+        return mesh.vertex_attribute(self.key, name=self.attr_name)  # pyright: ignore[reportReturnType]
 
 
 class EdgeParameter(Parameter):
@@ -125,13 +138,15 @@ class EdgeParameter(Parameter):
         """
         Get the index of the key of the edge parameter in the structure of a model.
         """
-        return structure.edge_index[self.key]  # pyright: ignore[reportArgumentType]  # a non-group parameter's key is always a bare (u, v) tuple at runtime
+        # a non-group parameter's key is always a bare (u, v) tuple at runtime
+        return structure.edge_index[self.key]  # pyright: ignore[reportArgumentType]
 
     def value(self, model: EquilibriumModel, datastructure: FDNetwork | FDMesh) -> float:
         """
         Get the current value of the edge parameter.
         """
-        return datastructure.edge_attribute(self.key, name=self.attr_name)  # pyright: ignore[reportArgumentType, reportReturnType]  # key is a bare (u, v) tuple; compas returns Any/None but the attribute always holds a float here
+        # key is a bare (u, v) tuple; compas returns Any/None but the attribute always holds a float here
+        return datastructure.edge_attribute(self.key, name=self.attr_name)  # pyright: ignore[reportArgumentType, reportReturnType]
 
 
 # ==========================================================================
@@ -170,7 +185,8 @@ class NodeGroupParameter(ParameterGroup):
         Get the current average value of the parameter of the grouped nodes.
         """
         values = [network.node_attribute(key, name=self.attr_name) for key in self.key]
-        return sum(values) / len(values)  # pyright: ignore[reportCallIssue, reportArgumentType]  # compas returns Any/None but every attribute value here is a float
+        # compas returns Any/None but every attribute value here is a float
+        return sum(values) / len(values)  # pyright: ignore[reportCallIssue, reportArgumentType]
 
 
 class VertexGroupParameter(ParameterGroup):
@@ -188,7 +204,8 @@ class VertexGroupParameter(ParameterGroup):
         Get the current average value of the parameter of the grouped vertices.
         """
         values = [mesh.vertex_attribute(key, name=self.attr_name) for key in self.key]
-        return sum(values) / len(values)  # pyright: ignore[reportCallIssue, reportArgumentType]  # compas returns Any/None but every attribute value here is a float
+        # compas returns Any/None but every attribute value here is a float
+        return sum(values) / len(values)  # pyright: ignore[reportCallIssue, reportArgumentType]
 
 
 class EdgeGroupParameter(ParameterGroup):
@@ -199,14 +216,16 @@ class EdgeGroupParameter(ParameterGroup):
         """
         Get the indices of the keys of the parametrized edges from the structure of a model.
         """
-        return [structure.edge_index[key] for key in self.key]  # pyright: ignore[reportArgumentType]  # an edge group key is always a sequence of (u, v) tuples at runtime
+        # an edge group key is always a sequence of (u, v) tuples at runtime
+        return [structure.edge_index[key] for key in self.key]  # pyright: ignore[reportArgumentType]
 
     def value(self, model: EquilibriumModel, datastructure: FDNetwork | FDMesh) -> float:
         """
         Get the current average value of the parameter of the grouped edges.
         """
         values = [datastructure.edge_attribute(key, name=self.attr_name) for key in self.key]
-        return sum(values) / len(values)  # pyright: ignore[reportCallIssue, reportArgumentType]  # compas returns Any/None but every attribute value here is a float
+        # compas returns Any/None but every attribute value here is a float
+        return sum(values) / len(values)  # pyright: ignore[reportCallIssue, reportArgumentType]
 
 
 # ==========================================================================
@@ -242,7 +261,8 @@ class NodeSupportParameter(NodeParameter):
         """
         Get the index of the key of the node support in the structure of a model.
         """
-        return structure.support_index[self.key]  # pyright: ignore[reportArgumentType]  # a non-group parameter's key is always a bare int at runtime
+        # a non-group parameter's key is always a bare int at runtime
+        return structure.support_index[self.key]  # pyright: ignore[reportArgumentType]
 
 
 class NodeSupportXParameter(NodeSupportParameter):

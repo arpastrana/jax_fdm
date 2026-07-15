@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Added type-annotated signatures across the library, using jaxtyping shape annotations (for example `Float[Array, "nodes 3"]`) in the numerical core and plain type hints at the periphery.
+- Added type-annotated signatures across the library, using jaxtyping shape annotations (for example `Float[Array, "nodes 3"]`) throughout. Array-carrying signatures use jaxtyping shape and dtype types (`Float`, `Int`, `Bool`, `Shaped`) everywhere they appear, including the `parameters`, `optimization` and `visualization` packages, so array dtype and shape are documented at the call site. Signatures over COMPAS objects keep COMPAS type hints.
 - Added a pyright type-checking gate that runs in CI on pull requests.
 
 ### Changed
@@ -19,6 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Changed `Error.errors` in `losses` from a static method to an instance method, unifying the signature across the error term family.
 - Changed `Loss.__call__` in `losses` to always return a scalar array `Float[Array, ""]`, seeding the accumulator with a jax array so an empty loss no longer returns a Python float.
 - Changed `FDDatastructure` in `datastructures` into a plain mixin instead of subclassing `compas.datastructures.Datastructure`, removing a redundant inheritance diamond. `FDNetwork` and `FDMesh` still reach `Datastructure` through `Network` and `Mesh`.
+- Changed the wrapper loss signatures in `optimization` (`Optimizer.loss` and the internal `loss_fn` closures) to return `Float[Array, ""]` instead of `jax.Array | float`, since the loss is always a scalar array.
 
 ### Removed
 

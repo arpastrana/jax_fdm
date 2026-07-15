@@ -2,6 +2,7 @@ from collections.abc import Callable
 from typing import Any
 
 import numpy as np
+from jaxtyping import Float
 from scipy.optimize import OptimizeResult
 from scipy.optimize import approx_fprime
 
@@ -34,7 +35,7 @@ class GradientDescent(Optimizer):
 
 def gradient_descent(
     fun: Callable,
-    x0: np.ndarray,
+    x0: Float[np.ndarray, "parameters"],
     args: tuple[Any, ...] = (),
     jac: Callable | bool | None = None,
     tol: float | None = None,

@@ -1,16 +1,19 @@
 from collections.abc import Callable
-from collections.abc import Generator
 from collections.abc import Iterable
+from collections.abc import Iterator
 
-import jax
 import jax.numpy as jnp
 import numpy as np
+from jaxtyping import Array
+from jaxtyping import Float
+from jaxtyping import Int
+from jaxtyping import Shaped
 
 
 def split_parameters(
-    parray: jax.Array,
-    func: Callable[[jax.Array], tuple[np.ndarray, ...]],
-) -> tuple[list[jax.Array], np.ndarray]:
+    parray: Float[Array, "parameters"],
+    func: Callable[[Float[Array, "parameters"]], tuple[Shaped[np.ndarray, "parameters"], ...]],
+) -> tuple[list[Float[Array, "..."]], Int[np.ndarray, "parameters"]]:
     """
     Split a flat array into flat subarrays given a filter function.
     """
@@ -22,7 +25,10 @@ def split_parameters(
     return sarrays, adef
 
 
-def combine_parameters(parrays: tuple[jax.Array, ...], adef: np.ndarray) -> jax.Array:
+def combine_parameters(
+    parrays: tuple[Float[Array, "..."], ...],
+    adef: Int[np.ndarray, "parameters"],
+) -> Float[Array, "parameters"]:
     """
     Combine a sequence of flat arrays given a filter function.
     """
@@ -30,9 +36,9 @@ def combine_parameters(parrays: tuple[jax.Array, ...], adef: np.ndarray) -> jax.
 
 
 def reshape_parameters(
-    sarrays: Iterable[jax.Array],
+    sarrays: Iterable[Float[Array, "..."]],
     shapes: Iterable[tuple[int, ...]],
-) -> Generator[jax.Array, None, None]:
+) -> Iterator[Float[Array, "..."]]:
     """
     Reshape a sequence of flat arrays.
     """

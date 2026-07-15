@@ -7,11 +7,12 @@ from time import perf_counter
 from typing import TYPE_CHECKING
 from typing import Any
 
-import jax
 import jax.numpy as jnp
 from jax import grad
 from jax import jit
 from jax import value_and_grad
+from jaxtyping import Array
+from jaxtyping import Float
 from scipy.optimize import Bounds
 from scipy.optimize import OptimizeResult
 from scipy.optimize import minimize
@@ -45,10 +46,10 @@ class Optimizer:
         self.name = name
         self.disp = disp
         self.pm: ParameterManager | None = None
-        self.loads_static: tuple[jax.Array | float, jax.Array | float] | None = None
+        self.loads_static: tuple[Float[Array, "edges 3"] | float, Float[Array, "faces 3"] | float] | None = None
         self.result: OptimizeResult | None = None
 
-    def constraints(self, constraints: list[Any], model: EquilibriumModel, params_opt: jax.Array) -> None:
+    def constraints(self, constraints: list[Any], model: EquilibriumModel, params_opt: Float[Array, "parameters"]) -> None:
         """
         Returns the defined constraints in a format amenable to `scipy.minimize`.
         """
@@ -71,7 +72,7 @@ class Optimizer:
 # Loss
 # ==========================================================================
 
-    def loss(self, params_opt: jax.Array, loss: Loss, model: EquilibriumModel, structure: EquilibriumStructure) -> jax.Array | float:
+    def loss(self, params_opt: Float[Array, "parameters"], loss: Loss, model: EquilibriumModel, structure: EquilibriumStructure) -> Float[Array, ""]:
         """
         The wrapper loss.
         """
@@ -136,7 +137,7 @@ class Optimizer:
         self.loads_static = loads.edges, loads.faces
 
         # closure over static parameters
-        def loss_fn(x: jax.Array) -> jax.Array | float:
+        def loss_fn(x: Float[Array, "parameters"]) -> Float[Array, ""]:
             return self.loss(x, loss, model, structure)
 
         loss_and_grad_fn = value_and_grad(loss_fn)
@@ -203,7 +204,7 @@ class Optimizer:
 
         return options
 
-    def solve(self, opt_problem: dict[str, Any]) -> jax.Array:
+    def solve(self, opt_problem: dict[str, Any]) -> Float[Array, "parameters"]:
         """
         Solve an optimization problem by minimizing a loss function.
         """
@@ -245,13 +246,13 @@ class Optimizer:
         """
         return Bounds(lb=self.pm.bounds_low, ub=self.pm.bounds_up)  # pyright: ignore[reportArgumentType, reportOptionalMemberAccess]  # self.pm is Optional by declaration but populated by problem() before this is called; bounds_low/up are ndarrays, Bounds also accepts array-likes despite the float-only stub
 
-    def parameters_value(self) -> jax.Array:
+    def parameters_value(self) -> Float[Array, "parameters"]:
         """
         Return a flat array with the value of the optimization parameters.
         """
         return self.pm.parameters_value  # pyright: ignore[reportOptionalMemberAccess]  # self.pm is Optional by declaration but populated by problem() before this is called
 
-    def parameters_fdm(self, params_opt: jax.Array) -> EquilibriumParametersState:
+    def parameters_fdm(self, params_opt: Float[Array, "parameters"]) -> EquilibriumParametersState:
         """
         Reconstruct the force density parameters from the optimization parameters.
         """

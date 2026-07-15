@@ -1,9 +1,13 @@
-from collections.abc import Generator
 from collections.abc import Iterable
+from collections.abc import Iterator
 
-import jax
 import jax.numpy as jnp
 import numpy as np
+from jaxtyping import Array
+from jaxtyping import Bool
+from jaxtyping import Float
+from jaxtyping import Int
+from jaxtyping import Shaped
 
 from jax_fdm import DTYPE_JAX
 from jax_fdm.datastructures import FDMesh
@@ -28,7 +32,7 @@ from jax_fdm.parameters import split_parameters
 
 class ParameterManager:
     """
-    A parameter manager for optimization purposes.
+    A parameter manager for optimization.
 
     Parameters
     ----------
@@ -60,27 +64,27 @@ class ParameterManager:
         self.structure = structure
         self.parameters = parameters
 
-        self._indices_opt: np.ndarray | None = None
-        self._indices_frozen: np.ndarray | None = None
-        self._indices_optfrozen: np.ndarray | None = None
-        self._indices_groups: np.ndarray | None = None
+        self._indices_opt: Int[np.ndarray, "parameters"] | None = None
+        self._indices_frozen: Int[np.ndarray, "parameters"] | None = None
+        self._indices_optfrozen: Int[np.ndarray, "parameters"] | None = None
+        self._indices_groups: Int[np.ndarray, "parameters"] | None = None
 
-        self._indices_opt_sort: np.ndarray | None = None
-        self._indices_opt_unsort: np.ndarray | None = None
+        self._indices_opt_sort: Int[np.ndarray, "parameters"] | None = None
+        self._indices_opt_unsort: Int[np.ndarray, "parameters"] | None = None
 
         self._indices_fdm: list[int] | None = None
-        self._indices_fd: np.ndarray | None = None
-        self._indices_xyzfixed: np.ndarray | None = None
-        self._indices_loads: np.ndarray | None = None
+        self._indices_fd: Int[np.ndarray, "edges"] | None = None
+        self._indices_xyzfixed: Int[np.ndarray, "supports"] | None = None
+        self._indices_loads: Int[np.ndarray, "loads"] | None = None
 
-        self._parameters_value: jax.Array | None = None
+        self._parameters_value: Float[Array, "parameters"] | None = None
         self._parameters_ordered: list[Parameter] | None = None
-        self._parameters_model: jax.Array | None = None
-        self._parameters_opt: jax.Array | None = None
-        self._parameters_frozen: jax.Array | None = None
+        self._parameters_model: Float[Array, "parameters"] | None = None
+        self._parameters_opt: Float[Array, "parameters"] | None = None
+        self._parameters_frozen: Float[Array, "parameters"] | None = None
 
-        self._bounds_low: np.ndarray | None = None
-        self._bounds_up: np.ndarray | None = None
+        self._bounds_low: Float[np.ndarray, "parameters"] | None = None
+        self._bounds_up: Float[np.ndarray, "parameters"] | None = None
 
         self._startindex_fd: int | None = None
         self._startindex_xyzfixed: int | None = None
@@ -144,7 +148,7 @@ class ParameterManager:
 # ==========================================================================
 
     @property
-    def indices_fd(self) -> np.ndarray:
+    def indices_fd(self) -> Int[np.ndarray, "edges"]:
         """
         The ordered indices of the force density of the edges of a network.
         """
@@ -155,9 +159,9 @@ class ParameterManager:
         return self._indices_fd
 
     @property
-    def indices_xyzfixed(self) -> np.ndarray:
+    def indices_xyzfixed(self) -> Int[np.ndarray, "supports"]:
         """
-        The ordered indices of the .
+        The ordered indices of the xyz coordinates of the support nodes of a network.
         """
         if self._indices_xyzfixed is None:
             start = self.startindex_xyzfixed
@@ -166,7 +170,7 @@ class ParameterManager:
         return self._indices_xyzfixed
 
     @property
-    def indices_loads(self) -> np.ndarray:
+    def indices_loads(self) -> Int[np.ndarray, "loads"]:
         """
         The ordered indices of the xyz coordinates of the anchor nodes of a network.
         """
@@ -177,7 +181,7 @@ class ParameterManager:
         return self._indices_loads
 
     @property
-    def indices_groups(self) -> np.ndarray:
+    def indices_groups(self) -> Int[np.ndarray, "parameters"]:
         """
         A list with indices distributions optimization parameters to parameter groups.
         """
@@ -196,7 +200,7 @@ class ParameterManager:
         return self._indices_groups
 
     @property
-    def indices_opt(self) -> np.ndarray:
+    def indices_opt(self) -> Int[np.ndarray, "parameters"]:
         """
         The type-ordered indices of the optimization parameters.
         """
@@ -219,7 +223,7 @@ class ParameterManager:
         return self._indices_opt
 
     @property
-    def indices_opt_sort(self) -> np.ndarray:
+    def indices_opt_sort(self) -> Int[np.ndarray, "parameters"]:
         """
         The indices that sort the index-based ordering of the type-sorted optimization parameters.
         """
@@ -229,7 +233,7 @@ class ParameterManager:
         return self._indices_opt_sort
 
     @property
-    def indices_opt_unsort(self) -> np.ndarray:
+    def indices_opt_unsort(self) -> Int[np.ndarray, "parameters"]:
         """
         The indices that unsort the index-based ordering of the type-sorted optimization parameters.
         """
@@ -239,7 +243,7 @@ class ParameterManager:
         return self._indices_opt_unsort
 
     @property
-    def indices_optfrozen(self) -> np.ndarray:
+    def indices_optfrozen(self) -> Int[np.ndarray, "parameters"]:
         if self._indices_optfrozen is None:
             _, indices = split_parameters(self.parameters_model, func=self.mask_optimizable)
             self._indices_optfrozen = indices
@@ -280,6 +284,7 @@ class ParameterManager:
         """
         The number of indices to shift of a collection of parameters of a given type.
         """
+        shift = -1
         if issubclass(ptype, EdgeParameter):
             shift = self.structure.num_edges
         elif issubclass(ptype, NodeSupportParameter):
@@ -294,7 +299,7 @@ class ParameterManager:
 # ==========================================================================
 
     @property
-    def bounds_low(self) -> np.ndarray:
+    def bounds_low(self) -> Float[np.ndarray, "parameters"]:
         """
         Return an array with the lower bound of the optimization parameters.
         """
@@ -308,7 +313,7 @@ class ParameterManager:
         return self._bounds_low
 
     @property
-    def bounds_up(self) -> np.ndarray:
+    def bounds_up(self) -> Float[np.ndarray, "parameters"]:
         """
         Return an array with the upper bound of the optimization parameters.
         """
@@ -322,7 +327,7 @@ class ParameterManager:
         return self._bounds_up
 
     @property
-    def parameters_value(self) -> jax.Array:
+    def parameters_value(self) -> Float[Array, "parameters"]:
         """
         Return an array with the intial value of the optimization parameters.
         """
@@ -359,19 +364,21 @@ class ParameterManager:
         return self._parameters_ordered
 
     @property
-    def parameters_model(self) -> jax.Array:
+    def parameters_model(self) -> Float[Array, "parameters"]:
         """
         The model parameters as a single array.
         """
         if self._parameters_model is None:
             q, xyz_fixed, loads = [jnp.asarray(p, dtype=DTYPE_JAX) for p in self.network.parameters()]
-            self._parameters_model = jnp.concatenate((q,
-                                                      jnp.ravel(xyz_fixed, order="F"),
-                                                      jnp.ravel(loads, order="F")))
+            self._parameters_model = jnp.concatenate(
+                (q,
+                 jnp.ravel(xyz_fixed, order="F"),
+                 jnp.ravel(loads, order="F")),
+            )
         return self._parameters_model
 
     @property
-    def parameters_opt(self) -> jax.Array:
+    def parameters_opt(self) -> Float[Array, "parameters"]:
         """
         The optimizable model parameters.
         """
@@ -382,7 +389,7 @@ class ParameterManager:
         return self._parameters_opt
 
     @property
-    def parameters_frozen(self) -> jax.Array:
+    def parameters_frozen(self) -> Float[Array, "parameters"]:
         """
         The non-optimizable model parameters.
         """
@@ -392,7 +399,10 @@ class ParameterManager:
             self._parameters_frozen = frozen
         return self._parameters_frozen
 
-    def parameters_fdm(self, params_opt: jax.Array) -> tuple[jax.Array, jax.Array, jax.Array]:
+    def parameters_fdm(
+        self,
+        params_opt: Float[Array, "parameters"],
+    ) -> tuple[Float[Array, "edges"], Float[Array, "supports 3"], Float[Array, "nodes 3"]]:
         """
         Convert optimization parameters into fdm parameters.
         """
@@ -409,7 +419,10 @@ class ParameterManager:
 # Masks
 # ==========================================================================
 
-    def mask_optimizable(self, array: jax.Array) -> tuple[np.ndarray, np.ndarray]:
+    def mask_optimizable(
+        self,
+        array: Float[Array, "parameters"],
+    ) -> tuple[Int[np.ndarray, "parameters"], Bool[np.ndarray, "parameters"]]:
         """
         Returns two boolean masks.
 
@@ -421,12 +434,14 @@ class ParameterManager:
 
         return mask, np.logical_not(mask)
 
-    def mask_fdm(self, array: np.ndarray) -> Generator[np.ndarray, None, None]:
+    def mask_fdm(
+        self,
+        array: Shaped[np.ndarray, "parameters"],
+    ) -> Iterator[Int[np.ndarray, "parameters"]]:
         """
+        Returns an iterator over boolean masks for the force density, xyz fixed, and loads parameters.
         """
-        for indices in (self.indices_fd,
-                        self.indices_xyzfixed,
-                        self.indices_loads):
+        for indices in (self.indices_fd, self.indices_xyzfixed, self.indices_loads):
             mask = np.zeros_like(array, dtype=np.int64)
             mask[indices] = 1
             yield mask

@@ -1,8 +1,9 @@
 from typing import Any
 
-import jax
 import jax.tree_util as jtu
 import numpy as np
+from jaxtyping import Array
+from jaxtyping import Float
 
 from compas.data import Data
 from jax_fdm.equilibrium import EquilibriumParametersState
@@ -29,8 +30,8 @@ class OptimizationRecorder(Data):
         history: list[Any] = []
         return history
 
-    def __call__(self, xk: jax.Array, *args: Any, **kwargs: Any) -> None:
-        parameters: jax.Array | EquilibriumParametersState = xk
+    def __call__(self, xk: Float[Array, "parameters"], *args: Any, **kwargs: Any) -> None:
+        parameters: Float[Array, "parameters"] | EquilibriumParametersState = xk
         if self.optimizer:
             parameters = self.optimizer.parameters_fdm(xk)
         self.record(parameters)
@@ -74,7 +75,7 @@ class OptimizationRecorder(Data):
 
     @classmethod
     def __from_data__(cls, data: dict[str, Any]) -> "OptimizationRecorder":
-        def leaf_to_array(leaf: Any) -> np.ndarray:
+        def leaf_to_array(leaf: Any) -> Float[np.ndarray, "..."]:
             return np.asarray(leaf, dtype=np.float64)
 
         # q, xyz_fixed, loads = data["history"]

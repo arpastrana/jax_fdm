@@ -3,8 +3,9 @@ A collection of evolutionary optimizers.
 """
 from typing import Any
 
-import jax
 from jax import vmap
+from jaxtyping import Array
+from jaxtyping import Float
 from scipy.optimize import OptimizeResult
 from scipy.optimize import differential_evolution
 from scipy.optimize import dual_annealing
@@ -34,7 +35,7 @@ class DifferentialEvolution(GradientFreeOptimizer):
         """
         func = opt_problem["fun"]
 
-        def func_vmap(x: jax.Array) -> jax.Array:
+        def func_vmap(x: Float[Array, "parameters population"]) -> Float[Array, "population"]:
             result = vmap(func, in_axes=(1))(x)
             return result
 
@@ -80,7 +81,7 @@ class DualAnnealing(GradientFreeOptimizer):
         """
         fun = opt_problem["fun"]
 
-        def func(x: jax.Array, *args: Any, **kwargs: Any) -> jax.Array:
+        def func(x: Float[Array, "parameters"], *args: Any, **kwargs: Any) -> Float[Array, ""]:
             return fun(x)
 
         opt_problem["func"] = func
