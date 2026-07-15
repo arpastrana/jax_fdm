@@ -17,34 +17,34 @@ class EdgeAngleConstraint(EdgeConstraint):
     """
     def __init__(
         self,
-        key: int | tuple[int, int] | list[int] | list[tuple[int, int]],
-        vector: Float[Array, "..."] | Float[np.ndarray, "..."],
+        key: tuple[int, int] | list[tuple[int, int]],
+        vector: Float[Array, "..."],
         bound_low: float | Float[Array, "..."] | None,
         bound_up: float | Float[Array, "..."] | None,
     ) -> None:
         super().__init__(key=key, bound_low=bound_low, bound_up=bound_up)
-        self._vector: Float[Array, "elements 3"] | None = None
+        self._vector: Float[Array, "vectors 3"] | None = None
         self.vector = vector
 
     @property
-    def vector(self) -> Float[Array, "elements 3"] | None:
+    def vector(self) -> Float[Array, "vectors 3"] | None:
         """
         The vector to take the angle with.
         """
         return self._vector
 
     @vector.setter
-    def vector(self, vector: Float[Array, "..."] | Float[np.ndarray, "..."]) -> None:
+    def vector(self, vector: Float[Array, "..."]) -> None:
         self._vector = jnp.reshape(jnp.asarray(vector), (-1, 3))
 
-    def vectors(self) -> Float[np.ndarray, "elements 3"]:
+    def vectors(self) -> Float[Array, "vectors 3"]:
         """
         Create a matrix of vectors.
         """
-        matrix = np.zeros((max(self.index) + 1, 3))  # pyright: ignore[reportArgumentType]  # self.index is Optional by declaration but always populated by init() before this runs
-        for vec, idx in zip(self.vector, self.index):  # pyright: ignore[reportArgumentType]  # self.vector/self.index are always arrays by the time vectors() runs
+        matrix = np.zeros((max(self.index) + 1, 3))  # pyright: ignore[reportArgumentType]
+        for vec, idx in zip(self.vector, self.index):  # pyright: ignore[reportArgumentType]
             matrix[idx, :] = vec
-        return matrix
+        return jnp.asarray(matrix)
 
     def init(self, model: EquilibriumModel, structure: EquilibriumStructure) -> None:
         """
@@ -58,4 +58,4 @@ class EdgeAngleConstraint(EdgeConstraint):
         Returns the angle between an edge in an equilibrium state and a vector.
         """
         vector = eqstate.vectors[index, :]
-        return angle_vectors(vector, self.vector[index, :])  # pyright: ignore[reportOptionalSubscript]  # self.vector is Optional by declaration but always set in __init__ before this runs
+        return angle_vectors(vector, self.vector[index, :])  # pyright: ignore[reportOptionalSubscript]

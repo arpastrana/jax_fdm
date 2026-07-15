@@ -11,7 +11,11 @@ class NetworkEdgesLengthConstraint(NetworkConstraint):
     """
     Set constraint bounds to the length of all the edges of a network.
     """
-    def constraint(self, eqstate: EquilibriumState, index: Int[Array, ""]) -> Float[Array, "edges"]:
+    def constraint(
+        self,
+        eqstate: EquilibriumState,
+        index: Int[Array, ""],
+        ) -> Float[Array, "edges"]:
         """
         The constraint function relative to an equilibrium state.
         """
