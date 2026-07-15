@@ -30,15 +30,17 @@ class NotebookViewer(CompasNotebookViewer):
     directly and folds them into a :class:`compas_notebook.config.Config`, so
     the common setup does not require building a config by hand.
     """
-    def __init__(self,
-                 width: int | None = None,
-                 height: int | None = None,
-                 show_grid: bool | None = None,
-                 viewport: Literal["top", "perspective"] | None = None,
-                 camera_position: list[float] | None = None,
-                 camera_target: list[float] | None = None,
-                 config: Config | None = None,
-                 **kwargs: Any) -> None:
+    def __init__(
+        self,
+        width: int | None = None,
+        height: int | None = None,
+        show_grid: bool | None = None,
+        viewport: Literal["top", "perspective"] | None = None,
+        camera_position: list[float] | None = None,
+        camera_target: list[float] | None = None,
+        config: Config | None = None,
+        **kwargs: Any,
+    ) -> None:
         if config is None:
             config = Config()
             # Config.view is a shared class attribute in compas_notebook 0.11;
@@ -69,7 +71,7 @@ class NotebookViewer(CompasNotebookViewer):
 
         Parameters
         ----------
-        data : :class:`compas.data.Data`
+        data : :class:`compas.geometry.Geometry` | :class:`compas.datastructures.Datastructure`
             The object to visualize.
         **kwargs : dict, optional
             Additional visualization options.

@@ -59,26 +59,28 @@ class ThreeFDDatastructureObject(ThreeSceneObject):
     shape_u = 8
     arrow_u = 8
 
-    def __init__(self,
-                 item: FDNetwork | FDMesh | None = None,
-                 points: list[int] | None = None,
-                 edges: list[tuple[int, int]] | None = None,
-                 pointcolor: Color | dict | str | None = None,
-                 edgecolor: Color | dict | str | None = None,
-                 pointsize: float | dict | None = None,
-                 edgewidth: float | dict | tuple | None = None,
-                 loadcolor: Color | None = None,
-                 loadscale: float | None = None,
-                 loadtol: float | None = None,
-                 reactioncolor: Color | None = None,
-                 reactionscale: float | None = None,
-                 reactiontol: float | None = None,
-                 show_points: bool = False,
-                 show_edges: bool = True,
-                 show_loads: bool = True,
-                 show_reactions: bool = True,
-                 show_supports: bool = True,
-                 **kwargs: Any) -> None:
+    def __init__(
+        self,
+        item: FDNetwork | FDMesh | None = None,
+        points: list[int] | None = None,
+        edges: list[tuple[int, int]] | None = None,
+        pointcolor: Color | dict | str | None = None,
+        edgecolor: Color | dict | str | None = None,
+        pointsize: float | dict | None = None,
+        edgewidth: float | dict | tuple | None = None,
+        loadcolor: Color | None = None,
+        loadscale: float | None = None,
+        loadtol: float | None = None,
+        reactioncolor: Color | None = None,
+        reactionscale: float | None = None,
+        reactiontol: float | None = None,
+        show_points: bool = False,
+        show_edges: bool = True,
+        show_loads: bool = True,
+        show_reactions: bool = True,
+        show_supports: bool = True,
+        **kwargs: Any,
+    ) -> None:
         kwargs.pop("sceneobject_type", None)
         super().__init__(item=item, **kwargs)
 

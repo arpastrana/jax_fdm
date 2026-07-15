@@ -160,7 +160,7 @@ class Viewer(CompasViewer):
 
         Parameters
         ----------
-        data : :class:`compas.data.Data`
+        data : :class:`compas.geometry.Geometry` | :class:`compas.datastructures.Datastructure`
             The object to visualize.
         **kwargs : dict, optional
             Additional visualization options.
