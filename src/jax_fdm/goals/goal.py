@@ -1,10 +1,11 @@
+import jax.numpy as jnp
 import numpy as np
 from jax import vmap
 from jaxtyping import Array
 from jaxtyping import Float
 from jaxtyping import Int
 
-from jax_fdm import DTYPE_NP
+from jax_fdm import DTYPE_JAX
 from jax_fdm.equilibrium import EquilibriumModel
 from jax_fdm.equilibrium import EquilibriumState
 from jax_fdm.equilibrium import EquilibriumStructure
@@ -23,13 +24,13 @@ class Goal:
     def __init__(
         self,
         key: int | tuple[int, int] | list,
-        target: float | Float[Array, "..."] | Float[np.ndarray, "..."],
-        weight: float,
-    ):
-        self._key = None
-        self._weight = None
-        self._target = None
-        self._index = None
+        target: float | Float[Array, "..."],
+        weight: float | Float[Array, "..."],
+    ) -> None:
+        self._key: int | tuple[int, int] | list | None = None
+        self._weight: Float[Array, "elements 1"] | None = None
+        self._target: Float[Array, "..."] | None = None
+        self._index: Int[np.ndarray, "elements"] | None = None
 
         self.key = key
         self.weight = weight
@@ -38,7 +39,7 @@ class Goal:
         self.is_collectible = True
 
     @property
-    def key(self):
+    def key(self) -> int | tuple[int, int] | list | None:
         """
         The key of an element in a network.
         """
@@ -53,7 +54,7 @@ class Goal:
         self._key = key
 
     @property
-    def index(self):
+    def index(self) -> Int[np.ndarray, "elements"] | None:
         """
         The index of the goal key in the canonical ordering of a structure.
         """
@@ -66,15 +67,15 @@ class Goal:
         self._index = np.array(index)
 
     @property
-    def weight(self):
+    def weight(self) -> Float[Array, "elements 1"] | None:
         """
         The importance of the goal.
         """
         return self._weight
 
     @weight.setter
-    def weight(self, weight: float | Float[Array, "..."] | Float[np.ndarray, "..."]) -> None:
-        self._weight = np.reshape(np.asarray(weight, dtype=DTYPE_NP), (-1, 1))
+    def weight(self, weight: float | Float[Array, "..."]) -> None:
+        self._weight = jnp.reshape(jnp.asarray(weight, dtype=DTYPE_JAX), (-1, 1))
 
     @property
     def target(self):
@@ -118,17 +119,17 @@ class ScalarGoal:
     A goal that is expressed as a scalar quantity.
     """
     @property
-    def target(self):
+    def target(self) -> Float[Array, "elements 1"] | None:
         """
         The target to achieve.
         """
         return self._target
 
     @target.setter
-    def target(self, target: float | Float[Array, "..."] | Float[np.ndarray, "..."]) -> None:
+    def target(self, target: float | Float[Array, "..."]) -> None:
         if isinstance(target, (int, float)):
-            target = [target]  # pyright: ignore[reportAssignmentType]  # reassigned to a list only to feed np.array below, not the annotated element type
-        self._target = np.reshape(np.array(target), (-1, 1))
+            target = [target]  # pyright: ignore[reportAssignmentType]  # reassigned to a list only to feed jnp.asarray below, not the annotated element type
+        self._target = jnp.reshape(jnp.asarray(target, dtype=DTYPE_JAX), (-1, 1))
 
 
 # ==========================================================================
@@ -140,12 +141,12 @@ class VectorGoal:
     A goal that is expressed as a vector 3D quantity.
     """
     @property
-    def target(self):
+    def target(self) -> Float[Array, "elements 3"] | None:
         """
         The target to achieve
         """
         return self._target
 
     @target.setter
-    def target(self, target: Float[Array, "..."] | Float[np.ndarray, "..."]) -> None:
-        self._target = np.reshape(np.asarray(target, dtype=DTYPE_NP), (-1, 3))
+    def target(self, target: Float[Array, "..."]) -> None:
+        self._target = jnp.reshape(jnp.asarray(target, dtype=DTYPE_JAX), (-1, 3))
