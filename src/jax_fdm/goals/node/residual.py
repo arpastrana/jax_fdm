@@ -17,8 +17,11 @@ class NodeResidualForceGoal(ScalarGoal, NodeGoal):
     """
     Make the residual force in a network to match a non-negative magnitude.
     """
-    @staticmethod
-    def prediction(eq_state: EquilibriumState, index: Int[Array, ""]) -> Float[Array, "1"]:
+    def prediction(
+        self,
+        eq_state: EquilibriumState,
+        index: Int[Array, ""],
+        ) -> Float[Array, "1"]:
         """
         The residual at the the predicted node of the network.
         """
@@ -31,8 +34,11 @@ class NodeResidualVectorGoal(VectorGoal, NodeGoal):
     """
     Make the residual force in a network to match the magnitude and direction of a vector.
     """
-    @staticmethod
-    def prediction(eq_state: EquilibriumState, index: Int[Array, ""]) -> Float[Array, "3"]:
+    def prediction(
+        self,
+        eq_state: EquilibriumState,
+        index: Int[Array, ""],
+        ) -> Float[Array, "3"]:
         """
         The residual at the the predicted node of the network.
         """
@@ -54,8 +60,11 @@ class NodeResidualDirectionGoal(VectorGoal, NodeGoal):
     potentially expensive trigonometric operations required to yield
     a proper metric.
     """
-    @staticmethod
-    def prediction(eq_state: EquilibriumState, index: Int[Array, ""]) -> Float[Array, "3"]:
+    def prediction(
+        self,
+        eq_state: EquilibriumState,
+        index: Int[Array, ""],
+        ) -> Float[Array, "3"]:
         """
         The residual at the the predicted node of the network.
         """
@@ -63,8 +72,11 @@ class NodeResidualDirectionGoal(VectorGoal, NodeGoal):
 
         return normalize_vector(residual)
 
-    @staticmethod
-    def goal(target: Float[Array, "3"], prediction: Float[Array, "3"]) -> Float[Array, "3"]:
+    def goal(
+        self,
+        target: Float[Array, "3"],
+        prediction: Float[Array, "3"],
+        ) -> Float[Array, "3"]:
         """
         """
         return normalize_vector(target)

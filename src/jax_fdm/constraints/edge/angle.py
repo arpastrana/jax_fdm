@@ -23,11 +23,11 @@ class EdgeAngleConstraint(EdgeConstraint):
         bound_up: float | Float[Array, "..."] | None,
     ) -> None:
         super().__init__(key=key, bound_low=bound_low, bound_up=bound_up)
-        self._vector: Float[Array, "vectors 3"] | None = None
+        self._vector: Float[Array, "vectors 3"]
         self.vector = vector
 
     @property
-    def vector(self) -> Float[Array, "vectors 3"] | None:
+    def vector(self) -> Float[Array, "vectors 3"]:
         """
         The vector to take the angle with.
         """
@@ -41,8 +41,8 @@ class EdgeAngleConstraint(EdgeConstraint):
         """
         Create a matrix of vectors.
         """
-        matrix = np.zeros((max(self.index) + 1, 3))  # pyright: ignore[reportArgumentType]
-        for vec, idx in zip(self.vector, self.index):  # pyright: ignore[reportArgumentType]
+        matrix = np.zeros((max(self.index) + 1, 3))
+        for vec, idx in zip(self.vector, self.index):
             matrix[idx, :] = vec
         return jnp.asarray(matrix)
 
@@ -53,9 +53,9 @@ class EdgeAngleConstraint(EdgeConstraint):
         super().init(model, structure)
         self.vector = self.vectors()
 
-    def constraint(self, eqstate: EquilibriumState, index: Int[Array, ""]) -> Float[Array, ""]:
+    def constraint(self, eq_state: EquilibriumState, index: Int[Array, ""]) -> Float[Array, ""]:
         """
         Returns the angle between an edge in an equilibrium state and a vector.
         """
-        vector = eqstate.vectors[index, :]
-        return angle_vectors(vector, self.vector[index, :])  # pyright: ignore[reportOptionalSubscript]
+        vector = eq_state.vectors[index, :]
+        return angle_vectors(vector, self.vector[index, :])

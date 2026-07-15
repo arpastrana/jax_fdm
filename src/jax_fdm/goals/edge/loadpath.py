@@ -12,8 +12,7 @@ class EdgeLoadPathGoal(ScalarGoal, EdgeGoal):
     """
     Make an edge of a network to reach a target force.
     """
-    @staticmethod
-    def prediction(eq_state: EquilibriumState, index: Int[Array, ""]) -> Float[Array, "1"]:
+    def prediction(self, eq_state: EquilibriumState, index: Int[Array, ""]) -> Float[Array, "1"]:
         """
         The predicted edge force.
         """

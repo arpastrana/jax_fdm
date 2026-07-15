@@ -27,8 +27,9 @@ class MeshSmoothGoal(ScalarGoal, MeshGoal):
     """
     def __init__(self):
         super().__init__()
-        self.adjacency = None
-        self.indices_free = None
+        # set in init() from the mesh structure, before any prediction runs
+        self.adjacency: Float[Array, "vertices vertices"]
+        self.indices_free: Int[Array, "free"]
 
     def init(self, model: EquilibriumModel, structure: EquilibriumMeshStructure) -> None:
         """
@@ -46,7 +47,7 @@ class MeshSmoothGoal(ScalarGoal, MeshGoal):
         adjacency = self.adjacency
         fairness_fn = vmap(vertex_nbrs_fairness_ngon, in_axes=(None, 0, 0))
 
-        fairness_vertices = fairness_fn(xyz, xyz, adjacency)  # pyright: ignore[reportArgumentType]  # self.adjacency is Optional by declaration but always set in init() before this runs
+        fairness_vertices = fairness_fn(xyz, xyz, adjacency)
         fairness_vertices = fairness_vertices[self.indices_free]
         fairness = jnp.mean(fairness_vertices)
 

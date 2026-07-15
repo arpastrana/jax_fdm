@@ -32,7 +32,8 @@ class Constraint:
         self._bound_up: float | Float[Array, "..."] | None = None
         self.bound_up = bound_up
 
-        self._index: Int[np.ndarray, "elements"] | None = None
+        # set in init() from the equilibrium structure, before any constraint runs
+        self._index: Int[np.ndarray, "elements"]
 
     @property
     def key(self) -> int | tuple[int, int] | list[int] | list[tuple[int, int]] | None:
@@ -46,18 +47,17 @@ class Constraint:
         self._key = key
 
     @property
-    def index(self) -> Int[np.ndarray, "elements"] | None:
+    def index(self) -> Int[np.ndarray, "elements"]:
         """
-        The index of the goal key in the canonical ordering of an equilibrium structure.
+        The index of the constraint key in the canonical ordering of an equilibrium structure.
         """
         return self._index
 
     @index.setter
     def index(self, index: int | tuple[int, ...] | Int[np.ndarray, "elements"]) -> None:
         if isinstance(index, int):
-            # reassigned to a list only to feed np.array below, not the annotated element type
-            index = [index]  # pyright: ignore[reportAssignmentType]
-        self._index = np.array(index)
+            index = (index,)
+        self._index = np.asarray(index)
 
     @staticmethod
     def _bound_setter(bound: float | Float[Array, "..."]) -> float | Float[Array, "..."]:
@@ -138,13 +138,13 @@ class Constraint:
         """
         eqstate = model(params, structure)
         # self.index is Optional by declaration but always populated by init() before __call__ runs
-        constraint = vmap(self.constraint, in_axes=(None, 0))(eqstate, self.index)  # pyright: ignore[reportArgumentType]
+        constraint = vmap(self.constraint, in_axes=(None, 0))(eqstate, self.index)  # pyright: ignore[reportArgumentType]  # self.index is a numpy index array mapped to a jax scalar by vmap
 
         return jnp.ravel(constraint)
 
     def constraint(
         self,
-        eqstate: EquilibriumState,
+        eq_state: EquilibriumState,
         index: Int[Array, "..."],
         ) -> Float[Array, "..."]:
         """

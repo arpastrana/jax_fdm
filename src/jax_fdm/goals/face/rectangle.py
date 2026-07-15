@@ -27,7 +27,8 @@ class FaceRectangularGoal(ScalarGoal, FaceGoal):
         target: float | Float[Array, "..."] = 0.0,
     ):
         super().__init__(key=key, target=target, weight=weight)
-        self.face_indices = None
+        # set in init() from the mesh structure, before any prediction runs
+        self.face_indices: Int[Array, "faces 4"]
 
     def init(self, model: EquilibriumModel, structure: EquilibriumMeshStructure) -> None:
         """

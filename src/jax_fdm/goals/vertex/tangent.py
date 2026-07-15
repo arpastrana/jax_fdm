@@ -27,11 +27,11 @@ class VertexTangentAngleGoal(VertexNormalAngleGoal):
     ):
         super().__init__(key=key, vector=vector, target=target, weight=weight)
 
-    def prediction(self, eqstate: EquilibriumState, index: Int[Array, ""]) -> Float[Array, "1"]:
+    def prediction(self, eq_state: EquilibriumState, index: Int[Array, ""]) -> Float[Array, "1"]:
         """
         Returns the angle between the vertex tangent and the reference vector.
         """
-        angle_normal = super().prediction(eqstate, index)
+        angle_normal = super().prediction(eq_state, index)
 
         angle_tangent = np.pi * 0.5 - angle_normal
 

@@ -24,7 +24,8 @@ class NodeCurvatureConstraint(NodeConstraint):
     ) -> None:
         super().__init__(key, bound_low, bound_up)
         self.polygon = jnp.asarray(polygon)
-        self.index_polygon: Int[Array, "nodes neighbors"] | None = None
+        # set in init() from the equilibrium structure, before any constraint runs
+        self.index_polygon: Int[Array, "nodes neighbors"]
 
     def init(self, model: EquilibriumModel, structure: EquilibriumStructure) -> None:
         """
@@ -41,27 +42,24 @@ class NodeCurvatureConstraint(NodeConstraint):
         """
         Obtains the indices of the polygon from a model.
         """
-        # self.index is Optional by declaration but always populated by init() before this runs
-        index_max = max(self.index) + 1  # pyright: ignore[reportArgumentType]
+        index_max = max(self.index) + 1
         polygon = np.atleast_2d(self.polygon)
         index_polygon = np.zeros((index_max, polygon.shape[1]))
-        # self.index is Optional by declaration but always populated by init() before this runs
-        for p, idx in zip(polygon, self.index):  # pyright: ignore[reportArgumentType]
+        for p, idx in zip(polygon, self.index):
             index_polygon[idx, :] = tuple([structure.node_index[nbr] for nbr in p])
 
         return jnp.array(index_polygon, dtype=jnp.int64)
 
     def constraint(
         self,
-        eqstate: EquilibriumState,
+        eq_state: EquilibriumState,
         index: Int[Array, ""],
         ) -> Float[Array, ""]:
         """
         Returns the curvature at a node based on the xyz coordinates of its one-hop neighborhood.
         """
-        point = eqstate.xyz[index, :]
-        # self.index_polygon is Optional by declaration but always set in init() before this runs
-        index_polygon = self.index_polygon[index, :]  # pyright: ignore[reportOptionalSubscript]
-        polygon = eqstate.xyz[index_polygon, :]
+        point = eq_state.xyz[index, :]
+        index_polygon = self.index_polygon[index, :]
+        polygon = eq_state.xyz[index_polygon, :]
 
         return curvature_point_polygon(point, polygon)

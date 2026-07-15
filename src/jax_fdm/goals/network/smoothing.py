@@ -25,8 +25,8 @@ class NetworkSmoothGoal(ScalarGoal, NetworkGoal):
     """
     def __init__(self):
         super().__init__()
-        self.adjacency = None
-        self.indices_free = None
+        # set in init() from the network structure, before any prediction runs
+        self.adjacency: Float[Array, "nodes nodes"]
 
     def init(self, model: EquilibriumModel, structure: EquilibriumStructure) -> None:
         """
@@ -35,7 +35,11 @@ class NetworkSmoothGoal(ScalarGoal, NetworkGoal):
         super().init(model, structure)
         self.adjacency = structure.adjacency
 
-    def prediction(self, eq_state: EquilibriumState, index: Int[Array, ""]) -> Float[Array, "1"]:
+    def prediction(
+        self,
+        eq_state: EquilibriumState,
+        index: Int[Array, ""],
+        ) -> Float[Array, "1"]:
         """
         The current fairness value of the node.
         """
@@ -43,7 +47,7 @@ class NetworkSmoothGoal(ScalarGoal, NetworkGoal):
         adjacency = self.adjacency
         fairness_fn = vmap(node_nbrs_fairness_ngon, in_axes=(None, 0, 0))
 
-        fairness_nodes = fairness_fn(xyz, xyz, adjacency)  # pyright: ignore[reportArgumentType]  # self.adjacency is Optional by declaration but always set in init() before this runs
+        fairness_nodes = fairness_fn(xyz, xyz, adjacency)
         fairness = jnp.mean(fairness_nodes)
 
         return jnp.atleast_1d(fairness)

@@ -1,4 +1,5 @@
 import jax.numpy as jnp
+import numpy as np
 from jaxtyping import Array
 from jaxtyping import Float
 from jaxtyping import Int
@@ -14,8 +15,7 @@ class EdgeLengthGoal(ScalarGoal, EdgeGoal):
     """
     Make an edge of a network to reach a certain length.
     """
-    @staticmethod
-    def prediction(eq_state: EquilibriumState, index: Int[Array, ""]) -> Float[Array, "1"]:
+    def prediction(self, eq_state: EquilibriumState, index: Int[Array, ""]) -> Float[Array, "1"]:
         """
         The current edge length.
         """
@@ -27,7 +27,7 @@ class EdgesLengthEqualGoal(ScalarGoal, EdgeGoal):
     Equalize the length of a selection of edges by minimizing
     the normalized variance of their lengths.
     """
-    def __init__(self, key: int | tuple[int, int] | list, weight: float = 1.0):
+    def __init__(self, key: list[tuple[int, int]], weight: float = 1.0):
         super().__init__(key=key, target=0.0, weight=weight)
         self.is_collectible = False
 
@@ -35,10 +35,9 @@ class EdgesLengthEqualGoal(ScalarGoal, EdgeGoal):
         """
         Initialize the goal with information from an equilibrium model.
         """
-        self.index = [super().index_from_model(model, structure)]
+        self.index = np.atleast_2d(super().index_from_model(model, structure))
 
-    @staticmethod
-    def prediction(eq_state: EquilibriumState, index: Int[Array, "elements"]) -> Float[Array, "1"]:
+    def prediction(self, eq_state: EquilibriumState, index: Int[Array, "elements"]) -> Float[Array, "1"]:
         """
         The normalized variance of the lengths of the edges.
         """

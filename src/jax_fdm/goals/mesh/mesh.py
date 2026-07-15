@@ -12,11 +12,14 @@ class MeshGoal(Goal):
     """
     def __init__(
         self,
-        key: int | tuple[int, int] | list = -1,
+        key: int = -1,
         target: float | Float[Array, "..."] = 0.0,
         weight: float = 1.0,
     ):
         super().__init__(key=key, target=target, weight=weight)
+        # A mesh goal aggregates the whole structure, so it always carries the
+        # sentinel key -1 and is never grouped with peers into a collection.
+        self.is_collectible = False
 
     def index_from_model(self, model: EquilibriumModel, structure: EquilibriumMeshStructure) -> int:
         """

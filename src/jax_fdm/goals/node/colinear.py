@@ -1,4 +1,5 @@
 import jax.numpy as jnp
+import numpy as np
 from jaxtyping import Array
 from jaxtyping import Float
 from jaxtyping import Int
@@ -22,7 +23,7 @@ class NodesColinearGoal(ScalarGoal, NodeGoal):
     - The goal applies to a *collection* of ordered nodes and is therefore not collectible.
     - The start and end points are assumed to be fixed.
     """
-    def __init__(self, key: int | tuple[int, int] | list, weight: float = 1.0):
+    def __init__(self, key: list[int], weight: float = 1.0):
         super().__init__(key=key, target=0.0, weight=weight)
         self.is_collectible = False
 
@@ -30,7 +31,7 @@ class NodesColinearGoal(ScalarGoal, NodeGoal):
         """
         Initialize the goal with information from an equilibrium model.
         """
-        self.index = [super().index_from_model(model, structure)]
+        self.index = np.atleast_2d(super().index_from_model(model, structure))
 
     def prediction(self, eq_state: EquilibriumState, index: Int[Array, "points"]) -> Float[Array, "1"]:
         """
@@ -50,7 +51,7 @@ class NodesCurvatureGoal(ScalarGoal, NodeGoal):
     - The goal applies to a *collection* of ordered nodes and is therefore not collectible.
     - The start and end points are assumed to be fixed.
     """
-    def __init__(self, key: int | tuple[int, int] | list, weight: float = 1.0):
+    def __init__(self, key: list[int], weight: float = 1.0):
         super().__init__(key=key, target=0.0, weight=weight)
         self.is_collectible = False
 
@@ -58,7 +59,7 @@ class NodesCurvatureGoal(ScalarGoal, NodeGoal):
         """
         Initialize the goal with information from an equilibrium model.
         """
-        self.index = [super().index_from_model(model, structure)]
+        self.index = np.atleast_2d(super().index_from_model(model, structure))
 
     def prediction(self, eq_state: EquilibriumState, index: Int[Array, "points"]) -> Float[Array, "1"]:
         """

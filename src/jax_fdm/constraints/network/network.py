@@ -23,6 +23,6 @@ class NetworkConstraint(Constraint):
         structure: EquilibriumStructure,
         ) -> int:
         """
-        Method only for API compatibility.
+        The index of the constraint key in a structure.
         """
         return -1

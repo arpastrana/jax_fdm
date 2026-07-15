@@ -39,13 +39,15 @@ class NetworkXYZLaplacianGoal(ScalarGoal, NetworkGoal):
     ravel matrix U into a single vector, and calculate the dot
     product of U in the raveled state.
     """
-    @staticmethod
-    def prediction(eq_state: EquilibriumState, index: Int[Array, ""]) -> Float[Array, "1"]:
+    def prediction(
+        self,
+        eq_state: EquilibriumState,
+        index: Int[Array, ""]
+        ) -> Float[Array, "1"]:
         """
         The current load path of the network.
         """
         vectors = eq_state.vectors
-        laplacian = jnp.dot(jnp.ravel(vectors),
-                            jnp.reshape(vectors, (-1, 1)))
+        laplacian = jnp.dot(jnp.ravel(vectors), jnp.reshape(vectors, (-1, 1)))
 
         return jnp.atleast_1d(laplacian)

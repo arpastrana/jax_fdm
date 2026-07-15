@@ -30,9 +30,10 @@ class Goal:
         weight: float | Float[Array, "..."],
     ) -> None:
         self._key: int | tuple[int, int] | list[int] | list[tuple[int, int]] | None = None
-        self._weight: Float[Array, "elements 1"] | None = None
-        self._target: Float[Array, "..."] | None = None
-        self._index: Int[np.ndarray, "elements"] | None = None
+        self._weight: Float[Array, "elements 1"]
+        self._target: Float[Array, "..."]
+        # set in init() from the equilibrium structure, before any prediction runs
+        self._index: Int[np.ndarray, "elements"]
 
         self.key = key
         self.weight = weight
@@ -57,7 +58,7 @@ class Goal:
         self._key = key
 
     @property
-    def index(self) -> Int[np.ndarray, "elements"] | None:
+    def index(self) -> Int[np.ndarray, "elements"]:
         """
         The index of the goal key in the canonical ordering of a structure.
         """
@@ -66,12 +67,11 @@ class Goal:
     @index.setter
     def index(self, index: int | tuple[int, ...] | Int[np.ndarray, "elements"]) -> None:
         if isinstance(index, int):
-            # reassigned to a list only to feed np.array below, not the annotated element type
-            index = [index]  # pyright: ignore[reportAssignmentType]
-        self._index = np.array(index)
+            index = (index,)
+        self._index = np.asarray(index)
 
     @property
-    def weight(self) -> Float[Array, "elements 1"] | None:
+    def weight(self) -> Float[Array, "elements 1"]:
         """
         The importance of the goal.
         """
@@ -82,18 +82,40 @@ class Goal:
         self._weight = jnp.reshape(jnp.asarray(weight, dtype=DTYPE_JAX), (-1, 1))
 
     @property
-    def target(self):
+    def target(self) -> Float[Array, "..."]:
         """
         The target to achieve.
         """
         raise NotImplementedError
 
-    @staticmethod
-    def goal(target: Float[Array, "..."], prediction: Float[Array, "..."]) -> Float[Array, "..."]:
+    @target.setter
+    def target(self, target: float | Float[Array, "..."]) -> None:
+        # Concrete goals provide the setter via the ScalarGoal / VectorGoal
+        # mixins; the base only declares the contract so that Goal.__init__ can
+        # assign self.target without tripping a read-only property.
+        raise NotImplementedError
+
+    def goal(self, target: Float[Array, "..."], prediction: Float[Array, "..."]) -> Float[Array, "..."]:
         """
-        The target to achieve.
+        The goal value to compare the prediction against.
         """
         return target
+
+    def prediction(self, eq_state: EquilibriumState, index: Int[Array, "..."]) -> Float[Array, "..."]:
+        """
+        The current value of the quantity of interest.
+        """
+        raise NotImplementedError
+
+    def index_from_model(
+        self,
+        model: EquilibriumModel,
+        structure: EquilibriumStructure,
+    ) -> int | tuple[int, ...]:
+        """
+        The index of the goal key in an equilibrium structure.
+        """
+        raise NotImplementedError
 
     def _index_from_key(self, key_index: dict[Any, int]) -> int | tuple[int, ...]:
         """
@@ -109,19 +131,19 @@ class Goal:
         """
         Initialize the goal with information from an equilibrium model.
         """
-        self.index = self.index_from_model(model, structure)  # pyright: ignore[reportAttributeAccessIssue]  # index_from_model is defined by concrete Goal subclasses (edge/face/mesh/network/node/vertex), not on this base class
+        self.index = self.index_from_model(model, structure)
 
     def __call__(self, eqstate: EquilibriumState) -> GoalState:
         """
         Return the current goal state.
         """
-        prediction = vmap(self.prediction, in_axes=(None, 0))(eqstate, self.index)  # pyright: ignore[reportAttributeAccessIssue]  # prediction is defined by concrete Goal subclasses, not on this base class
+        prediction = vmap(self.prediction, in_axes=(None, 0))(eqstate, self.index)  # pyright: ignore[reportArgumentType]  # self.index is a numpy index array populated in init and mapped to a jax scalar by vmap
         goal = vmap(self.goal)(self.target, prediction)
 
         msg = f"Goal {self.__class__.__name__} shape: {goal.shape} vs. prediction shape: {prediction.shape}"
         assert goal.shape == prediction.shape, msg
 
-        return GoalState(goal=goal, prediction=prediction, weight=self.weight)  # pyright: ignore[reportArgumentType]  # self.weight is Optional by declaration but always populated in __init__ before __call__ runs
+        return GoalState(goal=goal, prediction=prediction, weight=self.weight)
 
 
 # ==========================================================================
@@ -133,7 +155,7 @@ class ScalarGoal:
     A goal that is expressed as a scalar quantity.
     """
     @property
-    def target(self) -> Float[Array, "elements 1"] | None:
+    def target(self) -> Float[Array, "elements 1"]:
         """
         The target to achieve.
         """
@@ -141,9 +163,8 @@ class ScalarGoal:
 
     @target.setter
     def target(self, target: float | Float[Array, "..."]) -> None:
-        if isinstance(target, (int, float)):
-            target = [target]  # pyright: ignore[reportAssignmentType]  # reassigned to a list only to feed jnp.asarray below, not the annotated element type
-        self._target = jnp.reshape(jnp.asarray(target, dtype=DTYPE_JAX), (-1, 1))
+        values = [target] if isinstance(target, (int, float)) else target
+        self._target = jnp.reshape(jnp.asarray(values, dtype=DTYPE_JAX), (-1, 1))
 
 
 # ==========================================================================
@@ -155,7 +176,7 @@ class VectorGoal:
     A goal that is expressed as a vector 3D quantity.
     """
     @property
-    def target(self) -> Float[Array, "elements 3"] | None:
+    def target(self) -> Float[Array, "elements 3"]:
         """
         The target to achieve
         """

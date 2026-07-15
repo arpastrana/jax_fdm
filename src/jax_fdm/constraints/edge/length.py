@@ -12,10 +12,10 @@ class EdgeLengthConstraint(EdgeConstraint):
     """
     def constraint(
         self,
-        eqstate: EquilibriumState,
+        eq_state: EquilibriumState,
         index: Int[Array, ""],
         ) -> Float[Array, ""]:
         """
         Returns the length of an edge from an equilibrium state.
         """
-        return eqstate.lengths[index, 0]
+        return eq_state.lengths[index, 0]

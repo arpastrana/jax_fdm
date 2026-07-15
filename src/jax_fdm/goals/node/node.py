@@ -18,7 +18,11 @@ class NodeGoal(Goal):
     ):
         super().__init__(key=key, target=target, weight=weight)
 
-    def index_from_model(self, model: EquilibriumModel, structure: EquilibriumStructure) -> int | tuple[int, ...]:
+    def index_from_model(
+        self,
+        model: EquilibriumModel,
+        structure: EquilibriumStructure,
+        ) -> int | tuple[int, ...]:
         """
         The index of the node in a structure.
         """

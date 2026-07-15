@@ -18,7 +18,8 @@ class MeshAreaGoal(ScalarGoal, MeshGoal):
     """
     def __init__(self, target: float | Float[Array, "..."] = 0.0, weight: float = 1.0):
         super().__init__(key=-1, target=target, weight=weight)
-        self.faces = None
+        # set in init() from the mesh structure, before any prediction runs
+        self.faces: Int[Array, "faces vertices"]
 
     def init(self, model: EquilibriumModel, structure: EquilibriumMeshStructure) -> None:
         """
@@ -53,7 +54,7 @@ class MeshAreaGoal(ScalarGoal, MeshGoal):
             return area_polygon(fxyz)
 
         faces_area = vmap(face_area, in_axes=(0, None))
-        areas = faces_area(self.faces, eq_state.xyz)  # pyright: ignore[reportArgumentType]  # self.faces is Optional by declaration but always set in init() before this runs
+        areas = faces_area(self.faces, eq_state.xyz)
 
         area = jnp.sum(areas) * -1.0
 
@@ -66,7 +67,8 @@ class MeshFacesAreaEqualizeGoal(ScalarGoal, MeshGoal):
     """
     def __init__(self, target: float | Float[Array, "..."] = 0.0, weight: float = 1.0):
         super().__init__(key=-1, target=target, weight=weight)
-        self.faces = None
+        # set in init() from the mesh structure, before any prediction runs
+        self.faces: Int[Array, "faces vertices"]
 
     def init(self, model: EquilibriumModel, structure: EquilibriumMeshStructure) -> None:
         """
@@ -96,6 +98,6 @@ class MeshFacesAreaEqualizeGoal(ScalarGoal, MeshGoal):
             return area_polygon(fxyz)
 
         faces_area = vmap(face_area, in_axes=(0, None))
-        areas = faces_area(self.faces, eq_state.xyz)  # pyright: ignore[reportArgumentType]  # self.faces is Optional by declaration but always set in init() before this runs
+        areas = faces_area(self.faces, eq_state.xyz)
 
         return jnp.atleast_1d(jnp.var(areas) / jnp.mean(areas))

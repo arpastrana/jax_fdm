@@ -37,7 +37,8 @@ class MeshXYZFaceLaplacianGoal(ScalarGoal, MeshGoal):
     """
     def __init__(self, target: float | Float[Array, "..."] = 0.0, weight: float = 1.0):
         super().__init__(key=-1, target=target, weight=weight)
-        self.connectivity_faces_vertices = None
+        # set in init() from the mesh structure, before any prediction runs
+        self.connectivity_faces_vertices: Float[Array, "faces vertices"]
 
     def init(self, model: EquilibriumModel, structure: EquilibriumMeshStructure) -> None:
         """
@@ -62,10 +63,10 @@ class MeshXYZFaceLaplacianGoal(ScalarGoal, MeshGoal):
         def vertex_square_distance(vertex_xyz: Float[Array, "3"], nbrs_xyz: Float[Array, "3"]) -> Float[Array, ""]:
             return jnp.sum(jnp.square(vertex_xyz - nbrs_xyz))
 
-        faces_centroid = self.connectivity_faces_vertices @ eq_state.xyz  # pyright: ignore[reportOptionalOperand]  # self.connectivity_faces_vertices is Optional by declaration but always set in init() before this runs
+        faces_centroid = self.connectivity_faces_vertices @ eq_state.xyz
         vertices_laplacian = vmap(vertex_laplacian, in_axes=(0, 1, None))
         laplacians = vertices_laplacian(eq_state.xyz,
-                                        self.connectivity_faces_vertices,  # pyright: ignore[reportArgumentType]  # self.connectivity_faces_vertices is Optional by declaration but always set in init() before this runs
+                                        self.connectivity_faces_vertices,
                                         faces_centroid)
 
         return laplacians

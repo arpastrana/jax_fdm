@@ -15,8 +15,11 @@ class NetworkLoadPathGoal(ScalarGoal, NetworkGoal):
     The load path of an edge is the absolute value of the product of the
     the force on the edge time its length.
     """
-    @staticmethod
-    def prediction(eq_state: EquilibriumState, index: Int[Array, ""]) -> Float[Array, "1"]:
+    def prediction(
+        self,
+        eq_state: EquilibriumState,
+        index: Int[Array, ""],
+        ) -> Float[Array, "1"]:
         """
         The current load path of the network.
         """

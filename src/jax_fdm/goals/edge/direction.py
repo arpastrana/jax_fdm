@@ -12,16 +12,14 @@ class EdgeDirectionGoal(VectorGoal, EdgeGoal):
     """
     Make the direction of the edge of a network to be parallel to a target vector.
     """
-    @staticmethod
-    def prediction(eq_state: EquilibriumState, index: Int[Array, ""]) -> Float[Array, "3"]:
+    def prediction(self, eq_state: EquilibriumState, index: Int[Array, ""]) -> Float[Array, "3"]:
         """
         The edge vector in the network.
         """
         vector = eq_state.vectors[index, :]
         return normalize_vector(vector)
 
-    @staticmethod
-    def goal(target: Float[Array, "3"], prediction: Float[Array, "3"]) -> Float[Array, "3"]:
+    def goal(self, target: Float[Array, "3"], prediction: Float[Array, "3"]) -> Float[Array, "3"]:
         """
         The target vector.
         """

@@ -12,10 +12,10 @@ class EdgeForceConstraint(EdgeConstraint):
     """
     def constraint(
         self,
-        eqstate: EquilibriumState,
+        eq_state: EquilibriumState,
         index: Int[Array, ""],
         ) -> Float[Array, ""]:
         """
         Returns the force of an edge from an equilibrium state.
         """
-        return eqstate.forces[index, 0]
+        return eq_state.forces[index, 0]

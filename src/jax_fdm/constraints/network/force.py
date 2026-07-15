@@ -13,10 +13,10 @@ class NetworkEdgesForceConstraint(NetworkConstraint):
     """
     def constraint(
         self,
-        eqstate: EquilibriumState,
+        eq_state: EquilibriumState,
         index: Int[Array, ""],
         ) -> Float[Array, "edges"]:
         """
         The constraint function relative to an equilibrium state.
         """
-        return jnp.ravel(eqstate.forces)
+        return jnp.ravel(eq_state.forces)

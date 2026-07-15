@@ -24,11 +24,11 @@ class EdgeAngleGoal(ScalarGoal, EdgeGoal):
         weight: float = 1.0,
     ):
         super().__init__(key=key, target=target, weight=weight)
-        self._vector: Float[Array, "vectors 3"] | None = None
+        self._vector: Float[Array, "vectors 3"]
         self.vector = vector
 
     @property
-    def vector(self) -> Float[Array, "vectors 3"] | None:
+    def vector(self) -> Float[Array, "vectors 3"]:
         """
         The vector to take the angle with.
         """
@@ -42,8 +42,8 @@ class EdgeAngleGoal(ScalarGoal, EdgeGoal):
         """
         Create a matrix of vectors.
         """
-        matrix = np.zeros((max(self.index) + 1, 3))  # pyright: ignore[reportArgumentType]  # self.index is Optional by declaration but always populated by init() before this runs
-        for vec, idx in zip(self.vector, self.index):  # pyright: ignore[reportArgumentType]  # self.vector/self.index are always arrays by the time vectors() runs
+        matrix = np.zeros((max(self.index) + 1, 3))
+        for vec, idx in zip(self.vector, self.index):
             matrix[idx, :] = vec
         return jnp.asarray(matrix)
 
@@ -60,4 +60,4 @@ class EdgeAngleGoal(ScalarGoal, EdgeGoal):
         """
         vector = eq_state.vectors[index, :]
 
-        return jnp.atleast_1d(angle_vectors(vector, self.vector[index, :]))  # pyright: ignore[reportOptionalSubscript]  # self.vector is Optional by declaration but always set in __init__ before this runs
+        return jnp.atleast_1d(angle_vectors(vector, self.vector[index, :]))

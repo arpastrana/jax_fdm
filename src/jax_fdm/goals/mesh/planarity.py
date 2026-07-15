@@ -28,7 +28,8 @@ class MeshPlanarityGoal(ScalarGoal, MeshGoal):
     """
     def __init__(self, target: float | Float[Array, "..."] = 0.0, weight: float = 1.0):
         super().__init__(key=-1, target=target, weight=weight)
-        self.faces_indexed = None
+        # set in init() from the mesh structure, before any prediction runs
+        self.faces_indexed: Int[Array, "faces vertices"]
 
     def init(self, model: EquilibriumModel, structure: EquilibriumMeshStructure) -> None:
         """
@@ -41,7 +42,7 @@ class MeshPlanarityGoal(ScalarGoal, MeshGoal):
         """
         The average planarity of the mesh faces.
         """
-        planarities = faces_planarity(self.faces_indexed, eq_state.xyz)  # pyright: ignore[reportArgumentType]  # self.faces_indexed is Optional by declaration but always set in init() before this runs
+        planarities = faces_planarity(self.faces_indexed, eq_state.xyz)
 
         return jnp.atleast_1d(jnp.mean(planarities))
 
