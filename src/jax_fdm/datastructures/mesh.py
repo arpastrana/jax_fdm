@@ -179,6 +179,13 @@ class FDMesh(Mesh, FDDatastructure):
     # Edges
     # ----------------------------------------------------------------------
 
+    def edges(self, data: bool = False) -> Iterator[tuple[int, int]]:
+        """
+        Iterate over the edges of the mesh.
+        """
+        # data=False getter always yields plain (u, v) edge keys
+        return super().edges(data)  # pyright: ignore[reportReturnType]
+
     def is_edge_supported(self, key: tuple[int, int]) -> bool:
         """
         Test if any of edge vertices is a support.

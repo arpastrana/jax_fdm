@@ -210,6 +210,13 @@ class FDNetwork(Network, FDDatastructure):
     # Edges
     # ----------------------------------------------------------------------
 
+    def edges(self, data: bool = False) -> Iterator[tuple[int, int]]:
+        """
+        Iterate over the edges of the network.
+        """
+        # data=False getter always yields plain (u, v) edge keys
+        return super().edges(data)  # pyright: ignore[reportReturnType]
+
     def is_edge_supported(self, key: tuple[int, int]) -> bool:
         """
         Test if any of the two nodes connected by the edge is a support.
