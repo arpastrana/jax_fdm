@@ -331,21 +331,27 @@ class NodeGroupSupportZParameter(NodeGroupSupportParameter, NodeSupportZParamete
 # Node loads
 # ==========================================================================
 
-class NodeLoadXParameter(NodeParameter):
+class NodeLoadParameter(NodeParameter):
+    """
+    A node load parameter.
+    """
+
+
+class NodeLoadXParameter(NodeLoadParameter):
     """
     Parametrize the x component of a node load.
     """
     attr_name = "px"
 
 
-class NodeLoadYParameter(NodeParameter):
+class NodeLoadYParameter(NodeLoadParameter):
     """
     Parametrize the y component of a node load.
     """
     attr_name = "py"
 
 
-class NodeLoadZParameter(NodeParameter):
+class NodeLoadZParameter(NodeLoadParameter):
     """
     Parametrize the z component of a node load.
     """

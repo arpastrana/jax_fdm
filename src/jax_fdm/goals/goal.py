@@ -27,7 +27,7 @@ class Goal:
         self,
         key: int | tuple[int, int] | list[int] | list[tuple[int, int]],
         target: float | Float[Array, "..."],
-        weight: float | Float[Array, "..."],
+        weight: float | Float[Array, "..."] = 1.0,
     ) -> None:
         self._key: int | tuple[int, int] | list[int] | list[tuple[int, int]] | None = None
         self._weight: Float[Array, "elements 1"]

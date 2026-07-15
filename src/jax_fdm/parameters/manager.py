@@ -284,13 +284,14 @@ class ParameterManager:
         """
         The number of indices to shift of a collection of parameters of a given type.
         """
-        shift = -1
         if issubclass(ptype, EdgeParameter):
             shift = self.structure.num_edges
         elif issubclass(ptype, NodeSupportParameter):
             shift = self.structure.num_supports
         elif issubclass(ptype, NodeLoadParameter):
             shift = self.structure.num_nodes
+        else:
+            raise ValueError(f"Cannot compute an index shift for parameter type {ptype.__name__}")
 
         return int(shift)
 
