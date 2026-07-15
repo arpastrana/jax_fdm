@@ -1,3 +1,5 @@
+from typing import Any
+
 import jax.numpy as jnp
 import numpy as np
 from jax import vmap
@@ -23,11 +25,11 @@ class Goal:
     """
     def __init__(
         self,
-        key: int | tuple[int, int] | list,
+        key: int | tuple[int, int] | list[int] | list[tuple[int, int]],
         target: float | Float[Array, "..."],
         weight: float | Float[Array, "..."],
     ) -> None:
-        self._key: int | tuple[int, int] | list | None = None
+        self._key: int | tuple[int, int] | list[int] | list[tuple[int, int]] | None = None
         self._weight: Float[Array, "elements 1"] | None = None
         self._target: Float[Array, "..."] | None = None
         self._index: Int[np.ndarray, "elements"] | None = None
@@ -39,18 +41,19 @@ class Goal:
         self.is_collectible = True
 
     @property
-    def key(self) -> int | tuple[int, int] | list | None:
+    def key(self) -> int | tuple[int, int] | list[int] | list[tuple[int, int]] | None:
         """
         The key of an element in a network.
         """
         return self._key
 
     @key.setter
-    def key(self, key: int | tuple[int, int] | list) -> None:
-        if isinstance(key, int) or (isinstance(key, tuple) and len(key) == 2):
-            key = key
-        elif sum(isinstance(i, list) for i in key) > 0:
-            key = key.pop()
+    def key(self, key: int | tuple[int, int] | list[int] | list[tuple[int, int]]) -> None:
+        # A single-goal Collection re-wraps an already-list key as [[...]] when
+        # it reconstructs the goal; unwrap that extra nesting so an aggregate
+        # goal (e.g. NodesColinearGoal) keeps its flat list of element keys.
+        if isinstance(key, list) and len(key) == 1 and isinstance(key[0], list):
+            key = key[0]
         self._key = key
 
     @property
@@ -61,9 +64,10 @@ class Goal:
         return self._index
 
     @index.setter
-    def index(self, index: int | Int[np.ndarray, "elements"]) -> None:
+    def index(self, index: int | tuple[int, ...] | Int[np.ndarray, "elements"]) -> None:
         if isinstance(index, int):
-            index = [index]  # pyright: ignore[reportAssignmentType]  # reassigned to a list only to feed np.array below, not the annotated element type
+            # reassigned to a list only to feed np.array below, not the annotated element type
+            index = [index]  # pyright: ignore[reportAssignmentType]
         self._index = np.array(index)
 
     @property
@@ -90,6 +94,16 @@ class Goal:
         The target to achieve.
         """
         return target
+
+    def _index_from_key(self, key_index: dict[Any, int]) -> int | tuple[int, ...]:
+        """
+        Look up the goal key in an element-to-index mapping.
+
+        A single key maps to one index, while a list of keys maps to a tuple of indices.
+        """
+        if isinstance(self.key, list):
+            return tuple(key_index[k] for k in self.key)
+        return key_index[self.key]
 
     def init(self, model: EquilibriumModel, structure: EquilibriumStructure) -> None:
         """

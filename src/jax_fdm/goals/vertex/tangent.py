@@ -21,7 +21,7 @@ class VertexTangentAngleGoal(VertexNormalAngleGoal):
     def __init__(
         self,
         key: int | tuple[int, int] | list,
-        vector: Float[Array, "..."] | Float[np.ndarray, "..."],
+        vector: Float[Array, "..."],
         target: float | Float[Array, "..."],
         weight: float = 1.0,
     ):

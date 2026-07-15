@@ -23,8 +23,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Changed the per-element `constraint` methods in `constraints` (edge force and length, node and vertex coordinates) to return a scalar array `Float[Array, ""]` instead of a shape `(1,)` array, and made the whole `constraint` family instance methods for a uniform override signature. Constraint bounds are now normalized to a scalar float or a flat jax array, dropping the numpy arm.
 - Changed `Goal` targets and weights in `goals` to be stored as jax arrays instead of numpy arrays, so their setters accept only `float` or a jax array. `GoalState` now types `goal` and `weight` as `Float[Array, ...]`, matching the values produced at runtime. Element indices stay numpy arrays, since they drive host-side bookkeeping rather than the differentiated loss.
 - Changed `index_from_model` in the node, edge and vertex constraint base classes to share a single `Constraint._index_from_key` helper that dispatches on whether the key is a list, replacing a `try`/`except TypeError` that relied on list keys being unhashable. Narrowed the constructor key types of `NodeCurvatureConstraint` to `int | list[int]` and `EdgeAngleConstraint` to `tuple[int, int] | list[tuple[int, int]]`, since a node constraint never takes an edge key and vice versa. The curvature polygon and the angle vector matrix are now jax arrays rather than numpy arrays.
+- Changed `index_from_model` in the node, edge, vertex and face goal base classes to share a single `Goal._index_from_key` helper that dispatches on whether the key is a list, replacing the same `try`/`except TypeError` used in the constraints. Simplified the `Goal.key` setter and typed the reference `vector` of `EdgeAngleGoal` and `VertexNormalAngleGoal` as a jax array, dropping the numpy arm and matching their constraint counterparts.
 
 ### Removed
+
+- Removed the unused `AbstractGoal` class (`goals/abstract_goal.py`) and the unused `goals_reindex` and `goals_state` helpers (`goals/helpers.py`) from `goals`. Their goal collation is handled by the goal collection machinery in `optimization`.
 
 
 ## [0.12.0] 2026-07-13

@@ -30,8 +30,9 @@ from jax_fdm.parameters import Parameter
 from jax_fdm.parameters import ParameterManager
 
 if TYPE_CHECKING:
-    # deferred to avoid a runtime circular import (jax_fdm.goals imports back
-    # into itself through goals/helpers.py); only needed for annotations.
+    # deferred to avoid a runtime circular import (jax_fdm.goals pulls in
+    # jax_fdm.equilibrium, which imports back into jax_fdm.optimization);
+    # only needed for annotations.
     from jax_fdm.goals import Goal
 
 # ==========================================================================
