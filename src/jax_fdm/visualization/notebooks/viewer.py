@@ -1,9 +1,15 @@
+from typing import Any
+from typing import Literal
+
 from compas_notebook.config import CameraConfig
 from compas_notebook.config import Config
 from compas_notebook.config import ViewConfig
 from compas_notebook.viewer import Viewer as CompasNotebookViewer
 
+from compas.datastructures import Datastructure
 from compas.datastructures import Graph
+from compas.geometry import Geometry
+from compas.scene import SceneObject
 from jax_fdm.datastructures import FDMesh
 from jax_fdm.datastructures import FDNetwork
 
@@ -25,14 +31,14 @@ class NotebookViewer(CompasNotebookViewer):
     the common setup does not require building a config by hand.
     """
     def __init__(self,
-                 width=None,
-                 height=None,
-                 show_grid=None,
-                 viewport=None,
-                 camera_position=None,
-                 camera_target=None,
-                 config=None,
-                 **kwargs):
+                 width: int | None = None,
+                 height: int | None = None,
+                 show_grid: bool | None = None,
+                 viewport: Literal["top", "perspective"] | None = None,
+                 camera_position: list[float] | None = None,
+                 camera_target: list[float] | None = None,
+                 config: Config | None = None,
+                 **kwargs: Any) -> None:
         if config is None:
             config = Config()
             # Config.view is a shared class attribute in compas_notebook 0.11;
@@ -49,7 +55,7 @@ class NotebookViewer(CompasNotebookViewer):
 
         super().__init__(config=config, **kwargs)
 
-    def add(self, data, **kwargs):
+    def add(self, data: Geometry | Datastructure, **kwargs: Any) -> SceneObject:
         """
         Add a data object to the viewer.
 

@@ -99,7 +99,7 @@ class FDPlotterObject(PlotterSceneObject):
         # The scene registry always dispatches a real datastructure to this
         # constructor; the Optional in the signature only matches the base
         # class default.
-        self.datastructure: FDNetwork | FDMesh = item  # pyright: ignore[reportAttributeAccessIssue]  # always populated before draw()
+        self.datastructure: FDNetwork | FDMesh = item
 
         self.points: list[int] = list(points) if points is not None else list(self.point_keys())
         self.edges: list[tuple[int, int]] = list(edges) if edges is not None else list(item.edges())  # pyright: ignore[reportOptionalMemberAccess,reportArgumentType,reportAttributeAccessIssue]  # item is always populated before draw(); edges() with data=False always yields plain (u, v) keys
@@ -187,7 +187,7 @@ class FDPlotterObject(PlotterSceneObject):
     # Draw
     # ==========================================================================
 
-    def draw(self) -> list:
+    def draw(self) -> list[Any]:
         """
         Draw the datastructure and its load and reaction arrows.
         """
@@ -205,7 +205,7 @@ class FDPlotterObject(PlotterSceneObject):
 
         return self._mpl_objects
 
-    def viewdata(self) -> list:
+    def viewdata(self) -> list[list[float]]:
         """
         The 2D extents of the points and the arrows, for the plotter zoom.
         """
@@ -291,11 +291,11 @@ class FDPlotterObject(PlotterSceneObject):
         points = [point for point in self.points if self.adjacency[point]]
         origins = [self.point_coordinates(point) for point in points]
         reactions = [self.point_reaction(point) for point in points]
-        forces = [[self.datastructure.edge_force(edge) for edge in self.adjacency[point]]  # pyright: ignore[reportOptionalMemberAccess]  # getter-mode call always returns a float
+        forces = [[self.datastructure.edge_force(edge) for edge in self.adjacency[point]]
                   for point in points]
         clearances = [self.point_marker_radius()] * len(origins)
 
-        return reaction_arrows(origins, reactions, forces, self.reaction_scale, self.reaction_tol,  # pyright: ignore[reportArgumentType]  # edge_force getter-mode call always returns a float
+        return reaction_arrows(origins, reactions, forces, self.reaction_scale, self.reaction_tol,
                                clearances=clearances)
 
 

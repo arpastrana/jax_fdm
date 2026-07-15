@@ -1,10 +1,14 @@
+from typing import Any
+
 import pythreejs as three
 from compas_notebook.scene import ThreeMeshObject
 from compas_notebook.scene import ThreeSceneObject
 
+from compas.colors import Color
 from compas.scene import register
 from jax_fdm.datastructures import FDMesh
 from jax_fdm.datastructures import FDNetwork
+from jax_fdm.visualization.buffers import Soup
 from jax_fdm.visualization.buffers import arrows_buffer
 from jax_fdm.visualization.buffers import cylinders_buffer
 from jax_fdm.visualization.buffers import soup_colors_rgb
@@ -56,32 +60,35 @@ class ThreeFDDatastructureObject(ThreeSceneObject):
     arrow_u = 8
 
     def __init__(self,
-                 item=None,
-                 points=None,
-                 edges=None,
-                 pointcolor=None,
-                 edgecolor=None,
-                 pointsize=None,
-                 edgewidth=None,
-                 loadcolor=None,
-                 loadscale=None,
-                 loadtol=None,
-                 reactioncolor=None,
-                 reactionscale=None,
-                 reactiontol=None,
-                 show_points=False,
-                 show_edges=True,
-                 show_loads=True,
-                 show_reactions=True,
-                 show_supports=True,
-                 **kwargs):
+                 item: FDNetwork | FDMesh | None = None,
+                 points: list[int] | None = None,
+                 edges: list[tuple[int, int]] | None = None,
+                 pointcolor: Color | dict | str | None = None,
+                 edgecolor: Color | dict | str | None = None,
+                 pointsize: float | dict | None = None,
+                 edgewidth: float | dict | tuple | None = None,
+                 loadcolor: Color | None = None,
+                 loadscale: float | None = None,
+                 loadtol: float | None = None,
+                 reactioncolor: Color | None = None,
+                 reactionscale: float | None = None,
+                 reactiontol: float | None = None,
+                 show_points: bool = False,
+                 show_edges: bool = True,
+                 show_loads: bool = True,
+                 show_reactions: bool = True,
+                 show_supports: bool = True,
+                 **kwargs: Any) -> None:
         kwargs.pop("sceneobject_type", None)
         super().__init__(item=item, **kwargs)
 
-        self.datastructure = item
+        # The scene registry always dispatches a real datastructure to this
+        # constructor; the Optional in the signature only matches the base
+        # class default.
+        self.datastructure: FDNetwork | FDMesh = item  # pyright: ignore[reportAttributeAccessIssue]  # always populated before draw()
 
-        self.points = list(points) if points is not None else list(self.point_keys())
-        self.edges = list(edges) if edges is not None else list(item.edges())
+        self.points: list[int] = list(points) if points is not None else list(self.point_keys())
+        self.edges: list[tuple[int, int]] = list(edges) if edges is not None else list(item.edges())  # pyright: ignore[reportOptionalMemberAccess,reportArgumentType,reportAttributeAccessIssue]  # item is always populated before draw(); edges() with data=False always yields plain (u, v) keys
 
         # The point-edge adjacency is cached once at construction, so drawing
         # never re-derives it from the datastructure (Mesh.vertex_edges scans
@@ -111,29 +118,29 @@ class ThreeFDDatastructureObject(ThreeSceneObject):
     # Point vocabulary
     # ==========================================================================
 
-    def point_keys(self):
+    def point_keys(self) -> list[int]:
         raise NotImplementedError
 
-    def point_coordinates(self, key):
+    def point_coordinates(self, key: int) -> list[float]:
         raise NotImplementedError
 
-    def point_load(self, key):
+    def point_load(self, key: int) -> list[float]:
         raise NotImplementedError
 
-    def point_reaction(self, key):
+    def point_reaction(self, key: int) -> list[float]:
         raise NotImplementedError
 
-    def point_edges(self, key):
+    def point_edges(self, key: int) -> list[tuple[int, int]]:
         raise NotImplementedError
 
-    def point_is_support(self, key):
+    def point_is_support(self, key: int) -> bool:
         raise NotImplementedError
 
     # ==========================================================================
     # Draw
     # ==========================================================================
 
-    def draw(self):
+    def draw(self) -> list[Any]:
         """
         Draw the categories of the datastructure as batched pythreejs objects.
         """
@@ -158,7 +165,7 @@ class ThreeFDDatastructureObject(ThreeSceneObject):
 
         if self.show_points:
             is_support = self.point_is_support if self.show_supports else (lambda key: False)
-            point_color = point_colors(self.points, is_support, self.pointcolor_spec)
+            point_color = point_colors(self.points, is_support, self.pointcolor_spec)  # pyright: ignore[reportArgumentType]  # point_colors treats a str spec as an unrecognized dict/Color and falls back to default
             point_size = point_sizes(self.points, self.pointsize_spec)
 
             centers = [self.point_coordinates(point) for point in self.points]
@@ -192,7 +199,7 @@ class ThreeFDDatastructureObject(ThreeSceneObject):
 
         return self.guids
 
-    def arrows_to_mesh(self, anchors, vectors, color):
+    def arrows_to_mesh(self, anchors: list[list[float]], vectors: list[list[float]], color: Color) -> three.Mesh:
         """
         Batch one arrow category into a pythreejs mesh.
         """
@@ -206,7 +213,7 @@ class ThreeFDDatastructureObject(ThreeSceneObject):
         return self.soup_to_mesh(soup)
 
     @staticmethod
-    def soup_to_mesh(soup):
+    def soup_to_mesh(soup: Soup) -> three.Mesh:
         """
         Wrap a triangle soup into a pythreejs mesh with per-vertex colors.
         """
@@ -232,7 +239,13 @@ class ThreeFDNetworkObject(ThreeFDDatastructureObject):
     ``show_nodes`` keyword arguments, matching the datastructure vocabulary.
     """
 
-    def __init__(self, item=None, nodecolor=None, nodesize=None, show_nodes=None, **kwargs):
+    # Narrows the base class's FDNetwork | FDMesh attribute to the type this
+    # subclass actually holds, so the network-vocabulary accessors below
+    # type-check against the right datastructure.
+    datastructure: FDNetwork
+
+    def __init__(self, item: FDNetwork | None = None, nodecolor: Color | dict | str | None = None,
+                 nodesize: float | dict | None = None, show_nodes: bool | None = None, **kwargs: Any) -> None:
         # Map the node vocabulary onto the neutral point parameters of the
         # base. The scene backend injects the neutral names with explicit None
         # values (meaning "default"), so they are popped and only kept when
@@ -246,22 +259,22 @@ class ThreeFDNetworkObject(ThreeFDDatastructureObject):
                          show_points=show_nodes if show_nodes is not None else show_points,
                          **kwargs)
 
-    def point_keys(self):
-        return self.datastructure.nodes()
+    def point_keys(self) -> list[int]:
+        return self.datastructure.nodes()  # pyright: ignore[reportReturnType]  # data=False getter always yields plain node keys
 
-    def point_coordinates(self, key):
+    def point_coordinates(self, key: int) -> list[float]:
         return self.datastructure.node_coordinates(key)
 
-    def point_load(self, key):
-        return self.datastructure.node_load(key)
+    def point_load(self, key: int) -> list[float]:
+        return self.datastructure.node_load(key)  # pyright: ignore[reportReturnType]  # getter-mode call always returns a list
 
-    def point_reaction(self, key):
+    def point_reaction(self, key: int) -> list[float]:
         return self.datastructure.node_reaction(key)
 
-    def point_edges(self, key):
+    def point_edges(self, key: int) -> list[tuple[int, int]]:
         return self.datastructure.node_edges(key)
 
-    def point_is_support(self, key):
+    def point_is_support(self, key: int) -> bool:
         return self.datastructure.is_node_support(key)
 
 
@@ -279,13 +292,18 @@ class ThreeFDMeshObject(ThreeFDDatastructureObject):
     the pythreejs materials compas_notebook builds do not support opacity.
     """
 
+    # Narrows the base class's FDNetwork | FDMesh attribute to the type this
+    # subclass actually holds, so the vertex-vocabulary accessors below
+    # type-check against the right datastructure.
+    datastructure: FDMesh
+
     def __init__(self,
-                 item=None,
-                 vertexcolor=None,
-                 vertexsize=None,
-                 show_vertices=None,
-                 show_faces=True,
-                 **kwargs):
+                 item: FDMesh | None = None,
+                 vertexcolor: Color | dict | str | None = None,
+                 vertexsize: float | dict | None = None,
+                 show_vertices: bool | None = None,
+                 show_faces: bool = True,
+                 **kwargs: Any) -> None:
         # Map the vertex vocabulary onto the neutral point parameters of the
         # base. The scene backend injects the neutral names with explicit None
         # values (meaning "default"), so they are popped and only kept when
@@ -300,25 +318,25 @@ class ThreeFDMeshObject(ThreeFDDatastructureObject):
                          **kwargs)
         self.show_faces = show_faces if show_faces is not None else True
 
-    def point_keys(self):
-        return self.datastructure.vertices()
+    def point_keys(self) -> list[int]:
+        return self.datastructure.vertices()  # pyright: ignore[reportReturnType]  # data=False getter always yields plain vertex keys
 
-    def point_coordinates(self, key):
-        return self.datastructure.vertex_coordinates(key)
+    def point_coordinates(self, key: int) -> list[float]:
+        return self.datastructure.vertex_coordinates(key)  # pyright: ignore[reportReturnType]  # getter-mode call always returns a list
 
-    def point_load(self, key):
-        return self.datastructure.vertex_load(key)
+    def point_load(self, key: int) -> list[float]:
+        return self.datastructure.vertex_load(key)  # pyright: ignore[reportReturnType]  # getter-mode call always returns a list
 
-    def point_reaction(self, key):
+    def point_reaction(self, key: int) -> list[float]:
         return self.datastructure.vertex_reaction(key)
 
-    def point_edges(self, key):
+    def point_edges(self, key: int) -> list[tuple[int, int]]:
         return self.datastructure.vertex_edges(key)
 
-    def point_is_support(self, key):
+    def point_is_support(self, key: int) -> bool:
         return self.datastructure.is_vertex_support(key)
 
-    def draw(self):
+    def draw(self) -> list[Any]:
         """
         Draw the categories of the mesh as batched pythreejs objects.
         """

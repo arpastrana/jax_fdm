@@ -5,7 +5,6 @@ from typing import Any
 import jax.numpy as jnp
 import jax.tree_util as jtu
 import matplotlib.pyplot as plt
-import numpy as np
 from jax import vmap
 from jaxtyping import Array
 from jaxtyping import Float
@@ -64,7 +63,7 @@ class LossPlotter:
             errors_all[error_term.name] = errors
 
         for reg_term in self.loss.terms_regularization:
-            errors = vmap(reg_term)(params)  # pyright: ignore[reportArgumentType]  # Regularizer defines __call__ only on its subclasses, not on the base class
+            errors = vmap(reg_term)(params)
             errors_all[reg_term.name] = errors
 
         # Plot loss
@@ -102,15 +101,20 @@ class LossPlotter:
         plt.show()
 
     @staticmethod
-    def print_error_stats(errors: Float[Array, "iterations"] | Float[np.ndarray, "iterations"], error_name: str) -> None:
+    def print_error_stats(
+        errors: Float[Array, "iterations"],
+        error_name: str,
+    ) -> None:
         """
         Print error statistics
         """
-        stats = {"first": errors[0],
-                 "last": errors[-1],
-                 "min": np.min(errors),
-                 "max": np.max(errors)}
+        stats = {
+            "first": errors[0],
+            "last": errors[-1],
+            "min": jnp.min(errors),
+            "max": jnp.max(errors),
+        }
 
-        name_string = "{:<18}\t".format(error_name)
-        values_string = "  ".join(["{}: {:>12.6f}".format(key.capitalize(), value) for key, value in stats.items()])
+        name_string = f"{error_name:<18}\t"
+        values_string = "  ".join([f"{key.capitalize()}: {value:>12.6f}" for key, value in stats.items()])
         print(name_string + values_string)

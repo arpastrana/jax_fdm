@@ -1,9 +1,9 @@
 from functools import lru_cache
 
 import numpy as np
-import numpy.typing as npt
 from jaxtyping import Float
 from jaxtyping import Int
+from numpy.typing import ArrayLike
 
 from compas.geometry import Cylinder
 from compas.geometry import Sphere
@@ -100,7 +100,7 @@ def _soup(
     rotations: Float[np.ndarray, "elements 3 3"],
     scales: Float[np.ndarray, "elements 3"],
     translations: Float[np.ndarray, "elements 3"],
-    colors: npt.ArrayLike,
+    colors: ArrayLike,
 ) -> Soup:
     """
     Transform a template per element and expand colors per soup vertex.
@@ -169,7 +169,7 @@ def soup_colors_rgb(soup: Soup) -> Float[np.ndarray, "vertices 3"]:
 # Buffer builders
 # ==========================================================================
 
-def cylinders_buffer(starts: npt.ArrayLike, ends: npt.ArrayLike, radii: npt.ArrayLike, colors: npt.ArrayLike, u: int = 16) -> Soup:
+def cylinders_buffer(starts: ArrayLike, ends: ArrayLike, radii: ArrayLike, colors: ArrayLike, u: int = 16) -> Soup:
     """
     Batch cylinders spanning pairs of points into one triangle soup.
 
@@ -216,7 +216,7 @@ def cylinders_buffer(starts: npt.ArrayLike, ends: npt.ArrayLike, radii: npt.Arra
     return _soup(cylinder_template(u), rotations, scales, midpoints, colors)
 
 
-def arrows_buffer(anchors: npt.ArrayLike, vectors: npt.ArrayLike, colors: npt.ArrayLike, head_portion: float = 0.12,
+def arrows_buffer(anchors: ArrayLike, vectors: ArrayLike, colors: ArrayLike, head_portion: float = 0.12,
                   head_width: float = 0.04, body_width: float = 0.012, u: int = 8, tol: float = 1e-12) -> Soup:
     """
     Batch arrows anchored at points into one triangle soup.
@@ -262,7 +262,7 @@ def arrows_buffer(anchors: npt.ArrayLike, vectors: npt.ArrayLike, colors: npt.Ar
     return _soup(template, rotations, scales, anchors, colors)
 
 
-def spheres_buffer(centers: npt.ArrayLike, radii: npt.ArrayLike, colors: npt.ArrayLike, u: int = 16, v: int = 16) -> Soup:
+def spheres_buffer(centers: ArrayLike, radii: ArrayLike, colors: ArrayLike, u: int = 16, v: int = 16) -> Soup:
     """
     Batch spheres centered at points into one triangle soup.
 

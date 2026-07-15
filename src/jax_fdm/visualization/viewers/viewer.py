@@ -48,12 +48,20 @@ class Viewer(CompasViewer):
 
     The window closes between shows while the camera carries over.
     """
-    def __init__(self, width: int | None = None, height: int | None = None, show_grid: bool | None = None,
-                 config: Config | None = None, **kwargs: Any) -> None:
+    def __init__(
+        self,
+        width: int | None = None,
+        height: int | None = None,
+        show_grid: bool | None = None,
+        config: Config | None = None,
+        **kwargs: Any,
+    ) -> None:
         if config is None:
             window = WindowConfig(width=width or 1200, height=height or 800)
-            renderer = RendererConfig(show_grid=show_grid if show_grid is not None else False,
-                                      rendermode="lighted")
+            renderer = RendererConfig(
+                show_grid=show_grid if show_grid is not None else False,
+                rendermode="lighted",
+            )
             config = Config(window=window, renderer=renderer)
 
         # The sidebar constructs its object settings tab from the name in its

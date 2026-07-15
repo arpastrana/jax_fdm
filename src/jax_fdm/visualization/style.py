@@ -89,7 +89,7 @@ def edge_colors(
         return {edge: cmap(ratio) for edge, ratio in zip(edges, ratios)}
 
     if color == "force":
-        return {edge: COLOR_TENSION if datastructure.edge_force(edge) > 0.0 else COLOR_COMPRESSION  # pyright: ignore[reportOptionalOperand]  # getter-mode call always returns a float
+        return {edge: COLOR_TENSION if datastructure.edge_force(edge) > 0.0 else COLOR_COMPRESSION
                 for edge in edges}
 
     return {edge: COLOR_EDGE for edge in edges}
@@ -125,7 +125,7 @@ def edge_widths(
         if not edges:
             return {}
 
-        forces = [fabs(datastructure.edge_force(edge)) for edge in edges]  # pyright: ignore[reportArgumentType]  # getter-mode call always returns a float
+        forces = [fabs(datastructure.edge_force(edge)) for edge in edges]
 
         if min(forces) == max(forces):
             widths = [width_max] * len(edges)
