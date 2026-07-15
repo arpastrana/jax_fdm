@@ -1,7 +1,7 @@
 """
 A force density network.
 """
-from collections.abc import Generator
+from collections.abc import Iterator
 from typing import Any
 
 from compas.datastructures import Mesh
@@ -16,23 +16,28 @@ class FDNetwork(Network, FDDatastructure):
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
 
-        self.update_default_edge_attributes({"q": 0.0,
-                                             "length": 0.0,
-                                             "force": 0.0,
-                                             "px": 0.0,
-                                             "py": 0.0,
-                                             "pz": 0.0})
+        self.update_default_edge_attributes(
+            {"q": 0.0,
+            "length": 0.0,
+            "force": 0.0,
+            "px": 0.0,
+            "py": 0.0,
+            "pz": 0.0}
+            )
 
-        self.update_default_node_attributes({"x": 0.0,
-                                             "y": 0.0,
-                                             "z": 0.0,
-                                             "px": 0.0,
-                                             "py": 0.0,
-                                             "pz": 0.0,
-                                             "rx": 0.0,
-                                             "ry": 0.0,
-                                             "rz": 0.0,
-                                             "is_support": False})
+        self.update_default_node_attributes(
+            {"x": 0.0,
+            "y": 0.0,
+            "z": 0.0,
+            "px": 0.0,
+            "py": 0.0,
+            "pz": 0.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "is_support": False}
+            )
+
 
     # ----------------------------------------------------------------------
     # Constructors
@@ -48,11 +53,13 @@ class FDNetwork(Network, FDDatastructure):
 
         for node in network.nodes():
             attrs = mesh.vertex_attributes(node)
-            network.node_attributes(node, names=attrs.keys(), values=attrs.values())  # pyright: ignore[reportOptionalMemberAccess]  # names=None getter always returns a dict-like view, not None
+            # names=None getter always returns a dict-like view, not None
+            network.node_attributes(node, names=attrs.keys(), values=attrs.values())  # pyright: ignore[reportOptionalMemberAccess]
 
         for edge in network.edges():
             attrs = mesh.edge_attributes(edge)
-            network.edge_attributes(edge, names=attrs.keys(), values=attrs.values())  # pyright: ignore[reportOptionalMemberAccess]  # names=None getter always returns a dict-like view, not None
+            # names=None getter always returns a dict-like view, not None
+            network.edge_attributes(edge, names=attrs.keys(), values=attrs.values())  # pyright: ignore[reportOptionalMemberAccess]
 
         return network
 
@@ -60,14 +67,22 @@ class FDNetwork(Network, FDDatastructure):
     # Nodes
     # ----------------------------------------------------------------------
 
-    def nodes_coordinates(self, keys: list[int] | None = None, axes: str = "xyz") -> list[list[float]]:
+    def nodes_coordinates(
+        self,
+        keys: list[int] | None = None,
+        axes: str = "xyz"
+        ) -> list[list[float]]:
         """
         Gets or sets the x, y, z coordinates of a list of nodes.
         """
         node_keys = keys or self.nodes()
         return [self.node_coordinates(node, axes) for node in node_keys]
 
-    def nodes_fixedcoordinates(self, keys: list[int] | None = None, axes: str = "xyz") -> list[list[float]]:
+    def nodes_fixedcoordinates(
+        self,
+        keys: list[int] | None = None,
+        axes: str = "xyz"
+        ) -> list[list[float]]:
         """
         Gets the x, y, z coordinates of the anchors of the network.
         """
@@ -76,25 +91,29 @@ class FDNetwork(Network, FDDatastructure):
         else:
             node_keys = self.nodes_fixed()
 
-        return [self.node_coordinates(node, axes) for node in node_keys]  # pyright: ignore[reportOptionalIterable]  # nodes_fixed() with no keys always returns a generator, never None
+        # nodes_fixed() with no keys always returns a generator, never None
+        return [self.node_coordinates(node, axes) for node in node_keys]  # pyright: ignore[reportOptionalIterable]
 
     def number_of_anchors(self) -> int:
         """
         The number of anchored nodes.
         """
-        return len(list(self.nodes_anchors()))  # pyright: ignore[reportArgumentType]  # nodes_anchors() with no keys always returns a generator, never None
+        # nodes_anchors() with no keys always returns a generator, never None
+        return len(list(self.nodes_anchors()))  # pyright: ignore[reportArgumentType]
 
     def number_of_supports(self) -> int:
         """
         The number of supported nodes.
         """
-        return len(list(self.nodes_supports()))  # pyright: ignore[reportArgumentType]  # nodes_supports() with no keys always returns a generator, never None
+        # nodes_supports() with no keys always returns a generator, never None
+        return len(list(self.nodes_supports()))  # pyright: ignore[reportArgumentType]
 
     def node_support(self, key: int) -> None:
         """
         Sets a node as a fixed anchor.
         """
-        return self.node_attribute(key=key, name="is_support", value=True)  # pyright: ignore[reportReturnType]  # setter-mode call always returns None
+        # setter-mode call always returns None
+        return self.node_attribute(key=key, name="is_support", value=True)  # pyright: ignore[reportReturnType]
 
     def node_anchor(self, key: int) -> None:
         """
@@ -106,71 +125,86 @@ class FDNetwork(Network, FDDatastructure):
         """
         Test if the node is a fixed node.
         """
-        return self.node_attribute(key=key, name="is_support")  # pyright: ignore[reportReturnType]  # getter-mode call always returns the bool default
+        # getter-mode call always returns the bool default
+        return self.node_attribute(key=key, name="is_support")  # pyright: ignore[reportReturnType]
 
-    def nodes_supports(self, keys: list[int] | None = None) -> Generator[int, None, None] | None:
+    def nodes_supports(self, keys: list[int] | None = None) -> Iterator[int] | None:
         """
         Gets or sets the node keys where a support has been assigned.
         """
         if keys is None:
-            return self.nodes_where({"is_support": True})  # pyright: ignore[reportReturnType]  # data=False getter always yields plain node keys
+            # data=False getter always yields plain node keys
+            return self.nodes_where({"is_support": True})  # pyright: ignore[reportReturnType]
 
-        return self.nodes_attribute(name="is_support", value=True, keys=keys)  # pyright: ignore[reportReturnType]  # setter-mode call always returns None
+        # setter-mode call always returns None
+        return self.nodes_attribute(name="is_support", value=True, keys=keys)  # pyright: ignore[reportReturnType]
 
-    def nodes_fixed(self, keys: list[int] | None = None) -> Generator[int, None, None] | None:
+    def nodes_fixed(self, keys: list[int] | None = None) -> Iterator[int] | None:
         """
         Gets or sets the node keys where a support has been assigned.
         """
         return self.nodes_supports(keys)
 
-    def nodes_anchors(self, keys: list[int] | None = None) -> Generator[int, None, None] | None:
+    def nodes_anchors(self, keys: list[int] | None = None) -> Iterator[int] | None:
         """
         Gets or sets the node keys where an anchor has been assigned.
         """
         return self.nodes_supports(keys)
 
-    def nodes_free(self) -> Generator[int, None, None]:
+    def nodes_free(self) -> Iterator[int]:
         """
         The keys of the nodes where there is no support assigned.
         """
-        return self.nodes_where({"is_support": False})  # pyright: ignore[reportReturnType]  # data=False getter always yields plain node keys
+        # data=False getter always yields plain node keys
+        return self.nodes_where({"is_support": False})  # pyright: ignore[reportReturnType]
 
     def node_load(self, key: int, load: list[float] | None = None) -> list[float] | None:
         """
         Gets or sets a load to the nodes of the network.
         """
-        return self.node_attributes(key=key, names=("px", "py", "pz"), values=load)  # pyright: ignore[reportReturnType]  # names given as a non-empty tuple always returns a list
+        # names given as a non-empty tuple always returns a list
+        return self.node_attributes(key=key, names=("px", "py", "pz"), values=load)  # pyright: ignore[reportReturnType]
 
-    def nodes_loads(self, load: list[float] | None = None, keys: list[int] | None = None) -> list[list[float]] | None:
+    def nodes_loads(
+        self,
+        load: list[float] | None = None,
+        keys: list[int] | None = None
+        ) -> list[list[float]] | None:
         """
         Gets or sets a load to the nodes of the network.
         """
-        return self.nodes_attributes(names=("px", "py", "pz"), values=load, keys=keys)  # pyright: ignore[reportReturnType]  # names given as a non-empty tuple always returns a list of lists
+        # names given as a non-empty tuple always returns a list of lists
+        return self.nodes_attributes(names=("px", "py", "pz"), values=load, keys=keys)  # pyright: ignore[reportReturnType]
 
     def nodes_residual(self, keys: list[int] | None = None) -> list[list[float]]:
         """
         Gets the residual forces of the nodes of the network.
         """
-        return self.nodes_attributes(names=("rx", "ry", "rz"), keys=keys)  # pyright: ignore[reportReturnType]  # names given as a non-empty tuple always returns a list of lists
+        # names given as a non-empty tuple always returns a list of lists
+        return self.nodes_attributes(names=("rx", "ry", "rz"), keys=keys)  # pyright: ignore[reportReturnType]
 
     def node_residual(self, key: int) -> list[float]:
         """
         Gets the residual force of a single node of the network.
         """
-        return self.node_attributes(key=key, names=("rx", "ry", "rz"))  # pyright: ignore[reportReturnType]  # names given as a non-empty tuple always returns a list
+        # names given as a non-empty tuple always returns a list
+        return self.node_attributes(key=key, names=("rx", "ry", "rz"))  # pyright: ignore[reportReturnType]
 
     def nodes_reactions(self, keys: list[int] | None = None) -> list[list[float]]:
         """
         Gets the reaction forces of the nodes of the network.
         """
-        keys = keys or self.nodes_fixed()  # pyright: ignore[reportAssignmentType]  # nodes_fixed() with no keys always returns a generator, never None
-        return self.nodes_attributes(names=("rx", "ry", "rz"), keys=keys)  # pyright: ignore[reportReturnType]  # names given as a non-empty tuple always returns a list of lists
+        # nodes_fixed() with no keys always returns a generator, never None
+        keys = keys or self.nodes_fixed()  # pyright: ignore[reportAssignmentType]
+        # names given as a non-empty tuple always returns a list of lists
+        return self.nodes_attributes(names=("rx", "ry", "rz"), keys=keys)  # pyright: ignore[reportReturnType]
 
     def node_reaction(self, key: int) -> list[float]:
         """
         Gets the reaction force of a single node of the network.
         """
-        return self.node_attributes(key=key, names=("rx", "ry", "rz"))  # pyright: ignore[reportReturnType]  # names given as a non-empty tuple always returns a list
+        # names given as a non-empty tuple always returns a list
+        return self.node_attributes(key=key, names=("rx", "ry", "rz"))  # pyright: ignore[reportReturnType]
 
     # ----------------------------------------------------------------------
     # Edges
@@ -192,12 +226,16 @@ class FDNetwork(Network, FDDatastructure):
     # Datastructure properties
     # ----------------------------------------------------------------------
 
-    def parameters(self) -> tuple[list[float] | None, list[list[float]], list[list[float]] | None]:
+    def parameters(self) -> tuple[list[float], list[list[float]], list[list[float]]]:
         """
         Return the design parameters of the network.
         """
         q = self.edges_forcedensities()
         xyz_fixed = self.nodes_fixedcoordinates()
         loads = self.nodes_loads()
+
+        # getter-mode calls always return lists, never None
+        assert q is not None
+        assert loads is not None
 
         return q, xyz_fixed, loads
