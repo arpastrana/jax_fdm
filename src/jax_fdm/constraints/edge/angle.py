@@ -21,13 +21,13 @@ class EdgeAngleConstraint(EdgeConstraint):
         vector: Float[Array, "..."] | Float[np.ndarray, "..."],
         bound_low: float | Float[Array, "..."] | None,
         bound_up: float | Float[Array, "..."] | None,
-    ):
+    ) -> None:
         super().__init__(key=key, bound_low=bound_low, bound_up=bound_up)
-        self._vector = None
+        self._vector: Float[Array, "elements 3"] | None = None
         self.vector = vector
 
     @property
-    def vector(self):
+    def vector(self) -> Float[Array, "elements 3"] | None:
         """
         The vector to take the angle with.
         """

@@ -10,32 +10,29 @@ class VertexXCoordinateConstraint(VertexConstraint):
     """
     Constraint the X coordinate of a vertex between a lower and an upper bound.
     """
-    @staticmethod
-    def constraint(eqstate: EquilibriumState, index: Int[Array, ""]) -> Float[Array, "1"]:
+    def constraint(self, eqstate: EquilibriumState, index: Int[Array, ""]) -> Float[Array, ""]:
         """
         Returns the X coordinate of a vertex from an equilibrium state.
         """
-        return eqstate.xyz[index, :1]
+        return eqstate.xyz[index, 0]
 
 
 class VertexYCoordinateConstraint(VertexConstraint):
     """
     Constraint the Y coordinate of a vertex between a lower and an upper bound.
     """
-    @staticmethod
-    def constraint(eqstate: EquilibriumState, index: Int[Array, ""]) -> Float[Array, "1"]:
+    def constraint(self, eqstate: EquilibriumState, index: Int[Array, ""]) -> Float[Array, ""]:
         """
         Returns the Y coordinate of a vertex from an equilibrium state.
         """
-        return eqstate.xyz[index, 1:2]
+        return eqstate.xyz[index, 1]
 
 
 class VertexZCoordinateConstraint(VertexConstraint):
     """
     Constraint the Z coordinate of a vertex between a lower and an upper bound.
     """
-    @staticmethod
-    def constraint(eqstate: EquilibriumState, index: Int[Array, ""]) -> Float[Array, ""]:
+    def constraint(self, eqstate: EquilibriumState, index: Int[Array, ""]) -> Float[Array, ""]:
         """
         Returns the Z coordinate of a vertex from an equilibrium state.
         """

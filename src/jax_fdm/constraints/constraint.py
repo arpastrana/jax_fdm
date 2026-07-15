@@ -20,20 +20,20 @@ class Constraint:
         key: int | tuple[int, int] | list[int] | list[tuple[int, int]],
         bound_low: float | Float[Array, "..."] | None = None,
         bound_up: float | Float[Array, "..."] | None = None,
-    ):
-        self._key = None
+    ) -> None:
+        self._key: int | tuple[int, int] | list[int] | list[tuple[int, int]] | None = None
         self.key = key
 
-        self._bound_low = None
+        self._bound_low: float | Float[Array, "..."] | None = None
         self.bound_low = bound_low
 
-        self._bound_up = None
+        self._bound_up: float | Float[Array, "..."] | None = None
         self.bound_up = bound_up
 
-        self._index = None
+        self._index: Int[np.ndarray, "elements"] | None = None
 
     @property
-    def key(self):
+    def key(self) -> int | tuple[int, int] | list[int] | list[tuple[int, int]] | None:
         """
         The key of an element in a network.
         """
@@ -44,32 +44,32 @@ class Constraint:
         self._key = key
 
     @property
-    def index(self):
+    def index(self) -> Int[np.ndarray, "elements"] | None:
         """
         The index of the goal key in the canonical ordering of an equilibrium structure.
         """
         return self._index
 
     @index.setter
-    def index(self, index: int | Int[np.ndarray, "elements"]) -> None:
+    def index(self, index: int | tuple[int, ...] | Int[np.ndarray, "elements"]) -> None:
         if isinstance(index, int):
             index = [index]  # pyright: ignore[reportAssignmentType]  # reassigned to a list only to feed np.array below, not the annotated element type
         self._index = np.array(index)
 
     @staticmethod
-    def _bound_setter(bound: float | Float[Array, "..."] | Float[np.ndarray, "..."]) -> float | Float[Array, "..."] | Float[np.ndarray, "..."]:
+    def _bound_setter(bound: float | Float[Array, "..."]) -> float | Float[Array, "..."]:
         """
-        Set a bound.
+        Normalize a bound to a scalar float or a flat jax array.
         """
-        if not isinstance(bound, (int, float)):
-            if len(bound) == 1:
-                bound = bound[0]  # pyright: ignore[reportAssignmentType]  # narrows Array to its scalar element, not expressible without a cast
-            else:
-                bound = np.ravel(bound)
+        if isinstance(bound, (int, float)):
+            return bound
+        bound = jnp.ravel(jnp.asarray(bound))
+        if bound.size == 1:
+            return float(bound[0])
         return bound
 
     @property
-    def bound_low(self):
+    def bound_low(self) -> float | Float[Array, "..."] | None:
         """
         The lower bound of this constraint.
         """
@@ -82,7 +82,7 @@ class Constraint:
         self._bound_low = self._bound_setter(bound)
 
     @property
-    def bound_up(self):
+    def bound_up(self) -> float | Float[Array, "..."] | None:
         """
         The upper bound of this constraint.
         """
@@ -94,8 +94,7 @@ class Constraint:
             bound = jnp.inf
         self._bound_up = self._bound_setter(bound)
 
-    @staticmethod
-    def index_from_model(model: EquilibriumModel):
+    def index_from_model(self, model: EquilibriumModel, structure: EquilibriumStructure) -> int | tuple[int, ...]:
         """
         Get the index in the model of the constraint key.
         """
@@ -105,7 +104,7 @@ class Constraint:
         """
         Initialize the constraint with information from an equilibrium model.
         """
-        self.index = self.index_from_model(model, structure)  # pyright: ignore[reportCallIssue]  # base index_from_model is abstract (1 arg); all concrete overrides take (model, structure)
+        self.index = self.index_from_model(model, structure)
 
     def __call__(self, params: EquilibriumParametersState, model: EquilibriumModel, structure: EquilibriumStructure) -> Float[Array, "elements"]:
         """

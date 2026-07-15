@@ -20,6 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Changed `Loss.__call__` in `losses` to always return a scalar array `Float[Array, ""]`, seeding the accumulator with a jax array so an empty loss no longer returns a Python float.
 - Changed `FDDatastructure` in `datastructures` into a plain mixin instead of subclassing `compas.datastructures.Datastructure`, removing a redundant inheritance diamond. `FDNetwork` and `FDMesh` still reach `Datastructure` through `Network` and `Mesh`.
 - Changed the wrapper loss signatures in `optimization` (`Optimizer.loss` and the internal `loss_fn` closures) to return `Float[Array, ""]` instead of `jax.Array | float`, since the loss is always a scalar array.
+- Changed the per-element `constraint` methods in `constraints` (edge force and length, node and vertex coordinates) to return a scalar array `Float[Array, ""]` instead of a shape `(1,)` array, and made the whole `constraint` family instance methods for a uniform override signature. Constraint bounds are now normalized to a scalar float or a flat jax array, dropping the numpy arm.
 
 ### Removed
 

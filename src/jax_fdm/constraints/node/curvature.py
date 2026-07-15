@@ -21,10 +21,10 @@ class NodeCurvatureConstraint(NodeConstraint):
         polygon: Int[np.ndarray, "elements neighbors"],
         bound_low: float | Float[Array, "..."] | None,
         bound_up: float | Float[Array, "..."] | None,
-    ):
+    ) -> None:
         super().__init__(key, bound_low, bound_up)
         self.polygon = polygon
-        self.index_polygon = None
+        self.index_polygon: Int[Array, "elements neighbors"] | None = None
 
     def init(self, model: EquilibriumModel, structure: EquilibriumStructure) -> None:
         """
