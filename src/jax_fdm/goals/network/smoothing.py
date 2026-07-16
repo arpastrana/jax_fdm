@@ -23,7 +23,7 @@ class NetworkSmoothGoal(ScalarGoal, NetworkGoal):
     The fairness energy is computed as the squared length of the
     vector between every node position and their neighbors' centroid.
     """
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         # set in init() from the network structure, before any prediction runs
         self.adjacency: Float[Array, "nodes nodes"]

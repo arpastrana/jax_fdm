@@ -7,6 +7,7 @@ from compas.colors import Color
 from compas.scene import register
 from jax_fdm.datastructures import FDMesh
 from jax_fdm.datastructures import FDNetwork
+from jax_fdm.visualization.buffers import FacesData
 from jax_fdm.visualization.buffers import Soup
 from jax_fdm.visualization.buffers import arrows_buffer
 from jax_fdm.visualization.buffers import cylinders_buffer
@@ -20,6 +21,10 @@ from jax_fdm.visualization.style import LOAD_SCALE
 from jax_fdm.visualization.style import LOAD_TOL
 from jax_fdm.visualization.style import REACTION_SCALE
 from jax_fdm.visualization.style import REACTION_TOL
+from jax_fdm.visualization.style import EdgeColorSpec
+from jax_fdm.visualization.style import EdgeWidthSpec
+from jax_fdm.visualization.style import PointColorSpec
+from jax_fdm.visualization.style import PointSizeSpec
 from jax_fdm.visualization.style import edge_colors
 from jax_fdm.visualization.style import edge_widths
 from jax_fdm.visualization.style import load_arrows as style_load_arrows
@@ -76,12 +81,12 @@ class FDBufferObject(ViewerSceneObject):
         """
         raise NotImplementedError
 
-    def _read_frontfaces_data(self) -> tuple:
+    def _read_frontfaces_data(self) -> FacesData:
         self._soup = self.build_soup()
         positions, colors = self._soup
         return positions, colors, soup_indices(self._soup)
 
-    def _read_backfaces_data(self) -> tuple:
+    def _read_backfaces_data(self) -> FacesData:
         # The buffer managers always read the front faces first, so the soup
         # computed there is reused with flipped winding.
         soup = self._soup if self._soup is not None else self.build_soup()
@@ -315,10 +320,10 @@ class FDDatastructureObject(ViewerSceneObject):
                  item: FDNetwork | FDMesh | None = None,
                  points: list[int] | None = None,
                  edges: list[tuple[int, int]] | None = None,
-                 pointcolor: Color | dict | str | None = None,
-                 edgecolor: Color | dict | str | None = None,
-                 pointsize: float | dict | None = None,
-                 edgewidth: float | dict | tuple | None = None,
+                 pointcolor: PointColorSpec = None,
+                 edgecolor: EdgeColorSpec = None,
+                 pointsize: PointSizeSpec = None,
+                 edgewidth: EdgeWidthSpec = None,
                  loadcolor: Color | None = None,
                  loadscale: float | None = None,
                  loadtol: float | None = None,
@@ -576,8 +581,8 @@ class FDNetworkObject(FDDatastructureObject):
     # type-check against the right datastructure.
     datastructure: FDNetwork
 
-    def __init__(self, item: FDNetwork | None = None, nodecolor: Color | dict | str | None = None,
-                 nodesize: float | dict | None = None, show_nodes: bool | None = None, **kwargs: Any) -> None:
+    def __init__(self, item: FDNetwork | None = None, nodecolor: PointColorSpec = None,
+                 nodesize: PointSizeSpec = None, show_nodes: bool | None = None, **kwargs: Any) -> None:
         # Map the node vocabulary onto the neutral point parameters of the
         # base. The scene backend injects the neutral names with explicit None
         # values (meaning "default"), so they are popped and only kept when
@@ -633,8 +638,8 @@ class FDMeshObject(FDDatastructureObject):
 
     def __init__(self,
                  item: FDMesh | None = None,
-                 vertexcolor: Color | dict | str | None = None,
-                 vertexsize: float | dict | None = None,
+                 vertexcolor: PointColorSpec = None,
+                 vertexsize: PointSizeSpec = None,
                  show_vertices: bool | None = None,
                  faceopacity: float | None = None,
                  show_faces: bool = True,

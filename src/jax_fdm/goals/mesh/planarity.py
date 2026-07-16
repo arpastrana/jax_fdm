@@ -26,7 +26,7 @@ class MeshPlanarityGoal(ScalarGoal, MeshGoal):
     This function is experimental and it is unclear whether it works correctly
     for padded faces or faces with more than 4 vertices. Use with caution!
     """
-    def __init__(self, target: float | Float[Array, "..."] = 0.0, weight: float = 1.0):
+    def __init__(self, target: float | Float[Array, "..."] = 0.0, weight: float = 1.0) -> None:
         super().__init__(key=-1, target=target, weight=weight)
         # set in init() from the mesh structure, before any prediction runs
         self.faces_indexed: Int[Array, "faces vertices"]

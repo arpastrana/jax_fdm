@@ -36,11 +36,11 @@ class VertexNormalAngleGoal(ScalarGoal, VertexGoal):
     """
     def __init__(
         self,
-        key: int | tuple[int, int] | list,
+        key: int | tuple[int, int] | list[int] | list[tuple[int, int]],
         vector: Float[Array, "..."],
         target: float | Float[Array, "..."],
         weight: float = 1.0,
-    ):
+    ) -> None:
         super().__init__(key=key, target=target, weight=weight)
         self._vector: Float[Array, "vectors 3"]
         self.vector = vector

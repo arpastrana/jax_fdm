@@ -10,6 +10,7 @@ from compas_viewer.config import WindowConfig
 from compas.datastructures import Datastructure
 from compas.datastructures import Graph
 from compas.geometry import Geometry
+from compas.scene import SceneObject
 from jax_fdm.datastructures import FDMesh
 from jax_fdm.datastructures import FDNetwork
 from jax_fdm.visualization.viewers.buffer_manager import FastBufferManager
@@ -126,7 +127,7 @@ class Viewer(CompasViewer):
         finally:
             self.running = False
 
-    def on(self, interval: int, frames: int | None = None) -> Callable:
+    def on(self, interval: int, frames: int | None = None) -> Callable[[Callable[..., None]], Callable[..., None]]:
         """
         Decorate a frame callback for the animation loop.
 
@@ -144,7 +145,7 @@ class Viewer(CompasViewer):
 
         return super().on(interval, frames)
 
-    def add(self, data: Geometry | Datastructure, **kwargs: Any) -> Any:
+    def add(self, data: Geometry | Datastructure, **kwargs: Any) -> SceneObject:
         """
         Add a data object to the viewer.
 

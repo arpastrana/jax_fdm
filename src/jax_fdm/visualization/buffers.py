@@ -11,6 +11,10 @@ from jax_fdm.visualization.shapes import Arrow
 
 Soup = tuple[Float[np.ndarray, "vertices 3"], Float[np.ndarray, "vertices 4"]]
 
+# A triangle soup (positions, rgba colors) paired with its flat vertex indices,
+# as read out for a viewer buffer.
+FacesData = tuple[Float[np.ndarray, "vertices 3"], Float[np.ndarray, "vertices 4"], Int[np.ndarray, "vertices"]]
+
 __all__ = ["cylinders_buffer", "arrows_buffer", "spheres_buffer", "soup_indices", "soup_colors_rgb"]
 
 

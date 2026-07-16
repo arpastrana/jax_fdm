@@ -9,6 +9,9 @@ from compas.colors import Color
 
 __all__ = ["FastBufferManager"]
 
+# A per-vertex color is either a COMPAS Color or an rgba float tuple.
+ColorLike = Color | tuple[float, float, float, float]
+
 
 class FastBufferManager(BufferManager):
     """
@@ -60,8 +63,8 @@ class FastBufferManager(BufferManager):
 
     @staticmethod
     def _pack_vertex_arrays(
-        positions: list | np.ndarray,
-        colors: list | np.ndarray,
+        positions: list[list[float]] | np.ndarray,
+        colors: list[ColorLike] | np.ndarray,
     ) -> tuple[Float[np.ndarray, "positions"], Float[np.ndarray, "colors"]]:
         """
         Pack positions and colors into the flat float32 arrays the GL buffers expect.
@@ -69,16 +72,16 @@ class FastBufferManager(BufferManager):
         Colors are normalized to one per vertex, padding with the last color
         or truncating as needed.
         """
+        colors = list(colors)
         if len(colors) > len(positions):
             colors = colors[: len(positions)]
         elif len(colors) < len(positions):
             colors = colors + [colors[-1]] * (len(positions) - len(colors))
 
-        if len(colors) > 0 and isinstance(colors[0], Color):
-            colors = [color.rgba for color in colors]
+        rgba = [color.rgba if isinstance(color, Color) else color for color in colors]
 
         pos_array = np.array(positions, dtype=np.float32).flatten()
-        col_array = np.array(colors, dtype=np.float32).flatten()
+        col_array = np.array(rgba, dtype=np.float32).flatten()
 
         return pos_array, col_array
 

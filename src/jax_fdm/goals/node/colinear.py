@@ -23,7 +23,7 @@ class NodesColinearGoal(ScalarGoal, NodeGoal):
     - The goal applies to a *collection* of ordered nodes and is therefore not collectible.
     - The start and end points are assumed to be fixed.
     """
-    def __init__(self, key: list[int], weight: float = 1.0):
+    def __init__(self, key: list[int], weight: float = 1.0) -> None:
         super().__init__(key=key, target=0.0, weight=weight)
         self.is_collectible = False
 
@@ -51,7 +51,7 @@ class NodesCurvatureGoal(ScalarGoal, NodeGoal):
     - The goal applies to a *collection* of ordered nodes and is therefore not collectible.
     - The start and end points are assumed to be fixed.
     """
-    def __init__(self, key: list[int], weight: float = 1.0):
+    def __init__(self, key: list[int], weight: float = 1.0) -> None:
         super().__init__(key=key, target=0.0, weight=weight)
         self.is_collectible = False
 

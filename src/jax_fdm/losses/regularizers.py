@@ -9,7 +9,7 @@ class Regularizer:
     """
     A regularizer is a function that penalizes the parameters of a model.
     """
-    def __init__(self, alpha: float, name: str | None = None):
+    def __init__(self, alpha: float, name: str | None = None) -> None:
         self.alpha = alpha
         self.name = name or self.__class__.__name__
 

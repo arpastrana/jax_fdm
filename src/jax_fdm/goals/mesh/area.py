@@ -16,7 +16,7 @@ class MeshAreaGoal(ScalarGoal, MeshGoal):
     """
     Maximize the negative area of a mesh.
     """
-    def __init__(self, target: float | Float[Array, "..."] = 0.0, weight: float = 1.0):
+    def __init__(self, target: float | Float[Array, "..."] = 0.0, weight: float = 1.0) -> None:
         super().__init__(key=-1, target=target, weight=weight)
         # set in init() from the mesh structure, before any prediction runs
         self.faces: Int[Array, "faces vertices"]
@@ -65,7 +65,7 @@ class MeshFacesAreaEqualizeGoal(ScalarGoal, MeshGoal):
     """
     Maximize the negative area of a mesh.
     """
-    def __init__(self, target: float | Float[Array, "..."] = 0.0, weight: float = 1.0):
+    def __init__(self, target: float | Float[Array, "..."] = 0.0, weight: float = 1.0) -> None:
         super().__init__(key=-1, target=target, weight=weight)
         # set in init() from the mesh structure, before any prediction runs
         self.faces: Int[Array, "faces vertices"]

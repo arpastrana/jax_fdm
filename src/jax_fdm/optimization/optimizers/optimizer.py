@@ -59,7 +59,7 @@ class OptProblem:
     hess: Callable | None = None
     tol: float | None = None
     bounds: Bounds | list[tuple[float, float]] | None = None
-    constraints: Any = field(default_factory=list)
+    constraints: list[Any] = field(default_factory=list)
     callback: Callable | None = None
 
     def to_kwargs(self) -> dict[str, Any]:
@@ -253,7 +253,7 @@ class Optimizer:
         constraints = constraints or []
         if constraints:
             start_time = perf_counter()
-            constraints = self.constraints(constraints, model, structure, x)
+            constraints = self.constraints(constraints, model, structure, x) or []
             print(f"\tConstraints warmup time: {(perf_counter() - start_time):.4} seconds")
 
         # optimization options

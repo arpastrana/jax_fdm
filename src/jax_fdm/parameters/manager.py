@@ -55,7 +55,7 @@ class ParameterManager:
         parameters: list[Parameter],
         structure: EquilibriumStructure,
         network: FDNetwork | FDMesh,
-    ):
+    ) -> None:
         """
         Initialize the manager.
         """

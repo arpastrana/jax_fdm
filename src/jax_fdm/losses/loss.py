@@ -18,7 +18,7 @@ class Loss:
     """
     A function composed of error and regularization terms.
     """
-    def __init__(self, *args: Error | Regularizer, name: str | None = None):
+    def __init__(self, *args: Error | Regularizer, name: str | None = None) -> None:
         self._error_terms: list[Error] = []
         self._regularization_terms: list[Regularizer] = []
 

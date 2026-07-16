@@ -22,10 +22,10 @@ class FaceRectangularGoal(ScalarGoal, FaceGoal):
     """
     def __init__(
         self,
-        key: int | tuple[int, int] | list,
+        key: int | tuple[int, int] | list[int] | list[tuple[int, int]],
         weight: float = 1.0,
         target: float | Float[Array, "..."] = 0.0,
-    ):
+    ) -> None:
         super().__init__(key=key, target=target, weight=weight)
         # set in init() from the mesh structure, before any prediction runs
         self.face_indices: Int[Array, "faces 4"]

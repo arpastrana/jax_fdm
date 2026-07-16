@@ -19,7 +19,35 @@ __all__ = [
     "load_arrows",
     "reaction_arrows",
     "reaction_color_default",
+    "EdgeColors",
+    "EdgeWidths",
+    "PointColors",
+    "PointSizes",
+    "EdgeColorSpec",
+    "EdgeWidthSpec",
+    "PointColorSpec",
+    "PointSizeSpec",
 ]
+
+# ==========================================================================
+# Type aliases
+# ==========================================================================
+
+# Per-element style maps: an edge is keyed by its (u, v) node pair, a point (a
+# node or a vertex) by a single key. These are the shapes the style functions
+# return and the scene objects store.
+EdgeColors = dict[tuple[int, int], Color]
+EdgeWidths = dict[tuple[int, int], float]
+PointColors = dict[int, Color]
+PointSizes = dict[int, float]
+
+# User-facing style specs: a single value broadcast to every element, a
+# per-element map, a semantic string mode (e.g. "fd"/"force" for edges), an
+# edge-width (low, high) range, or None to fall back to the defaults.
+EdgeColorSpec = Color | EdgeColors | str | None
+EdgeWidthSpec = float | EdgeWidths | tuple[float, float] | None
+PointColorSpec = Color | PointColors | str | None
+PointSizeSpec = float | PointSizes | None
 
 
 # ==========================================================================
@@ -60,8 +88,8 @@ ARROW_BODYWIDTH = 0.012
 def edge_colors(
     datastructure: FDNetwork | FDMesh,
     edges: list[tuple[int, int]],
-    color: Color | dict[tuple[int, int], Color] | str | None = None,
-) -> dict[tuple[int, int], Color]:
+    color: EdgeColorSpec = None,
+) -> EdgeColors:
     """
     Map every edge to a color.
 
@@ -98,8 +126,8 @@ def edge_colors(
 def edge_widths(
     datastructure: FDNetwork | FDMesh,
     edges: list[tuple[int, int]],
-    width: float | dict[tuple[int, int], float] | tuple[float, float] | None = None,
-) -> dict[tuple[int, int], float]:
+    width: EdgeWidthSpec = None,
+) -> EdgeWidths:
     """
     Map every edge to a width.
 
@@ -147,9 +175,9 @@ def edge_widths(
 def point_colors(
     points: list[int],
     is_support: Callable[[int], bool],
-    color: Color | dict[int, Color] | None = None,
+    color: Color | PointColors | None = None,
     default: Color | None = None,
-) -> dict[int, Color]:
+) -> PointColors:
     """
     Map every point to a color, defaulting supports to green.
 
@@ -174,7 +202,7 @@ def point_colors(
     return {point: COLOR_SUPPORT if is_support(point) else default for point in points}
 
 
-def point_sizes(points: list[int], size: float | dict[int, float] | None = None) -> dict[int, float]:
+def point_sizes(points: list[int], size: PointSizeSpec = None) -> PointSizes:
     """
     Map every point to a size.
 
@@ -189,7 +217,7 @@ def point_sizes(points: list[int], size: float | dict[int, float] | None = None)
     return {point: size if size is not None else POINT_SIZE for point in points}
 
 
-def reaction_color_default(edgecolor: Color | dict | str | None) -> Color:
+def reaction_color_default(edgecolor: EdgeColorSpec) -> Color:
     """
     The default reaction color, given the edge color mode.
 

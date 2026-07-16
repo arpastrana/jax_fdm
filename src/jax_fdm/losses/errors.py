@@ -14,11 +14,11 @@ class Error:
     """
     The base class for an error term in a loss function.
     """
-    def __init__(self, goals: list[Goal], alpha: float = 1.0, name: str | None = None, *args, **kwargs):
+    def __init__(self, goals: list[Goal], alpha: float = 1.0, name: str | None = None, *args, **kwargs) -> None:
         self.goals = goals
         self.alpha = alpha
         self.name = name or self.__class__.__name__
-        self.collections = []
+        self.collections: list[Goal] = []
 
     @staticmethod
     def error(gstate: GoalState) -> Float[Array, ""]:

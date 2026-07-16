@@ -16,7 +16,7 @@ class MeshXYZLaplacianGoal(NetworkXYZLaplacianGoal):
     """
     A thin wrapper of NetworkXYZLaplacianGoal.
     """
-    def __init__(self, target: float | Float[Array, "..."] = 0.0, weight: float = 1.0):
+    def __init__(self, target: float | Float[Array, "..."] = 0.0, weight: float = 1.0) -> None:
         super().__init__(key=-1, target=target, weight=weight)
 
 
@@ -35,7 +35,7 @@ class MeshXYZFaceLaplacianGoal(ScalarGoal, MeshGoal):
     An energy-minimizing mesh will have every vertex as close as possible
     to its neighboring faces centroid.
     """
-    def __init__(self, target: float | Float[Array, "..."] = 0.0, weight: float = 1.0):
+    def __init__(self, target: float | Float[Array, "..."] = 0.0, weight: float = 1.0) -> None:
         super().__init__(key=-1, target=target, weight=weight)
         # set in init() from the mesh structure, before any prediction runs
         self.connectivity_faces_vertices: Float[Array, "faces vertices"]

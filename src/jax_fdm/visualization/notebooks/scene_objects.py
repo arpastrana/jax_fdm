@@ -17,8 +17,12 @@ from jax_fdm.visualization.style import ARROW_BODYWIDTH
 from jax_fdm.visualization.style import ARROW_HEADPORTION
 from jax_fdm.visualization.style import ARROW_HEADWIDTH
 from jax_fdm.visualization.style import COLOR_LOAD
+from jax_fdm.visualization.style import EdgeColorSpec
+from jax_fdm.visualization.style import EdgeWidthSpec
 from jax_fdm.visualization.style import LOAD_SCALE
 from jax_fdm.visualization.style import LOAD_TOL
+from jax_fdm.visualization.style import PointColorSpec
+from jax_fdm.visualization.style import PointSizeSpec
 from jax_fdm.visualization.style import REACTION_SCALE
 from jax_fdm.visualization.style import REACTION_TOL
 from jax_fdm.visualization.style import edge_colors
@@ -64,10 +68,10 @@ class ThreeFDDatastructureObject(ThreeSceneObject):
         item: FDNetwork | FDMesh | None = None,
         points: list[int] | None = None,
         edges: list[tuple[int, int]] | None = None,
-        pointcolor: Color | dict | str | None = None,
-        edgecolor: Color | dict | str | None = None,
-        pointsize: float | dict | None = None,
-        edgewidth: float | dict | tuple | None = None,
+        pointcolor: PointColorSpec = None,
+        edgecolor: EdgeColorSpec = None,
+        pointsize: PointSizeSpec = None,
+        edgewidth: EdgeWidthSpec = None,
         loadcolor: Color | None = None,
         loadscale: float | None = None,
         loadtol: float | None = None,
@@ -246,8 +250,8 @@ class ThreeFDNetworkObject(ThreeFDDatastructureObject):
     # type-check against the right datastructure.
     datastructure: FDNetwork
 
-    def __init__(self, item: FDNetwork | None = None, nodecolor: Color | dict | str | None = None,
-                 nodesize: float | dict | None = None, show_nodes: bool | None = None, **kwargs: Any) -> None:
+    def __init__(self, item: FDNetwork | None = None, nodecolor: PointColorSpec = None,
+                 nodesize: PointSizeSpec = None, show_nodes: bool | None = None, **kwargs: Any) -> None:
         # Map the node vocabulary onto the neutral point parameters of the
         # base. The scene backend injects the neutral names with explicit None
         # values (meaning "default"), so they are popped and only kept when
@@ -301,8 +305,8 @@ class ThreeFDMeshObject(ThreeFDDatastructureObject):
 
     def __init__(self,
                  item: FDMesh | None = None,
-                 vertexcolor: Color | dict | str | None = None,
-                 vertexsize: float | dict | None = None,
+                 vertexcolor: PointColorSpec = None,
+                 vertexsize: PointSizeSpec = None,
                  show_vertices: bool | None = None,
                  show_faces: bool = True,
                  **kwargs: Any) -> None:
@@ -359,7 +363,7 @@ class ThreeFDMeshObject(ThreeFDDatastructureObject):
         return self.guids
 
 
-def register_notebook_scene_objects():
+def register_notebook_scene_objects() -> None:
     """
     Register the force density scene objects to the Notebook context.
     """

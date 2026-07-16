@@ -9,6 +9,11 @@ from compas.geometry import Vector
 
 __all__ = ["Arrow"]
 
+# A discrete mesh vertex is an xyz triple; a face is a list of vertex indices,
+# or a 3-tuple of indices once the shape is triangulated.
+Vertex = list[float]
+Face = list[int] | tuple[int, int, int]
+
 
 class Arrow(Shape):
     """
@@ -58,21 +63,21 @@ class Arrow(Shape):
     # Methods
     # ==========================================================================
 
-    def compute_vertices(self) -> list:
+    def compute_vertices(self) -> list[Vertex]:
         """
         Compute the vertices of the discrete representation of the arrow.
         """
         vertices, _ = self.to_vertices_and_faces()
         return vertices
 
-    def compute_faces(self) -> list:
+    def compute_faces(self) -> list[Face]:
         """
         Compute the faces of the discrete representation of the arrow.
         """
         _, faces = self.to_vertices_and_faces()
         return faces
 
-    def to_vertices_and_faces(self, triangulated: bool = False, u: int | None = None, v: Any = None) -> tuple[list, list]:
+    def to_vertices_and_faces(self, triangulated: bool = False, u: int | None = None, v: Any = None) -> tuple[list[Vertex], list[Face]]:
         """
         Returns a list of vertices and faces.
 
@@ -112,10 +117,11 @@ class Arrow(Shape):
 
         # Manually join the vertices and faces of the body and the head
         offset = len(vertices)
-        vertices += head_vertices
-        faces += [[index + offset for index in face] for face in head_faces]
+        joined_vertices: list[Vertex] = list(vertices) + list(head_vertices)
+        joined_faces: list[Face] = list(faces)
+        joined_faces += [[index + offset for index in face] for face in head_faces]
 
-        return vertices, faces
+        return joined_vertices, joined_faces
 
     def transform(self, transformation: Transformation) -> None:
         """

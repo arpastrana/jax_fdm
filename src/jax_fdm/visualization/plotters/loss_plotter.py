@@ -13,6 +13,7 @@ from jax_fdm import DTYPE_JAX
 from jax_fdm.datastructures import FDMesh
 from jax_fdm.datastructures import FDNetwork
 from jax_fdm.equilibrium import EquilibriumModel
+from jax_fdm.equilibrium import EquilibriumParametersState
 from jax_fdm.equilibrium import structure_from_datastructure
 from jax_fdm.losses import Loss
 
@@ -28,7 +29,7 @@ class LossPlotter:
 
     def plot(
         self,
-        history: list,
+        history: EquilibriumParametersState | list[Any],
         report_breakdown: bool = True,
         error_names: Iterable[str] | None = None,
         plot_legend: bool = True,

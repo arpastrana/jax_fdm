@@ -27,7 +27,7 @@ class EdgesLengthEqualGoal(ScalarGoal, EdgeGoal):
     Equalize the length of a selection of edges by minimizing
     the normalized variance of their lengths.
     """
-    def __init__(self, key: list[tuple[int, int]], weight: float = 1.0):
+    def __init__(self, key: list[tuple[int, int]], weight: float = 1.0) -> None:
         super().__init__(key=key, target=0.0, weight=weight)
         self.is_collectible = False
 

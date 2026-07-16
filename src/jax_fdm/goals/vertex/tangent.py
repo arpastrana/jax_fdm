@@ -20,11 +20,11 @@ class VertexTangentAngleGoal(VertexNormalAngleGoal):
     """
     def __init__(
         self,
-        key: int | tuple[int, int] | list,
+        key: int | tuple[int, int] | list[int] | list[tuple[int, int]],
         vector: Float[Array, "..."],
         target: float | Float[Array, "..."],
         weight: float = 1.0,
-    ):
+    ) -> None:
         super().__init__(key=key, vector=vector, target=target, weight=weight)
 
     def prediction(self, eq_state: EquilibriumState, index: Int[Array, ""]) -> Float[Array, "1"]:

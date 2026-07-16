@@ -18,6 +18,10 @@ from jax_fdm.visualization.style import LOAD_SCALE
 from jax_fdm.visualization.style import LOAD_TOL
 from jax_fdm.visualization.style import REACTION_SCALE
 from jax_fdm.visualization.style import REACTION_TOL
+from jax_fdm.visualization.style import EdgeColorSpec
+from jax_fdm.visualization.style import EdgeWidthSpec
+from jax_fdm.visualization.style import PointColorSpec
+from jax_fdm.visualization.style import PointSizeSpec
 from jax_fdm.visualization.style import edge_colors
 from jax_fdm.visualization.style import edge_widths
 from jax_fdm.visualization.style import load_arrows
@@ -78,9 +82,9 @@ class FDPlotterObject(PlotterSceneObject):
                  item: FDNetwork | FDMesh | None = None,
                  points: list[int] | None = None,
                  edges: list[tuple[int, int]] | None = None,
-                 pointcolor: Color | dict | str | None = None,
-                 edgecolor: Color | dict | str | None = None,
-                 edgewidth: float | dict | tuple | None = None,
+                 pointcolor: PointColorSpec = None,
+                 edgecolor: EdgeColorSpec = None,
+                 edgewidth: EdgeWidthSpec = None,
                  loadcolor: Color | None = None,
                  loadscale: float | None = None,
                  loadtol: float | None = None,
@@ -315,8 +319,8 @@ class FDNetworkPlotterObject(FDPlotterObject, GraphObject):
     # type-check against the right datastructure.
     datastructure: FDNetwork
 
-    def __init__(self, item: FDNetwork | None = None, nodecolor: Color | dict | str | None = None,
-                 nodesize: float | dict | None = None, show_nodes: bool | None = None, **kwargs: Any) -> None:
+    def __init__(self, item: FDNetwork | None = None, nodecolor: PointColorSpec = None,
+                 nodesize: PointSizeSpec = None, show_nodes: bool | None = None, **kwargs: Any) -> None:
         # Map the node vocabulary onto the neutral point parameters of the
         # base, dropping injected None defaults so they never clobber the
         # node keywords. The marker size stays in the upstream vocabulary:
@@ -377,8 +381,8 @@ class FDMeshPlotterObject(FDPlotterObject, MeshObject):
     # type-check against the right datastructure.
     datastructure: FDMesh
 
-    def __init__(self, item: FDMesh | None = None, vertexcolor: Color | dict | str | None = None,
-                 vertexsize: float | dict | None = None, show_vertices: bool | None = None, **kwargs: Any) -> None:
+    def __init__(self, item: FDMesh | None = None, vertexcolor: PointColorSpec = None,
+                 vertexsize: PointSizeSpec = None, show_vertices: bool | None = None, **kwargs: Any) -> None:
         # Map the vertex vocabulary onto the neutral point parameters of the
         # base, dropping injected None defaults so they never clobber the
         # vertex keywords. The marker size stays in the upstream vocabulary:
