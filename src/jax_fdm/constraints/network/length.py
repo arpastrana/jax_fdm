@@ -9,7 +9,7 @@ from jax_fdm.equilibrium import EquilibriumState
 
 class NetworkEdgesLengthConstraint(NetworkConstraint):
     """
-    Set constraint bounds to the length of all the edges of a network.
+    Bound the length of every edge of a network.
     """
 
     def constraint(
@@ -18,6 +18,18 @@ class NetworkEdgesLengthConstraint(NetworkConstraint):
         index: Int[Array, ""],
     ) -> Float[Array, "edges"]:
         """
-        The constraint function relative to an equilibrium state.
+        The length of every edge.
+
+        Parameters
+        ----------
+        eq_state :
+            The equilibrium state to read the lengths from.
+        index :
+            The sentinel index, unused.
+
+        Returns
+        -------
+        constraint :
+            The length of each edge, flattened.
         """
         return jnp.ravel(eq_state.lengths)

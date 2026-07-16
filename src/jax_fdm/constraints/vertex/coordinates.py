@@ -8,7 +8,7 @@ from jax_fdm.equilibrium import EquilibriumState
 
 class VertexXCoordinateConstraint(VertexConstraint):
     """
-    Constraint the X coordinate of a vertex between a lower and an upper bound.
+    Bound the X coordinate of a vertex between a lower and an upper value.
     """
 
     def constraint(
@@ -17,14 +17,26 @@ class VertexXCoordinateConstraint(VertexConstraint):
         index: Int[Array, ""],
     ) -> Float[Array, ""]:
         """
-        Returns the X coordinate of a vertex from an equilibrium state.
+        The X coordinate of the vertex.
+
+        Parameters
+        ----------
+        eq_state :
+            The equilibrium state to read the coordinate from.
+        index :
+            The index of the vertex.
+
+        Returns
+        -------
+        constraint :
+            The vertex's X coordinate.
         """
         return eq_state.xyz[index, 0]
 
 
 class VertexYCoordinateConstraint(VertexConstraint):
     """
-    Constraint the Y coordinate of a vertex between a lower and an upper bound.
+    Bound the Y coordinate of a vertex between a lower and an upper value.
     """
 
     def constraint(
@@ -33,14 +45,26 @@ class VertexYCoordinateConstraint(VertexConstraint):
         index: Int[Array, ""],
     ) -> Float[Array, ""]:
         """
-        Returns the Y coordinate of a vertex from an equilibrium state.
+        The Y coordinate of the vertex.
+
+        Parameters
+        ----------
+        eq_state :
+            The equilibrium state to read the coordinate from.
+        index :
+            The index of the vertex.
+
+        Returns
+        -------
+        constraint :
+            The vertex's Y coordinate.
         """
         return eq_state.xyz[index, 1]
 
 
 class VertexZCoordinateConstraint(VertexConstraint):
     """
-    Constraint the Z coordinate of a vertex between a lower and an upper bound.
+    Bound the Z coordinate of a vertex between a lower and an upper value.
     """
 
     def constraint(
@@ -49,6 +73,18 @@ class VertexZCoordinateConstraint(VertexConstraint):
         index: Int[Array, ""],
     ) -> Float[Array, ""]:
         """
-        Returns the Z coordinate of a vertex from an equilibrium state.
+        The Z coordinate of the vertex.
+
+        Parameters
+        ----------
+        eq_state :
+            The equilibrium state to read the coordinate from.
+        index :
+            The index of the vertex.
+
+        Returns
+        -------
+        constraint :
+            The vertex's Z coordinate.
         """
         return eq_state.xyz[index, 2]

@@ -8,7 +8,7 @@ from jax_fdm.equilibrium import EquilibriumState
 
 class EdgeForceConstraint(EdgeConstraint):
     """
-    Constraints the force of an edge between a lower and an upper bound.
+    Bound the internal force of an edge between a lower and an upper value.
     """
 
     def constraint(
@@ -17,6 +17,18 @@ class EdgeForceConstraint(EdgeConstraint):
         index: Int[Array, ""],
     ) -> Float[Array, ""]:
         """
-        Returns the force of an edge from an equilibrium state.
+        The internal force in the edge.
+
+        Parameters
+        ----------
+        eq_state :
+            The equilibrium state to read the force from.
+        index :
+            The index of the edge.
+
+        Returns
+        -------
+        constraint :
+            The edge's internal force, signed positive in tension.
         """
         return eq_state.forces[index, 0]

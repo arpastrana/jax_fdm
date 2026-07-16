@@ -13,8 +13,18 @@ from jax_fdm.geometry import curvature_point_polygon
 
 class NodeCurvatureConstraint(NodeConstraint):
     """
-    Constraints the (discrete) curvature of a node based on a polygon of
-    neighboring nodes.
+    Bound the discrete curvature at a node over its one-hop neighborhood.
+
+    Parameters
+    ----------
+    key :
+        The key or keys of the node(s) the constraint acts on.
+    polygon :
+        The neighboring node keys forming the polygon around each node.
+    bound_low :
+        The lower bound on the curvature. If None, unbounded below.
+    bound_up :
+        The upper bound on the curvature. If None, unbounded above.
     """
 
     def __init__(
@@ -31,7 +41,14 @@ class NodeCurvatureConstraint(NodeConstraint):
 
     def init(self, model: EquilibriumModel, structure: EquilibriumStructure) -> None:
         """
-        Initialize the constraint with information from an equilibrium model.
+        Bind the constraint to a structure, resolving its neighborhood polygon.
+
+        Parameters
+        ----------
+        model :
+            The equilibrium model.
+        structure :
+            The structure whose node ordering defines the indices.
         """
         super().init(model, structure)
         self.index_polygon = self.polygon_indices(model, structure)
@@ -42,7 +59,19 @@ class NodeCurvatureConstraint(NodeConstraint):
         structure: EquilibriumStructure,
     ) -> Int[Array, "nodes neighbors"]:
         """
-        Obtains the indices of the polygon from a model.
+        Resolve each node's neighborhood polygon keys to structure indices.
+
+        Parameters
+        ----------
+        model :
+            The equilibrium model.
+        structure :
+            The structure whose node ordering defines the indices.
+
+        Returns
+        -------
+        index_polygon :
+            The neighbor indices of each constrained node, keyed by structure index.
         """
         index_max = max(self.index) + 1
         polygon = np.atleast_2d(self.polygon)
@@ -58,8 +87,19 @@ class NodeCurvatureConstraint(NodeConstraint):
         index: Int[Array, ""],
     ) -> Float[Array, ""]:
         """
-        Returns the curvature at a node based on the xyz coordinates of its
-        one-hop neighborhood.
+        The discrete curvature at the node over its one-hop neighborhood.
+
+        Parameters
+        ----------
+        eq_state :
+            The equilibrium state to read the node coordinates from.
+        index :
+            The index of the node.
+
+        Returns
+        -------
+        constraint :
+            The discrete curvature at the node given its neighbors' coordinates.
         """
         point = eq_state.xyz[index, :]
         index_polygon = self.index_polygon[index, :]

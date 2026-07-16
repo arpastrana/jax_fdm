@@ -15,7 +15,24 @@ from jax_fdm.equilibrium import EquilibriumStructure
 
 class Constraint:
     """
-    Base class for all constraints.
+    The base class for all constraints, bounds an equilibrium quantity must obey.
+
+    Parameters
+    ----------
+    key :
+        The key or keys of the element(s) the constraint acts on.
+    bound_low :
+        The lower bound on the constrained quantity. If None, unbounded below.
+    bound_up :
+        The upper bound on the constrained quantity. If None, unbounded above.
+
+    Notes
+    -----
+    A constraint is initialized in two phases: construction stores the key and
+    bounds, then :meth:`init` resolves the key to an index against an equilibrium
+    structure before the constraint is evaluated. Subclasses supply the constrained
+    quantity via :meth:`constraint`. Missing bounds normalize to negative or
+    positive infinity rather than None.
     """
 
     def __init__(
@@ -72,7 +89,18 @@ class Constraint:
         bound: float | Float[Array, "..."],
     ) -> float | Float[Array, "..."]:
         """
-        Normalize a bound to a scalar float or a flat jax array.
+        Normalize a bound to a scalar float or a flat array.
+
+        Parameters
+        ----------
+        bound :
+            The bound to normalize.
+
+        Returns
+        -------
+        bound :
+            The bound as a scalar float when it holds a single value, otherwise a
+            flattened array.
         """
         if isinstance(bound, (int, float)):
             return bound
@@ -113,15 +141,35 @@ class Constraint:
         structure: EquilibriumStructure,
     ) -> int | tuple[int, ...]:
         """
-        Get the index in the model of the constraint key.
+        Resolve the constraint's key to an index in an equilibrium structure.
+
+        Parameters
+        ----------
+        model :
+            The equilibrium model.
+        structure :
+            The structure whose element ordering defines the index.
+
+        Returns
+        -------
+        index :
+            The index, or tuple of indices, of the constraint's element(s).
         """
         raise NotImplementedError
 
     def _index_from_key(self, key_index: dict[Any, int]) -> int | tuple[int, ...]:
         """
-        Look up the constraint key in an element-to-index mapping.
+        Look up the constraint's key in an element-to-index mapping.
 
-        A single key maps to one index, while a list of keys maps to a tuple of indices.
+        Parameters
+        ----------
+        key_index :
+            The mapping from element key to index.
+
+        Returns
+        -------
+        index :
+            A single index for a scalar key, or a tuple of indices for a list key.
         """
         if isinstance(self.key, list):
             return tuple(key_index[k] for k in self.key)
@@ -133,7 +181,19 @@ class Constraint:
         structure: EquilibriumStructure,
     ) -> None:
         """
-        Initialize the constraint with information from an equilibrium model.
+        Bind the constraint to a structure by resolving its key to an index.
+
+        Parameters
+        ----------
+        model :
+            The equilibrium model.
+        structure :
+            The structure whose element ordering defines the index.
+
+        Notes
+        -----
+        Must be called once before the constraint is evaluated; it populates the
+        index that :meth:`constraint` reads.
         """
         self.index = self.index_from_model(model, structure)
 
@@ -144,7 +204,21 @@ class Constraint:
         structure: EquilibriumStructure,
     ) -> Float[Array, "elements"]:
         """
-        The called constraint function.
+        Evaluate the constraint by solving for equilibrium first.
+
+        Parameters
+        ----------
+        params :
+            The parameters defining the equilibrium problem.
+        model :
+            The equilibrium model that computes the equilibrium state.
+        structure :
+            The structure that provides the connectivity.
+
+        Returns
+        -------
+        constraint :
+            The constrained quantity for each element, flattened.
         """
         eqstate = model(params, structure)
         # self.index is a numpy index array mapped to a jax scalar by vmap
@@ -158,6 +232,18 @@ class Constraint:
         index: Int[Array, "..."],
     ) -> Float[Array, "..."]:
         """
-        The constraint function.
+        Extract the constrained quantity for one element from an equilibrium state.
+
+        Parameters
+        ----------
+        eq_state :
+            The equilibrium state to read the quantity from.
+        index :
+            The index of the element within the equilibrium state.
+
+        Returns
+        -------
+        constraint :
+            The value of the constrained quantity.
         """
         raise NotImplementedError

@@ -5,7 +5,7 @@ from jax_fdm.equilibrium import EquilibriumStructure
 
 class NodeConstraint(Constraint):
     """
-    Base class for all constraints that pertain to a node in a network.
+    The base class for constraints defined on the nodes of a network.
     """
 
     def index_from_model(
@@ -14,6 +14,18 @@ class NodeConstraint(Constraint):
         structure: EquilibriumStructure,
     ) -> int | tuple[int, ...]:
         """
-        The index of the node in a structure.
+        Resolve the constraint's node key to an index in a structure.
+
+        Parameters
+        ----------
+        model :
+            The equilibrium model.
+        structure :
+            The structure whose node ordering defines the index.
+
+        Returns
+        -------
+        index :
+            The index, or tuple of indices, of the constraint's node(s).
         """
         return self._index_from_key(structure.node_index)

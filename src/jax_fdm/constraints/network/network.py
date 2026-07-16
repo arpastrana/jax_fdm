@@ -8,8 +8,19 @@ from jax_fdm.equilibrium import EquilibriumStructure
 
 class NetworkConstraint(Constraint):
     """
-    Base class for all constraints that pertain to all the edges or all the nodes
-    of a network.
+    The base class for constraints defined on a network as a whole.
+
+    Parameters
+    ----------
+    bound_low :
+        The lower bound applied to every element. If None, unbounded below.
+    bound_up :
+        The upper bound applied to every element. If None, unbounded above.
+
+    Notes
+    -----
+    A network constraint spans all edges or nodes at once rather than one element,
+    so it always carries the sentinel key ``-1``.
     """
 
     def __init__(
@@ -25,6 +36,18 @@ class NetworkConstraint(Constraint):
         structure: EquilibriumStructure,
     ) -> int:
         """
-        The index of the constraint key in a structure.
+        Return the sentinel index shared by all network constraints.
+
+        Parameters
+        ----------
+        model :
+            The equilibrium model.
+        structure :
+            The structure the constraint is bound to.
+
+        Returns
+        -------
+        index :
+            The sentinel index ``-1``, since the constraint spans the whole network.
         """
         return -1
