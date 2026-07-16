@@ -46,12 +46,12 @@ def null_viewer(name: str) -> type:
 
     Parameters
     ----------
-    name : str
+    name :
         The import name of the missing backend package.
 
     Returns
     -------
-    type
+    null_viewer :
         A null viewer class that warns on construction and no-ops thereafter.
     """
 

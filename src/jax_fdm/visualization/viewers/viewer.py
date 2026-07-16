@@ -171,15 +171,15 @@ class Viewer(CompasViewer):
 
         Parameters
         ----------
-        data : :class:`compas.geometry.Geometry` |
-            :class:`compas.datastructures.Datastructure`
-            The object to visualize.
-        **kwargs : dict, optional
-            Additional visualization options.
+        data :
+            The geometry or datastructure to visualize.
+        kwargs :
+            Additional visualization options passed to the scene object.
 
         Returns
         -------
-        The created scene object.
+        scene_object :
+            The created scene object.
         """
         if not isinstance(data, (FDMesh, FDNetwork)):
             # COMPAS 2.x aliases ``Network`` to ``Graph``, so a plain network added
