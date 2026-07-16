@@ -7,6 +7,7 @@ adjacency) and re-derive everything else from the live datastructure on
 updating, every category soup must equal the soup of a scene object built
 from scratch on the same datastructure.
 """
+
 import os
 
 os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
@@ -34,7 +35,9 @@ VIEWER = Viewer(width=400, height=300)
 @pytest.fixture
 def network():
     network = FDNetwork()
-    for key, (x, y, z) in enumerate([(0.0, 0.0, 0.0), (1.0, 0.0, 0.0), (2.0, 0.0, 1.0), (3.0, 0.0, 0.0)]):
+    for key, (x, y, z) in enumerate(
+        [(0.0, 0.0, 0.0), (1.0, 0.0, 0.0), (2.0, 0.0, 1.0), (3.0, 0.0, 0.0)],
+    ):
         network.add_node(key=key, x=x, y=y, z=z)
     for u, v in [(0, 1), (1, 2), (2, 3)]:
         network.add_edge(u, v)
@@ -75,23 +78,29 @@ MESH_KWARGS = {"show_vertices": True, **STYLE_KWARGS}
 
 
 def category_soups(obj):
-    return {child.name: child.build_soup()
-            for child in obj.children if hasattr(child, "build_soup")}
+    return {
+        child.name: child.build_soup()
+        for child in obj.children
+        if hasattr(child, "build_soup")
+    }
 
 
 def category_groups(obj):
-    return {child.name: child for child in obj.children
-            if isinstance(child, FDGroupObject)}
+    return {
+        child.name: child for child in obj.children if isinstance(child, FDGroupObject)
+    }
 
 
 def category_candidates(obj):
     """
     The candidate keys of every category, in fused soup order.
     """
-    return {"Edges": obj.edges,
-            obj.points_name: obj.points,
-            "Reactions": obj.reaction_points,
-            "Loads": obj.load_points}
+    return {
+        "Edges": obj.edges,
+        obj.points_name: obj.points,
+        "Reactions": obj.reaction_points,
+        "Loads": obj.load_points,
+    }
 
 
 def fused_slots(fused_obj):
@@ -106,8 +115,14 @@ def fused_slots(fused_obj):
     slots = {}
     for name, (positions, colors) in category_soups(fused_obj).items():
         keys = candidates[name]
-        slots[name] = {key: (block, colorblock) for key, block, colorblock
-                       in zip(keys, np.split(positions, len(keys)), np.split(colors, len(keys)))}
+        slots[name] = {
+            key: (block, colorblock)
+            for key, block, colorblock in zip(
+                keys,
+                np.split(positions, len(keys)),
+                np.split(colors, len(keys)),
+            )
+        }
     return slots
 
 
@@ -123,7 +138,11 @@ def assert_elements_match_fused_slots(unfused_obj, fused_obj):
         for child in group.children:
             positions, colors = child.build_soup()
             expected_positions, expected_colors = slots[name][child.key]
-            np.testing.assert_array_equal(positions, expected_positions, err_msg=child.name)
+            np.testing.assert_array_equal(
+                positions,
+                expected_positions,
+                err_msg=child.name,
+            )
             np.testing.assert_array_equal(colors, expected_colors, err_msg=child.name)
 
 
@@ -164,14 +183,23 @@ def move_mesh(mesh):
 
 def test_network_update_matches_rebuild(network):
     assert_update_matches_rebuild(
-        lambda: FDNetworkObject(item=network, context="Viewer", fuse=True, **NETWORK_KWARGS),
-        network, move_network)
+        lambda: FDNetworkObject(
+            item=network,
+            context="Viewer",
+            fuse=True,
+            **NETWORK_KWARGS,
+        ),
+        network,
+        move_network,
+    )
 
 
 def test_mesh_update_matches_rebuild(mesh):
     assert_update_matches_rebuild(
         lambda: FDMeshObject(item=mesh, context="Viewer", fuse=True, **MESH_KWARGS),
-        mesh, move_mesh)
+        mesh,
+        move_mesh,
+    )
 
 
 def test_unfused_elements_match_fused_soups(network, mesh):
@@ -220,8 +248,12 @@ def test_unfused_tree_shape(network):
 
     assert [child.key for child in groups["Edges"].children] == obj.edges
     assert [child.key for child in groups["Nodes"].children] == obj.points
-    assert [child.name for child in groups["Edges"].children] == [f"Edge {edge}" for edge in obj.edges]
-    assert [child.name for child in groups["Nodes"].children] == [f"Node {node}" for node in obj.points]
+    assert [child.name for child in groups["Edges"].children] == [
+        f"Edge {edge}" for edge in obj.edges
+    ]
+    assert [child.name for child in groups["Nodes"].children] == [
+        f"Node {node}" for node in obj.points
+    ]
 
     # Only node 1 is loaded; only node 0 carries a reaction above tolerance.
     assert [child.name for child in groups["Loads"].children] == ["Load 1"]

@@ -20,6 +20,7 @@ class FaceRectangularGoal(ScalarGoal, FaceGoal):
     -----
     This goal is only applicable to quadrilateral mesh faces.
     """
+
     def __init__(
         self,
         key: int | tuple[int, int] | list[int] | list[tuple[int, int]],
@@ -30,7 +31,11 @@ class FaceRectangularGoal(ScalarGoal, FaceGoal):
         # set in init() from the mesh structure, before any prediction runs
         self.face_indices: Int[Array, "faces 4"]
 
-    def init(self, model: EquilibriumModel, structure: EquilibriumMeshStructure) -> None:
+    def init(
+        self,
+        model: EquilibriumModel,
+        structure: EquilibriumMeshStructure,
+    ) -> None:
         """
         Initialize the goal with information of a model and a structure.
         """
@@ -38,7 +43,11 @@ class FaceRectangularGoal(ScalarGoal, FaceGoal):
         face_indices = structure.faces_indexed[self.index]
         self.face_indices = face_indices[:, :4]
 
-    def prediction(self, eq_state: EquilibriumState, index: Int[Array, ""]) -> Float[Array, "1"]:
+    def prediction(
+        self,
+        eq_state: EquilibriumState,
+        index: Int[Array, ""],
+    ) -> Float[Array, "1"]:
         """
         The sum of the cosine of the internal angles of a face.
         """

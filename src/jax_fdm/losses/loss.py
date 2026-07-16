@@ -14,10 +14,12 @@ from jax_fdm.losses import Regularizer
 # Loss
 # ==========================================================================
 
+
 class Loss:
     """
     A function composed of error and regularization terms.
     """
+
     def __init__(self, *args: Error | Regularizer, name: str | None = None) -> None:
         self._error_terms: list[Error] = []
         self._regularization_terms: list[Regularizer] = []
@@ -66,7 +68,9 @@ class Loss:
 
     @terms_regularization.setter
     def terms_regularization(self, terms: Sequence[Error | Regularizer]) -> None:
-        self._regularization_terms = [term for term in terms if isinstance(term, Regularizer)]
+        self._regularization_terms = [
+            term for term in terms if isinstance(term, Regularizer)
+        ]
 
     @property
     def terms(self) -> list[Error | Regularizer]:

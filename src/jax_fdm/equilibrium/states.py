@@ -13,6 +13,7 @@ from jax_fdm.datastructures import FDNetwork
 # Equilibrium state
 # ==========================================================================
 
+
 class EquilibriumState(NamedTuple):
     xyz: Float[Array, "nodes 3"]
     residuals: Float[Array, "nodes 3"]
@@ -26,13 +27,18 @@ class EquilibriumState(NamedTuple):
 # Load state
 # ==========================================================================
 
+
 class LoadState(NamedTuple):
     nodes: Float[Array, "nodes 3"]
     edges: Float[Array, "edges 3"] | float
     faces: Float[Array, "faces 3"] | float
 
     @classmethod
-    def from_datastructure(cls, datastructure: FDNetwork | FDMesh, dtype: DTypeLike | None = None) -> "LoadState":
+    def from_datastructure(
+        cls,
+        datastructure: FDNetwork | FDMesh,
+        dtype: DTypeLike | None = None,
+    ) -> "LoadState":
         """
         Create a load state from a datastructure.
         """
@@ -51,14 +57,13 @@ class LoadState(NamedTuple):
             if jnp.allclose(loads_faces, 0.0):
                 loads_faces = 0.0
 
-        return cls(nodes=loads_nodes,
-                   edges=loads_edges,
-                   faces=loads_faces)
+        return cls(nodes=loads_nodes, edges=loads_edges, faces=loads_faces)
 
 
 # ==========================================================================
 # Parameter state
 # ==========================================================================
+
 
 class EquilibriumParametersState(NamedTuple):
     q: Float[Array, "edges"]
@@ -86,6 +91,8 @@ class EquilibriumParametersState(NamedTuple):
         if dtype is None:
             dtype = DTYPE_JAX
 
-        return cls(q=jnp.asarray(q, dtype),
-                   xyz_fixed=jnp.asarray(xyz_fixed, dtype),
-                   loads=LoadState.from_datastructure(datastructure))
+        return cls(
+            q=jnp.asarray(q, dtype),
+            xyz_fixed=jnp.asarray(xyz_fixed, dtype),
+            loads=LoadState.from_datastructure(datastructure),
+        )

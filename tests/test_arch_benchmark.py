@@ -49,6 +49,7 @@ QMIN, QMAX = -1000.0, -1e-3
 # Analytical solution (paper Eqs. A.2 and A.3)
 # ==============================================================================
 
+
 def _rise_analytical(span):
     """
     Closed-form optimal rise z*_max = sqrt(3) * d / 4.
@@ -60,12 +61,13 @@ def _loadpath_analytical(span, rho):
     """
     Closed-form optimal load path Omega* = rho * d^2 / sqrt(3).
     """
-    return rho * span ** 2 / sqrt(3.0)
+    return rho * span**2 / sqrt(3.0)
 
 
 # ==============================================================================
 # Helpers
 # ==============================================================================
+
 
 def _arch_network(num_vertices):
     """
@@ -104,12 +106,14 @@ def _optimize_arch(num_vertices):
     parameters = [EdgeGroupForceDensityParameter(list(network.edges()), QMIN, QMAX)]
     loss = Loss(PredictionError([NetworkLoadPathGoal()]))
 
-    optimized = constrained_fdm(network,
-                                optimizer=LBFGSB(),
-                                loss=loss,
-                                parameters=parameters,
-                                maxiter=100,
-                                tol=1e-9)
+    optimized = constrained_fdm(
+        network,
+        optimizer=LBFGSB(),
+        loss=loss,
+        parameters=parameters,
+        maxiter=100,
+        tol=1e-9,
+    )
 
     rise = max(optimized.nodes_attribute("y"), key=fabs)
 
@@ -127,10 +131,14 @@ def _relative_error(numerical, analytical):
 # Tests
 # ==============================================================================
 
-@pytest.mark.parametrize("num_vertices,rise_tol,lp_tol", [
-    (100, 1e-3, 1.1e-2),
-    (500, 1e-3, 3e-3),
-])
+
+@pytest.mark.parametrize(
+    "num_vertices,rise_tol,lp_tol",
+    [
+        (100, 1e-3, 1.1e-2),
+        (500, 1e-3, 3e-3),
+    ],
+)
 def test_arch_matches_analytical(num_vertices, rise_tol, lp_tol):
     """
     The optimized arch meets the closed-form rise and load path.
@@ -151,7 +159,8 @@ def test_arch_error_decreases_with_discretization():
     """
     lp_target = _loadpath_analytical(SPAN, RHO)
 
-    errors = [_relative_error(_optimize_arch(nv)[1], lp_target)
-              for nv in (5, 50, 100, 500)]
+    errors = [
+        _relative_error(_optimize_arch(nv)[1], lp_target) for nv in (5, 50, 100, 500)
+    ]
 
     assert all(later < earlier for earlier, later in zip(errors, errors[1:]))

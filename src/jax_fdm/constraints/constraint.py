@@ -17,13 +17,16 @@ class Constraint:
     """
     Base class for all constraints.
     """
+
     def __init__(
         self,
         key: int | tuple[int, int] | list[int] | list[tuple[int, int]],
         bound_low: float | Float[Array, "..."] | None = None,
         bound_up: float | Float[Array, "..."] | None = None,
     ) -> None:
-        self._key: int | tuple[int, int] | list[int] | list[tuple[int, int]] | None = None
+        self._key: int | tuple[int, int] | list[int] | list[tuple[int, int]] | None = (
+            None
+        )
         self.key = key
 
         # normalized to a finite bound or +/- inf by the setters; never None after
@@ -44,13 +47,17 @@ class Constraint:
         return self._key
 
     @key.setter
-    def key(self, key: int | tuple[int, int] | list[int] | list[tuple[int, int]]) -> None:
+    def key(
+        self,
+        key: int | tuple[int, int] | list[int] | list[tuple[int, int]],
+    ) -> None:
         self._key = key
 
     @property
     def index(self) -> Int[np.ndarray, "elements"]:
         """
-        The index of the constraint key in the canonical ordering of an equilibrium structure.
+        The index of the constraint key in the canonical ordering of an
+        equilibrium structure.
         """
         return self._index
 
@@ -61,7 +68,9 @@ class Constraint:
         self._index = np.asarray(index)
 
     @staticmethod
-    def _bound_setter(bound: float | Float[Array, "..."]) -> float | Float[Array, "..."]:
+    def _bound_setter(
+        bound: float | Float[Array, "..."],
+    ) -> float | Float[Array, "..."]:
         """
         Normalize a bound to a scalar float or a flat jax array.
         """
@@ -102,7 +111,7 @@ class Constraint:
         self,
         model: EquilibriumModel,
         structure: EquilibriumStructure,
-        ) -> int | tuple[int, ...]:
+    ) -> int | tuple[int, ...]:
         """
         Get the index in the model of the constraint key.
         """
@@ -122,7 +131,7 @@ class Constraint:
         self,
         model: EquilibriumModel,
         structure: EquilibriumStructure,
-        ) -> None:
+    ) -> None:
         """
         Initialize the constraint with information from an equilibrium model.
         """
@@ -133,13 +142,13 @@ class Constraint:
         params: EquilibriumParametersState,
         model: EquilibriumModel,
         structure: EquilibriumStructure,
-        ) -> Float[Array, "elements"]:
+    ) -> Float[Array, "elements"]:
         """
         The called constraint function.
         """
         eqstate = model(params, structure)
-        # self.index is Optional by declaration but always populated by init() before __call__ runs
-        constraint = vmap(self.constraint, in_axes=(None, 0))(eqstate, self.index)  # pyright: ignore[reportArgumentType]  # self.index is a numpy index array mapped to a jax scalar by vmap
+        # self.index is a numpy index array mapped to a jax scalar by vmap
+        constraint = vmap(self.constraint, in_axes=(None, 0))(eqstate, self.index)  # pyright: ignore[reportArgumentType]
 
         return jnp.ravel(constraint)
 
@@ -147,7 +156,7 @@ class Constraint:
         self,
         eq_state: EquilibriumState,
         index: Int[Array, "..."],
-        ) -> Float[Array, "..."]:
+    ) -> Float[Array, "..."]:
         """
         The constraint function.
         """

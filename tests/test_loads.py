@@ -19,7 +19,13 @@ PZ = 2.0
 # A general load vector with all three components nonzero, so the local-load
 # tests exercise the in-plane (x, y) terms and not only the normal (z) term.
 LOAD = [0.5, -0.3, 2.0]
-MESHES = ["meshgrid_mesh", "meshgrid_mesh_fine", "tetra_mesh", "octa_mesh", "irregular_mesh"]
+MESHES = [
+    "meshgrid_mesh",
+    "meshgrid_mesh_fine",
+    "tetra_mesh",
+    "octa_mesh",
+    "irregular_mesh",
+]
 
 
 def _structure_xyz(mesh):
@@ -60,6 +66,7 @@ def _total_edge_length(structure, xyz):
 # ==============================================================================
 # Load conservation invariants (golden-free, COMPAS-free)
 # ==============================================================================
+
 
 @pytest.mark.parametrize("mesh_name", MESHES)
 def test_faces_load_resultant_conserved(mesh_name, request):
@@ -128,6 +135,7 @@ def test_local_faces_load_preserves_input_components(mesh_name, request):
 # ==============================================================================
 # COMPAS cross-check (deletable scaffolding)
 # ==============================================================================
+
 
 @pytest.mark.compas_xcheck
 @pytest.mark.parametrize("mesh_name", MESHES)

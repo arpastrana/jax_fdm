@@ -9,11 +9,12 @@ class NodeSegmentGoal(NodeLineGoal):
     """
     Pulls the xyz position of a node to a target line ray.
     """
+
     def goal(
         self,
         target: Float[Array, "2 3"],
-        prediction: Float[Array, "3"]
-        ) -> Float[Array, "3"]:
+        prediction: Float[Array, "3"],
+    ) -> Float[Array, "3"]:
         """
         The closes point on the target seegment.
         """

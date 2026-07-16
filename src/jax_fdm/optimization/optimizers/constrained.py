@@ -1,6 +1,7 @@
 """
 A gradient-based optimizer that deals with equality and inequality constraints.
 """
+
 from functools import partial
 from typing import TYPE_CHECKING
 from typing import Any
@@ -26,10 +27,12 @@ if TYPE_CHECKING:
 # Constrained optimizer
 # ========== ===============================================================
 
+
 class ConstrainedOptimizer(Optimizer):
     """
     A gradient-based optimizer that handles constraints.
     """
+
     def constraints(
         self,
         constraints: list["Constraint"],
@@ -52,15 +55,16 @@ class ConstrainedOptimizer(Optimizer):
 
         clist = []
         for constraint in collections:
-
             # initialize constraint
             constraint.init(model, structure)
 
             # gather information for scipy constraint
-            fun = partial(self.constraint,
-                          constraint=constraint,
-                          model=model,
-                          structure=structure)
+            fun = partial(
+                self.constraint,
+                constraint=constraint,
+                model=model,
+                structure=structure,
+            )
 
             fun = jit(fun)
             jac = jit(jacfwd(fun))
@@ -73,7 +77,9 @@ class ConstrainedOptimizer(Optimizer):
             jac(params_opt)
 
             # store non linear constraint
-            clist.append(NonlinearConstraint(fun=fun, jac=jac, lb=lb, ub=ub))  # pyright: ignore[reportArgumentType]  # scipy's NonlinearConstraint stub types `jac` as a literal string mode selector; a callable Jacobian is also valid per scipy docs
+            # scipy's NonlinearConstraint stub types `jac` as a literal string
+            # mode selector; a callable Jacobian is also valid per scipy docs
+            clist.append(NonlinearConstraint(fun=fun, jac=jac, lb=lb, ub=ub))  # pyright: ignore[reportArgumentType]
 
         return clist
 

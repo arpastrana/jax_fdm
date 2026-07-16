@@ -9,7 +9,8 @@ from jax_fdm.goals.vertex import VertexNormalAngleGoal
 
 class VertexTangentAngleGoal(VertexNormalAngleGoal):
     """
-    Reach a target value for the angle formed by the vertex tangent and a reference vector.
+    Reach a target value for the angle formed by the vertex tangent and a reference
+    vector.
 
     The tangent angle is calculated as 90 degrees minus the vertex normal
     angle, so it is signed and spans [-pi / 2, pi / 2]: positive when the
@@ -18,6 +19,7 @@ class VertexTangentAngleGoal(VertexNormalAngleGoal):
     The sign follows the winding of the mesh faces, which must be unified;
     see the notes of `VertexNormalAngleGoal`.
     """
+
     def __init__(
         self,
         key: int | tuple[int, int] | list[int] | list[tuple[int, int]],
@@ -27,7 +29,11 @@ class VertexTangentAngleGoal(VertexNormalAngleGoal):
     ) -> None:
         super().__init__(key=key, vector=vector, target=target, weight=weight)
 
-    def prediction(self, eq_state: EquilibriumState, index: Int[Array, ""]) -> Float[Array, "1"]:
+    def prediction(
+        self,
+        eq_state: EquilibriumState,
+        index: Int[Array, ""],
+    ) -> Float[Array, "1"]:
         """
         Returns the angle between the vertex tangent and the reference vector.
         """

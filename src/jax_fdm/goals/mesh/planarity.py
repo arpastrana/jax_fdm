@@ -26,19 +26,32 @@ class MeshPlanarityGoal(ScalarGoal, MeshGoal):
     This function is experimental and it is unclear whether it works correctly
     for padded faces or faces with more than 4 vertices. Use with caution!
     """
-    def __init__(self, target: float | Float[Array, "..."] = 0.0, weight: float = 1.0) -> None:
+
+    def __init__(
+        self,
+        target: float | Float[Array, "..."] = 0.0,
+        weight: float = 1.0,
+    ) -> None:
         super().__init__(key=-1, target=target, weight=weight)
         # set in init() from the mesh structure, before any prediction runs
         self.faces_indexed: Int[Array, "faces vertices"]
 
-    def init(self, model: EquilibriumModel, structure: EquilibriumMeshStructure) -> None:
+    def init(
+        self,
+        model: EquilibriumModel,
+        structure: EquilibriumMeshStructure,
+    ) -> None:
         """
         Initialize the goal with information of a model and a structure.
         """
         super().init(model, structure)
         self.faces_indexed = structure.faces_indexed
 
-    def prediction(self, eq_state: EquilibriumState, index: Int[Array, ""]) -> Float[Array, "1"]:
+    def prediction(
+        self,
+        eq_state: EquilibriumState,
+        index: Int[Array, ""],
+    ) -> Float[Array, "1"]:
         """
         The average planarity of the mesh faces.
         """
@@ -51,7 +64,11 @@ class MeshPlanarityGoal(ScalarGoal, MeshGoal):
 # Planarity
 # ==========================================================================
 
-def face_xyz(face: Int[Array, "vertices"], xyz: Float[Array, "nodes 3"]) -> Float[Array, "vertices 3"]:
+
+def face_xyz(
+    face: Int[Array, "vertices"],
+    xyz: Float[Array, "nodes 3"],
+) -> Float[Array, "vertices 3"]:
     """
     Get the xyz coordinates of a face from the xyz vertices array.
 
@@ -68,7 +85,10 @@ def face_xyz(face: Int[Array, "vertices"], xyz: Float[Array, "nodes 3"]) -> Floa
     return vmap(jnp.where, in_axes=(0, 0, None))(face >= 0, xyz_face, xyz_repl)
 
 
-def face_planarity(face: Int[Array, "vertices"], xyz: Float[Array, "nodes 3"]) -> Float[Array, ""]:
+def face_planarity(
+    face: Int[Array, "vertices"],
+    xyz: Float[Array, "nodes 3"],
+) -> Float[Array, ""]:
     """
     Calculate face planarity according to the number of vertices in the face.
 
@@ -80,12 +100,19 @@ def face_planarity(face: Int[Array, "vertices"], xyz: Float[Array, "nodes 3"]) -
     sum_indices = jnp.sum(valid_face_indices)
 
     fxyz = face_xyz(face, xyz)
-    planarity = jnp.where(sum_indices == 3, planarity_triangle(fxyz), planarity_polygon(fxyz))
+    planarity = jnp.where(
+        sum_indices == 3,
+        planarity_triangle(fxyz),
+        planarity_polygon(fxyz),
+    )
 
     return planarity
 
 
-def faces_planarity(faces: Int[Array, "faces vertices"], xyz: Float[Array, "nodes 3"]) -> Float[Array, "faces"]:
+def faces_planarity(
+    faces: Int[Array, "faces vertices"],
+    xyz: Float[Array, "nodes 3"],
+) -> Float[Array, "faces"]:
     """
     Compute the planarity of a set of mesh faces.
     """

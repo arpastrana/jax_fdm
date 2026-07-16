@@ -25,11 +25,15 @@ def test_lcs_polygon_world_xyz():
 
     load_lcs = jnp.array(load * load_scale) @ lcs
     load_target = WORLD_Z * load_scale
-    assert jnp.allclose(load_lcs, load_target), f"lcs:\n{load_lcs}\nlcs_target:\n{load_target}"
+    assert jnp.allclose(load_lcs, load_target), (
+        f"lcs:\n{load_lcs}\nlcs_target:\n{load_target}"
+    )
 
     load_lcs = -jnp.array(load * load_scale) @ lcs
     load_target = load_target * -1.0
-    assert jnp.allclose(load_lcs, load_target), f"lcs:\n{load_lcs}\nlcs_target:\n{load_target}"
+    assert jnp.allclose(load_lcs, load_target), (
+        f"lcs:\n{load_lcs}\nlcs_target:\n{load_target}"
+    )
 
 
 def test_lcs_polygon_world_zx():
@@ -44,11 +48,15 @@ def test_lcs_polygon_world_zx():
 
     load_lcs = jnp.array(load * load_scale) @ lcs
     load_target = -WORLD_Y * load_scale
-    assert jnp.allclose(load_lcs, load_target), f"lcs:\n{load_lcs}\nlcs_target:\n{load_target}"
+    assert jnp.allclose(load_lcs, load_target), (
+        f"lcs:\n{load_lcs}\nlcs_target:\n{load_target}"
+    )
 
     load_lcs = -jnp.array(load * load_scale) @ lcs
     load_target = load_target * -1.0
-    assert jnp.allclose(load_lcs, load_target), f"lcs:\n{load_lcs}\nlcs_target:\n{load_target}"
+    assert jnp.allclose(load_lcs, load_target), (
+        f"lcs:\n{load_lcs}\nlcs_target:\n{load_target}"
+    )
 
 
 def test_lcs_polygon_world_yz():
@@ -63,10 +71,14 @@ def test_lcs_polygon_world_yz():
 
     load_lcs = jnp.array(load * load_scale) @ lcs
     load_target = WORLD_X * load_scale
-    assert jnp.allclose(load_lcs, load_target), f"lcs:\n{load_lcs}\nlcs_target:\n{load_target}"
+    assert jnp.allclose(load_lcs, load_target), (
+        f"lcs:\n{load_lcs}\nlcs_target:\n{load_target}"
+    )
     load_lcs = -jnp.array(load * load_scale) @ lcs
     load_target = load_target * -1.0
-    assert jnp.allclose(load_lcs, load_target), f"lcs:\n{load_lcs}\nlcs_target:\n{load_target}"
+    assert jnp.allclose(load_lcs, load_target), (
+        f"lcs:\n{load_lcs}\nlcs_target:\n{load_target}"
+    )
 
 
 def test_lcs_line_on_x():

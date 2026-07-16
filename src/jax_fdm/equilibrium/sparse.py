@@ -1,6 +1,7 @@
 """
 NOTE: Sparse solver does not support forward mode auto-differentiation yet.
 """
+
 from collections.abc import Callable
 
 import jax
@@ -30,6 +31,7 @@ SystemSolution = Float[Array, "unknowns rhs"]
 # ==========================================================================
 # Sparse linear solver on GPU
 # ==========================================================================
+
 
 def spsolve_gpu_ravel(A: SystemMatrixLHS, b: SystemMatrixRHS) -> SystemSolution:
     """
@@ -94,26 +96,31 @@ spsolve_gpu = spsolve_gpu_ravel
 # Sparse linear solver on CPU
 # ==========================================================================
 
+
 def spsolve_cpu(A: SystemMatrixLHS, b: SystemMatrixRHS) -> SystemSolution:
     """
     A wrapper around scipy sparse linear solver that acts as a JAX pure callback.
     """
+
     def callback(data, indices, indptr, _b):
         _A = csc_matrix((data, indices, indptr))
         return spsolve_scipy(_A, _b)
 
-    xk = jax.pure_callback(callback,  # callback function
-                           b,  # return type is b
-                           A.data,  # callback function arguments from here on
-                           A.indices,
-                           A.indptr,
-                           b)
+    xk = jax.pure_callback(
+        callback,  # callback function
+        b,  # return type is b
+        A.data,  # callback function arguments from here on
+        A.indices,
+        A.indptr,
+        b,
+    )
     return xk
 
 
 # ==========================================================================
 # Register sparse linear solvers
 # ==========================================================================
+
 
 def register_sparse_solver(solvers: dict[str, Callable]) -> Callable:
     """
@@ -128,8 +135,7 @@ def register_sparse_solver(solvers: dict[str, Callable]) -> Callable:
     return sparse_solver
 
 
-solvers = {"cpu": spsolve_cpu,
-           "gpu": spsolve_gpu}
+solvers = {"cpu": spsolve_cpu, "gpu": spsolve_gpu}
 
 spsolve = register_sparse_solver(solvers)
 
@@ -137,6 +143,7 @@ spsolve = register_sparse_solver(solvers)
 # ==========================================================================
 # Define sparse linear solver
 # ==========================================================================
+
 
 @jax.custom_vjp
 def sparse_solve(A: SystemMatrixLHS, b: SystemMatrixRHS) -> SystemSolution:
@@ -155,7 +162,10 @@ def sparse_solve(A: SystemMatrixLHS, b: SystemMatrixRHS) -> SystemSolution:
 SparseSolveResidual = tuple[SystemSolution, SystemMatrixLHS, SystemMatrixRHS]
 
 
-def sparse_solve_fwd(A: SystemMatrixLHS, b: SystemMatrixRHS) -> tuple[SystemSolution, SparseSolveResidual]:
+def sparse_solve_fwd(
+    A: SystemMatrixLHS,
+    b: SystemMatrixRHS,
+) -> tuple[SystemSolution, SparseSolveResidual]:
     """
     Forward pass of the sparse linear solver.
 
@@ -166,7 +176,10 @@ def sparse_solve_fwd(A: SystemMatrixLHS, b: SystemMatrixRHS) -> tuple[SystemSolu
     return xk, (xk, A, b)
 
 
-def sparse_solve_bwd(res: SparseSolveResidual, g: SystemMatrixRHS) -> tuple[SystemMatrixLHS, SystemMatrixRHS]:
+def sparse_solve_bwd(
+    res: SparseSolveResidual,
+    g: SystemMatrixRHS,
+) -> tuple[SystemMatrixLHS, SystemMatrixRHS]:
     """
     Backward pass of the sparse linear solver.
     """
@@ -194,7 +207,12 @@ def sparse_solve_bwd(res: SparseSolveResidual, g: SystemMatrixRHS) -> tuple[Syst
 # Sparse matrix helpers
 # ==========================================================================
 
-def blockdiag_matrix_sparse(A: SystemMatrixLHS, num: int = 2, format: type[CSC] = CSC) -> Float[CSC, "equations_blocks unknowns_blocks"]:
+
+def blockdiag_matrix_sparse(
+    A: SystemMatrixLHS,
+    num: int = 2,
+    format: type[CSC] = CSC,
+) -> Float[CSC, "equations_blocks unknowns_blocks"]:
     """
     Build a block diagonal sparse matrix in the input format by repeating
     a square sparse matrix a prescribed number of times.
@@ -226,8 +244,7 @@ def blockdiag_matrix_sparse(A: SystemMatrixLHS, num: int = 2, format: type[CSC] 
     indices = jnp.concatenate(indices)
     data = jnp.concatenate(data)
 
-    return format((data, indices, indptr),
-                  shape=(ncols*num, nrows*num))
+    return format((data, indices, indptr), shape=(ncols * num, nrows * num))
 
 
 # ==========================================================================
@@ -243,15 +260,15 @@ sparse_solve.defvjp(sparse_solve_fwd, sparse_solve_bwd)
 
 # Simple single-entry cache for SuperLU factorization
 # Structure: {'factorization': SuperLU_object, 'session_id': int}
-_SPLU_CACHE = {'factorization': None, 'session_id': 0}
+_SPLU_CACHE = {"factorization": None, "session_id": 0}
 
 
 def splu_clear() -> None:
     """
     Clear the SPLU cache to free memory.
     """
-    _SPLU_CACHE['session_id'] = 0
-    _SPLU_CACHE['factorization'] = None
+    _SPLU_CACHE["session_id"] = 0
+    _SPLU_CACHE["factorization"] = None
 
 
 def splu_cpu(A: SystemMatrixLHS, session_id: int | None = None) -> Int[Array, ""]:
@@ -292,8 +309,8 @@ def splu_cpu(A: SystemMatrixLHS, session_id: int | None = None) -> Int[Array, ""
         _A_fact = splu_scipy(_A)
 
         # Store factorization (overwrite any previous)
-        _SPLU_CACHE['factorization'] = _A_fact
-        _SPLU_CACHE['session_id'] = sid
+        _SPLU_CACHE["factorization"] = _A_fact
+        _SPLU_CACHE["session_id"] = sid
 
         # Return the session ID
         return np.array(sid, dtype=np.int64)
@@ -306,7 +323,7 @@ def splu_cpu(A: SystemMatrixLHS, session_id: int | None = None) -> Int[Array, ""
         A.indices,
         A.indptr,
         jnp.array(A.shape),
-        jnp.array(session_id, dtype=jnp.int64)
+        jnp.array(session_id, dtype=jnp.int64),
     )
 
     return sid
@@ -323,20 +340,22 @@ def splu_solve_cpu(session_id: Int[Array, ""], b: SystemMatrixRHS) -> SystemSolu
     b : array
         The right-hand side vector or matrix.
     """
+
     def callback(sid, _b):
         # Convert to numpy
         sid = int(np.asarray(sid))
         _b = np.asarray(_b)
 
         # Check that we're using the correct session
-        if _SPLU_CACHE['session_id'] != sid:
+        if _SPLU_CACHE["session_id"] != sid:
             raise ValueError(
-                f"Session mismatch: expected {sid}, but cache has {_SPLU_CACHE['session_id']}. "
-                "Make sure to call splu_cpu before splu_solve_cpu in the same session."
+                f"Session mismatch: expected {sid}, "
+                f"but cache has {_SPLU_CACHE['session_id']}. "
+                "Make sure to call splu_cpu before splu_solve_cpu in the same session.",
             )
 
         # Retrieve factorization from cache
-        _A_fact = _SPLU_CACHE['factorization']
+        _A_fact = _SPLU_CACHE["factorization"]
         if _A_fact is None:
             raise ValueError("No factorization found in cache. Call splu_cpu first.")
 

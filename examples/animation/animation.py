@@ -39,6 +39,7 @@ rotate_while_animate = True
 # Helper functions
 # ==========================================================================
 
+
 def lines_draw(network, func_name):
     lines = {}
     for node in network.nodes():
@@ -104,22 +105,32 @@ if modify_view:
 
 # draw network as plain geometry (keep a handle on the copy to animate it)
 network_plain = network.copy(cls=Network)
-viewer.add(network_plain,
-           show_points=False,
-           linewidth=5.0,
-           linecolor=Color.grey().darkened())
+viewer.add(
+    network_plain,
+    show_points=False,
+    linewidth=5.0,
+    linecolor=Color.grey().darkened(),
+)
 
 # draw supports
 support_objs = {}
 for node in network.nodes_supports():
     x, y, z = network.node_coordinates(node)
-    support_objs[node] = viewer.add(Point(x, y, z), pointcolor=Color.green(), pointsize=20)
+    support_objs[node] = viewer.add(
+        Point(x, y, z),
+        pointcolor=Color.green(),
+        pointsize=20,
+    )
 
 # draw loads
 loads = loads_draw(network)
 load_objs = {}
 for node, load in loads.items():
-    load_objs[node] = viewer.add(load, linewidth=4.0, linecolor=Color.green().darkened())
+    load_objs[node] = viewer.add(
+        load,
+        linewidth=4.0,
+        linecolor=Color.green().darkened(),
+    )
 
 # draw residual forces
 residuals = residuals_draw(network)
@@ -165,6 +176,7 @@ if animate:
 
         if rotate_while_animate:
             viewer.renderer.camera.rotate(dx=1, dy=0)
+
 
 # show le crème
 viewer.show()

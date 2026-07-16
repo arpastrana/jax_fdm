@@ -1,6 +1,7 @@
 """
 A collection of scipy-powered, gradient-free optimizers.
 """
+
 from collections.abc import Callable
 from time import perf_counter
 from typing import TYPE_CHECKING
@@ -30,10 +31,12 @@ if TYPE_CHECKING:
 # Optimizers
 # ==========================================================================
 
+
 class GradientFreeOptimizer(Optimizer):
     """
     An optimizer based on evolutionary principles.
     """
+
     def problem(
         self,
         model: EquilibriumModel,
@@ -50,15 +53,21 @@ class GradientFreeOptimizer(Optimizer):
         """
         Set up an optimization problem.
         """
-        # TODO: Merge this method with that of the upstream Optimizer() to avoid function duplication
+        # TODO: Merge this method with that of the upstream Optimizer() to avoid
+        # function duplication
         if not parameters:
-            parameters = [EdgeForceDensityParameter(edge) for edge in datastructure.edges()]
+            parameters = [
+                EdgeForceDensityParameter(edge) for edge in datastructure.edges()
+            ]
 
         self.pm = ParameterManager(model, parameters, structure, datastructure)
         x = self.parameters_value()
 
         # message
-        print(f"\n***Constrained form finding***\nParameters: {len(x)} \tGoals: {loss.number_of_goals()}")
+        print(
+            f"\n***Constrained form finding***\n"
+            f"Parameters: {len(x)} \tGoals: {loss.number_of_goals()}",
+        )
 
         # parameter bounds
         bounds = self.parameters_bounds()
@@ -68,7 +77,10 @@ class GradientFreeOptimizer(Optimizer):
 
         # build goal collections
         self.goals(loss, model, structure)
-        print(f"\tGoal collections: {loss.number_of_collections()}\n\tRegularizers: {loss.number_of_regularizers()}")
+        print(
+            f"\tGoal collections: {loss.number_of_collections()}\n"
+            f"\tRegularizers: {loss.number_of_regularizers()}",
+        )
 
         # load matters
         loads = LoadState.from_datastructure(datastructure)
@@ -90,15 +102,17 @@ class GradientFreeOptimizer(Optimizer):
         # optimization options
         options = self.options(extra={"maxiter": maxiter})
 
-        return OptProblem(fun=loss_fn,
-                          jac=False,
-                          hess=None,
-                          method=self.name,
-                          x0=x,
-                          tol=tol,
-                          bounds=bounds,
-                          callback=callback,
-                          options=options)
+        return OptProblem(
+            fun=loss_fn,
+            jac=False,
+            hess=None,
+            method=self.name,
+            x0=x,
+            tol=tol,
+            bounds=bounds,
+            callback=callback,
+            options=options,
+        )
 
     def solve(self, opt_problem: OptProblem) -> Float[Array, "parameters"]:
         """
@@ -112,7 +126,10 @@ class GradientFreeOptimizer(Optimizer):
         loss_val = opt_problem.fun(res_q.x)
 
         print(f"Message: {res_q.message}")
-        print(f"Final loss in {res_q.nit} iterations: {loss_val:.4} and {res_q.nfev} function evaluations")
+        print(
+            f"Final loss in {res_q.nit} iterations: {loss_val:.4} and "
+            f"{res_q.nfev} function evaluations",
+        )
         print(f"Optimization elapsed time: {end_time - start_time} seconds")
 
         return res_q.x
@@ -122,6 +139,7 @@ class Powell(GradientFreeOptimizer):
     """
     The modified Powell algorithm for gradient-free optimization with box constraints.
     """
+
     name = "Powell"
 
 
@@ -129,4 +147,5 @@ class NelderMead(GradientFreeOptimizer):
     """
     The Nelder-Mead gradient-free optimizer with box constraints.
     """
+
     name = "Nelder-Mead"

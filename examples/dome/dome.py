@@ -1,6 +1,7 @@
 """
 Solve a constrained force density problem using gradient-based optimization.
 """
+
 import os
 
 # math
@@ -80,7 +81,7 @@ network = FDNetwork()
 # Create the base geometry of the dome
 # ==========================================================================
 
-polygon = Polygon.from_sides_and_radius_xy(num_sides, diameter / 2.).points
+polygon = Polygon.from_sides_and_radius_xy(num_sides, diameter / 2.0).points
 
 rings = []
 for i in range(num_rings + 1):
@@ -97,7 +98,6 @@ for ring in rings[1:]:
 crosses = []
 edges_cross = []
 for i in range(num_sides):
-
     radial = []
     for ring in rings:
         radial.append(ring[i])
@@ -127,7 +127,7 @@ for node in network.nodes_free():
     network.node_load(node, load=[0.0, 0.0, pz])
 
 # set initial q to all edges
-q0_scale = sqrt(network.number_of_edges()) / 2.
+q0_scale = sqrt(network.number_of_edges()) / 2.0
 
 for edge in edges_rings:
     network.edge_forcedensity(edge, q0_ring)
@@ -165,22 +165,22 @@ goals = []
 # edge length goal
 for cross_ring in edges_cross_rings:
     for edge in cross_ring:
-        goal = EdgeLengthGoal(edge, target=length_target, weight=1.)
+        goal = EdgeLengthGoal(edge, target=length_target, weight=1.0)
         goals.append(goal)
 
 # edge vector goal
 vectors_goal = []
 for i, cross_ring in enumerate(edges_cross_rings):
-
     angle_delta = angle_top - angle_base
     angle = angle_base + angle_delta * (i / (num_rings - 1))
 
     print(f"Edges ring {i + 1}/{len(edges_cross_rings)}\tAngle goal: {angle:.2f}")
 
     for u, v in cross_ring:
-
         edge = (u, v)
-        xyz = network.node_coordinates(u)  # xyz of first node, assumes it is the lowermost
+        xyz = network.node_coordinates(
+            u,
+        )  # xyz of first node, assumes it is the lowermost
         normal = cross_vectors(network.edge_vector((u, v)), angle_vector)
 
         point = add_vectors(xyz, angle_vector)
@@ -201,23 +201,22 @@ loss = Loss(SquaredError(goals=goals))
 # Form-finding sweep
 # ==========================================================================
 
-sweep_configs = [{"name": "eq",
-                  "method": fdm,
-                  "msg": "\n*Form found network*",
-                  "save": True},
-                 {"name": "eq_g",
-                 "method": constrained_fdm,
-                  "msg": "\n*Constrained form found network. No constraints*",
-                  "save": True,
-                  "record": record},
-                 ]
+sweep_configs = [
+    {"name": "eq", "method": fdm, "msg": "\n*Form found network*", "save": True},
+    {
+        "name": "eq_g",
+        "method": constrained_fdm,
+        "msg": "\n*Constrained form found network. No constraints*",
+        "save": True,
+        "record": record,
+    },
+]
 
 # ==========================================================================
 # Print out stats
 # ==========================================================================
 
 for config in sweep_configs:
-
     fofin_method = config["method"]
 
     print()
@@ -230,14 +229,16 @@ for config in sweep_configs:
 
         recorder = OptimizationRecorder(optimizer) if config.get("record") else None
 
-        network = fofin_method(network,
-                               optimizer=optimizer,
-                               parameters=parameters,
-                               loss=loss,
-                               constraints=config.get("constraints", []),
-                               maxiter=maxiter,
-                               tol=tol,
-                               callback=recorder)
+        network = fofin_method(
+            network,
+            optimizer=optimizer,
+            parameters=parameters,
+            loss=loss,
+            constraints=config.get("constraints", []),
+            maxiter=maxiter,
+            tol=tol,
+            callback=recorder,
+        )
 
     # store network
     if config["save"]:
@@ -246,18 +247,18 @@ for config in sweep_configs:
     # Report stats
     network.print_stats()
 
-# ==========================================================================
-# Export optimization history
-# ==========================================================================
+    # ==========================================================================
+    # Export optimization history
+    # ==========================================================================
 
     if record and export and fofin_method != fdm:
         FILE_OUT = os.path.join(HERE, f"../data/json/{name}_history.json")
         recorder.to_json(FILE_OUT)
         print("Optimization history exported to", FILE_OUT)
 
-# ==========================================================================
-# Plot loss components
-# ==========================================================================
+    # ==========================================================================
+    # Plot loss components
+    # ==========================================================================
 
     if record and fofin_method != fdm:
         plotter = LossPlotter(loss, network, dpi=150, figsize=(8, 4))
@@ -304,7 +305,8 @@ viewer.add(
     edgecolor="force",
     reactionscale=0.1,
     show_reactions=False,
-    show_loads=False)
+    show_loads=False,
+)
 
 # view target vectors
 for vector, edge in vectors_goal:

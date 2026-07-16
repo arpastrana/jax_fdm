@@ -20,9 +20,11 @@ class NodesColinearGoal(ScalarGoal, NodeGoal):
 
     Notes
     -----
-    - The goal applies to a *collection* of ordered nodes and is therefore not collectible.
+    - The goal applies to a *collection* of ordered nodes and is therefore not
+      collectible.
     - The start and end points are assumed to be fixed.
     """
+
     def __init__(self, key: list[int], weight: float = 1.0) -> None:
         super().__init__(key=key, target=0.0, weight=weight)
         self.is_collectible = False
@@ -33,7 +35,11 @@ class NodesColinearGoal(ScalarGoal, NodeGoal):
         """
         self.index = np.atleast_2d(super().index_from_model(model, structure))
 
-    def prediction(self, eq_state: EquilibriumState, index: Int[Array, "points"]) -> Float[Array, "1"]:
+    def prediction(
+        self,
+        eq_state: EquilibriumState,
+        index: Int[Array, "points"],
+    ) -> Float[Array, "1"]:
         """
         Length-normalized colinearity energy of the ordered points.
         """
@@ -44,13 +50,16 @@ class NodesColinearGoal(ScalarGoal, NodeGoal):
 
 class NodesCurvatureGoal(ScalarGoal, NodeGoal):
     """
-    Minimize curvature energy (i.e., the turning angle) for an ordered sequence of points.
+    Minimize curvature energy (i.e., the turning angle) for an ordered sequence
+    of points.
 
     Notes
     -----
-    - The goal applies to a *collection* of ordered nodes and is therefore not collectible.
+    - The goal applies to a *collection* of ordered nodes and is therefore not
+      collectible.
     - The start and end points are assumed to be fixed.
     """
+
     def __init__(self, key: list[int], weight: float = 1.0) -> None:
         super().__init__(key=key, target=0.0, weight=weight)
         self.is_collectible = False
@@ -61,7 +70,11 @@ class NodesCurvatureGoal(ScalarGoal, NodeGoal):
         """
         self.index = np.atleast_2d(super().index_from_model(model, structure))
 
-    def prediction(self, eq_state: EquilibriumState, index: Int[Array, "points"]) -> Float[Array, "1"]:
+    def prediction(
+        self,
+        eq_state: EquilibriumState,
+        index: Int[Array, "points"],
+    ) -> Float[Array, "1"]:
         """
         Curvature energy of the ordered points.
         """

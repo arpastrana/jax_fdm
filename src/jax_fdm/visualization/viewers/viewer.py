@@ -31,7 +31,8 @@ class Viewer(CompasViewer):
     kwarg conveniences.
 
     For convenience it also accepts the ``width``, ``height`` and ``show_grid``
-    keyword arguments directly and folds them into a :class:`compas_viewer.config.Config`,
+    keyword arguments directly and folds them into a
+    :class:`compas_viewer.config.Config`,
     so the common window setup does not require building a config by hand.
     The defaults (1200x800, no grid) fit a typical laptop screen and keep the
     grid from cutting through structures that hang below ``z=0``.
@@ -49,6 +50,7 @@ class Viewer(CompasViewer):
 
     The window closes between shows while the camera carries over.
     """
+
     def __init__(
         self,
         width: int | None = None,
@@ -89,8 +91,10 @@ class Viewer(CompasViewer):
             width, height = window.width, window.height
             window.width = min(width, rect.width())
             window.height = min(height, rect.height())
-            print(f"WARNING: The window size {width}x{height} exceeds the available "
-                  f"screen space. Resizing the window to {window.width}x{window.height}")
+            print(
+                f"WARNING: The window size {width}x{height} exceeds the available "
+                f"screen space. Resizing the window to {window.width}x{window.height}",
+            )
 
     def clear(self) -> None:
         """
@@ -127,7 +131,11 @@ class Viewer(CompasViewer):
         finally:
             self.running = False
 
-    def on(self, interval: int, frames: int | None = None) -> Callable[[Callable[..., None]], Callable[..., None]]:
+    def on(
+        self,
+        interval: int,
+        frames: int | None = None,
+    ) -> Callable[[Callable[..., None]], Callable[..., None]]:
         """
         Decorate a frame callback for the animation loop.
 
@@ -138,9 +146,11 @@ class Viewer(CompasViewer):
         """
         if not self._warned_unfused_on:
             if any(isinstance(obj, FDObject) for obj in self.scene.objects):
-                print("Animating per-element scene objects updates every element buffer "
-                      "one by one, each frame; re-add with viewer.add(..., fuse=True) "
-                      "to animate on batched soups instead.")
+                print(
+                    "Animating per-element scene objects updates every element buffer "
+                    "one by one, each frame; re-add with viewer.add(..., fuse=True) "
+                    "to animate on batched soups instead.",
+                )
                 self._warned_unfused_on = True
 
         return super().on(interval, frames)
@@ -161,7 +171,8 @@ class Viewer(CompasViewer):
 
         Parameters
         ----------
-        data : :class:`compas.geometry.Geometry` | :class:`compas.datastructures.Datastructure`
+        data : :class:`compas.geometry.Geometry` |
+            :class:`compas.datastructures.Datastructure`
             The object to visualize.
         **kwargs : dict, optional
             Additional visualization options.

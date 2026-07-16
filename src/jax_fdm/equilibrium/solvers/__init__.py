@@ -5,4 +5,4 @@ from .nonlinear import *  # noqa F403
 from .least_squares import *  # noqa F403
 from .root_finding import *  # noqa F403
 
-__all__ = [name for name in dir() if not name.startswith('_')]
+__all__ = [name for name in dir() if not name.startswith("_")]

@@ -1,6 +1,7 @@
 """
 A gradient-based optimizer.
 """
+
 from collections.abc import Callable
 from dataclasses import dataclass
 from dataclasses import field
@@ -40,6 +41,7 @@ if TYPE_CHECKING:
 # Optimization problem
 # ==========================================================================
 
+
 @dataclass
 class OptProblem:
     """
@@ -51,6 +53,7 @@ class OptProblem:
     dropping ``jac``/``hess``), so each ``_minimize`` override reads the fields it
     needs and assembles its own keyword arguments rather than sharing one dict.
     """
+
     fun: Callable
     x0: Float[Array, "parameters"]
     method: str
@@ -68,6 +71,7 @@ class OptProblem:
         """
         return {f.name: getattr(self, f.name) for f in fields(self)}
 
+
 # ==========================================================================
 # Optimizer
 # ==========================================================================
@@ -79,6 +83,7 @@ class Optimizer:
     """
     Base class for all optimizers.
     """
+
     name: str = ""
 
     def __init__(self, disp: bool = False, **kwargs: Any):
@@ -128,7 +133,10 @@ class Optimizer:
         Returns the defined constraints in a format amenable to `scipy.minimize`.
         """
         if constraints:
-            print(f"\nWarning! {self.name} does not support constraints. I am ignoring them.")
+            print(
+                f"\nWarning! {self.name} does not support constraints. "
+                f"I am ignoring them.",
+            )
 
     def gradient(self, loss: Callable) -> Callable:
         """
@@ -142,9 +150,9 @@ class Optimizer:
         """
         pass
 
-# ==========================================================================
-# Loss
-# ==========================================================================
+    # ==========================================================================
+    # Loss
+    # ==========================================================================
 
     def loss(
         self,
@@ -160,9 +168,9 @@ class Optimizer:
 
         return loss(params, model, structure)
 
-# ==========================================================================
-# Goals
-# ==========================================================================
+    # ==========================================================================
+    # Goals
+    # ==========================================================================
 
     def goals(
         self,
@@ -179,9 +187,9 @@ class Optimizer:
                 goal_collection.init(model, structure)
             term.collections = goal_collections
 
-# ==========================================================================
-# Minimization
-# ==========================================================================
+    # ==========================================================================
+    # Minimization
+    # ==========================================================================
 
     def problem(
         self,
@@ -201,13 +209,18 @@ class Optimizer:
         """
         # optimization parameters
         if not parameters:
-            parameters = [EdgeForceDensityParameter(edge) for edge in datastructure.edges()]
+            parameters = [
+                EdgeForceDensityParameter(edge) for edge in datastructure.edges()
+            ]
 
         self.pm = ParameterManager(model, parameters, structure, datastructure)
         x = self.parameters_value()
 
         # message
-        print(f"\n***Constrained form finding***\nParameters: {len(x)} \tGoals: {loss.number_of_goals()}")
+        print(
+            f"\n***Constrained form finding***\n"
+            f"Parameters: {len(x)} \tGoals: {loss.number_of_goals()}",
+        )
 
         # parameter bounds
         bounds = self.parameters_bounds()
@@ -217,7 +230,10 @@ class Optimizer:
 
         # build goal collections
         self.goals(loss, model, structure)
-        print(f"\tGoal collections: {loss.number_of_collections()}\n\tRegularizers: {loss.number_of_regularizers()}")
+        print(
+            f"\tGoal collections: {loss.number_of_collections()}\n"
+            f"\tRegularizers: {loss.number_of_regularizers()}",
+        )
 
         # load matters
         loads = LoadState.from_datastructure(datastructure)
@@ -234,7 +250,9 @@ class Optimizer:
         print("Warming up the pressure cooker...")
         start_time = perf_counter()
         loss_val, grad_val = loss_and_grad_fn(x)
-        print(f"\tLoss and grad warmup time: {(perf_counter() - start_time):.4} seconds")
+        print(
+            f"\tLoss and grad warmup time: {(perf_counter() - start_time):.4} seconds",
+        )
         print(f"\tInitial loss value: {loss_val:.4}")
         print(f"\tInitial gradient norm: {jnp.linalg.norm(grad_val):.4}")
         assert jnp.sum(jnp.isnan(grad_val)) == 0, "NaNs found in gradient calculation!"
@@ -254,21 +272,26 @@ class Optimizer:
         if constraints:
             start_time = perf_counter()
             constraints = self.constraints(constraints, model, structure, x) or []
-            print(f"\tConstraints warmup time: {(perf_counter() - start_time):.4} seconds")
+            print(
+                f"\tConstraints warmup time: "
+                f"{(perf_counter() - start_time):.4} seconds",
+            )
 
         # optimization options
         options = self.options(extra={"maxiter": maxiter})
 
-        return OptProblem(fun=loss_and_grad_fn,
-                          jac=True,
-                          hess=hessian_fn,
-                          method=self.name,
-                          x0=x,
-                          tol=tol,
-                          bounds=bounds,
-                          constraints=constraints,
-                          callback=callback,
-                          options=options)
+        return OptProblem(
+            fun=loss_and_grad_fn,
+            jac=True,
+            hess=hessian_fn,
+            method=self.name,
+            x0=x,
+            tol=tol,
+            bounds=bounds,
+            constraints=constraints,
+            callback=callback,
+            options=options,
+        )
 
     def options(self, extra: dict[str, Any] | None = None) -> dict[str, Any]:
         """
@@ -308,7 +331,10 @@ class Optimizer:
 
         print(f"Message: {res_q.message}")
         print(f"Final gradient norm: {jnp.linalg.norm(grad_val):.4}")
-        print(f"Final loss in {res_q.nit} iterations: {loss_val:.4} and {res_q.nfev} function evaluations")
+        print(
+            f"Final loss in {res_q.nit} iterations: {loss_val:.4} and "
+            f"{res_q.nfev} function evaluations",
+        )
         print(f"Optimization elapsed time: {perf_counter() - start_time} seconds")
 
         return res_q.x
@@ -319,9 +345,9 @@ class Optimizer:
         """
         return minimize(**opt_problem.to_kwargs())
 
-# ==========================================================================
-# Parameters
-# ==========================================================================
+    # ==========================================================================
+    # Parameters
+    # ==========================================================================
 
     def parameters_bounds(self) -> Bounds | list[tuple[float, float]]:
         """
@@ -330,7 +356,9 @@ class Optimizer:
         Most backends consume a scipy ``Bounds`` object; ``IPOPT`` overrides this
         to return a list of ``(low, high)`` pairs instead.
         """
-        return Bounds(lb=self.pm.bounds_low, ub=self.pm.bounds_up)  # pyright: ignore[reportArgumentType]  # bounds_low/up are ndarrays; Bounds also accepts array-likes despite its float-only stub
+        # bounds_low/up are ndarrays; Bounds also accepts array-likes despite
+        # its float-only stub
+        return Bounds(lb=self.pm.bounds_low, ub=self.pm.bounds_up)  # pyright: ignore[reportArgumentType]
 
     def parameters_value(self) -> Float[Array, "parameters"]:
         """
@@ -338,7 +366,10 @@ class Optimizer:
         """
         return self.pm.parameters_value
 
-    def parameters_fdm(self, params_opt: Float[Array, "parameters"]) -> EquilibriumParametersState:
+    def parameters_fdm(
+        self,
+        params_opt: Float[Array, "parameters"],
+    ) -> EquilibriumParametersState:
         """
         Reconstruct the force density parameters from the optimization parameters.
         """
@@ -347,10 +378,6 @@ class Optimizer:
         q, xyz_fixed, loads_nodes = params
         loads_edges, loads_faces = self.loads_static
 
-        loads = LoadState(nodes=loads_nodes,
-                          edges=loads_edges,
-                          faces=loads_faces)
+        loads = LoadState(nodes=loads_nodes, edges=loads_edges, faces=loads_faces)
 
-        return EquilibriumParametersState(q=q,
-                                          xyz_fixed=xyz_fixed,
-                                          loads=loads)
+        return EquilibriumParametersState(q=q, xyz_fixed=xyz_fixed, loads=loads)

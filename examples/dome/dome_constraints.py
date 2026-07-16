@@ -1,6 +1,7 @@
 """
 Solve a constrained force density problem using gradient-based optimization.
 """
+
 # compas
 from compas.colors import Color
 from compas.datastructures import Network
@@ -70,7 +71,11 @@ angle_top = 30.0  # angle constraint, upper bound
 
 # constraint angle
 add_edge_angle_constraint = True
-angle_vector_constraint = [0.0, 0.0, 1.0]  # reference vector to compute angle to in constraint
+angle_vector_constraint = [
+    0.0,
+    0.0,
+    1.0,
+]  # reference vector to compute angle to in constraint
 angle_min = 10.0
 angle_max = 30.0
 
@@ -94,7 +99,7 @@ network = FDNetwork()
 # Create the base geometry of the dome
 # ==========================================================================
 
-polygon = Polygon.from_sides_and_radius_xy(num_sides, diameter / 2.).points
+polygon = Polygon.from_sides_and_radius_xy(num_sides, diameter / 2.0).points
 
 rings = []
 for i in range(num_rings + 1):
@@ -111,7 +116,6 @@ for ring in rings[1:]:
 crosses = []
 edges_cross = []
 for i in range(num_sides):
-
     radial = []
     for ring in rings:
         radial.append(ring[i])
@@ -209,16 +213,22 @@ constraint_angles = []
 if add_edge_angle_constraint:
     for i, ring in enumerate(edges_cross_rings):
         for edge in ring:
-            constraint = EdgeAngleConstraint(edge,
-                                             vector=angle_vector_constraint,
-                                             bound_low=angle_min,
-                                             bound_up=angle_max)
+            constraint = EdgeAngleConstraint(
+                edge,
+                vector=angle_vector_constraint,
+                bound_low=angle_min,
+                bound_up=angle_max,
+            )
             constraint_angles.append(constraint)
     constraints.extend(constraint_angles)
 
 if add_edge_length_constraint:
     for edge in network.edges():
-        constraint = EdgeLengthConstraint(edge, bound_low=length_min, bound_up=length_max)
+        constraint = EdgeLengthConstraint(
+            edge,
+            bound_low=length_min,
+            bound_up=length_max,
+        )
         constraints.append(constraint)
 
 if add_edge_force_constraint:
@@ -230,27 +240,28 @@ if add_edge_force_constraint:
 # Form-finding sweep
 # ==========================================================================
 
-sweep_configs = [{"name": "eq",
-                  "method": fdm,
-                  "msg": "\n*Form found network*",
-                  "save": False},
-                 {"name": "eq_g",
-                 "method": constrained_fdm,
-                  "msg": "\n*Constrained form found network. No constraints*",
-                  "save": True},
-                 {"name": "eq_g_c",
-                  "method": constrained_fdm,
-                  "msg": "\n*Constrained form found network. With Constraints*",
-                  "save": True,
-                  "constraints": constraints}
-                 ]
+sweep_configs = [
+    {"name": "eq", "method": fdm, "msg": "\n*Form found network*", "save": False},
+    {
+        "name": "eq_g",
+        "method": constrained_fdm,
+        "msg": "\n*Constrained form found network. No constraints*",
+        "save": True,
+    },
+    {
+        "name": "eq_g_c",
+        "method": constrained_fdm,
+        "msg": "\n*Constrained form found network. With Constraints*",
+        "save": True,
+        "constraints": constraints,
+    },
+]
 
 # ==========================================================================
 # Print out stats
 # ==========================================================================
 
 for config in sweep_configs:
-
     fofin_method = config["method"]
 
     print()
@@ -259,12 +270,14 @@ for config in sweep_configs:
     if fofin_method is fdm:
         network = fofin_method(network)
     else:
-        network = fofin_method(network,
-                               optimizer=optimizer(),
-                               parameters=parameters,
-                               loss=loss,
-                               constraints=config.get("constraints", []),
-                               maxiter=maxiter)
+        network = fofin_method(
+            network,
+            optimizer=optimizer(),
+            parameters=parameters,
+            loss=loss,
+            constraints=config.get("constraints", []),
+            maxiter=maxiter,
+        )
 
     # store network
     if config["save"]:
@@ -276,8 +289,13 @@ for config in sweep_configs:
         structure = EquilibriumStructure.from_network(network)
         params = EquilibriumParametersState.from_datastructure(network)
         eqstate = model(params, structure)
-        a = [constraint.constraint(eqstate, constraint.index_from_model(model, structure)).item()
-             for constraint in constraint_angles]
+        a = [
+            constraint.constraint(
+                eqstate,
+                constraint.index_from_model(model, structure),
+            ).item()
+            for constraint in constraint_angles
+        ]
         extra_stats = {"Angles": a}
 
     # Report stats
@@ -295,19 +313,18 @@ networks = list(networks.values())
 for i, network in enumerate(networks):
     if i == (len(networks) - 1):
         continue
-    viewer.add(network.copy(cls=Network),
-               show_points=False,
-               linewidth=1.0,
-               color=Color.grey().darkened(i * 10))
+    viewer.add(
+        network.copy(cls=Network),
+        show_points=False,
+        linewidth=1.0,
+        color=Color.grey().darkened(i * 10),
+    )
 
 network0 = networks[0]
 c_network = networks[-1]  # last network is colored
 
 # view optimized network
-viewer.add(c_network,
-           edgewidth=(0.01, 0.05),
-           edgecolor="fd",
-           loadscale=2.0)
+viewer.add(c_network, edgewidth=(0.01, 0.05), edgecolor="fd", loadscale=2.0)
 
 # show le crème
 viewer.show()

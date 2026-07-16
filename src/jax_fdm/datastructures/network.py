@@ -1,6 +1,7 @@
 """
 A force density network.
 """
+
 from collections.abc import Iterator
 from typing import Any
 
@@ -13,31 +14,28 @@ class FDNetwork(Network, FDDatastructure):
     """
     A force density network.
     """
+
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
 
         self.update_default_edge_attributes(
-            {"q": 0.0,
-            "length": 0.0,
-            "force": 0.0,
-            "px": 0.0,
-            "py": 0.0,
-            "pz": 0.0}
-            )
+            {"q": 0.0, "length": 0.0, "force": 0.0, "px": 0.0, "py": 0.0, "pz": 0.0},
+        )
 
         self.update_default_node_attributes(
-            {"x": 0.0,
-            "y": 0.0,
-            "z": 0.0,
-            "px": 0.0,
-            "py": 0.0,
-            "pz": 0.0,
-            "rx": 0.0,
-            "ry": 0.0,
-            "rz": 0.0,
-            "is_support": False}
-            )
-
+            {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0,
+                "px": 0.0,
+                "py": 0.0,
+                "pz": 0.0,
+                "rx": 0.0,
+                "ry": 0.0,
+                "rz": 0.0,
+                "is_support": False,
+            },
+        )
 
     # ----------------------------------------------------------------------
     # Constructors
@@ -70,8 +68,8 @@ class FDNetwork(Network, FDDatastructure):
     def nodes_coordinates(
         self,
         keys: list[int] | None = None,
-        axes: str = "xyz"
-        ) -> list[list[float]]:
+        axes: str = "xyz",
+    ) -> list[list[float]]:
         """
         Gets or sets the x, y, z coordinates of a list of nodes.
         """
@@ -81,8 +79,8 @@ class FDNetwork(Network, FDDatastructure):
     def nodes_fixedcoordinates(
         self,
         keys: list[int] | None = None,
-        axes: str = "xyz"
-        ) -> list[list[float]]:
+        axes: str = "xyz",
+    ) -> list[list[float]]:
         """
         Gets the x, y, z coordinates of the anchors of the network.
         """
@@ -158,7 +156,11 @@ class FDNetwork(Network, FDDatastructure):
         # data=False getter always yields plain node keys
         return self.nodes_where({"is_support": False})  # pyright: ignore[reportReturnType]
 
-    def node_load(self, key: int, load: list[float] | None = None) -> list[float] | None:
+    def node_load(
+        self,
+        key: int,
+        load: list[float] | None = None,
+    ) -> list[float] | None:
         """
         Gets or sets a load to the nodes of the network.
         """
@@ -168,8 +170,8 @@ class FDNetwork(Network, FDDatastructure):
     def nodes_loads(
         self,
         load: list[float] | None = None,
-        keys: list[int] | None = None
-        ) -> list[list[float]] | None:
+        keys: list[int] | None = None,
+    ) -> list[list[float]] | None:
         """
         Gets or sets a load to the nodes of the network.
         """

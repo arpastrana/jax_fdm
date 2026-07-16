@@ -16,6 +16,7 @@ from jax_fdm.equilibrium.solvers.types import SolverIterParams
 # JAXOPT solvers
 # ==========================================================================
 
+
 def solver_gauss_newton(
     fn: Callable,
     theta: SolverIterParams,
@@ -43,6 +44,7 @@ def solver_gauss_newton(
 # Optimistix solvers
 # ==========================================================================
 
+
 def solver_levenberg_marquardt(
     fn: Callable,
     theta: SolverIterParams,
@@ -50,7 +52,8 @@ def solver_levenberg_marquardt(
     solver_config: dict[str, Any],
 ) -> Float[Array, "nodes_free_flat"]:
     """
-    Minimize the residual of function f(theta, x) = 0 using the Levenberg Marquardt algorithm.
+    Minimize the residual of function f(theta, x) = 0 using the Levenberg Marquardt
+    algorithm.
 
     Parameters
     ----------
@@ -77,7 +80,7 @@ def solver_levenberg_marquardt(
         theta,
         x_init,
         solver_config,
-        solver_kwargs
+        solver_kwargs,
     )
 
     return solution
@@ -90,7 +93,8 @@ def solver_dogleg(
     solver_config: dict[str, Any],
 ) -> Float[Array, "nodes_free_flat"]:
     """
-    Minimize the residual of function f(theta, x) = 0 using the Dogleg trust-region algorithm.
+    Minimize the residual of function f(theta, x) = 0 using the Dogleg trust-region
+    algorithm.
     """
     solver_kwargs = {}
 
@@ -101,7 +105,7 @@ def solver_dogleg(
         theta,
         x_init,
         solver_config,
-        solver_kwargs
+        solver_kwargs,
     )
 
     return solution
@@ -110,6 +114,7 @@ def solver_dogleg(
 # ==========================================================================
 # Helper functions
 # ==========================================================================
+
 
 def is_solver_leastsquares(solver_fn: Callable) -> bool:
     """
@@ -123,10 +128,6 @@ def is_solver_leastsquares(solver_fn: Callable) -> bool:
     -------
     `True` if the solver is a least squares solver. Otherwise, `False`.
     """
-    solver_fns = {
-        solver_gauss_newton,
-        solver_levenberg_marquardt,
-        solver_dogleg
-    }
+    solver_fns = {solver_gauss_newton, solver_levenberg_marquardt, solver_dogleg}
 
     return solver_fn in solver_fns

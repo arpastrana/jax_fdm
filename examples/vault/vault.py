@@ -120,13 +120,15 @@ print(f"Load path: {round(network.loadpath(), 3)}")
 optimizer = optimizer()
 recorder = OptimizationRecorder(optimizer) if record else None
 
-network = constrained_fdm(network0,
-                          optimizer=optimizer,
-                          loss=loss,
-                          parameters=parameters,
-                          maxiter=maxiter,
-                          tol=tol,
-                          callback=recorder)
+network = constrained_fdm(
+    network0,
+    optimizer=optimizer,
+    loss=loss,
+    parameters=parameters,
+    maxiter=maxiter,
+    tol=tol,
+    callback=recorder,
+)
 
 # ==========================================================================
 # Export optimization history
@@ -165,7 +167,10 @@ directed_u = directed_hausdorff(U, V)[0]
 directed_v = directed_hausdorff(V, U)[0]
 hausdorff = max(directed_u, directed_v)
 
-print(f"Hausdorff distances: Directed U: {directed_u}\tDirected V: {directed_v}\tUndirected: {round(hausdorff, 4)}")
+print(
+    f"Hausdorff distances: Directed U: {directed_u}\t"
+    f"Directed V: {directed_v}\tUndirected: {round(hausdorff, 4)}",
+)
 
 # ==========================================================================
 # Report stats
@@ -184,16 +189,15 @@ viewer.renderer.camera.zoom(-35)  # number of steps, negative to zoom out
 viewer.renderer.camera.rotation.z = 0.0  # set rotation around z axis to zero
 
 # optimized network
-viewer.add(network,
-           edgewidth=(0.1, 0.3),
-           edgecolor="fd",
-           loadscale=5.0)
+viewer.add(network, edgewidth=(0.1, 0.3), edgecolor="fd", loadscale=5.0)
 
 # reference network as plain geometry
-viewer.add(network_target.copy(cls=Network),
-           show_points=False,
-           linewidth=1.0,
-           color=Color.grey())
+viewer.add(
+    network_target.copy(cls=Network),
+    show_points=False,
+    linewidth=1.0,
+    color=Color.grey(),
+)
 
 # draw lines to target
 for node in network.nodes():

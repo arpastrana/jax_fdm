@@ -1,6 +1,7 @@
 """
 A collection of evolutionary optimizers.
 """
+
 from typing import Any
 
 from jax import vmap
@@ -17,12 +18,14 @@ from jax_fdm.optimization.optimizers import OptProblem
 # Optimizers
 # ==========================================================================
 
+
 class DifferentialEvolution(GradientFreeOptimizer):
     """
     The a differential evolution optimizer with box constraints.
 
     This algorithm has stochastic components, so mind the seed for reproducibility.
     """
+
     name = "DifferentialEvolution"
 
     def __init__(
@@ -45,10 +48,14 @@ class DifferentialEvolution(GradientFreeOptimizer):
         """
         func = opt_problem.fun
 
-        def func_vmap(x: Float[Array, "parameters population"]) -> Float[Array, "population"]:
+        def func_vmap(
+            x: Float[Array, "parameters population"],
+        ) -> Float[Array, "population"]:
             result = vmap(func, in_axes=(1))(x)
             return result
 
+        # scipy 1.18's stub renamed `seed` to `rng`, but the installed runtime
+        # still accepts `seed`; the min supported scipy predates `rng`
         return differential_evolution(
             func=func_vmap if self.vectorized else func,
             x0=opt_problem.x0,
@@ -57,7 +64,7 @@ class DifferentialEvolution(GradientFreeOptimizer):
             callback=opt_problem.callback,
             vectorized=self.vectorized,
             polish=False,
-            seed=self.seed,  # pyright: ignore[reportCallIssue]  # scipy 1.18's stub renamed `seed` to `rng`, but the installed runtime still accepts `seed`; the min supported scipy predates `rng`
+            seed=self.seed,  # pyright: ignore[reportCallIssue]
             popsize=self.popsize,
             maxiter=opt_problem.options["maxiter"],
             disp=opt_problem.options["disp"],
@@ -73,6 +80,7 @@ class DualAnnealing(GradientFreeOptimizer):
 
     This algorithm has stochastic components, so mind the seed for reproducibility.
     """
+
     name = "DualAnnealing"
 
     def __init__(
@@ -91,9 +99,15 @@ class DualAnnealing(GradientFreeOptimizer):
         """
         fun = opt_problem.fun
 
-        def func(x: Float[Array, "parameters"], *args: Any, **kwargs: Any) -> Float[Array, ""]:
+        def func(
+            x: Float[Array, "parameters"],
+            *args: Any,
+            **kwargs: Any,
+        ) -> Float[Array, ""]:
             return fun(x)
 
+        # scipy 1.18's stub renamed `seed` to `rng`, but the installed runtime
+        # still accepts `seed`; the min supported scipy predates `rng`
         return dual_annealing(
             func=func,
             x0=opt_problem.x0,
@@ -101,6 +115,6 @@ class DualAnnealing(GradientFreeOptimizer):
             callback=opt_problem.callback,
             no_local_search=self.no_local_search,
             maxiter=opt_problem.options["maxiter"],
-            args=(None, ),
-            seed=self.seed,  # pyright: ignore[reportCallIssue]  # scipy 1.18's stub renamed `seed` to `rng`, but the installed runtime still accepts `seed`; the min supported scipy predates `rng`
+            args=(None,),
+            seed=self.seed,  # pyright: ignore[reportCallIssue]
         )

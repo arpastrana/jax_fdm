@@ -44,7 +44,11 @@ class FastBufferManager(BufferManager):
 
             # Elements are not updated: topology is fixed at add time.
             positions, colors, _ = data
-            self._write_buffers(data_type, index, *self._pack_vertex_arrays(positions, colors))
+            self._write_buffers(
+                data_type,
+                index,
+                *self._pack_vertex_arrays(positions, colors),
+            )
 
     @staticmethod
     def _refresh_data(obj: Any, data_type: str) -> Any:
@@ -100,7 +104,15 @@ class FastBufferManager(BufferManager):
         start_idx = int(matches[0]) if len(matches) else 0
 
         pos_byte_offset = start_idx * 3 * 4  # 3 floats per vertex * 4 bytes per float
-        update_vertex_buffer(pos_array, self.buffer_ids[data_type]["positions"], offset=pos_byte_offset)
+        update_vertex_buffer(
+            pos_array,
+            self.buffer_ids[data_type]["positions"],
+            offset=pos_byte_offset,
+        )
 
         col_byte_offset = start_idx * 4 * 4  # 4 floats per color * 4 bytes per float
-        update_vertex_buffer(col_array, self.buffer_ids[data_type]["colors"], offset=col_byte_offset)
+        update_vertex_buffer(
+            col_array,
+            self.buffer_ids[data_type]["colors"],
+            offset=col_byte_offset,
+        )

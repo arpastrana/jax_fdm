@@ -9,6 +9,7 @@ class Regularizer:
     """
     A regularizer is a function that penalizes the parameters of a model.
     """
+
     def __init__(self, alpha: float, name: str | None = None) -> None:
         self.alpha = alpha
         self.name = name or self.__class__.__name__
@@ -24,6 +25,7 @@ class L2Regularizer(Regularizer):
     """
     A regularizer that penalizes the L2 norm of the force densities.
     """
+
     def __call__(self, params: EquilibriumParametersState) -> Float[Array, ""]:
         """
         The regularization value.

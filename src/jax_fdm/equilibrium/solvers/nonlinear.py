@@ -14,6 +14,7 @@ from jax_fdm.equilibrium.solvers.types import SolverIterParams
 # Custom VJP via implicit differentiation
 # ==========================================================================
 
+
 @partial(custom_vjp, nondiff_argnums=(0, 1, 2))
 def solver_nonlinear_implicit(
     solver: Callable,
@@ -34,7 +35,10 @@ def nonlinear_fwd(
     fn: Callable,
     theta: SolverIterParams,
     x_init: Float[Array, "nodes_free_flat"],
-) -> tuple[Float[Array, "nodes_free_flat"], tuple[SolverIterParams, Float[Array, "nodes_free_flat"]]]:
+) -> tuple[
+    Float[Array, "nodes_free_flat"],
+    tuple[SolverIterParams, Float[Array, "nodes_free_flat"]],
+]:
     """
     The forward pass of an iterative least squares solver.
 
@@ -53,7 +57,9 @@ def nonlinear_fwd(
     """
     x_star = solver_nonlinear_implicit(solver, solver_config, fn, theta, x_init)
 
-    return x_star, (theta, x_star)  # pyright: ignore[reportReturnType]  # custom_vjp wrapper's return type is opaque to pyright; x_star is a jax.Array at runtime
+    # the custom_vjp wrapper's return type is opaque to pyright; x_star is a
+    # jax.Array at runtime
+    return x_star, (theta, x_star)  # pyright: ignore[reportReturnType]
 
 
 def nonlinear_bwd(

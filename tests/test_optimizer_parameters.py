@@ -25,13 +25,21 @@ from jax_fdm.parameters import NodeGroupSupportYParameter
 from jax_fdm.parameters import NodeGroupSupportZParameter
 from jax_fdm.parameters import NodeLoadZParameter
 
-COORDINATE_GOAL = {0: NodeXCoordinateGoal, 1: NodeYCoordinateGoal, 2: NodeZCoordinateGoal}
-SUPPORT_GROUP = {0: NodeGroupSupportXParameter,
-                 1: NodeGroupSupportYParameter,
-                 2: NodeGroupSupportZParameter}
-LOAD_GROUP = {0: NodeGroupLoadXParameter,
-              1: NodeGroupLoadYParameter,
-              2: NodeGroupLoadZParameter}
+COORDINATE_GOAL = {
+    0: NodeXCoordinateGoal,
+    1: NodeYCoordinateGoal,
+    2: NodeZCoordinateGoal,
+}
+SUPPORT_GROUP = {
+    0: NodeGroupSupportXParameter,
+    1: NodeGroupSupportYParameter,
+    2: NodeGroupSupportZParameter,
+}
+LOAD_GROUP = {
+    0: NodeGroupLoadXParameter,
+    1: NodeGroupLoadYParameter,
+    2: NodeGroupLoadZParameter,
+}
 
 AXES = [0, 1, 2]
 
@@ -39,6 +47,7 @@ AXES = [0, 1, 2]
 # ==============================================================================
 # Load parameters with a colinearity goal
 # ==============================================================================
+
 
 def _optimize_colinear(network):
     """
@@ -48,12 +57,14 @@ def _optimize_colinear(network):
     loss = Loss(PredictionError(goals, name="NodesColinearGoal"))
     parameters = [NodeLoadZParameter(node) for node in network.nodes_free()]
 
-    return constrained_fdm(network,
-                           optimizer=LBFGSB(),
-                           loss=loss,
-                           parameters=parameters,
-                           maxiter=5000,
-                           tol=1e-13)
+    return constrained_fdm(
+        network,
+        optimizer=LBFGSB(),
+        loss=loss,
+        parameters=parameters,
+        maxiter=5000,
+        tol=1e-13,
+    )
 
 
 def test_colinear_load_optimization_flattens_arch(arch_network):
@@ -72,14 +83,18 @@ def test_colinear_load_optimization_reduces_loss(arch_network):
     The colinearity error after optimization is below the initial solve.
     """
     coordinates_before = jnp.array(fdm(arch_network).nodes_coordinates())[:, 2]
-    coordinates_after = jnp.array(_optimize_colinear(arch_network).nodes_coordinates())[:, 2]
+    coordinates_after = jnp.array(_optimize_colinear(arch_network).nodes_coordinates())[
+        :,
+        2,
+    ]
 
-    assert jnp.sum(coordinates_after ** 2) < jnp.sum(coordinates_before ** 2)
+    assert jnp.sum(coordinates_after**2) < jnp.sum(coordinates_before**2)
 
 
 # ==============================================================================
 # Grouped parameters
 # ==============================================================================
+
 
 @pytest.mark.parametrize("axis", AXES)
 def test_support_group_shares_single_coordinate(arch_network, axis):
@@ -90,12 +105,16 @@ def test_support_group_shares_single_coordinate(arch_network, axis):
     goal = COORDINATE_GOAL[axis](key=supports[0], target=0.7)
     parameters = [SUPPORT_GROUP[axis](supports)]
 
-    optimized = constrained_fdm(arch_network,
-                                optimizer=LBFGSB(),
-                                loss=Loss(SquaredError([goal])),
-                                parameters=parameters)
+    optimized = constrained_fdm(
+        arch_network,
+        optimizer=LBFGSB(),
+        loss=Loss(SquaredError([goal])),
+        parameters=parameters,
+    )
 
-    coordinates = jnp.array([optimized.node_coordinates(node)[axis] for node in supports])
+    coordinates = jnp.array(
+        [optimized.node_coordinates(node)[axis] for node in supports],
+    )
 
     assert jnp.allclose(coordinates, coordinates[0])
     assert jnp.allclose(coordinates, 0.7, atol=1e-9)
@@ -111,16 +130,21 @@ def test_load_group_shares_single_component(arch_network, axis):
     goal = COORDINATE_GOAL[axis](key=free[len(free) // 2], target=0.3)
     parameters = [LOAD_GROUP[axis](free, -10.0, 10.0)]
 
-    optimized = constrained_fdm(arch_network,
-                                optimizer=LBFGSB(),
-                                loss=Loss(SquaredError([goal])),
-                                parameters=parameters)
+    optimized = constrained_fdm(
+        arch_network,
+        optimizer=LBFGSB(),
+        loss=Loss(SquaredError([goal])),
+        parameters=parameters,
+    )
 
     loads = np.array([optimized.node_load(node) for node in free])
     others = [other for other in AXES if other != axis]
 
     assert jnp.allclose(jnp.asarray(loads[:, axis]), loads[0, axis])
-    assert jnp.allclose(jnp.asarray(loads[:, others]), jnp.asarray(loads_input[:, others]))
+    assert jnp.allclose(
+        jnp.asarray(loads[:, others]),
+        jnp.asarray(loads_input[:, others]),
+    )
 
 
 def test_edge_group_shares_single_forcedensity(arch_network):
@@ -131,10 +155,12 @@ def test_edge_group_shares_single_forcedensity(arch_network):
     goal = NodeZCoordinateGoal(key=list(arch_network.nodes_free())[0], target=-0.5)
     parameters = [EdgeGroupForceDensityParameter(edges, -20.0, -0.01)]
 
-    optimized = constrained_fdm(arch_network,
-                                optimizer=LBFGSB(),
-                                loss=Loss(SquaredError([goal])),
-                                parameters=parameters)
+    optimized = constrained_fdm(
+        arch_network,
+        optimizer=LBFGSB(),
+        loss=Loss(SquaredError([goal])),
+        parameters=parameters,
+    )
 
     forcedensities = jnp.array([optimized.edge_forcedensity(edge) for edge in edges])
 

@@ -15,6 +15,7 @@ class _NullObject:
     ``viewer.view.camera.zoom(-35)`` or ``for artist in viewer.artists`` runs
     without error.
     """
+
     def __getattr__(self, _: str) -> "_NullObject":
         return self
 
@@ -53,8 +54,11 @@ def null_viewer(name: str) -> type:
     type
         A null viewer class that warns on construction and no-ops thereafter.
     """
+
     def _init(self, *args: Any, **kwargs: Any) -> None:
-        warnings.warn(f"The '{name}' backend is not installed. "
-                      "Install it to visualize.", stacklevel=2)
+        warnings.warn(
+            f"The '{name}' backend is not installed. Install it to visualize.",
+            stacklevel=2,
+        )
 
     return type("NullViewer", (_NullObject,), {"__init__": _init})

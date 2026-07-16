@@ -16,6 +16,7 @@ class EdgeAngleGoal(ScalarGoal, EdgeGoal):
     """
     Reach a target angle between the direction of an edge and a reference vector.
     """
+
     def __init__(
         self,
         key: int | tuple[int, int] | list[int] | list[tuple[int, int]],
@@ -54,7 +55,11 @@ class EdgeAngleGoal(ScalarGoal, EdgeGoal):
         super().init(model, structure)
         self.vector = self.vectors()
 
-    def prediction(self, eq_state: EquilibriumState, index: Int[Array, ""]) -> Float[Array, "1"]:
+    def prediction(
+        self,
+        eq_state: EquilibriumState,
+        index: Int[Array, ""],
+    ) -> Float[Array, "1"]:
         """
         The angle between the edge and the reference vector.
         """

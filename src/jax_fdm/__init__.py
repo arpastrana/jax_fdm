@@ -70,4 +70,5 @@ DTYPE_INT_JAX = jnp.int64
 # this only works on startup!
 if DTYPE_JAX == jnp.float64 or DTYPE_NP == np.float64:
     import jax
+
     jax.config.update("jax_enable_x64", True)

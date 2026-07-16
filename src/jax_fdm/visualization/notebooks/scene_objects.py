@@ -91,10 +91,13 @@ class ThreeFDDatastructureObject(ThreeSceneObject):
         # The scene registry always dispatches a real datastructure to this
         # constructor; the Optional in the signature only matches the base
         # class default.
-        self.datastructure: FDNetwork | FDMesh = item  # pyright: ignore[reportAttributeAccessIssue]  # always populated before draw()
+        # item is always populated before draw()
+        self.datastructure: FDNetwork | FDMesh = item  # pyright: ignore[reportAttributeAccessIssue]
 
         self.points: list[int] = list(points) if points is not None else list(self.point_keys())
-        self.edges: list[tuple[int, int]] = list(edges) if edges is not None else list(item.edges())  # pyright: ignore[reportOptionalMemberAccess,reportArgumentType,reportAttributeAccessIssue]  # item is always populated before draw(); edges() with data=False always yields plain (u, v) keys
+        # item is always populated before draw(); edges() with data=False always
+        # yields plain (u, v) keys
+        self.edges: list[tuple[int, int]] = list(edges) if edges is not None else list(item.edges())  # pyright: ignore[reportOptionalMemberAccess,reportArgumentType,reportAttributeAccessIssue]
 
         # The point-edge adjacency is cached once at construction, so drawing
         # never re-derives it from the datastructure (Mesh.vertex_edges scans
@@ -171,7 +174,9 @@ class ThreeFDDatastructureObject(ThreeSceneObject):
 
         if self.show_points:
             is_support = self.point_is_support if self.show_supports else (lambda key: False)
-            point_color = point_colors(self.points, is_support, self.pointcolor_spec)  # pyright: ignore[reportArgumentType]  # point_colors treats a str spec as an unrecognized dict/Color and falls back to default
+            # point_colors treats a str spec as an unrecognized dict/Color and
+            # falls back to default
+            point_color = point_colors(self.points, is_support, self.pointcolor_spec)  # pyright: ignore[reportArgumentType]
             point_size = point_sizes(self.points, self.pointsize_spec)
 
             centers = [self.point_coordinates(point) for point in self.points]
@@ -266,13 +271,15 @@ class ThreeFDNetworkObject(ThreeFDDatastructureObject):
                          **kwargs)
 
     def point_keys(self) -> list[int]:
-        return self.datastructure.nodes()  # pyright: ignore[reportReturnType]  # data=False getter always yields plain node keys
+        # the data=False getter always yields plain node keys
+        return self.datastructure.nodes()  # pyright: ignore[reportReturnType]
 
     def point_coordinates(self, key: int) -> list[float]:
         return self.datastructure.node_coordinates(key)
 
     def point_load(self, key: int) -> list[float]:
-        return self.datastructure.node_load(key)  # pyright: ignore[reportReturnType]  # getter-mode call always returns a list
+        # the getter-mode call always returns a list
+        return self.datastructure.node_load(key)  # pyright: ignore[reportReturnType]
 
     def point_reaction(self, key: int) -> list[float]:
         return self.datastructure.node_reaction(key)
@@ -325,13 +332,16 @@ class ThreeFDMeshObject(ThreeFDDatastructureObject):
         self.show_faces = show_faces if show_faces is not None else True
 
     def point_keys(self) -> list[int]:
-        return self.datastructure.vertices()  # pyright: ignore[reportReturnType]  # data=False getter always yields plain vertex keys
+        # the data=False getter always yields plain vertex keys
+        return self.datastructure.vertices()  # pyright: ignore[reportReturnType]
 
     def point_coordinates(self, key: int) -> list[float]:
-        return self.datastructure.vertex_coordinates(key)  # pyright: ignore[reportReturnType]  # getter-mode call always returns a list
+        # the getter-mode call always returns a list
+        return self.datastructure.vertex_coordinates(key)  # pyright: ignore[reportReturnType]
 
     def point_load(self, key: int) -> list[float]:
-        return self.datastructure.vertex_load(key)  # pyright: ignore[reportReturnType]  # getter-mode call always returns a list
+        # the getter-mode call always returns a list
+        return self.datastructure.vertex_load(key)  # pyright: ignore[reportReturnType]
 
     def point_reaction(self, key: int) -> list[float]:
         return self.datastructure.vertex_reaction(key)

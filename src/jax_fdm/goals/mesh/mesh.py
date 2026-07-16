@@ -8,8 +8,10 @@ from jax_fdm.goals import Goal
 
 class MeshGoal(Goal):
     """
-    Base class for all goals that pertain to a subset of the nodes, faces and edges of a mesh.
+    Base class for all goals that pertain to a subset of the nodes, faces and
+    edges of a mesh.
     """
+
     def __init__(
         self,
         key: int = -1,
@@ -21,7 +23,11 @@ class MeshGoal(Goal):
         # sentinel key -1 and is never grouped with peers into a collection.
         self.is_collectible = False
 
-    def index_from_model(self, model: EquilibriumModel, structure: EquilibriumMeshStructure) -> int:
+    def index_from_model(
+        self,
+        model: EquilibriumModel,
+        structure: EquilibriumMeshStructure,
+    ) -> int:
         """
         The index of the goal key in a structure.
         """

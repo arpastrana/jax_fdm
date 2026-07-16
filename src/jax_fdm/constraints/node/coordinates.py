@@ -10,7 +10,12 @@ class NodeXCoordinateConstraint(NodeConstraint):
     """
     Constraint the X coordinate of a node between a lower and an upper bound.
     """
-    def constraint(self, eq_state: EquilibriumState, index: Int[Array, ""]) -> Float[Array, ""]:
+
+    def constraint(
+        self,
+        eq_state: EquilibriumState,
+        index: Int[Array, ""],
+    ) -> Float[Array, ""]:
         """
         Returns the X coordinate of a node from an equilibrium state.
         """
@@ -21,7 +26,12 @@ class NodeYCoordinateConstraint(NodeConstraint):
     """
     Constraint the Y coordinate of a node between a lower and an upper bound.
     """
-    def constraint(self, eq_state: EquilibriumState, index: Int[Array, ""]) -> Float[Array, ""]:
+
+    def constraint(
+        self,
+        eq_state: EquilibriumState,
+        index: Int[Array, ""],
+    ) -> Float[Array, ""]:
         """
         Returns the Y coordinate of a node from an equilibrium state.
         """
@@ -32,7 +42,12 @@ class NodeZCoordinateConstraint(NodeConstraint):
     """
     Constraint the Z coordinate of a node between a lower and an upper bound.
     """
-    def constraint(self, eq_state: EquilibriumState, index: Int[Array, ""]) -> Float[Array, ""]:
+
+    def constraint(
+        self,
+        eq_state: EquilibriumState,
+        index: Int[Array, ""],
+    ) -> Float[Array, ""]:
         """
         Returns the Z coordinate of a node from an equilibrium state.
         """

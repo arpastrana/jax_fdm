@@ -57,6 +57,7 @@ SLSQP_CONVERGES = parse_version(scipy.__version__) < parse_version("1.16.0")
 # Helpers
 # ==============================================================================
 
+
 def _origin_distance(point):
     """
     Euclidean distance from a point to the origin.
@@ -83,8 +84,10 @@ def _load_path(network):
     """
     Total load path of the network, the sum of absolute force-length products.
     """
-    return sum(abs(network.edge_force(edge)) * network.edge_length(edge)
-               for edge in network.edges())
+    return sum(
+        abs(network.edge_force(edge)) * network.edge_length(edge)
+        for edge in network.edges()
+    )
 
 
 def _length_stats(network):
@@ -112,10 +115,14 @@ def _volume_optimized(network):
     Returns the optimized network and the optimizer that solved it, so callers
     can inspect the scipy convergence status.
     """
-    parameters = [EdgeGroupForceDensityParameter(group, QMIN, QMAX)
-                  for group in _edge_groups(network)]
+    parameters = [
+        EdgeGroupForceDensityParameter(group, QMIN, QMAX)
+        for group in _edge_groups(network)
+    ]
 
-    loss = Loss(PredictionError([NetworkLoadPathGoal()], alpha=1.0, name="NetworkLoadPathGoal"))
+    loss = Loss(
+        PredictionError([NetworkLoadPathGoal()], alpha=1.0, name="NetworkLoadPathGoal"),
+    )
 
     constraints = []
     for node in network.nodes_free():
@@ -124,13 +131,15 @@ def _volume_optimized(network):
         constraints.append(NodeYCoordinateConstraint(node, y - XY_TOL, y + XY_TOL))
 
     optimizer = SLSQP()
-    optimized = constrained_fdm(fdm(network),
-                                optimizer=optimizer,
-                                loss=loss,
-                                parameters=parameters,
-                                maxiter=5000,
-                                tol=1e-6,
-                                constraints=constraints)
+    optimized = constrained_fdm(
+        fdm(network),
+        optimizer=optimizer,
+        loss=loss,
+        parameters=parameters,
+        maxiter=5000,
+        tol=1e-6,
+        constraints=constraints,
+    )
 
     return optimized, optimizer
 
@@ -138,6 +147,7 @@ def _volume_optimized(network):
 # ==============================================================================
 # Tests
 # ==============================================================================
+
 
 def test_base_case_matches_paper():
     """
@@ -159,7 +169,7 @@ def test_base_case_matches_paper():
 @pytest.mark.skipif(
     not SLSQP_CONVERGES,
     reason="SLSQP diverges on this dome under scipy >= 1.16.0 (Fortran-to-C "
-           "rewrite regression); optimized-config validation needs scipy < 1.16.0.",
+    "rewrite regression); optimized-config validation needs scipy < 1.16.0.",
 )
 def test_volume_optimization_matches_paper():
     """

@@ -10,11 +10,20 @@ from jax_fdm.goals import GoalState
 # Error
 # ==========================================================================
 
+
 class Error:
     """
     The base class for an error term in a loss function.
     """
-    def __init__(self, goals: list[Goal], alpha: float = 1.0, name: str | None = None, *args, **kwargs) -> None:
+
+    def __init__(
+        self,
+        goals: list[Goal],
+        alpha: float = 1.0,
+        name: str | None = None,
+        *args,
+        **kwargs,
+    ) -> None:
         self.goals = goals
         self.alpha = alpha
         self.name = name or self.__class__.__name__
@@ -62,12 +71,14 @@ class Error:
 # Precooked error terms
 # ==========================================================================
 
+
 class SquaredError(Error):
     """
     The canonical squared error.
 
     It measures the L2 distance between the current and the target value of a goal.
     """
+
     @staticmethod
     def error(gstate: GoalState) -> Float[Array, ""]:
         return jnp.sum(gstate.weight * jnp.square(gstate.prediction - gstate.goal))
@@ -79,6 +90,7 @@ class MeanSquaredError(SquaredError):
 
     Average out all errors because no single error is important enough.
     """
+
     def errors(self, errors: Float[Array, "errors"]) -> Float[Array, ""]:
         """
         The mean of the individual error terms.
@@ -90,6 +102,7 @@ class RootMeanSquaredError(MeanSquaredError):
     """
     The root mean squared error.
     """
+
     def errors(self, errors: Float[Array, "errors"]) -> Float[Array, ""]:
         """
         The root of the mean of the individual error terms.
@@ -104,6 +117,7 @@ class PredictionError(Error):
 
     You lose when you get too much of something.
     """
+
     @staticmethod
     def error(gstate: GoalState) -> Float[Array, ""]:
         """
@@ -118,6 +132,7 @@ class MeanPredictionError(PredictionError):
 
     Average out all errors because no single error is important enough.
     """
+
     def errors(self, errors: Float[Array, "errors"]) -> Float[Array, ""]:
         """
         The mean of the individual prediction error terms.
@@ -129,8 +144,10 @@ class AbsoluteError(Error):
     """
     The canonical absolute error.
 
-    It measures the absolute difference between the current and the target value of a goal.
+    It measures the absolute difference between the current and the target value
+    of a goal.
     """
+
     @staticmethod
     def error(gstate: GoalState) -> Float[Array, ""]:
         """
@@ -143,6 +160,7 @@ class MeanAbsoluteError(AbsoluteError):
     """
     The canonical mean absolute error.
     """
+
     def errors(self, errors: Float[Array, "errors"]) -> Float[Array, ""]:
         """
         The mean of the individual absolute error terms.
@@ -152,10 +170,12 @@ class MeanAbsoluteError(AbsoluteError):
 
 class LogMaxError(Error):
     """
-    The log error for constraints with a target maximum value that should not be exceeded.
+    The log error for constraints with a target maximum value that should not be
+    exceeded.
 
     Helpful to deal with soft barrier constraints with an upper bound.
     """
+
     @staticmethod
     def error(gstate: GoalState) -> Float[Array, ""]:
         """
@@ -164,7 +184,8 @@ class LogMaxError(Error):
         difference = gstate.prediction - gstate.goal
         # TODO: consider softplus as a smooth alternative
         violation = jnp.maximum(difference, 0.0)
-        # NOTE: shifting difference via (x + 1.0) so that error is log(1) = 0.0 at least.
+        # NOTE: shifting difference via (x + 1.0) so that error is log(1) = 0.0 at
+        # least.
         # jnp.log1p(x) is equivalent but more numerically stable than jnp.log(x + 1.0)
 
         # TODO: consider changing to quadratic error for large violations later

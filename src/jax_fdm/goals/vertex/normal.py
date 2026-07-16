@@ -17,7 +17,8 @@ from jax_fdm.goals.vertex import VertexGoal
 
 class VertexNormalAngleGoal(ScalarGoal, VertexGoal):
     """
-    Reach a target value for the angle formed by the vertex normal and a reference vector.
+    Reach a target value for the angle formed by the vertex normal and a reference
+    vector.
 
     Notes
     -----
@@ -34,6 +35,7 @@ class VertexNormalAngleGoal(ScalarGoal, VertexGoal):
     check is performed; `compas.datastructures.Mesh.unify_cycles` unifies
     the winding of a mesh upfront if needed.
     """
+
     def __init__(
         self,
         key: int | tuple[int, int] | list[int] | list[tuple[int, int]],
@@ -69,7 +71,11 @@ class VertexNormalAngleGoal(ScalarGoal, VertexGoal):
             matrix[idx, :] = vec
         return jnp.asarray(matrix)
 
-    def init(self, model: EquilibriumModel, structure: EquilibriumMeshStructure) -> None:
+    def init(
+        self,
+        model: EquilibriumModel,
+        structure: EquilibriumMeshStructure,
+    ) -> None:
         """
         Initialize the goal with information from an equilibrium model.
         """
@@ -82,7 +88,11 @@ class VertexNormalAngleGoal(ScalarGoal, VertexGoal):
         """
         Compute the (unnormalized) normal of every face in the mesh.
         """
-        def face_normal(face: Int[Array, "vertices"], xyz: Float[Array, "nodes 3"]) -> Float[Array, "3"]:
+
+        def face_normal(
+            face: Int[Array, "vertices"],
+            xyz: Float[Array, "nodes 3"],
+        ) -> Float[Array, "3"]:
             face = jnp.ravel(face)
             xyz_face = xyz[face, :]
             xyz_repl = xyz_face[0, :]
@@ -96,7 +106,11 @@ class VertexNormalAngleGoal(ScalarGoal, VertexGoal):
 
         return vmap(face_normal, in_axes=(0, None))(self.faces_indexed, xyz)
 
-    def vertex_normal(self, eq_state: EquilibriumState, index: Int[Array, ""]) -> Float[Array, "3"]:
+    def vertex_normal(
+        self,
+        eq_state: EquilibriumState,
+        index: Int[Array, ""],
+    ) -> Float[Array, "3"]:
         """
         Get the unitized normal vector at a vertex.
         """
@@ -106,7 +120,11 @@ class VertexNormalAngleGoal(ScalarGoal, VertexGoal):
 
         return normalize_vector(normal)
 
-    def prediction(self, eq_state: EquilibriumState, index: Int[Array, ""]) -> Float[Array, "1"]:
+    def prediction(
+        self,
+        eq_state: EquilibriumState,
+        index: Int[Array, ""],
+    ) -> Float[Array, "1"]:
         """
         Returns the angle between the vertex normal and the reference vector.
         """

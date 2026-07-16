@@ -11,7 +11,12 @@ class NodeXCoordinateGoal(ScalarGoal, NodeGoal):
     """
     Make a node of a network to reach a target X coordinate.
     """
-    def prediction(self, eq_state: EquilibriumState, index: Int[Array, ""]) -> Float[Array, "1"]:
+
+    def prediction(
+        self,
+        eq_state: EquilibriumState,
+        index: Int[Array, ""],
+    ) -> Float[Array, "1"]:
         """
         The current X coordinate of the node in a network.
         """
@@ -22,7 +27,12 @@ class NodeYCoordinateGoal(ScalarGoal, NodeGoal):
     """
     Make a node of a network to reach a target Y coordinate.
     """
-    def prediction(self, eq_state: EquilibriumState, index: Int[Array, ""]) -> Float[Array, "1"]:
+
+    def prediction(
+        self,
+        eq_state: EquilibriumState,
+        index: Int[Array, ""],
+    ) -> Float[Array, "1"]:
         """
         The current Y coordinate of the node in a network.
         """
@@ -33,7 +43,12 @@ class NodeZCoordinateGoal(ScalarGoal, NodeGoal):
     """
     Make a node of a network to reach a target Z coordinate.
     """
-    def prediction(self, eq_state: EquilibriumState, index: Int[Array, ""]) -> Float[Array, "1"]:
+
+    def prediction(
+        self,
+        eq_state: EquilibriumState,
+        index: Int[Array, ""],
+    ) -> Float[Array, "1"]:
         """
         The current Z coordinate of the node in a network.
         """

@@ -9,5 +9,6 @@ class Plotter(CompasPlotter):
 
     This object exists for API consistency.
     """
+
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)

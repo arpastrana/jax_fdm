@@ -13,8 +13,10 @@ from jax_fdm.geometry import angle_vectors
 
 class EdgeAngleConstraint(EdgeConstraint):
     """
-    Constraints the angle formed by an edge and a vector between a lower and an upper bound.
+    Constraints the angle formed by an edge and a vector between a lower and an
+    upper bound.
     """
+
     def __init__(
         self,
         key: tuple[int, int] | list[tuple[int, int]],
@@ -53,7 +55,11 @@ class EdgeAngleConstraint(EdgeConstraint):
         super().init(model, structure)
         self.vector = self.vectors()
 
-    def constraint(self, eq_state: EquilibriumState, index: Int[Array, ""]) -> Float[Array, ""]:
+    def constraint(
+        self,
+        eq_state: EquilibriumState,
+        index: Int[Array, ""],
+    ) -> Float[Array, ""]:
         """
         Returns the angle between an edge in an equilibrium state and a vector.
         """

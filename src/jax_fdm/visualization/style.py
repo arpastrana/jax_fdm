@@ -85,6 +85,7 @@ ARROW_BODYWIDTH = 0.012
 # Edge styling
 # ==========================================================================
 
+
 def edge_colors(
     datastructure: FDNetwork | FDMesh,
     edges: list[tuple[int, int]],
@@ -109,7 +110,8 @@ def edge_colors(
 
     if color == "fd":
         cmap = COLORMAP_FD
-        values = [fabs(datastructure.edge_forcedensity(edge)) for edge in edges]  # pyright: ignore[reportArgumentType]  # getter-mode call (no q kwarg) always returns a float
+        # the getter-mode call (no q kwarg) always returns a float
+        values = [fabs(datastructure.edge_forcedensity(edge)) for edge in edges]  # pyright: ignore[reportArgumentType]
         try:
             ratios = remap_values(values)
         except ZeroDivisionError:
@@ -117,8 +119,12 @@ def edge_colors(
         return {edge: cmap(ratio) for edge, ratio in zip(edges, ratios)}
 
     if color == "force":
-        return {edge: COLOR_TENSION if datastructure.edge_force(edge) > 0.0 else COLOR_COMPRESSION
-                for edge in edges}
+        return {
+            edge: COLOR_TENSION
+            if datastructure.edge_force(edge) > 0.0
+            else COLOR_COMPRESSION
+            for edge in edges
+        }
 
     return {edge: COLOR_EDGE for edge in edges}
 
@@ -171,6 +177,7 @@ def edge_widths(
 # ==========================================================================
 # Point styling
 # ==========================================================================
+
 
 def point_colors(
     points: list[int],
@@ -232,6 +239,7 @@ def reaction_color_default(edgecolor: EdgeColorSpec) -> Color:
 # ==========================================================================
 # Arrows
 # ==========================================================================
+
 
 def load_arrows(
     origins: list[list[float]],
@@ -329,7 +337,12 @@ def reaction_arrows(
 
     anchors, vectors = [], []
 
-    for xyz, vector, edge_forces, clearance in zip(origins, reactions, forces, clearances):
+    for xyz, vector, edge_forces, clearance in zip(
+        origins,
+        reactions,
+        forces,
+        clearances,
+    ):
         if length_vector(vector) < tol or not edge_forces:
             anchors.append(xyz)
             vectors.append((0.0, 0.0, 0.0))
@@ -340,7 +353,10 @@ def reaction_arrows(
         if max(edge_forces, key=fabs) < 0.0:
             start = add_vectors(start, scale_vector(vector, scale))
             if clearance:
-                start = add_vectors(start, scale_vector(normalize_vector(drawn), -clearance))
+                start = add_vectors(
+                    start,
+                    scale_vector(normalize_vector(drawn), -clearance),
+                )
         elif clearance:
             start = add_vectors(start, scale_vector(normalize_vector(drawn), clearance))
 

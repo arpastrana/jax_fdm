@@ -54,7 +54,7 @@ HERE = os.path.dirname(__file__)
 FILE_IN = os.path.abspath(os.path.join(HERE, f"../../data/json/{name}.json"))
 mesh = FDMesh.from_json(FILE_IN)
 
-print('Initial coarse mesh:', mesh)
+print("Initial coarse mesh:", mesh)
 
 # ==========================================================================
 # Densify coarse mesh
@@ -177,7 +177,11 @@ constraints = None
 if add_constraints:
     constraints = []
     for edge in edges_free:
-        constraint = EdgeLengthConstraint(edge, bound_low=length_min, bound_up=length_max)
+        constraint = EdgeLengthConstraint(
+            edge,
+            bound_low=length_min,
+            bound_up=length_max,
+        )
         constraints.append(constraint)
 
 # ==========================================================================
@@ -202,14 +206,16 @@ print(f"Load path: {round(mesh.loadpath(), 3)}")
 optimizer = optimizer()
 recorder = OptimizationRecorder(optimizer) if record else None
 
-design = constrained_fdm(mesh,
-                         optimizer=optimizer,
-                         loss=loss,
-                         parameters=parameters,
-                         constraints=constraints,
-                         maxiter=maxiter,
-                         tol=tol,
-                         callback=recorder)
+design = constrained_fdm(
+    mesh,
+    optimizer=optimizer,
+    loss=loss,
+    parameters=parameters,
+    constraints=constraints,
+    maxiter=maxiter,
+    tol=tol,
+    callback=recorder,
+)
 
 # ==========================================================================
 # Export optimization history
@@ -256,22 +262,26 @@ viewer.renderer.camera.rotation.z = 0.0  # set rotation around z axis to zero
 
 # view reference mesh as a plain wireframe (convert to a plain COMPAS mesh so the
 # viewer renders bare geometry instead of the force-density mesh scene object)
-viewer.add(mesh.copy(cls=Mesh),
-           show_faces=False,
-           show_points=False,
-           show_edges=True,
-           linewidth=1.0,
-           color=Color.grey().darkened())
+viewer.add(
+    mesh.copy(cls=Mesh),
+    show_faces=False,
+    show_points=False,
+    show_edges=True,
+    linewidth=1.0,
+    color=Color.grey().darkened(),
+)
 
 # view the optimized mesh directly: shaded surface plus edges colored by force,
 # straight from the FDMesh
-viewer.add(design,
-           edgewidth=(0.02, 0.2),
-           show_vertices=False,
-           edgecolor="force",
-           show_reactions=False,
-           show_loads=False,
-           reactionscale=0.75)
+viewer.add(
+    design,
+    edgewidth=(0.02, 0.2),
+    show_vertices=False,
+    edgecolor="force",
+    show_reactions=False,
+    show_loads=False,
+    reactionscale=0.75,
+)
 
 # show le crème
 viewer.show()

@@ -68,7 +68,7 @@ def solver_optimistix(
         has_aux=False,
         max_steps=tmax,
         throw=False,
-        adjoint=adjoint
+        adjoint=adjoint,
     )
 
     return solution.value

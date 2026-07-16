@@ -52,7 +52,10 @@ def calculate_faces_load(
     return loads
 
 
-def face_xyz(xyz: Float[Array, "nodes 3"], face: Int[Array, "vertices"]) -> Float[Array, "vertices 3"]:
+def face_xyz(
+    xyz: Float[Array, "nodes 3"],
+    face: Int[Array, "vertices"],
+) -> Float[Array, "vertices 3"]:
     """
     Get this face XYZ coordinates from XYZ vertices array.
     """
@@ -75,7 +78,8 @@ def face_load_lcs(
     face_load: Float[Array, "3"],
 ) -> Float[Array, "3"]:
     """
-    Transform the load vector applied to the face to a vector in its local coordinate system.
+    Transform the load vector applied to the face to a vector in its local coordinate
+    system.
     """
     # fxyz = face_xyz(xyz, face)
     fxyz = xyz[face, :]
@@ -132,7 +136,10 @@ def edge_tributary_faces_load(
     return areas @ floads
 
 
-def edge_tributary_face_area(line: Float[Array, "2 3"], centroid: Float[Array, "3"]) -> Float[Array, ""]:
+def edge_tributary_face_area(
+    line: Float[Array, "2 3"],
+    centroid: Float[Array, "3"],
+) -> Float[Array, ""]:
     """
     The triangle-based, face tributary area of an edge.
     """
@@ -185,8 +192,10 @@ def edge_load_lcs(
     edge_load: Float[Array, "3"],
 ) -> Float[Array, "3"]:
     """
-    Transform the load vector applied to an edge to a vector in its local coordinate system.
+    Transform the load vector applied to an edge to a vector in its local coordinate
+    system.
     """
+
     def edge_xyz(xyz, edge):
         return xyz[edge, :]
 
@@ -215,6 +224,7 @@ def edges_tributary_edges_load(
 # ==========================================================================
 # Node helpers
 # ==========================================================================
+
 
 def nodes_tributary_edges_load(
     edges_load: Float[Array, "edges 3"],

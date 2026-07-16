@@ -1,6 +1,7 @@
 """
 A force density mesh.
 """
+
 from collections.abc import Iterator
 from typing import Any
 
@@ -15,36 +16,30 @@ class FDMesh(Mesh, FDDatastructure):
     """
     A force density mesh.
     """
+
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
 
         self.update_default_edge_attributes(
-            {"q": 0.0,
-             "length": 0.0,
-             "force": 0.0,
-             "px": 0.0,
-             "py": 0.0,
-             "pz": 0.0}
-            )
+            {"q": 0.0, "length": 0.0, "force": 0.0, "px": 0.0, "py": 0.0, "pz": 0.0},
+        )
 
         self.update_default_vertex_attributes(
-            {"x": 0.0,
-             "y": 0.0,
-             "z": 0.0,
-             "px": 0.0,
-             "py": 0.0,
-             "pz": 0.0,
-             "rx": 0.0,
-             "ry": 0.0,
-             "rz": 0.0,
-             "is_support": False}
-            )
+            {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0,
+                "px": 0.0,
+                "py": 0.0,
+                "pz": 0.0,
+                "rx": 0.0,
+                "ry": 0.0,
+                "rz": 0.0,
+                "is_support": False,
+            },
+        )
 
-        self.update_default_face_attributes(
-            {"px": 0.0,
-             "py": 0.0,
-             "pz": 0.0}
-            )
+        self.update_default_face_attributes({"px": 0.0, "py": 0.0, "pz": 0.0})
 
     # ----------------------------------------------------------------------
     # Node
@@ -71,7 +66,11 @@ class FDMesh(Mesh, FDDatastructure):
         # setter-mode call always returns None
         return self.vertex_attribute(key, name="is_support", value=True)  # pyright: ignore[reportReturnType]
 
-    def vertex_load(self, key: int, load: list[float] | None = None) -> list[float] | None:
+    def vertex_load(
+        self,
+        key: int,
+        load: list[float] | None = None,
+    ) -> list[float] | None:
         """
         Gets or sets a load to a vertex.
         """
@@ -94,8 +93,8 @@ class FDMesh(Mesh, FDDatastructure):
     def vertices_coordinates(
         self,
         keys: list[int] | None = None,
-        axes: str = "xyz"
-        ) -> list[list[float]]:
+        axes: str = "xyz",
+    ) -> list[list[float]]:
         """
         Gets or sets the x, y, z coordinates of a list of vertices.
         """
@@ -106,8 +105,8 @@ class FDMesh(Mesh, FDDatastructure):
     def vertices_fixedcoordinates(
         self,
         keys: list[int] | None = None,
-        axes: str = "xyz"
-        ) -> list[list[float]]:
+        axes: str = "xyz",
+    ) -> list[list[float]]:
         """
         Gets the x, y, z coordinates of the supports of the network.
         """
@@ -116,13 +115,11 @@ class FDMesh(Mesh, FDDatastructure):
         else:
             vertex_keys = self.vertices_fixed()
 
-        # vertices_fixed() with no keys always returns a generator, never None; getter always returns a coordinate list
+        # vertices_fixed() with no keys always returns a generator, never None;
+        # getter always returns a coordinate list
         return [self.vertex_coordinates(node, axes) for node in vertex_keys]  # pyright: ignore[reportOptionalIterable,reportReturnType]
 
-    def vertices_supports(
-        self,
-        keys: list[int] | None = None
-        ) -> Iterator[int] | None:
+    def vertices_supports(self, keys: list[int] | None = None) -> Iterator[int] | None:
         """
         Gets or sets the vertex keys where a support has been assigned.
         """
@@ -133,10 +130,7 @@ class FDMesh(Mesh, FDDatastructure):
         # setter-mode call always returns None
         return self.vertices_attribute(name="is_support", value=True, keys=keys)  # pyright: ignore[reportReturnType]
 
-    def vertices_fixed(
-        self,
-        keys: list[int] | None = None
-        ) -> Iterator[int] | None:
+    def vertices_fixed(self, keys: list[int] | None = None) -> Iterator[int] | None:
         """
         Gets or sets the vertex keys where a support has been assigned.
         """
@@ -152,13 +146,17 @@ class FDMesh(Mesh, FDDatastructure):
     def vertices_loads(
         self,
         load: list[float] | None = None,
-        keys: list[int] | None = None
-        ) -> list[list[float]] | None:
+        keys: list[int] | None = None,
+    ) -> list[list[float]] | None:
         """
         Gets or sets a load to the vertices of the mesh.
         """
         # names given as a non-empty tuple always returns a list of lists
-        return self.vertices_attributes(names=("px", "py", "pz"), values=load, keys=keys)  # pyright: ignore[reportReturnType]
+        return self.vertices_attributes(
+            names=("px", "py", "pz"),
+            values=load,
+            keys=keys,
+        )  # pyright: ignore[reportReturnType]
 
     def vertices_residual(self, keys: list[int] | None = None) -> list[list[float]]:
         """
@@ -208,7 +206,11 @@ class FDMesh(Mesh, FDDatastructure):
         """
         return polygon_lcs(jnp.asarray(self.face_coordinates(key))).tolist()
 
-    def face_load(self, key: int, load: list[float] | None = None) -> list[float] | None:
+    def face_load(
+        self,
+        key: int,
+        load: list[float] | None = None,
+    ) -> list[float] | None:
         """
         Gets or sets a load on a face.
         """
@@ -230,8 +232,8 @@ class FDMesh(Mesh, FDDatastructure):
     def faces_loads(
         self,
         load: list[float] | None = None,
-        keys: list[int] | None = None
-        ) -> list[list[float]] | None:
+        keys: list[int] | None = None,
+    ) -> list[list[float]] | None:
         """
         Gets or sets a load on the faces.
         """
@@ -262,7 +264,8 @@ class FDMesh(Mesh, FDDatastructure):
 
     def index_edge(self) -> dict[int, tuple[int, int]]:
         """
-        Returns a dictionary that maps edges in a list to the corresponding vertex key pairs.
+        Returns a dictionary that maps edges in a list to the corresponding
+        vertex key pairs.
 
         Mirrors ``compas.datastructures.Graph.index_edge``, which compas 2.x does
         not provide on ``Mesh``, so ``FDMesh`` and ``FDNetwork`` share the API.

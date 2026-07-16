@@ -39,11 +39,12 @@ class NetworkXYZLaplacianGoal(ScalarGoal, NetworkGoal):
     ravel matrix U into a single vector, and calculate the dot
     product of U in the raveled state.
     """
+
     def prediction(
         self,
         eq_state: EquilibriumState,
-        index: Int[Array, ""]
-        ) -> Float[Array, "1"]:
+        index: Int[Array, ""],
+    ) -> Float[Array, "1"]:
         """
         The current load path of the network.
         """

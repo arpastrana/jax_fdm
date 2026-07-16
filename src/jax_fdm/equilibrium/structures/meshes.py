@@ -18,10 +18,12 @@ from jax_fdm.equilibrium.structures.graphs import build_matrix
 # Mesh
 # ==========================================================================
 
+
 class Mesh(Graph):
     """
     A mesh.
     """
+
     # The faces array can have rows of different lengths. How to handle it?
     # Using a tuple instead of an array?
     vertices: Int[np.ndarray, "vertices"]
@@ -118,7 +120,7 @@ class Mesh(Graph):
         C = np.zeros((self.num_edges, self.num_faces))
 
         for eindex, findex in enumerate(self._edges_faces()):
-            C[eindex, findex] = 1.
+            C[eindex, findex] = 1.0
 
         return jnp.asarray(C)
 
@@ -128,7 +130,6 @@ class Mesh(Graph):
         """
         edges_faces = []
         for u, v in self.edges:
-
             edge = (int(u), int(v))
             findices = []
 
@@ -147,14 +148,20 @@ class Mesh(Graph):
             # assert len(findices) <= 2
 
             if len(findices) > 2:
-                print(f"Warning: Edge {edge} is non-manifold, it's shared by ({len(findices)}) faces. This might lead to unexpected behavior in e.g. in area load calculations.")
+                print(
+                    f"Warning: Edge {edge} is non-manifold, it's shared by "
+                    f"({len(findices)}) faces. This might lead to unexpected "
+                    f"behavior in e.g. in area load calculations.",
+                )
 
             edges_faces.append(tuple(findices))
 
         return tuple(edges_faces)
 
     @staticmethod
-    def _edges_from_faces(faces: Int[np.ndarray, "faces vertices"]) -> Int[np.ndarray, "edges 2"]:
+    def _edges_from_faces(
+        faces: Int[np.ndarray, "faces vertices"],
+    ) -> Int[np.ndarray, "edges 2"]:
         """
         The the edges of the mesh.
 
@@ -195,6 +202,7 @@ class Mesh(Graph):
 # Mesh sparse
 # ==========================================================================
 
+
 class MeshSparse(Mesh, GraphSparse):
     """
     A sparse mesh.
@@ -210,6 +218,7 @@ class MeshSparse(Mesh, GraphSparse):
 
     Which presumably arises upon calling bcoo._bcoo_dot_general_transpose.
     """
+
     def _connectivity_faces_matrix(self) -> Float[Array, "faces vertices"]:
         """
         The connectivity matrix between faces and nodes in sparse format.
@@ -225,7 +234,7 @@ class MeshSparse(Mesh, GraphSparse):
         C = np.zeros((self.num_edges, self.num_faces))
 
         for eindex, findex in enumerate(self._edges_faces()):
-            C[eindex, findex] = 1.
+            C[eindex, findex] = 1.0
 
         return jnp.asarray(C)
 
@@ -233,6 +242,7 @@ class MeshSparse(Mesh, GraphSparse):
 # ==========================================================================
 # Helper functions
 # ==========================================================================
+
 
 def mesh_edges_faces(mesh: CompasMesh) -> list[tuple[int, ...]]:
     """
@@ -242,10 +252,8 @@ def mesh_edges_faces(mesh: CompasMesh) -> list[tuple[int, ...]]:
 
     edges_faces = []
     for u, v in mesh.edges():
-
         findices = []
         for fkey in mesh.edge_faces((u, v)):
-
             if fkey is None:
                 continue
 
@@ -271,7 +279,7 @@ def mesh_connectivity_edges_faces(mesh: CompasMesh) -> Float[np.ndarray, "edges 
     edges_faces = mesh_edges_faces(mesh)
 
     for eindex, findex in enumerate(edges_faces):
-        connectivity[eindex, findex] = 1.
+        connectivity[eindex, findex] = 1.0
 
     return connectivity
 
@@ -298,11 +306,21 @@ def face_matrix(
         face_vertices_clean.append(face_clean)
 
     if normalize:
-        f = np.array([(i, j, 1.0 / len(vertices))
-                      for i, vertices in enumerate(face_vertices_clean) for j in vertices])
+        f = np.array(
+            [
+                (i, j, 1.0 / len(vertices))
+                for i, vertices in enumerate(face_vertices_clean)
+                for j in vertices
+            ],
+        )
     else:
-        f = np.array([(i, j, 1.0)
-                      for i, vertices in enumerate(face_vertices_clean) for j in vertices])
+        f = np.array(
+            [
+                (i, j, 1.0)
+                for i, vertices in enumerate(face_vertices_clean)
+                for j in vertices
+            ],
+        )
 
     F = coo_matrix((f[:, 2], (f[:, 0].astype(int), f[:, 1].astype(int))))
 

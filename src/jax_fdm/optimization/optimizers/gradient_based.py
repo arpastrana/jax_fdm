@@ -1,6 +1,7 @@
 """
 A collection of scipy-powered, gradient-based optimizers.
 """
+
 from collections.abc import Callable
 from typing import Any
 
@@ -14,10 +15,12 @@ from jax_fdm.optimization.optimizers import SecondOrderOptimizer
 # Optimizers
 # ==========================================================================
 
+
 class SLSQP(ConstrainedOptimizer):
     """
     The sequential least-squares programming optimizer.
     """
+
     name = "SLSQP"
 
 
@@ -25,6 +28,7 @@ class LBFGSB(Optimizer):
     """
     The limited-memory Boyd-Fletcher-Floyd-Shannon-Byrd (LBFGSB) optimizer.
     """
+
     name = "L-BFGS-B"
 
     def __init__(
@@ -67,6 +71,7 @@ class LBFGSBS(LBFGSB):
     This version of LBFGSB ensures compatibility of JAX gradients with scipy.
     However, it is slower than standard LBFGSB.
     """
+
     def gradient(self, loss: Callable) -> Callable:
         """
         Compute the gradient function of a loss function.
@@ -79,20 +84,25 @@ class BFGS(Optimizer):
     """
     The Boyd-Fletcher-Floyd-Shannon optimizer.
     """
+
     name = "BFGS"
 
 
 class NewtonCG(SecondOrderOptimizer):
     """
-    The truncated Newton method. It uses a CG method to the compute the search direction.
+    The truncated Newton method. It uses a CG method to the compute the search
+    direction.
     """
+
     name = "Newton-CG"
 
 
 class TruncatedNewton(Optimizer):
     """
-    Minimize a scalar function of one or more variables using a truncated Newton (TNC) algorithm.
+    Minimize a scalar function of one or more variables using a truncated Newton
+    (TNC) algorithm.
     """
+
     name = "TNC"
 
 
@@ -100,6 +110,7 @@ class TrustRegionConstrained(ConstrainedOptimizer):
     """
     A trust-region algorithm for constrained optimization.
     """
+
     name = "trust-constr"
 
 
@@ -110,6 +121,7 @@ class TrustRegionKrylov(SecondOrderOptimizer):
     It uses a nearly exact trust-region algorithm that only requires
     matrix vector products with the hessian matrix.
     """
+
     name = "trust-krylov"
 
 
@@ -118,6 +130,7 @@ class TrustRegionNewton(SecondOrderOptimizer):
     A Newton conjugate gradient trust-region algorithm.
     A trust-region algorithm for unconstrained optimization.
     """
+
     name = "trust-ncg"
 
 
@@ -125,4 +138,5 @@ class TrustRegionExact(SecondOrderOptimizer):
     """
     A nearly exact trust-region optimization algorithm.
     """
+
     name = "trust-exact"

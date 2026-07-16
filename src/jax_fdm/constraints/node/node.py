@@ -7,11 +7,12 @@ class NodeConstraint(Constraint):
     """
     Base class for all constraints that pertain to a node in a network.
     """
+
     def index_from_model(
         self,
         model: EquilibriumModel,
         structure: EquilibriumStructure,
-        ) -> int | tuple[int, ...]:
+    ) -> int | tuple[int, ...]:
         """
         The index of the node in a structure.
         """

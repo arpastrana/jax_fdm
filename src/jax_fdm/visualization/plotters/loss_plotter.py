@@ -22,7 +22,13 @@ class LossPlotter:
     """
     Plot a loss function.
     """
-    def __init__(self, loss: Loss, datastructure: FDNetwork | FDMesh, **kwargs: Any) -> None:
+
+    def __init__(
+        self,
+        loss: Loss,
+        datastructure: FDNetwork | FDMesh,
+        **kwargs: Any,
+    ) -> None:
         self.loss = loss
         self.structure = structure_from_datastructure(datastructure, sparse=False)
         self.fig = plt.figure(**kwargs)
@@ -37,15 +43,18 @@ class LossPlotter:
         **eq_kwargs: Any,
     ) -> Float[Array, "iterations"]:
         """
-        Plot the loss function and its error components on a list of fdm parameter states.
+        Plot the loss function and its error components on a list of fdm
+        parameter states.
         """
         print("\nPlotting loss function...")
         start_time = perf_counter()
 
         # Create batched parameter state
-        params = jtu.tree_map(lambda leaf: jnp.asarray(leaf, dtype=DTYPE_JAX),
-                              history,
-                              is_leaf=lambda y: isinstance(y, list))
+        params = jtu.tree_map(
+            lambda leaf: jnp.asarray(leaf, dtype=DTYPE_JAX),
+            history,
+            is_leaf=lambda y: isinstance(y, list),
+        )
 
         if not eq_kwargs:
             eq_kwargs = {"tmax": 1}
@@ -68,7 +77,10 @@ class LossPlotter:
             errors_all[reg_term.name] = errors
 
         # Plot loss
-        losses = jnp.sum(jnp.asarray(list(errors_all.values()), dtype=DTYPE_JAX), axis=0)
+        losses = jnp.sum(
+            jnp.asarray(list(errors_all.values()), dtype=DTYPE_JAX),
+            axis=0,
+        )
         self.print_error_stats(losses, "Loss")
         plt.plot(losses, label=self.loss.name)
 
@@ -117,5 +129,7 @@ class LossPlotter:
         }
 
         name_string = f"{error_name:<18}\t"
-        values_string = "  ".join([f"{key.capitalize()}: {value:>12.6f}" for key, value in stats.items()])
+        values_string = "  ".join(
+            [f"{key.capitalize()}: {value:>12.6f}" for key, value in stats.items()],
+        )
         print(name_string + values_string)

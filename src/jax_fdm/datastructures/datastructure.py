@@ -1,6 +1,7 @@
 """
 A force density datastructure.
 """
+
 from collections.abc import Iterator
 from collections.abc import Sequence
 from math import fabs
@@ -16,6 +17,7 @@ class FDDatastructure:
     through ``Network`` and ``Mesh`` respectively, so this class does not
     inherit from it to avoid a redundant inheritance diamond.
     """
+
     # ----------------------------------------------------------------------
     # Edges
     # ----------------------------------------------------------------------
@@ -23,8 +25,8 @@ class FDDatastructure:
     def edge_load(
         self,
         key: tuple[int, int],
-        load: list[float] | None = None
-        ) -> list[float] | None:
+        load: list[float] | None = None,
+    ) -> list[float] | None:
         """
         Gets or sets a load on an edge.
         """
@@ -33,8 +35,8 @@ class FDDatastructure:
     def edge_forcedensity(
         self,
         key: tuple[int, int],
-        q: float | None = None
-        ) -> float | None:
+        q: float | None = None,
+    ) -> float | None:
         """
         Gets or sets the force density on a single edge.
         """
@@ -55,9 +57,10 @@ class FDDatastructure:
         return fabs(force * length)
 
     def edges_forcedensities(
-        self, q: list[float] | None = None,
-        keys: Sequence[tuple[int, int]] | None = None
-        ) -> list[float] | None:
+        self,
+        q: list[float] | None = None,
+        keys: Sequence[tuple[int, int]] | None = None,
+    ) -> list[float] | None:
         """
         Gets or sets the force densities on a list of edges.
         """
@@ -65,8 +68,8 @@ class FDDatastructure:
 
     def edges_forces(
         self,
-        keys: Sequence[tuple[int, int]] | None = None
-        ) -> list[float]:
+        keys: Sequence[tuple[int, int]] | None = None,
+    ) -> list[float]:
         """
         Gets the forces on the edges of the network.
         """
@@ -74,8 +77,8 @@ class FDDatastructure:
 
     def edges_lengths(
         self,
-        keys: Sequence[tuple[int, int]] | None = None
-        ) -> list[float]:
+        keys: Sequence[tuple[int, int]] | None = None,
+    ) -> list[float]:
         """
         Gets the lengths on the edges of the network.
         """
@@ -84,8 +87,8 @@ class FDDatastructure:
     def edges_loads(
         self,
         load: list[float] | None = None,
-        keys: Sequence[tuple[int, int]] | None = None
-        ) -> list[list[float]] | None:
+        keys: Sequence[tuple[int, int]] | None = None,
+    ) -> list[list[float]] | None:
         """
         Gets or sets a load to the edges of the datastructure.
         """
@@ -93,8 +96,8 @@ class FDDatastructure:
 
     def edges_loadpaths(
         self,
-        keys: Sequence[tuple[int, int]] | None = None
-        ) -> Iterator[float]:
+        keys: Sequence[tuple[int, int]] | None = None,
+    ) -> Iterator[float]:
         """
         Gets the load path on the edges of the network.
         """
@@ -115,8 +118,8 @@ class FDDatastructure:
     def print_stats(
         self,
         other_stats: dict[str, list[float]] | None = None,
-        ndigits: int = 3
-        ) -> None:
+        ndigits: int = 3,
+    ) -> None:
         """
         Print information aboud the equilibrium state of the network.
         """
@@ -151,7 +154,6 @@ class FDDatastructure:
         print(f"Load path: {round(self.loadpath(), ndigits)}")
 
         for name, vals in stats.items():
-
             if not vals:
                 continue
 

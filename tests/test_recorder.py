@@ -20,15 +20,18 @@ def _record_optimization(network):
     optimizer = SLSQP()
     recorder = OptimizationRecorder(optimizer)
     goals = [EdgeLengthGoal(edge, target=0.6) for edge in network.edges()]
-    parameters = [EdgeForceDensityParameter(edge, -10.0, -0.1)
-                  for edge in network.edges()]
+    parameters = [
+        EdgeForceDensityParameter(edge, -10.0, -0.1) for edge in network.edges()
+    ]
 
-    constrained_fdm(network,
-                    optimizer=optimizer,
-                    loss=Loss(SquaredError(goals=goals)),
-                    parameters=parameters,
-                    maxiter=20,
-                    callback=recorder)
+    constrained_fdm(
+        network,
+        optimizer=optimizer,
+        loss=Loss(SquaredError(goals=goals)),
+        parameters=parameters,
+        maxiter=20,
+        callback=recorder,
+    )
 
     return recorder
 
@@ -47,13 +50,20 @@ def test_recorder_json_roundtrip(arch_network, tmp_path):
     history = recorder.history
     history_restored = restored.history
 
-    assert jnp.allclose(jnp.array(history.q),
-                        jnp.array(history_restored.q))
-    assert jnp.allclose(jnp.array(history.xyz_fixed),
-                        jnp.array(history_restored.xyz_fixed))
-    assert jnp.allclose(jnp.array(history.loads.nodes),
-                        jnp.array(history_restored.loads.nodes))
-    assert jnp.allclose(jnp.array(history.loads.edges),
-                        jnp.array(history_restored.loads.edges))
-    assert jnp.allclose(jnp.array(history.loads.faces),
-                        jnp.array(history_restored.loads.faces))
+    assert jnp.allclose(jnp.array(history.q), jnp.array(history_restored.q))
+    assert jnp.allclose(
+        jnp.array(history.xyz_fixed),
+        jnp.array(history_restored.xyz_fixed),
+    )
+    assert jnp.allclose(
+        jnp.array(history.loads.nodes),
+        jnp.array(history_restored.loads.nodes),
+    )
+    assert jnp.allclose(
+        jnp.array(history.loads.edges),
+        jnp.array(history_restored.loads.edges),
+    )
+    assert jnp.allclose(
+        jnp.array(history.loads.faces),
+        jnp.array(history_restored.loads.faces),
+    )

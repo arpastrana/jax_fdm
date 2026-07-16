@@ -25,13 +25,18 @@ class MeshSmoothGoal(ScalarGoal, MeshGoal):
         - The fairness is computed only for the free vertices.
         - No reweighting is performed based on vertex valences.
     """
+
     def __init__(self) -> None:
         super().__init__()
         # set in init() from the mesh structure, before any prediction runs
         self.adjacency: Float[Array, "vertices vertices"]
         self.indices_free: Int[Array, "nodes_free"]
 
-    def init(self, model: EquilibriumModel, structure: EquilibriumMeshStructure) -> None:
+    def init(
+        self,
+        model: EquilibriumModel,
+        structure: EquilibriumMeshStructure,
+    ) -> None:
         """
         Initialize the constraint with information from an equilibrium model.
         """
@@ -39,7 +44,11 @@ class MeshSmoothGoal(ScalarGoal, MeshGoal):
         self.adjacency = structure.adjacency
         self.indices_free = structure.indices_free
 
-    def prediction(self, eq_state: EquilibriumState, index: Int[Array, ""]) -> Float[Array, "1"]:
+    def prediction(
+        self,
+        eq_state: EquilibriumState,
+        index: Int[Array, ""],
+    ) -> Float[Array, "1"]:
         """
         The current smoothness of the vertex.
         """

@@ -7,11 +7,12 @@ class VertexConstraint(Constraint):
     """
     Base class for all constraints that pertain to a vertex in a mesh.
     """
+
     def index_from_model(
         self,
         model: EquilibriumModel,
         structure: EquilibriumMeshStructure,
-        ) -> int | tuple[int, ...]:
+    ) -> int | tuple[int, ...]:
         """
         The index of the vertex in a structure.
         """

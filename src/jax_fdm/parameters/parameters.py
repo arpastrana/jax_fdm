@@ -10,6 +10,7 @@ from jax_fdm.equilibrium import EquilibriumStructure
 # Parameter
 # ==========================================================================
 
+
 class Parameter:
     """
     The base class for all parameters.
@@ -25,8 +26,13 @@ class Parameter:
         The upper bound of this parameter for optimization.
         Defaults to `+inf`.
     """
-    attr_name: str | None = None  # the datastructure attribute name; set per concrete subclass
-    key: int | tuple[int, int] | list[int] | list[tuple[int, int]]  # narrowed per concrete subclass
+
+    attr_name: str | None = (
+        None  # the datastructure attribute name; set per concrete subclass
+    )
+    key: (
+        int | tuple[int, int] | list[int] | list[tuple[int, int]]
+    )  # narrowed per concrete subclass
 
     def __init__(
         self,
@@ -92,10 +98,12 @@ class Parameter:
 # Individual parameters
 # ==========================================================================
 
+
 class NodeParameter(Parameter):
     """
     A node parameter.
     """
+
     key: int  # a non-group node key is always a bare int at runtime
 
     def index(self, model: EquilibriumModel, structure: EquilibriumStructure) -> int:
@@ -116,9 +124,14 @@ class VertexParameter(Parameter):
     """
     A vertex parameter.
     """
+
     key: int  # a non-group vertex key is always a bare int at runtime
 
-    def index(self, model: EquilibriumModel, structure: EquilibriumMeshStructure) -> int:
+    def index(
+        self,
+        model: EquilibriumModel,
+        structure: EquilibriumMeshStructure,
+    ) -> int:
         """
         Get the index of the key of the node parameter in the structure of a model.
         """
@@ -136,7 +149,9 @@ class EdgeParameter(Parameter):
     """
     An edge parameter.
     """
-    key: tuple[int, int]  # a non-group edge key is always a bare (u, v) tuple at runtime
+
+    # a non-group edge key is always a bare (u, v) tuple at runtime
+    key: tuple[int, int]
 
     def index(self, model: EquilibriumModel, structure: EquilibriumStructure) -> int:
         """
@@ -144,7 +159,11 @@ class EdgeParameter(Parameter):
         """
         return structure.edge_index[self.key]
 
-    def value(self, model: EquilibriumModel, datastructure: FDNetwork | FDMesh) -> float:
+    def value(
+        self,
+        model: EquilibriumModel,
+        datastructure: FDNetwork | FDMesh,
+    ) -> float:
         """
         Get the current value of the edge parameter.
         """
@@ -156,11 +175,14 @@ class EdgeParameter(Parameter):
 # Parameter groups
 # ==========================================================================
 
+
 class ParameterGroup(Parameter):
     """
     A parent class for groups of parameters.
     """
-    key: tuple[int, ...]  # a group's key is always a sequence of keys, never a bare int
+
+    # a group's key is always a sequence of keys, never a bare int
+    key: tuple[int, ...]
 
     def __init__(
         self,
@@ -174,9 +196,14 @@ class ParameterGroup(Parameter):
         super().__init__(key, bound_low, bound_up)
         assert len(self.key) > 0
 
-    def index(self, model: EquilibriumModel, structure: EquilibriumStructure) -> list[int]:
+    def index(
+        self,
+        model: EquilibriumModel,
+        structure: EquilibriumStructure,
+    ) -> list[int]:
         """
-        Get the indices of the keys of the parametrized group from the structure of a model.
+        Get the indices of the keys of the parametrized group from the structure of a
+        model.
         """
         raise NotImplementedError
 
@@ -185,9 +212,15 @@ class NodeGroupParameter(ParameterGroup):
     """
     A single parameter applied to a group of nodes.
     """
-    def index(self, model: EquilibriumModel, structure: EquilibriumStructure) -> list[int]:
+
+    def index(
+        self,
+        model: EquilibriumModel,
+        structure: EquilibriumStructure,
+    ) -> list[int]:
         """
-        Get the indices of the keys of the parametrized nodes from the structure of a model.
+        Get the indices of the keys of the parametrized nodes from the structure of a
+        model.
         """
         return [structure.node_index[key] for key in self.key]
 
@@ -204,7 +237,12 @@ class VertexGroupParameter(ParameterGroup):
     """
     A single parameter applied to a group of nodes.
     """
-    def index(self, model: EquilibriumModel, structure: EquilibriumMeshStructure) -> list[int]:
+
+    def index(
+        self,
+        model: EquilibriumModel,
+        structure: EquilibriumMeshStructure,
+    ) -> list[int]:
         """
         Get the indices of the keys of the parametrized vertices of a structure.
         """
@@ -223,19 +261,32 @@ class EdgeGroupParameter(ParameterGroup):
     """
     A single parameter applied to a group of edges.
     """
-    key: tuple[tuple[int, int], ...]  # an edge group key is always a sequence of (u, v) tuples at runtime
 
-    def index(self, model: EquilibriumModel, structure: EquilibriumStructure) -> list[int]:
+    # an edge group key is always a sequence of (u, v) tuples at runtime
+    key: tuple[tuple[int, int], ...]
+
+    def index(
+        self,
+        model: EquilibriumModel,
+        structure: EquilibriumStructure,
+    ) -> list[int]:
         """
-        Get the indices of the keys of the parametrized edges from the structure of a model.
+        Get the indices of the keys of the parametrized edges from the structure of a
+        model.
         """
         return [structure.edge_index[key] for key in self.key]
 
-    def value(self, model: EquilibriumModel, datastructure: FDNetwork | FDMesh) -> float:
+    def value(
+        self,
+        model: EquilibriumModel,
+        datastructure: FDNetwork | FDMesh,
+    ) -> float:
         """
         Get the current average value of the parameter of the grouped edges.
         """
-        values = [datastructure.edge_attribute(key, name=self.attr_name) for key in self.key]
+        values = [
+            datastructure.edge_attribute(key, name=self.attr_name) for key in self.key
+        ]
         # compas accessors are untyped but every attribute value here is a float
         return sum(values) / len(values)  # pyright: ignore[reportCallIssue, reportArgumentType]
 
@@ -244,10 +295,12 @@ class EdgeGroupParameter(ParameterGroup):
 # Edge force densities
 # ==========================================================================
 
+
 class EdgeForceDensityParameter(EdgeParameter):
     """
     An edge force density parameter.
     """
+
     attr_name = "q"
 
 
@@ -261,10 +314,12 @@ class EdgeGroupForceDensityParameter(EdgeGroupParameter, EdgeForceDensityParamet
 # Node supports
 # ==========================================================================
 
+
 class NodeSupportParameter(NodeParameter):
     """
     A node support parameter.
     """
+
     def index(self, model: EquilibriumModel, structure: EquilibriumStructure) -> int:
         """
         Get the index of the key of the node support in the structure of a model.
@@ -276,6 +331,7 @@ class NodeSupportXParameter(NodeSupportParameter):
     """
     Parametrize the X coordinate of a support node.
     """
+
     attr_name = "x"
 
 
@@ -283,6 +339,7 @@ class NodeSupportYParameter(NodeSupportParameter):
     """
     Parametrize the Y coordinate of a support node.
     """
+
     attr_name = "y"
 
 
@@ -290,6 +347,7 @@ class NodeSupportZParameter(NodeSupportParameter):
     """
     Parametrize the Z coordinate of a support node.
     """
+
     attr_name = "z"
 
 
@@ -302,9 +360,15 @@ class NodeGroupSupportParameter(NodeGroupParameter):
     """
     Parametrize a group of support nodes.
     """
-    def index(self, model: EquilibriumModel, structure: EquilibriumStructure) -> list[int]:
+
+    def index(
+        self,
+        model: EquilibriumModel,
+        structure: EquilibriumStructure,
+    ) -> list[int]:
         """
-        Get the indices of the keys of the parametrized nodes from the structure of a model.
+        Get the indices of the keys of the parametrized nodes from the structure of a
+        model.
         """
         return [structure.support_index[key] for key in self.key]
 
@@ -331,6 +395,7 @@ class NodeGroupSupportZParameter(NodeGroupSupportParameter, NodeSupportZParamete
 # Node loads
 # ==========================================================================
 
+
 class NodeLoadParameter(NodeParameter):
     """
     A node load parameter.
@@ -341,6 +406,7 @@ class NodeLoadXParameter(NodeLoadParameter):
     """
     Parametrize the x component of a node load.
     """
+
     attr_name = "px"
 
 
@@ -348,6 +414,7 @@ class NodeLoadYParameter(NodeLoadParameter):
     """
     Parametrize the y component of a node load.
     """
+
     attr_name = "py"
 
 
@@ -355,6 +422,7 @@ class NodeLoadZParameter(NodeLoadParameter):
     """
     Parametrize the z component of a node load.
     """
+
     attr_name = "pz"
 
 
@@ -362,21 +430,25 @@ class NodeLoadZParameter(NodeLoadParameter):
 # Node loads groups
 # ==========================================================================
 
+
 class NodeGroupLoadXParameter(NodeGroupParameter, NodeLoadXParameter):
     """
-    Parametrize with a single value the X component of the load applied to a group of nodes.
+    Parametrize with a single value the X component of the load applied to a group of
+    nodes.
     """
 
 
 class NodeGroupLoadYParameter(NodeGroupParameter, NodeLoadYParameter):
     """
-    Parametrize with a single value the Y component of the load applied to a group of nodes.
+    Parametrize with a single value the Y component of the load applied to a group of
+    nodes.
     """
 
 
 class NodeGroupLoadZParameter(NodeGroupParameter, NodeLoadZParameter):
     """
-    Parametrize with a single value the Z component of the load applied to a group of nodes.
+    Parametrize with a single value the Z component of the load applied to a group of
+    nodes.
     """
 
 
@@ -384,10 +456,12 @@ class NodeGroupLoadZParameter(NodeGroupParameter, NodeLoadZParameter):
 # Vertex supports
 # ==========================================================================
 
+
 class VertexSupportParameter(VertexParameter):
     """
     A vertex support parameter.
     """
+
     def index(self, model: EquilibriumModel, structure: EquilibriumStructure) -> int:
         """
         Get the index of the key of the vertex support in the structure of a model.
@@ -422,26 +496,41 @@ class VertexGroupSupportParameter(VertexGroupParameter):
     """
     Parametrize a group of support vertices.
     """
-    def index(self, model: EquilibriumModel, structure: EquilibriumStructure) -> list[int]:
+
+    def index(
+        self,
+        model: EquilibriumModel,
+        structure: EquilibriumStructure,
+    ) -> list[int]:
         """
-        Get the indices of the keys of the parametrized vertices of the structure of a model.
+        Get the indices of the keys of the parametrized vertices of the structure of a
+        model.
         """
         return [structure.support_index[key] for key in self.key]
 
 
-class VertexGroupSupportXParameter(VertexGroupSupportParameter, VertexSupportXParameter):
+class VertexGroupSupportXParameter(
+    VertexGroupSupportParameter,
+    VertexSupportXParameter,
+):
     """
     Parametrize with a single value the X coordinate of a group of support vertices.
     """
 
 
-class VertexGroupSupportYParameter(VertexGroupSupportParameter, VertexSupportYParameter):
+class VertexGroupSupportYParameter(
+    VertexGroupSupportParameter,
+    VertexSupportYParameter,
+):
     """
     Parametrize with a single value the Y coordinate of a group of support vertices.
     """
 
 
-class VertexGroupSupportZParameter(VertexGroupSupportParameter, VertexSupportZParameter):
+class VertexGroupSupportZParameter(
+    VertexGroupSupportParameter,
+    VertexSupportZParameter,
+):
     """
     Parametrize with a single value the Z coordinate of a group of support vertices.
     """
@@ -450,6 +539,7 @@ class VertexGroupSupportZParameter(VertexGroupSupportParameter, VertexSupportZPa
 # ==========================================================================
 # Vertex loads
 # ==========================================================================
+
 
 class VertexLoadXParameter(VertexParameter, NodeLoadXParameter):
     """
@@ -473,19 +563,23 @@ class VertexLoadZParameter(VertexParameter, NodeLoadZParameter):
 # Vertex loads groups
 # ==========================================================================
 
+
 class VertexGroupLoadXParameter(VertexGroupParameter, VertexLoadXParameter):
     """
-    Parametrize with a single value the X component of the load applied to a group of vertices.
+    Parametrize with a single value the X component of the load applied to a group of
+    vertices.
     """
 
 
 class VertexGroupLoadYParameter(VertexGroupParameter, VertexLoadYParameter):
     """
-    Parametrize with a single value the Y component of the load applied to a group of vertices.
+    Parametrize with a single value the Y component of the load applied to a group of
+    vertices.
     """
 
 
 class VertexGroupLoadZParameter(VertexGroupParameter, VertexLoadZParameter):
     """
-    Parametrize with a single value the Z component of the load applied to a group of vertices.
+    Parametrize with a single value the Z component of the load applied to a group of
+    vertices.
     """

@@ -17,19 +17,23 @@ from jax_fdm.goals import GoalState
 # Base goal
 # ==========================================================================
 
+
 class Goal:
     """
     The base goal.
 
     All goal subclasses must inherit from this class.
     """
+
     def __init__(
         self,
         key: int | tuple[int, int] | list[int] | list[tuple[int, int]],
         target: float | Float[Array, "..."],
         weight: float | Float[Array, "..."] = 1.0,
     ) -> None:
-        self._key: int | tuple[int, int] | list[int] | list[tuple[int, int]] | None = None
+        self._key: int | tuple[int, int] | list[int] | list[tuple[int, int]] | None = (
+            None
+        )
         self._weight: Float[Array, "elements 1"]
         self._target: Float[Array, "..."]
         # set in init() from the equilibrium structure, before any prediction runs
@@ -49,7 +53,10 @@ class Goal:
         return self._key
 
     @key.setter
-    def key(self, key: int | tuple[int, int] | list[int] | list[tuple[int, int]]) -> None:
+    def key(
+        self,
+        key: int | tuple[int, int] | list[int] | list[tuple[int, int]],
+    ) -> None:
         # A single-goal Collection re-wraps an already-list key as [[...]] when
         # it reconstructs the goal; unwrap that extra nesting so an aggregate
         # goal (e.g. NodesColinearGoal) keeps its flat list of element keys.
@@ -95,13 +102,21 @@ class Goal:
         # assign self.target without tripping a read-only property.
         raise NotImplementedError
 
-    def goal(self, target: Float[Array, "..."], prediction: Float[Array, "..."]) -> Float[Array, "..."]:
+    def goal(
+        self,
+        target: Float[Array, "..."],
+        prediction: Float[Array, "..."],
+    ) -> Float[Array, "..."]:
         """
         The goal value to compare the prediction against.
         """
         return target
 
-    def prediction(self, eq_state: EquilibriumState, index: Int[Array, "..."]) -> Float[Array, "..."]:
+    def prediction(
+        self,
+        eq_state: EquilibriumState,
+        index: Int[Array, "..."],
+    ) -> Float[Array, "..."]:
         """
         The current value of the quantity of interest.
         """
@@ -137,10 +152,15 @@ class Goal:
         """
         Return the current goal state.
         """
-        prediction = vmap(self.prediction, in_axes=(None, 0))(eqstate, self.index)  # pyright: ignore[reportArgumentType]  # self.index is a numpy index array populated in init and mapped to a jax scalar by vmap
+        # self.index is a numpy index array populated in init and mapped to a
+        # jax scalar by vmap
+        prediction = vmap(self.prediction, in_axes=(None, 0))(eqstate, self.index)  # pyright: ignore[reportArgumentType]
         goal = vmap(self.goal)(self.target, prediction)
 
-        msg = f"Goal {self.__class__.__name__} shape: {goal.shape} vs. prediction shape: {prediction.shape}"
+        msg = (
+            f"Goal {self.__class__.__name__} shape: {goal.shape} "
+            f"vs. prediction shape: {prediction.shape}"
+        )
         assert goal.shape == prediction.shape, msg
 
         return GoalState(goal=goal, prediction=prediction, weight=self.weight)
@@ -150,10 +170,12 @@ class Goal:
 # Base goal for a scalar quantity
 # ==========================================================================
 
+
 class ScalarGoal:
     """
     A goal that is expressed as a scalar quantity.
     """
+
     @property
     def target(self) -> Float[Array, "elements 1"]:
         """
@@ -171,10 +193,12 @@ class ScalarGoal:
 # Base goal for vector quantities
 # ==========================================================================
 
+
 class VectorGoal:
     """
     A goal that is expressed as a vector 3D quantity.
     """
+
     @property
     def target(self) -> Float[Array, "elements 3"]:
         """

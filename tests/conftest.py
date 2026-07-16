@@ -46,6 +46,7 @@ def assert_baseline(name, value):
 # Fixtures
 # ==============================================================================
 
+
 @pytest.fixture
 def arch_network():
     """

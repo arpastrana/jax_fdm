@@ -10,6 +10,7 @@ class NodePlaneGoal(NodePointGoal):
     """
     Pulls the xyz position of a node to a target plane.
     """
+
     @property
     def target(self) -> Float[Array, "elements 2 3"]:
         """
@@ -25,8 +26,9 @@ class NodePlaneGoal(NodePointGoal):
         self,
         target: Float[Array, "2 3"],
         prediction: Float[Array, "3"],
-        ) -> Float[Array, "3"]:
+    ) -> Float[Array, "3"]:
         """
-        Calculate the closest point on the target plane given the current node coordinates.
+        Calculate the closest point on the target plane given the current node
+        coordinates.
         """
         return closest_point_on_plane(prediction, target)

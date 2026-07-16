@@ -11,11 +11,12 @@ class NetworkEdgesForceConstraint(NetworkConstraint):
     """
     Set constraint bounds to the force passing through every edge of a network.
     """
+
     def constraint(
         self,
         eq_state: EquilibriumState,
         index: Int[Array, ""],
-        ) -> Float[Array, "edges"]:
+    ) -> Float[Array, "edges"]:
         """
         The constraint function relative to an equilibrium state.
         """

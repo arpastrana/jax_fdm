@@ -26,12 +26,15 @@ class Arrow(Shape):
     compas_notebook provide one, so we keep our own here. It is shared by every
     visualization backend that needs to draw load and reaction vectors.
     """
-    def __init__(self,
-                 position: list[float] = [0, 0, 0],
-                 direction: list[float] = [0, 0, 1],
-                 head_portion: float = 0.3,
-                 head_width: float = 0.1,
-                 body_width: float = 0.02) -> None:
+
+    def __init__(
+        self,
+        position: list[float] = [0, 0, 0],
+        direction: list[float] = [0, 0, 1],
+        head_portion: float = 0.3,
+        head_width: float = 0.1,
+        body_width: float = 0.02,
+    ) -> None:
         super().__init__()
         self.position = Vector(*position)
         self.direction = Vector(*direction)
@@ -77,7 +80,12 @@ class Arrow(Shape):
         _, faces = self.to_vertices_and_faces()
         return faces
 
-    def to_vertices_and_faces(self, triangulated: bool = False, u: int | None = None, v: Any = None) -> tuple[list[Vertex], list[Face]]:
+    def to_vertices_and_faces(
+        self,
+        triangulated: bool = False,
+        u: int | None = None,
+        v: Any = None,
+    ) -> tuple[list[Vertex], list[Face]]:
         """
         Returns a list of vertices and faces.
 
@@ -113,7 +121,10 @@ class Arrow(Shape):
         # Head of the arrow (a cone from the head base up to the tip)
         head_line = Line(head_base - head_vector * 0.5, head_base + head_vector * 0.5)
         cone = Cone.from_line_and_radius(head_line, self.head_width * length)
-        head_vertices, head_faces = cone.to_vertices_and_faces(u=u, triangulated=triangulated)
+        head_vertices, head_faces = cone.to_vertices_and_faces(
+            u=u,
+            triangulated=triangulated,
+        )
 
         # Manually join the vertices and faces of the body and the head
         offset = len(vertices)

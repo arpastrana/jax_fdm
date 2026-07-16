@@ -30,14 +30,14 @@ class Log(object):
 
     def write(self, message):
         self.flush()
-        self.out.write(message + '\n')
+        self.out.write(message + "\n")
         self.out.flush()
 
     def info(self, message):
-        self.write('[INFO] %s' % message)
+        self.write("[INFO] %s" % message)
 
     def warn(self, message):
-        self.write('[WARN] %s' % message)
+        self.write("[WARN] %s" % message)
 
 
 log = Log()
@@ -47,45 +47,48 @@ def confirm(question):
     while True:
         response = input(question).lower().strip()
 
-        if not response or response in ('n', 'no'):
+        if not response or response in ("n", "no"):
             return False
 
-        if response in ('y', 'yes'):
+        if response in ("y", "yes"):
             return True
 
-        print('Focus, kid! It is either (y)es or (n)o', file=sys.stderr)
+        print("Focus, kid! It is either (y)es or (n)o", file=sys.stderr)
 
 
 @task(default=True)
 def help(ctx):
     """Lists available tasks and usage."""
-    ctx.run('invoke --list')
+    ctx.run("invoke --list")
     log.write('Use "invoke -h <taskname>" to get detailed help for a task.')
 
 
-@task(help={
-    'bytecode': 'True to clean up compiled python files, otherwise False.',
-    'builds': 'True to clean up build/packaging artifacts, otherwise False.'})
+@task(
+    help={
+        "bytecode": "True to clean up compiled python files, otherwise False.",
+        "builds": "True to clean up build/packaging artifacts, otherwise False.",
+    },
+)
 def clean(ctx, bytecode=True, builds=True):
     """Cleans the local copy from compiled artifacts."""
     with chdir(BASE_FOLDER):
         if bytecode:
             for root, dirs, files in os.walk(BASE_FOLDER):
                 for f in files:
-                    if f.endswith('.pyc'):
+                    if f.endswith(".pyc"):
                         os.remove(os.path.join(root, f))
-                if '.git' in dirs:
-                    dirs.remove('.git')
+                if ".git" in dirs:
+                    dirs.remove(".git")
 
-        folders = ['dist/']
+        folders = ["dist/"]
 
         if bytecode:
-            for t in ('src', 'tests'):
-                folders.extend(glob.glob('{}/**/__pycache__'.format(t), recursive=True))
+            for t in ("src", "tests"):
+                folders.extend(glob.glob("{}/**/__pycache__".format(t), recursive=True))
 
         if builds:
-            folders.append('build/')
-            folders.append('src/jax_fdm.egg-info/')
+            folders.append("build/")
+            folders.append("src/jax_fdm.egg-info/")
 
         for folder in folders:
             rmtree(os.path.join(BASE_FOLDER, folder), ignore_errors=True)
@@ -94,62 +97,78 @@ def clean(ctx, bytecode=True, builds=True):
 @task()
 def lint(ctx):
     """Check the consistency of coding style."""
-    log.write('Running ruff linter...')
-    ctx.run('ruff check .')
+    log.write("Running ruff linter...")
+    ctx.run("ruff check .")
 
 
-@task(help={
-      'checks': 'True to run all checks before testing, otherwise False.'})
+@task(help={"checks": "True to run all checks before testing, otherwise False."})
 def test(ctx, checks=False, doctest=False):
     """Run all tests."""
     if checks:
         lint(ctx)
 
     with chdir(BASE_FOLDER):
-        cmd = ['pytest']
+        cmd = ["pytest"]
         if doctest:
-            cmd.append('--doctest-modules')
+            cmd.append("--doctest-modules")
 
-        ctx.run(' '.join(cmd))
+        ctx.run(" ".join(cmd))
 
 
-@task(help={
-      'serve': 'True to serve the docs locally with live reload, otherwise build them.'})
+@task(
+    help={
+        "serve": (
+            "True to serve the docs locally with live reload, otherwise build them."
+        ),
+    },
+)
 def docs(ctx, serve=False):
     """Build the documentation site with mkdocs."""
     with chdir(BASE_FOLDER):
-        ctx.run('mkdocs serve' if serve else 'mkdocs build --strict')
+        ctx.run("mkdocs serve" if serve else "mkdocs build --strict")
 
 
 @task
 def prepare_changelog(ctx):
     """Prepare changelog for next release."""
-    UNRELEASED_CHANGELOG_TEMPLATE = '## Unreleased\n\n### Added\n\n### Changed\n\n### Removed\n\n\n## '
+    UNRELEASED_CHANGELOG_TEMPLATE = (
+        "## Unreleased\n\n### Added\n\n### Changed\n\n### Removed\n\n\n## "
+    )
 
     with chdir(BASE_FOLDER):
         # Preparing changelog for next release
-        with open('CHANGELOG.md', 'r+') as changelog:
+        with open("CHANGELOG.md", "r+") as changelog:
             content = changelog.read()
             changelog.seek(0)
-            changelog.write(content.replace(
-                '## ', UNRELEASED_CHANGELOG_TEMPLATE, 1))
+            changelog.write(content.replace("## ", UNRELEASED_CHANGELOG_TEMPLATE, 1))
 
-        ctx.run('git add CHANGELOG.md && git commit -m "Prepare changelog for next release"')
+        ctx.run(
+            "git add CHANGELOG.md && "
+            'git commit -m "Prepare changelog for next release"',
+        )
 
 
-@task(help={
-      'release_type': 'Type of release follows semver rules. Must be one of: major, minor, patch.'})
+@task(
+    help={
+        "release_type": (
+            "Type of release follows semver rules. Must be one of: major, minor, patch."
+        ),
+    },
+)
 def release(ctx, release_type):
     """Releases the project in one swift command!"""
-    if release_type not in ('patch', 'minor', 'major'):
-        raise Exit('The release type parameter is invalid.\nMust be one of: major, minor, patch.')
+    if release_type not in ("patch", "minor", "major"):
+        raise Exit(
+            "The release type parameter is invalid.\n"
+            "Must be one of: major, minor, patch.",
+        )
 
     # Run checks
     lint(ctx)
     test(ctx)
 
     # Bump version and git tag it
-    ctx.run('bump-my-version bump %s --verbose' % release_type)
+    ctx.run("bump-my-version bump %s --verbose" % release_type)
 
     # Prepare the change log for the next release
     prepare_changelog(ctx)

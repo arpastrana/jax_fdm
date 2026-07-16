@@ -1,6 +1,7 @@
 """
 Solve a constrained force density problem using gradient-based optimization.
 """
+
 import os
 
 # compas
@@ -65,12 +66,10 @@ length_v = width_vault / (num_v - 1)
 arches = []
 long_edges = []
 for i in range(num_v):
-
     arch = []
     start = add_vectors(xyz_origin, [0.0, i * length_v, 0.0, 0.0])
 
     for j in range(num_u):
-
         x, y, z = add_vectors(start, [j * length_u, 0.0, 0.0])
         node = network.add_node(x=x, y=y, z=z)
         arch.append(node)
@@ -110,7 +109,7 @@ for edge in network.edges():
     network.edge_forcedensity(edge, q_init)
 
 # center vault around origin
-T = Translation.from_vector([-length_vault / 2., -width_vault / 2., 0.])
+T = Translation.from_vector([-length_vault / 2.0, -width_vault / 2.0, 0.0])
 network.transform(T)
 
 # ==========================================================================
@@ -187,13 +186,15 @@ optimizer = SLSQP()
 
 recorder = OptimizationRecorder(optimizer) if record else None
 
-c_network = constrained_fdm(network,
-                            optimizer=optimizer,
-                            loss=loss,
-                            parameters=parameters,
-                            maxiter=1000,
-                            tol=1e-9,
-                            callback=recorder)
+c_network = constrained_fdm(
+    network,
+    optimizer=optimizer,
+    loss=loss,
+    parameters=parameters,
+    maxiter=1000,
+    tol=1e-9,
+    callback=recorder,
+)
 
 # ==========================================================================
 # Export JSON
@@ -235,26 +236,29 @@ c_network.print_stats()
 viewer = Viewer()
 
 # optimized network
-viewer.add(c_network,
-           edgewidth=(0.02, 0.1),
-           loadscale=2.0,
-           edgecolor="force",
-           show_reactions=False,
-           show_loads=False)
+viewer.add(
+    c_network,
+    edgewidth=(0.02, 0.1),
+    loadscale=2.0,
+    edgecolor="force",
+    show_reactions=False,
+    show_loads=False,
+)
 
 # create mesh from edges
 edge_lines = [c_network.edge_coordinates(edge) for edge in c_network.edges()]
-mesh = Mesh.from_lines(edge_lines,
-                        delete_boundary_face=True)
+mesh = Mesh.from_lines(edge_lines, delete_boundary_face=True)
 
 # view mesh
 viewer.add(mesh, show_points=False, show_lines=False, opacity=0.5)
 
 # view reference network as plain geometry
-viewer.add(network.copy(cls=Network),
-           show_points=False,
-           linewidth=2.0,
-           color=Color.grey().darkened())
+viewer.add(
+    network.copy(cls=Network),
+    show_points=False,
+    linewidth=2.0,
+    color=Color.grey().darkened(),
+)
 
 # view lines betwen reference and optimized nodes
 for node in c_network.nodes():

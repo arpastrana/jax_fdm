@@ -14,6 +14,7 @@ from jax_fdm.equilibrium.solvers.types import SolverIterParams
 # Optimistix solvers
 # ==========================================================================
 
+
 def solver_newton(
     fn: Callable,
     theta: SolverIterParams,
@@ -33,7 +34,7 @@ def solver_newton(
         theta,
         x_init,
         solver_config,
-        solver_kwargs
+        solver_kwargs,
     )
 
     return solution
@@ -42,6 +43,7 @@ def solver_newton(
 # ==========================================================================
 # Helper functions
 # ==========================================================================
+
 
 def is_solver_root_finding(solver: Callable) -> bool:
     """

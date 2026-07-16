@@ -13,8 +13,10 @@ from jax_fdm.geometry import curvature_point_polygon
 
 class NodeCurvatureConstraint(NodeConstraint):
     """
-    Constraints the (discrete) curvature of a node based on a polygon of neighboring nodes.
+    Constraints the (discrete) curvature of a node based on a polygon of
+    neighboring nodes.
     """
+
     def __init__(
         self,
         key: int | list[int],
@@ -38,7 +40,7 @@ class NodeCurvatureConstraint(NodeConstraint):
         self,
         model: EquilibriumModel,
         structure: EquilibriumStructure,
-        ) -> Int[Array, "nodes neighbors"]:
+    ) -> Int[Array, "nodes neighbors"]:
         """
         Obtains the indices of the polygon from a model.
         """
@@ -54,9 +56,10 @@ class NodeCurvatureConstraint(NodeConstraint):
         self,
         eq_state: EquilibriumState,
         index: Int[Array, ""],
-        ) -> Float[Array, ""]:
+    ) -> Float[Array, ""]:
         """
-        Returns the curvature at a node based on the xyz coordinates of its one-hop neighborhood.
+        Returns the curvature at a node based on the xyz coordinates of its
+        one-hop neighborhood.
         """
         point = eq_state.xyz[index, :]
         index_polygon = self.index_polygon[index, :]

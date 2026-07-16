@@ -1,6 +1,7 @@
 """
 Solve a constrained force density problem using gradient-based optimization.
 """
+
 import os
 from random import random
 
@@ -140,7 +141,11 @@ if add_load_path_goal:
 if add_edge_length_goal:
     mesh_loaded = meshes["loaded"]
     for edge in mesh.edges():
-        goal = EdgeLengthGoal(edge, mesh_loaded.edge_length(edge), weight=weight_edge_length)
+        goal = EdgeLengthGoal(
+            edge,
+            mesh_loaded.edge_length(edge),
+            weight=weight_edge_length,
+        )
         goals.append(goal)
 
 loss = Loss(SquaredError(goals=goals))
@@ -157,9 +162,11 @@ if add_edge_length_constraint:
     length_max = ratio_length_max * average_length
 
     for edge in mesh.edges():
-        constraint = EdgeLengthConstraint(edge,
-                                          bound_low=length_min,
-                                          bound_up=length_max)
+        constraint = EdgeLengthConstraint(
+            edge,
+            bound_low=length_min,
+            bound_up=length_max,
+        )
         constraints.append(constraint)
 
     msg = "Edge length constraint between {} and {}"
@@ -167,9 +174,7 @@ if add_edge_length_constraint:
 
 if add_edge_force_constraint:
     for edge in mesh.edges():
-        constraint = EdgeForceConstraint(edge,
-                                         bound_low=force_min,
-                                         bound_up=force_max)
+        constraint = EdgeForceConstraint(edge, bound_low=force_min, bound_up=force_max)
         constraints.append(constraint)
 
     msg = "Edge force constraint between {} and {}"
@@ -182,10 +187,12 @@ if add_curvature_constraint:
 
     for key in subpolyedge:
         polygon = mesh.vertex_neighbors(key, ordered=True)
-        constraint = NodeCurvatureConstraint(key,
-                                             polygon,
-                                             bound_low=crv_min,
-                                             bound_up=crv_max)
+        constraint = NodeCurvatureConstraint(
+            key,
+            polygon,
+            bound_low=crv_min,
+            bound_up=crv_max,
+        )
         constraints.append(constraint)
 
     msg = "Node curvature constraint between {} and {} on {} nodes"
@@ -197,16 +204,20 @@ if add_curvature_constraint:
 
 meshes["free"] = fdm(mesh)
 
-meshes["uncstr_opt"] = constrained_fdm(mesh,
-                                       optimizer=optimizer(),
-                                       loss=loss,
-                                       maxiter=maxiter)
+meshes["uncstr_opt"] = constrained_fdm(
+    mesh,
+    optimizer=optimizer(),
+    loss=loss,
+    maxiter=maxiter,
+)
 
-meshes["cstr_opt"] = constrained_fdm(mesh,
-                                     optimizer=optimizer(),
-                                     loss=loss,
-                                     constraints=constraints,
-                                     maxiter=maxiter)
+meshes["cstr_opt"] = constrained_fdm(
+    mesh,
+    optimizer=optimizer(),
+    loss=loss,
+    constraints=constraints,
+    maxiter=maxiter,
+)
 
 # ==========================================================================
 # Print and export results
@@ -236,23 +247,27 @@ c_mesh = designs[-1] if len(designs) > 1 else designs[0]  # optimized design
 
 # view reference mesh as a plain wireframe (convert to a plain COMPAS mesh so the
 # viewer renders bare geometry instead of the force-density mesh scene object)
-viewer.add(mesh0.copy(cls=Mesh),
-           show_faces=False,
-           show_points=False,
-           show_edges=True,
-           linewidth=1.0,
-           color=Color.grey().darkened(10))
+viewer.add(
+    mesh0.copy(cls=Mesh),
+    show_faces=False,
+    show_points=False,
+    show_edges=True,
+    linewidth=1.0,
+    color=Color.grey().darkened(10),
+)
 
 # view the optimized mesh directly: shaded surface plus edges colored by force,
 # straight from the FDMesh
-viewer.add(c_mesh,
-           edgewidth=(0.05, 0.2),
-           show_vertices=False,
-           edgecolor="force",
-           show_reactions=False,
-           show_loads=False,
-           loadscale=0.5,
-           reactionscale=0.5)
+viewer.add(
+    c_mesh,
+    edgewidth=(0.05, 0.2),
+    show_vertices=False,
+    edgecolor="force",
+    show_reactions=False,
+    show_loads=False,
+    loadscale=0.5,
+    reactionscale=0.5,
+)
 
 # show le crème
 viewer.show()

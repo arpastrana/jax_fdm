@@ -34,6 +34,7 @@ ElementVectors = list[list[float]]
 # Form-finding
 # ==========================================================================
 
+
 def _fdm(
     model: EquilibriumModel,
     params: EquilibriumParametersState,
@@ -41,7 +42,8 @@ def _fdm(
     datastructure: FDNetwork | FDMesh,
 ) -> FDNetwork | FDMesh:
     """
-    Compute a datastructure in a state of static equilibrium using the force density method.
+    Compute a datastructure in a state of static equilibrium using the force density
+    method.
     """
     # compute static equilibrium
     eq_state = model(params, structure)
@@ -50,17 +52,20 @@ def _fdm(
     return datastructure_updated(datastructure, eq_state, params)
 
 
-def fdm(datastructure: FDNetwork | FDMesh,
-        sparse: bool = True,
-        is_load_local: bool = False,
-        tmax: int = 1,
-        eta: float = 1e-6,
-        itersolve_fn: Callable | None = None,
-        iterload_fn: Callable | None = None,
-        implicit_diff: bool = True,
-        verbose: bool = False) -> FDNetwork | FDMesh:
+def fdm(
+    datastructure: FDNetwork | FDMesh,
+    sparse: bool = True,
+    is_load_local: bool = False,
+    tmax: int = 1,
+    eta: float = 1e-6,
+    itersolve_fn: Callable | None = None,
+    iterload_fn: Callable | None = None,
+    implicit_diff: bool = True,
+    verbose: bool = False,
+) -> FDNetwork | FDMesh:
     """
-    Compute a datastructure in a state of static equilibrium using the force density method.
+    Compute a datastructure in a state of static equilibrium using the force density
+    method.
     """
     datastructure_validate(datastructure)
 
@@ -72,11 +77,14 @@ def fdm(datastructure: FDNetwork | FDMesh,
         itersolve_fn=itersolve_fn,
         iterload_fn=iterload_fn,
         implicit_diff=implicit_diff,
-        verbose=verbose
+        verbose=verbose,
     )
     structure = structure_from_datastructure(datastructure, sparse)
 
-    params = EquilibriumParametersState.from_datastructure(datastructure, dtype=DTYPE_JAX)
+    params = EquilibriumParametersState.from_datastructure(
+        datastructure,
+        dtype=DTYPE_JAX,
+    )
 
     return _fdm(model, params, structure, datastructure)
 
@@ -85,31 +93,38 @@ def fdm(datastructure: FDNetwork | FDMesh,
 # Constrained form-finding
 # ==========================================================================
 
-def constrained_fdm(datastructure: FDNetwork | FDMesh,
-                    optimizer: Optimizer,
-                    loss: Loss,
-                    parameters: list[Parameter] | None = None,
-                    constraints: list["Constraint"] | None = None,
-                    maxiter: int = 100,
-                    tol: float = 1e-6,
-                    tmax: int = 1,
-                    eta: float = 1e-6,
-                    callback: Callable | None = None,
-                    sparse: bool = True,
-                    is_load_local: bool = False,
-                    itersolve_fn: Callable | None = None,
-                    iterload_fn: Callable | None = None,
-                    implicit_diff: bool = True,
-                    nd: bool = False,
-                    verbose: bool = False,
-                    jit: bool = True) -> FDNetwork | FDMesh:
+
+def constrained_fdm(
+    datastructure: FDNetwork | FDMesh,
+    optimizer: Optimizer,
+    loss: Loss,
+    parameters: list[Parameter] | None = None,
+    constraints: list["Constraint"] | None = None,
+    maxiter: int = 100,
+    tol: float = 1e-6,
+    tmax: int = 1,
+    eta: float = 1e-6,
+    callback: Callable | None = None,
+    sparse: bool = True,
+    is_load_local: bool = False,
+    itersolve_fn: Callable | None = None,
+    iterload_fn: Callable | None = None,
+    implicit_diff: bool = True,
+    nd: bool = False,
+    verbose: bool = False,
+    jit: bool = True,
+) -> FDNetwork | FDMesh:
     """
-    Generate a network in a constrained state of static equilibrium using the force density method.
+    Generate a network in a constrained state of static equilibrium using the force
+    density method.
     """
     datastructure_validate(datastructure)
 
     if constraints and sparse:
-        print("\nConstraints are not supported yet for sparse inputs. Switching to dense.")
+        print(
+            "\nConstraints are not supported yet for sparse inputs. "
+            "Switching to dense.",
+        )
         sparse = False
 
     model = model_from_sparsity(
@@ -120,21 +135,23 @@ def constrained_fdm(datastructure: FDNetwork | FDMesh,
         itersolve_fn=itersolve_fn,
         iterload_fn=iterload_fn,
         implicit_diff=implicit_diff,
-        verbose=verbose
+        verbose=verbose,
     )
 
     structure = structure_from_datastructure(datastructure, sparse)
 
-    opt_problem = optimizer.problem(model,
-                                    structure,
-                                    datastructure,
-                                    loss,
-                                    parameters,
-                                    constraints,
-                                    maxiter,
-                                    tol,
-                                    callback,
-                                    jit)
+    opt_problem = optimizer.problem(
+        model,
+        structure,
+        datastructure,
+        loss,
+        parameters,
+        constraints,
+        maxiter,
+        tol,
+        callback,
+        jit,
+    )
 
     opt_params = optimizer.solve(opt_problem)
 
@@ -147,15 +164,17 @@ def constrained_fdm(datastructure: FDNetwork | FDMesh,
 # Helpers
 # ==========================================================================
 
+
 def model_from_sparsity(
-        sparse: bool,
-        tmax: int,
-        eta: float,
-        is_load_local: bool = False,
-        itersolve_fn: Callable | None = None,
-        iterload_fn: Callable | None = None,
-        implicit_diff: bool = True,
-        verbose: bool = False) -> EquilibriumModel:
+    sparse: bool,
+    tmax: int,
+    eta: float,
+    is_load_local: bool = False,
+    itersolve_fn: Callable | None = None,
+    iterload_fn: Callable | None = None,
+    implicit_diff: bool = True,
+    verbose: bool = False,
+) -> EquilibriumModel:
     """
     Create an equilibrium model from a sparsity flag.
     """
@@ -170,12 +189,16 @@ def model_from_sparsity(
         itersolve_fn=itersolve_fn,
         iterload_fn=iterload_fn,
         implicit_diff=implicit_diff,
-        verbose=verbose)
+        verbose=verbose,
+    )
 
     return model_instance
 
 
-def structure_from_datastructure(datastructure: FDNetwork | FDMesh, sparse: bool) -> EquilibriumStructure:
+def structure_from_datastructure(
+    datastructure: FDNetwork | FDMesh,
+    sparse: bool,
+) -> EquilibriumStructure:
     """
     Create a structure from a force density datastructure.
     """
@@ -186,7 +209,11 @@ def structure_from_datastructure(datastructure: FDNetwork | FDMesh, sparse: bool
     else:
         raise ValueError(f"Input datastructure {datastructure} is invalid")
 
-    return structure_factory(datastructure, sparse)  # pyright: ignore[reportArgumentType]  # structure_factory is narrowed to structure_from_network/structure_from_mesh by the isinstance checks above, but pyright does not carry that correlation across the reassigned datastructure param; the two branches match datastructure's actual runtime type
+    # structure_factory is narrowed to structure_from_network/structure_from_mesh by
+    # the isinstance checks above, but pyright does not carry that correlation across
+    # the reassigned datastructure param; the two branches match datastructure's
+    # actual runtime type
+    return structure_factory(datastructure, sparse)  # pyright: ignore[reportArgumentType]
 
 
 def structure_from_network(network: FDNetwork, sparse: bool) -> EquilibriumStructure:
@@ -215,17 +242,23 @@ def datastructure_validate(datastructure: FDNetwork | FDMesh) -> None:
     """
     Check that the network is healthy.
     """
-    assert datastructure.number_of_supports() > 0, "The FD datastructure has no supports"
+    assert datastructure.number_of_supports() > 0, (
+        "The FD datastructure has no supports"
+    )
     assert datastructure.number_of_edges() > 0, "The FD datastructure has no edges"
 
     has_fd = np.abs(np.array(datastructure.edges_forcedensities())) > 0.0
     num_no_fd = np.sum(np.logical_not(has_fd).astype(float))
-    assert np.all(has_fd), f"The FD datastructure has {int(num_no_fd)} edges with zero force density"
+    assert np.all(has_fd), (
+        f"The FD datastructure has {int(num_no_fd)} edges with zero force density"
+    )
 
     if isinstance(datastructure, FDNetwork):
         assert datastructure.number_of_nodes() > 0, "The FD datastructure has no nodes"
     elif isinstance(datastructure, FDMesh):
-        assert datastructure.number_of_vertices() > 0, "The FD datastructure has no vertices"
+        assert datastructure.number_of_vertices() > 0, (
+            "The FD datastructure has no vertices"
+        )
 
 
 def datastructure_updated(
@@ -235,7 +268,8 @@ def datastructure_updated(
     use_loadsfromparams: bool = False,
 ) -> FDNetwork | FDMesh:
     """
-    Return a copy of a datastructure whose attributes are updated with an equilibrium state.
+    Return a copy of a datastructure whose attributes are updated with an equilibrium
+    state.
     """
     datastructure = datastructure.copy()
     datastructure_update(datastructure, eq_state, params, use_loadsfromparams)
@@ -266,12 +300,10 @@ def datastructure_update(
         loads = eq_state.loads.tolist()
 
     # update edges
-    datastructure_edges_update(datastructure,
-                               (lengths, forces, forcedensities))
+    datastructure_edges_update(datastructure, (lengths, forces, forcedensities))
 
     # update nodes / vertices
-    datastructure_nodes_update(datastructure,
-                               (xyz, residuals, loads))
+    datastructure_nodes_update(datastructure, (xyz, residuals, loads))
 
 
 def datastructure_edges_update(
@@ -308,7 +340,6 @@ def datastructure_nodes_update(
         raise ValueError(f"Input datastructure {datastructure} is invalid")
 
     for idx, key in index_key().items():
-
         for name, value in zip("xyz", xyz[idx]):
             nodevertex_updater(key, name=name, value=value)
 

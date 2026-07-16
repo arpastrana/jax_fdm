@@ -41,7 +41,7 @@ weight_length = 1.0  # weight for edge length goal in optimisation
 weight_residual = 10.0  # weight for residual force goal in optimisation
 
 alpha = 0.1  # weight of the L2 regularization term in the loss function
-alpha_lp = 0.01   # weight of the total load path minimization goal
+alpha_lp = 0.01  # weight of the total load path minimization goal
 
 optimizer = LBFGSB  # optimization algorithm
 maxiter = 500  # optimizer maximum iterations
@@ -58,7 +58,7 @@ HERE = os.path.dirname(__file__)
 FILE_IN = os.path.abspath(os.path.join(HERE, f"../../data/json/{name}.json"))
 mesh = FDMesh.from_json(FILE_IN)
 
-print('Initial coarse mesh:', mesh)
+print("Initial coarse mesh:", mesh)
 
 # ==========================================================================
 # Densify coarse mesh
@@ -207,13 +207,15 @@ print(f"Load path: {round(mesh.loadpath(), 3)}")
 optimizer = optimizer()
 recorder = OptimizationRecorder(optimizer) if record else None
 
-design = constrained_fdm(mesh,
-                         optimizer=optimizer,
-                         loss=loss,
-                         parameters=parameters,
-                         maxiter=maxiter,
-                         tol=tol,
-                         callback=recorder)
+design = constrained_fdm(
+    mesh,
+    optimizer=optimizer,
+    loss=loss,
+    parameters=parameters,
+    maxiter=maxiter,
+    tol=tol,
+    callback=recorder,
+)
 
 # ==========================================================================
 # Export optimization history
@@ -259,20 +261,19 @@ viewer.renderer.camera.zoom(-35)  # number of steps, negative to zoom out
 viewer.renderer.camera.rotation.z = 0.0  # set rotation around z axis to zero
 
 # view reference mesh as a plain wireframe (convert to a plain COMPAS mesh)
-viewer.add(mesh.copy(cls=Mesh),
-           show_faces=False,
-           show_points=False,
-           show_edges=True)
+viewer.add(mesh.copy(cls=Mesh), show_faces=False, show_points=False, show_edges=True)
 
 # view the optimized mesh directly
-viewer.add(design,
-           edgewidth=(0.02, 0.2),
-           show_vertices=True,
-           show_loads=True,
-           show_faces=True,
-           edgecolor="fd",
-           show_reactions=True,
-           reactionscale=0.75)
+viewer.add(
+    design,
+    edgewidth=(0.02, 0.2),
+    show_vertices=True,
+    show_loads=True,
+    show_faces=True,
+    edgecolor="fd",
+    show_reactions=True,
+    reactionscale=0.75,
+)
 
 # show le crème
 viewer.show()

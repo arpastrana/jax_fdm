@@ -16,7 +16,12 @@ class MeshXYZLaplacianGoal(NetworkXYZLaplacianGoal):
     """
     A thin wrapper of NetworkXYZLaplacianGoal.
     """
-    def __init__(self, target: float | Float[Array, "..."] = 0.0, weight: float = 1.0) -> None:
+
+    def __init__(
+        self,
+        target: float | Float[Array, "..."] = 0.0,
+        weight: float = 1.0,
+    ) -> None:
         super().__init__(key=-1, target=target, weight=weight)
 
 
@@ -35,43 +40,73 @@ class MeshXYZFaceLaplacianGoal(ScalarGoal, MeshGoal):
     An energy-minimizing mesh will have every vertex as close as possible
     to its neighboring faces centroid.
     """
-    def __init__(self, target: float | Float[Array, "..."] = 0.0, weight: float = 1.0) -> None:
+
+    def __init__(
+        self,
+        target: float | Float[Array, "..."] = 0.0,
+        weight: float = 1.0,
+    ) -> None:
         super().__init__(key=-1, target=target, weight=weight)
         # set in init() from the mesh structure, before any prediction runs
         self.connectivity_faces_vertices: Float[Array, "faces vertices"]
 
-    def init(self, model: EquilibriumModel, structure: EquilibriumMeshStructure) -> None:
+    def init(
+        self,
+        model: EquilibriumModel,
+        structure: EquilibriumMeshStructure,
+    ) -> None:
         """
         Initialize the goal with information of a model and a structure.
         """
         super().init(model, structure)
         self.connectivity_faces_vertices = structure.connectivity_faces_vertices
 
-    def laplacian_vertices(self, eq_state: EquilibriumState, index: Int[Array, ""]) -> Float[Array, "vertices"]:
+    def laplacian_vertices(
+        self,
+        eq_state: EquilibriumState,
+        index: Int[Array, ""],
+    ) -> Float[Array, "vertices"]:
         """
         The current mesh Laplacian.
         """
-        def vertex_laplacian(vertex_xyz: Float[Array, "3"], vertex_mask: Float[Array, "faces"], faces_centroid: Float[Array, "faces 3"]) -> Float[Array, ""]:
+
+        def vertex_laplacian(
+            vertex_xyz: Float[Array, "3"],
+            vertex_mask: Float[Array, "faces"],
+            faces_centroid: Float[Array, "faces 3"],
+        ) -> Float[Array, ""]:
             nbrs_xyz = vertex_faces_centroid(vertex_mask, faces_centroid)
             return vertex_square_distance(vertex_xyz, nbrs_xyz)
 
-        def vertex_faces_centroid(vertex_mask: Float[Array, "faces"], faces_centroid: Float[Array, "faces 3"]) -> Float[Array, "3"]:
+        def vertex_faces_centroid(
+            vertex_mask: Float[Array, "faces"],
+            faces_centroid: Float[Array, "faces 3"],
+        ) -> Float[Array, "3"]:
             nbrs_xyzs = jnp.reshape(vertex_mask, (-1, 1)) * faces_centroid
             # return average centroid
             return jnp.sum(nbrs_xyzs, axis=0) / jnp.sum(vertex_mask)
 
-        def vertex_square_distance(vertex_xyz: Float[Array, "3"], nbrs_xyz: Float[Array, "3"]) -> Float[Array, ""]:
+        def vertex_square_distance(
+            vertex_xyz: Float[Array, "3"],
+            nbrs_xyz: Float[Array, "3"],
+        ) -> Float[Array, ""]:
             return jnp.sum(jnp.square(vertex_xyz - nbrs_xyz))
 
         faces_centroid = self.connectivity_faces_vertices @ eq_state.xyz
         vertices_laplacian = vmap(vertex_laplacian, in_axes=(0, 1, None))
-        laplacians = vertices_laplacian(eq_state.xyz,
-                                        self.connectivity_faces_vertices,
-                                        faces_centroid)
+        laplacians = vertices_laplacian(
+            eq_state.xyz,
+            self.connectivity_faces_vertices,
+            faces_centroid,
+        )
 
         return laplacians
 
-    def prediction(self, eq_state: EquilibriumState, index: Int[Array, ""]) -> Float[Array, "1"]:
+    def prediction(
+        self,
+        eq_state: EquilibriumState,
+        index: Int[Array, ""],
+    ) -> Float[Array, "1"]:
         """
         The current mesh Laplacian.
         """

@@ -12,7 +12,10 @@ from jaxtyping import Shaped
 
 def split_parameters(
     parray: Float[Array, "parameters"],
-    func: Callable[[Float[Array, "parameters"]], tuple[Shaped[np.ndarray, "parameters"], ...]],
+    func: Callable[
+        [Float[Array, "parameters"]],
+        tuple[Shaped[np.ndarray, "parameters"], ...],
+    ],
 ) -> tuple[list[Float[Array, "..."]], Int[np.ndarray, "parameters"]]:
     """
     Split a flat array into flat subarrays given a filter function.

@@ -8,6 +8,7 @@ class Collection:
     """
     A collection of goals of the same type to speed up optimization.
     """
+
     def __new__(cls, collectibles: list[Any]) -> Any:
         """
         Gather a collection of objects into a single vectorized object.

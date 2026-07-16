@@ -8,8 +8,10 @@ from jax_fdm.goals import Goal
 
 class NetworkGoal(Goal):
     """
-    Base class for all goals that pertain to a subset of the nodes and edges of a network.
+    Base class for all goals that pertain to a subset of the nodes and edges of a
+    network.
     """
+
     def __init__(
         self,
         key: int = -1,
@@ -25,7 +27,7 @@ class NetworkGoal(Goal):
         self,
         model: EquilibriumModel,
         structure: EquilibriumStructure,
-        ) -> int:
+    ) -> int:
         """
         The index of the goal key in a structure.
         """

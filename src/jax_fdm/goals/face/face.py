@@ -7,7 +7,12 @@ class FaceGoal(Goal):
     """
     Base class for all constraints that pertain to a face in a mesh.
     """
-    def index_from_model(self, model: EquilibriumModel, structure: EquilibriumMeshStructure) -> int | tuple[int, ...]:
+
+    def index_from_model(
+        self,
+        model: EquilibriumModel,
+        structure: EquilibriumMeshStructure,
+    ) -> int | tuple[int, ...]:
         """
         The index of the face in a structure.
         """

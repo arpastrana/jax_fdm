@@ -15,7 +15,12 @@ class EdgeForceGoal(ScalarGoal, EdgeGoal):
     """
     Make an edge of a network to reach a target force.
     """
-    def prediction(self, eq_state: EquilibriumState, index: Int[Array, ""]) -> Float[Array, "1"]:
+
+    def prediction(
+        self,
+        eq_state: EquilibriumState,
+        index: Int[Array, ""],
+    ) -> Float[Array, "1"]:
         """
         The predicted edge force.
         """
@@ -27,6 +32,7 @@ class EdgesForceEqualGoal(ScalarGoal, EdgeGoal):
     Equalize the internal force in a selection of edges by minimizing
     the normalized variance of their internal forces.
     """
+
     def __init__(self, key: list[tuple[int, int]], weight: float = 1.0) -> None:
         super().__init__(key=key, target=0.0, weight=weight)
         self.is_collectible = False
@@ -37,7 +43,11 @@ class EdgesForceEqualGoal(ScalarGoal, EdgeGoal):
         """
         self.index = np.atleast_2d(super().index_from_model(model, structure))
 
-    def prediction(self, eq_state: EquilibriumState, index: Int[Array, "elements"]) -> Float[Array, "1"]:
+    def prediction(
+        self,
+        eq_state: EquilibriumState,
+        index: Int[Array, "elements"],
+    ) -> Float[Array, "1"]:
         """
         The normalized variance of the forces of the edges.
         """
