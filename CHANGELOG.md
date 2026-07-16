@@ -49,6 +49,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Fixed `LoadState.from_datastructure` in `equilibrium.states` dropping the `dtype` argument when converting a network's node loads, so all four load arrays (nodes, edges, faces, and force densities) now share the requested precision.
+- Fixed a dead finite-difference path in `GradientDescent`: the inner `approx_fprime` closure in `gradient_descent` incremented the function-evaluation counter without a `nonlocal` declaration, raising `UnboundLocalError` whenever the optimizer ran without an explicit jacobian. Added a regression test that exercises the `jac=None` path.
 
 ### Removed
 
