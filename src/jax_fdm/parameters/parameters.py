@@ -87,7 +87,11 @@ class Parameter:
         """
         raise NotImplementedError
 
-    def value(self, model: EquilibriumModel, network: FDNetwork | FDMesh) -> float:
+    def value(
+        self,
+        model: EquilibriumModel,
+        datastructure: FDNetwork | FDMesh,
+    ) -> float:
         """
         Get the current value of a parameter from the structure of a model.
         """
@@ -112,12 +116,12 @@ class NodeParameter(Parameter):
         """
         return structure.node_index[self.key]
 
-    def value(self, model: EquilibriumModel, network: FDNetwork) -> float:
+    def value(self, model: EquilibriumModel, datastructure: FDNetwork) -> float:
         """
         Get the current value of the node parameter.
         """
         # compas accessors are untyped but the attribute always holds a float here
-        return network.node_attribute(self.key, name=self.attr_name)  # pyright: ignore[reportReturnType]
+        return datastructure.node_attribute(self.key, name=self.attr_name)  # pyright: ignore[reportReturnType]
 
 
 class VertexParameter(Parameter):
@@ -137,12 +141,12 @@ class VertexParameter(Parameter):
         """
         return structure.vertex_index[self.key]
 
-    def value(self, model: EquilibriumModel, mesh: FDMesh) -> float:
+    def value(self, model: EquilibriumModel, datastructure: FDMesh) -> float:
         """
         Get the current value of the node parameter.
         """
         # compas accessors are untyped but the attribute always holds a float here
-        return mesh.vertex_attribute(self.key, name=self.attr_name)  # pyright: ignore[reportReturnType]
+        return datastructure.vertex_attribute(self.key, name=self.attr_name)  # pyright: ignore[reportReturnType]
 
 
 class EdgeParameter(Parameter):
@@ -224,11 +228,13 @@ class NodeGroupParameter(ParameterGroup):
         """
         return [structure.node_index[key] for key in self.key]
 
-    def value(self, model: EquilibriumModel, network: FDNetwork) -> float:
+    def value(self, model: EquilibriumModel, datastructure: FDNetwork) -> float:
         """
         Get the current average value of the parameter of the grouped nodes.
         """
-        values = [network.node_attribute(key, name=self.attr_name) for key in self.key]
+        values = [
+            datastructure.node_attribute(key, name=self.attr_name) for key in self.key
+        ]
         # compas accessors are untyped but every attribute value here is a float
         return sum(values) / len(values)  # pyright: ignore[reportCallIssue, reportArgumentType]
 
@@ -248,11 +254,13 @@ class VertexGroupParameter(ParameterGroup):
         """
         return [structure.vertex_index[key] for key in self.key]
 
-    def value(self, model: EquilibriumModel, mesh: FDMesh) -> float:
+    def value(self, model: EquilibriumModel, datastructure: FDMesh) -> float:
         """
         Get the current average value of the parameter of the grouped vertices.
         """
-        values = [mesh.vertex_attribute(key, name=self.attr_name) for key in self.key]
+        values = [
+            datastructure.vertex_attribute(key, name=self.attr_name) for key in self.key
+        ]
         # compas accessors are untyped but every attribute value here is a float
         return sum(values) / len(values)  # pyright: ignore[reportCallIssue, reportArgumentType]
 
