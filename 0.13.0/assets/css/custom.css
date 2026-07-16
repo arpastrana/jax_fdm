@@ -1,0 +1,24 @@
+/* Site identity: a JAX-family violet. Change these four values to rebrand. */
+:root {
+  --md-primary-fg-color: #5e35b1;
+  --md-primary-fg-color--light: #7e57c2;
+  --md-primary-fg-color--dark: #4527a0;
+  --md-accent-fg-color: #7c4dff;
+}
+
+/* Indent documented object bodies under their signature heading. */
+div.doc-contents:not(.first) {
+  padding-left: 25px;
+  border-left: 4px solid rgba(230, 230, 230);
+}
+
+/* Boxed signature headings for API entries. */
+h4.doc-heading,
+h5.doc-heading,
+h6.doc-heading {
+  padding: 4px 8px;
+  border: 1px solid var(--md-default-fg-color--lightest);
+  border-radius: 4px;
+  background-color: var(--md-code-bg-color);
+  font-size: 0.9rem;
+}
