@@ -93,7 +93,8 @@ class LossPlotter:
         if not eq_kwargs:
             eq_kwargs = {"tmax": 1}
 
-        # Model is dense because it dense supports vmapping and sparse does not
+        # The model is dense because the dense model supports vmapping and the
+        # sparse one does not
         model = EquilibriumModel(**eq_kwargs)
 
         equilibrium_vmap = vmap(model, in_axes=(0, None))

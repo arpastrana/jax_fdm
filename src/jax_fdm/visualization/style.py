@@ -153,7 +153,8 @@ def edge_widths(
         The edges to size.
     width :
         A single width to broadcast, a per-edge dict, or a ``(min, max)`` pair to
-        remap the absolute edge forces into. If None, uses the default width.
+        remap the absolute edge forces into. If None, uses the default width
+        range, so the widths trace the force distribution.
 
     Returns
     -------
