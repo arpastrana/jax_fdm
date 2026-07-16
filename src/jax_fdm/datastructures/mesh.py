@@ -1,6 +1,4 @@
-"""
-A force density mesh.
-"""
+"""A force density mesh."""
 
 from collections.abc import Iterator
 from typing import Any
@@ -47,21 +45,41 @@ class FDMesh(Mesh, FDDatastructure):
 
     def is_vertex_support(self, key: int) -> bool:
         """
-        Test if the vertex is a support.
+        Test whether a vertex is a support.
+
+        Parameters
+        ----------
+        key :
+            The vertex to test.
+
+        Returns
+        -------
+        is_support :
+            True if the vertex is a support.
         """
         # getter-mode call always returns the bool default
         return self.vertex_attribute(key, name="is_support")  # pyright: ignore[reportReturnType]
 
     def number_of_supports(self) -> int:
         """
-        The number of supported vertices.
+        Count the supported vertices.
+
+        Returns
+        -------
+        count :
+            The number of support vertices.
         """
         # vertices_supports() with no keys always returns a generator, never None
         return len(list(self.vertices_supports()))  # pyright: ignore[reportArgumentType]
 
     def vertex_support(self, key: int) -> None:
         """
-        Sets a vertex to a fixed support.
+        Mark a vertex as a support.
+
+        Parameters
+        ----------
+        key :
+            The vertex to fix.
         """
         # setter-mode call always returns None
         return self.vertex_attribute(key, name="is_support", value=True)  # pyright: ignore[reportReturnType]
@@ -72,21 +90,53 @@ class FDMesh(Mesh, FDDatastructure):
         load: list[float] | None = None,
     ) -> list[float] | None:
         """
-        Gets or sets a load to a vertex.
+        Get or set the load vector on a single vertex.
+
+        Parameters
+        ----------
+        key :
+            The vertex to access.
+        load :
+            The load vector to set. If None, the current load is returned.
+
+        Returns
+        -------
+        load :
+            The vertex's load vector.
         """
         # names given as a non-empty tuple always returns a list
         return self.vertex_attributes(key, names=("px", "py", "pz"), values=load)  # pyright: ignore[reportReturnType]
 
     def vertex_residual(self, key: int) -> list[float]:
         """
-        Gets the residual force of a mesh vertex.
+        Get the residual force vector of a single vertex.
+
+        Parameters
+        ----------
+        key :
+            The vertex to access.
+
+        Returns
+        -------
+        residual :
+            The vertex's residual force vector.
         """
         # names given as a non-empty tuple always returns a list
         return self.vertex_attributes(key, names=("rx", "ry", "rz"))  # pyright: ignore[reportReturnType]
 
     def vertex_reaction(self, key: int) -> list[float]:
         """
-        Gets the reaction force of a mesh vertex.
+        Get the reaction force vector of a single vertex.
+
+        Parameters
+        ----------
+        key :
+            The vertex to access.
+
+        Returns
+        -------
+        reaction :
+            The vertex's reaction force, equal to its residual.
         """
         return self.vertex_residual(key)
 
@@ -96,7 +146,19 @@ class FDMesh(Mesh, FDDatastructure):
         axes: str = "xyz",
     ) -> list[list[float]]:
         """
-        Gets or sets the x, y, z coordinates of a list of vertices.
+        Get the coordinates of many vertices.
+
+        Parameters
+        ----------
+        keys :
+            The vertices to access. If None, all vertices are used.
+        axes :
+            The coordinate axes to return, as a subset of ``"xyz"``.
+
+        Returns
+        -------
+        coordinates :
+            The selected coordinates of each vertex.
         """
         vertex_keys = keys or self.vertices()
         # inherited COMPAS getter always returns a coordinate list here
@@ -108,7 +170,20 @@ class FDMesh(Mesh, FDDatastructure):
         axes: str = "xyz",
     ) -> list[list[float]]:
         """
-        Gets the x, y, z coordinates of the supports of the network.
+        Get the coordinates of the supported vertices.
+
+        Parameters
+        ----------
+        keys :
+            The candidate vertices; only the supported ones are kept. If None, all
+            supported vertices are used.
+        axes :
+            The coordinate axes to return, as a subset of ``"xyz"``.
+
+        Returns
+        -------
+        coordinates :
+            The selected coordinates of each supported vertex.
         """
         if keys:
             vertex_keys = {key for key in keys if self.is_vertex_support(key)}
@@ -121,7 +196,18 @@ class FDMesh(Mesh, FDDatastructure):
 
     def vertices_supports(self, keys: list[int] | None = None) -> Iterator[int] | None:
         """
-        Gets or sets the vertex keys where a support has been assigned.
+        Get the support vertices, or mark vertices as supports.
+
+        Parameters
+        ----------
+        keys :
+            The vertices to mark as supports. If None, the existing support vertices
+            are returned instead.
+
+        Returns
+        -------
+        supports :
+            The support vertex keys when reading; None when setting.
         """
         if keys is None:
             # data=False getter always yields plain vertex keys
@@ -132,13 +218,33 @@ class FDMesh(Mesh, FDDatastructure):
 
     def vertices_fixed(self, keys: list[int] | None = None) -> Iterator[int] | None:
         """
-        Gets or sets the vertex keys where a support has been assigned.
+        Get the support vertices, or mark vertices as supports.
+
+        Parameters
+        ----------
+        keys :
+            The vertices to mark as supports. If None, the existing support vertices
+            are returned instead.
+
+        Returns
+        -------
+        supports :
+            The support vertex keys when reading; None when setting.
+
+        Notes
+        -----
+        An alias of :meth:`vertices_supports`.
         """
         return self.vertices_supports(keys)
 
     def vertices_free(self) -> Iterator[int]:
         """
-        The keys of the vertices where there is no support assigned.
+        Iterate over the free (unsupported) vertices.
+
+        Returns
+        -------
+        vertices_free :
+            The keys of the vertices that are not supports.
         """
         # data=False getter always yields plain vertex keys
         return self.vertices_where({"is_support": False})  # pyright: ignore[reportReturnType]
@@ -149,7 +255,20 @@ class FDMesh(Mesh, FDDatastructure):
         keys: list[int] | None = None,
     ) -> list[list[float]] | None:
         """
-        Gets or sets a load to the vertices of the mesh.
+        Get or set the load vectors on many vertices.
+
+        Parameters
+        ----------
+        load :
+            The load vector to set on each vertex. If None, current loads are
+            returned.
+        keys :
+            The vertices to access. If None, all vertices are used.
+
+        Returns
+        -------
+        loads :
+            The load vector of each vertex.
         """
         # names given as a non-empty tuple always returns a list of lists
         return self.vertices_attributes(
@@ -160,14 +279,34 @@ class FDMesh(Mesh, FDDatastructure):
 
     def vertices_residual(self, keys: list[int] | None = None) -> list[list[float]]:
         """
-        Gets the residual forces at the vertices of the mesh.
+        Get the residual force vectors of many vertices.
+
+        Parameters
+        ----------
+        keys :
+            The vertices to access. If None, all vertices are used.
+
+        Returns
+        -------
+        residuals :
+            The residual force vector of each vertex.
         """
         # names given as a non-empty tuple always returns a list of lists
         return self.vertices_attributes(names=("rx", "ry", "rz"), keys=keys)  # pyright: ignore[reportReturnType]
 
     def vertices_reactions(self, keys: list[int] | None = None) -> list[list[float]]:
         """
-        Gets the reaction forces at the vertices of the mesh.
+        Get the reaction force vectors of the support vertices.
+
+        Parameters
+        ----------
+        keys :
+            The vertices to access. If None, all support vertices are used.
+
+        Returns
+        -------
+        reactions :
+            The reaction force vector of each selected vertex.
         """
         # vertices_fixed() with no keys always returns a generator, never None
         keys = keys or self.vertices_fixed()  # pyright: ignore[reportAssignmentType]
@@ -180,19 +319,49 @@ class FDMesh(Mesh, FDDatastructure):
     def edges(self, data: bool = False) -> Iterator[tuple[int, int]]:
         """
         Iterate over the edges of the mesh.
+
+        Parameters
+        ----------
+        data :
+            If True, yield each edge with its attribute dictionary.
+
+        Returns
+        -------
+        edges :
+            An iterator over the edge keys.
         """
         # data=False getter always yields plain (u, v) edge keys
         return super().edges(data)  # pyright: ignore[reportReturnType]
 
     def is_edge_supported(self, key: tuple[int, int]) -> bool:
         """
-        Test if any of edge vertices is a support.
+        Test whether either end vertex of an edge is a support.
+
+        Parameters
+        ----------
+        key :
+            The edge to test.
+
+        Returns
+        -------
+        is_supported :
+            True if at least one of the edge's vertices is a support.
         """
         return any(self.is_vertex_support(vertex) for vertex in key)
 
     def is_edge_fully_supported(self, key: tuple[int, int]) -> bool:
         """
-        Test if all the edge vertices are a support.
+        Test whether both end vertices of an edge are supports.
+
+        Parameters
+        ----------
+        key :
+            The edge to test.
+
+        Returns
+        -------
+        is_fully_supported :
+            True if both of the edge's vertices are supports.
         """
         return all(self.is_vertex_support(vertex) for vertex in key)
 
@@ -202,7 +371,17 @@ class FDMesh(Mesh, FDDatastructure):
 
     def face_lcs(self, key: int) -> list[list[float]]:
         """
-        Calculate the local coordinate system (LCS) of this face.
+        Compute the local coordinate frame of a face.
+
+        Parameters
+        ----------
+        key :
+            The face to access.
+
+        Returns
+        -------
+        lcs :
+            The three axes of the face's local coordinate system.
         """
         return polygon_lcs(jnp.asarray(self.face_coordinates(key))).tolist()
 
@@ -212,20 +391,52 @@ class FDMesh(Mesh, FDDatastructure):
         load: list[float] | None = None,
     ) -> list[float] | None:
         """
-        Gets or sets a load on a face.
+        Get or set the load vector on a single face.
+
+        Parameters
+        ----------
+        key :
+            The face to access.
+        load :
+            The load vector to set. If None, the current load is returned.
+
+        Returns
+        -------
+        load :
+            The face's load vector.
         """
         # names given as a non-empty tuple always returns a list
         return self.face_attributes(key=key, names=("px", "py", "pz"), values=load)  # pyright: ignore[reportReturnType]
 
     def is_face_supported(self, key: int) -> bool:
         """
-        Test if any of the face vertices is a support.
+        Test whether any vertex of a face is a support.
+
+        Parameters
+        ----------
+        key :
+            The face to test.
+
+        Returns
+        -------
+        is_supported :
+            True if at least one of the face's vertices is a support.
         """
         return any(self.is_vertex_support(vertex) for vertex in self.face_vertices(key))
 
     def is_face_fully_supported(self, key: int) -> bool:
         """
-        Test if all the face vertices are a support.
+        Test whether every vertex of a face is a support.
+
+        Parameters
+        ----------
+        key :
+            The face to test.
+
+        Returns
+        -------
+        is_fully_supported :
+            True if all of the face's vertices are supports.
         """
         return all(self.is_vertex_support(vertex) for vertex in self.face_vertices(key))
 
@@ -235,7 +446,19 @@ class FDMesh(Mesh, FDDatastructure):
         keys: list[int] | None = None,
     ) -> list[list[float]] | None:
         """
-        Gets or sets a load on the faces.
+        Get or set the load vectors on many faces.
+
+        Parameters
+        ----------
+        load :
+            The load vector to set on each face. If None, current loads are returned.
+        keys :
+            The faces to access. If None, all faces are used.
+
+        Returns
+        -------
+        loads :
+            The load vector of each face.
         """
         # names given as a non-empty tuple always returns a list of lists
         return self.faces_attributes(names=("px", "py", "pz"), values=load, keys=keys)  # pyright: ignore[reportReturnType]
@@ -246,7 +469,13 @@ class FDMesh(Mesh, FDDatastructure):
 
     def parameters(self) -> tuple[list[float], list[list[float]], list[list[float]]]:
         """
-        Return the design parameters of the network.
+        Return the force density design parameters of the mesh.
+
+        Returns
+        -------
+        parameters :
+            The edge force densities, the fixed vertex coordinates, and the vertex
+            loads.
         """
         q = self.edges_forcedensities()
         xyz_fixed = self.vertices_fixedcoordinates()
@@ -264,10 +493,16 @@ class FDMesh(Mesh, FDDatastructure):
 
     def index_edge(self) -> dict[int, tuple[int, int]]:
         """
-        Returns a dictionary that maps edges in a list to the corresponding
-        vertex key pairs.
+        Map each edge's enumeration index to its vertex key pair.
 
-        Mirrors ``compas.datastructures.Graph.index_edge``, which compas 2.x does
+        Returns
+        -------
+        index_edge :
+            A mapping from edge index to its ``(u, v)`` vertex key pair.
+
+        Notes
+        -----
+        Mirrors ``compas.datastructures.Graph.index_edge``, which COMPAS 2.x does
         not provide on ``Mesh``, so ``FDMesh`` and ``FDNetwork`` share the API.
         """
         # data=False getter always yields (u, v) vertex-key pairs
@@ -275,8 +510,12 @@ class FDMesh(Mesh, FDDatastructure):
 
     def uv_index(self) -> dict[tuple[int, int], int]:
         """
-        Returns a dictionary that maps edge keys (i.e. pairs of vertex keys)
-        to the corresponding edge index in a list or array of edges.
+        Map each edge's vertex key pair to its enumeration index.
+
+        Returns
+        -------
+        uv_index :
+            A mapping from each ``(u, v)`` vertex key pair to its edge index.
         """
         # data=False getter always yields (u, v) vertex-key pairs
         return {(u, v): index for index, (u, v) in enumerate(self.edges())}  # pyright: ignore[reportReturnType]
