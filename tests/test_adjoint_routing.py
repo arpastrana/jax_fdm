@@ -76,7 +76,7 @@ def _value_and_grad_fn(tmax, implicit_diff, sparse):
                                    tol=1e-6,
                                    jit_fn=False)
 
-    return problem["fun"], jnp.asarray(problem["x0"])
+    return problem.fun, jnp.asarray(problem.x0)
 
 
 def _routing(tmax, implicit_diff, sparse):

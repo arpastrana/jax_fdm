@@ -2,7 +2,9 @@
 A gradient-based optimizer.
 """
 from collections.abc import Callable
-from itertools import groupby
+from dataclasses import dataclass
+from dataclasses import field
+from dataclasses import fields
 from time import perf_counter
 from typing import TYPE_CHECKING
 from typing import Any
@@ -24,33 +26,104 @@ from jax_fdm.equilibrium import EquilibriumParametersState
 from jax_fdm.equilibrium import EquilibriumStructure
 from jax_fdm.equilibrium import LoadState
 from jax_fdm.losses import Loss
-from jax_fdm.optimization import Collection
+from jax_fdm.optimization import collect_goals
 from jax_fdm.parameters import EdgeForceDensityParameter
 from jax_fdm.parameters import Parameter
 from jax_fdm.parameters import ParameterManager
 
 if TYPE_CHECKING:
-    # deferred to avoid a runtime circular import (jax_fdm.goals pulls in
-    # jax_fdm.equilibrium, which imports back into jax_fdm.optimization);
-    # only needed for annotations.
-    from jax_fdm.goals import Goal
+    # Annotation-only import: pulling jax_fdm.constraints at runtime would form a
+    # cycle (constraints -> equilibrium -> optimization).
+    from jax_fdm.constraints import Constraint
+
+# ==========================================================================
+# Optimization problem
+# ==========================================================================
+
+@dataclass
+class OptProblem:
+    """
+    The arguments that describe an optimization problem.
+
+    This mirrors the signature of ``scipy.optimize.minimize``. The fields common
+    to every backend are named explicitly; the gradient-free and evolutionary
+    backends need a different keyword set (e.g. renaming ``fun`` to ``func`` and
+    dropping ``jac``/``hess``), so each ``_minimize`` override reads the fields it
+    needs and assembles its own keyword arguments rather than sharing one dict.
+    """
+    fun: Callable
+    x0: Float[Array, "parameters"]
+    method: str
+    options: dict[str, Any]
+    jac: bool | Callable = False
+    hess: Callable | None = None
+    tol: float | None = None
+    bounds: Bounds | list[tuple[float, float]] | None = None
+    constraints: Any = field(default_factory=list)
+    callback: Callable | None = None
+
+    def to_kwargs(self) -> dict[str, Any]:
+        """
+        Return the problem as a keyword-argument dictionary for a scipy backend.
+        """
+        return {f.name: getattr(self, f.name) for f in fields(self)}
 
 # ==========================================================================
 # Optimizer
 # ==========================================================================
 
+LoadsStatic = tuple[Float[Array, "edges 3"] | float, Float[Array, "faces 3"] | float]
+
+
 class Optimizer:
     """
     Base class for all optimizers.
     """
-    def __init__(self, name: str, disp: bool = True, **kwargs: Any):
-        self.name = name
+    name: str = ""
+
+    def __init__(self, disp: bool = False, **kwargs: Any):
+        # `name` is the fixed scipy method identity of each optimizer, so it is a
+        # class attribute rather than a constructor argument. `disp` toggles the
+        # backend's own console output; jax_fdm already prints its own progress,
+        # so it stays quiet by default.
         self.disp = disp
-        self.pm: ParameterManager | None = None
-        self.loads_static: tuple[Float[Array, "edges 3"] | float, Float[Array, "faces 3"] | float] | None = None
+        self._pm: ParameterManager | None = None
+        self._loads_static: LoadsStatic | None = None
         self.result: OptimizeResult | None = None
 
-    def constraints(self, constraints: list[Any], model: EquilibriumModel, params_opt: Float[Array, "parameters"]) -> None:
+    @property
+    def pm(self) -> ParameterManager:
+        """
+        The parameter manager, set up by ``problem()`` before a solve.
+        """
+        if self._pm is None:
+            raise RuntimeError("The parameter manager is unset; call problem() first.")
+        return self._pm
+
+    @pm.setter
+    def pm(self, value: ParameterManager) -> None:
+        self._pm = value
+
+    @property
+    def loads_static(self) -> LoadsStatic:
+        """
+        The static edge and face loads, set up by ``problem()`` before a solve.
+        """
+        if self._loads_static is None:
+            raise RuntimeError("The static loads are unset; call problem() first.")
+        return self._loads_static
+
+    @loads_static.setter
+    def loads_static(self, value: LoadsStatic) -> None:
+        self._loads_static = value
+
+    def constraints(
+        self,
+        constraints: list["Constraint"],
+        model: EquilibriumModel,
+        structure: EquilibriumStructure,
+        params_opt: Float[Array, "parameters"],
+    ) -> list[Any] | None:
         """
         Returns the defined constraints in a format amenable to `scipy.minimize`.
         """
@@ -73,7 +146,13 @@ class Optimizer:
 # Loss
 # ==========================================================================
 
-    def loss(self, params_opt: Float[Array, "parameters"], loss: Loss, model: EquilibriumModel, structure: EquilibriumStructure) -> Float[Array, ""]:
+    def loss(
+        self,
+        params_opt: Float[Array, "parameters"],
+        loss: Loss,
+        model: EquilibriumModel,
+        structure: EquilibriumStructure,
+    ) -> Float[Array, ""]:
         """
         The wrapper loss.
         """
@@ -85,12 +164,17 @@ class Optimizer:
 # Goals
 # ==========================================================================
 
-    def goals(self, loss: Loss, model: EquilibriumModel, structure: EquilibriumStructure) -> None:
+    def goals(
+        self,
+        loss: Loss,
+        model: EquilibriumModel,
+        structure: EquilibriumStructure,
+    ) -> None:
         """
         Pre-process the goals in the loss function to accelerate computations.
         """
         for term in loss.terms_error:
-            goal_collections = self.collect_goals(term.goals)
+            goal_collections = collect_goals(term.goals)
             for goal_collection in goal_collections:
                 goal_collection.init(model, structure)
             term.collections = goal_collections
@@ -99,17 +183,19 @@ class Optimizer:
 # Minimization
 # ==========================================================================
 
-    def problem(self,
-                model: EquilibriumModel,
-                structure: EquilibriumStructure,
-                datastructure: FDNetwork | FDMesh,
-                loss: Loss,
-                parameters: list[Parameter] | None = None,
-                constraints: list[Any] | None = None,
-                maxiter: int = 100,
-                tol: float = 1e-6,
-                callback: Callable | None = None,
-                jit_fn: bool = True) -> dict[str, Any]:
+    def problem(
+        self,
+        model: EquilibriumModel,
+        structure: EquilibriumStructure,
+        datastructure: FDNetwork | FDMesh,
+        loss: Loss,
+        parameters: list[Parameter] | None = None,
+        constraints: list["Constraint"] | None = None,
+        maxiter: int = 100,
+        tol: float = 1e-6,
+        callback: Callable | None = None,
+        jit_fn: bool = True,
+    ) -> OptProblem:
         """
         Set up an optimization problem.
         """
@@ -167,24 +253,22 @@ class Optimizer:
         constraints = constraints or []
         if constraints:
             start_time = perf_counter()
-            constraints = self.constraints(constraints, model, structure, x)  # pyright: ignore[reportCallIssue]  # base Optimizer.constraints() takes (constraints, model, params_opt); only ConstrainedOptimizer subclasses accept the extra `structure` arg used here
+            constraints = self.constraints(constraints, model, structure, x)
             print(f"\tConstraints warmup time: {(perf_counter() - start_time):.4} seconds")
 
         # optimization options
         options = self.options(extra={"maxiter": maxiter})
 
-        opt_kwargs = {"fun": loss_and_grad_fn,
-                      "jac": True,
-                      "hess": hessian_fn,
-                      "method": self.name,
-                      "x0": x,
-                      "tol": tol,
-                      "bounds": bounds,
-                      "constraints": constraints,
-                      "callback": callback,
-                      "options": options}
-
-        return opt_kwargs
+        return OptProblem(fun=loss_and_grad_fn,
+                          jac=True,
+                          hess=hessian_fn,
+                          method=self.name,
+                          x0=x,
+                          tol=tol,
+                          bounds=bounds,
+                          constraints=constraints,
+                          callback=callback,
+                          options=options)
 
     def options(self, extra: dict[str, Any] | None = None) -> dict[str, Any]:
         """
@@ -205,14 +289,13 @@ class Optimizer:
 
         return options
 
-    def solve(self, opt_problem: dict[str, Any]) -> Float[Array, "parameters"]:
+    def solve(self, opt_problem: OptProblem) -> Float[Array, "parameters"]:
         """
         Solve an optimization problem by minimizing a loss function.
         """
         # call callback with initial parameters
-        callback = opt_problem.get("callback")
-        if callback is not None:
-            callback(opt_problem["x0"])
+        if opt_problem.callback is not None:
+            opt_problem.callback(opt_problem.x0)
 
         print(f"Optimization with {self.name} started...")
         start_time = perf_counter()
@@ -220,7 +303,7 @@ class Optimizer:
         # minimize
         res_q = self._minimize(opt_problem)
         self.result = res_q
-        loss_and_grad_fn = opt_problem["fun"]
+        loss_and_grad_fn = opt_problem.fun
         loss_val, grad_val = loss_and_grad_fn(res_q.x)
 
         print(f"Message: {res_q.message}")
@@ -230,37 +313,39 @@ class Optimizer:
 
         return res_q.x
 
-    @staticmethod
-    def _minimize(opt_problem: dict[str, Any]) -> OptimizeResult:
+    def _minimize(self, opt_problem: OptProblem) -> OptimizeResult:
         """
         Scipy backend method to minimize a loss function.
         """
-        return minimize(**opt_problem)
+        return minimize(**opt_problem.to_kwargs())
 
 # ==========================================================================
 # Parameters
 # ==========================================================================
 
-    def parameters_bounds(self) -> Bounds:
+    def parameters_bounds(self) -> Bounds | list[tuple[float, float]]:
         """
-        Return a tuple of arrays with the upper and the lower bounds of optimization parameters.
+        Return the lower and upper bounds of the optimization parameters.
+
+        Most backends consume a scipy ``Bounds`` object; ``IPOPT`` overrides this
+        to return a list of ``(low, high)`` pairs instead.
         """
-        return Bounds(lb=self.pm.bounds_low, ub=self.pm.bounds_up)  # pyright: ignore[reportArgumentType, reportOptionalMemberAccess]  # self.pm is Optional by declaration but populated by problem() before this is called; bounds_low/up are ndarrays, Bounds also accepts array-likes despite the float-only stub
+        return Bounds(lb=self.pm.bounds_low, ub=self.pm.bounds_up)  # pyright: ignore[reportArgumentType]  # bounds_low/up are ndarrays; Bounds also accepts array-likes despite its float-only stub
 
     def parameters_value(self) -> Float[Array, "parameters"]:
         """
         Return a flat array with the value of the optimization parameters.
         """
-        return self.pm.parameters_value  # pyright: ignore[reportOptionalMemberAccess]  # self.pm is Optional by declaration but populated by problem() before this is called
+        return self.pm.parameters_value
 
     def parameters_fdm(self, params_opt: Float[Array, "parameters"]) -> EquilibriumParametersState:
         """
         Reconstruct the force density parameters from the optimization parameters.
         """
-        params = self.pm.parameters_fdm(params_opt)  # pyright: ignore[reportOptionalMemberAccess]  # self.pm is Optional by declaration but populated by problem() before this is called
+        params = self.pm.parameters_fdm(params_opt)
 
         q, xyz_fixed, loads_nodes = params
-        loads_edges, loads_faces = self.loads_static  # pyright: ignore[reportGeneralTypeIssues]  # self.loads_static is Optional by declaration but populated by problem() before this is called
+        loads_edges, loads_faces = self.loads_static
 
         loads = LoadState(nodes=loads_nodes,
                           edges=loads_edges,
@@ -269,38 +354,3 @@ class Optimizer:
         return EquilibriumParametersState(q=q,
                                           xyz_fixed=xyz_fixed,
                                           loads=loads)
-
-# ==========================================================================
-# Goal collections
-# ==========================================================================
-
-    @staticmethod
-    def collect_goals(goals: list["Goal"]) -> list[Collection]:
-        """
-        Convert a list of goals into a list of goal collections.
-        """
-        goals_collectable = []
-        goals_uncollectable = []
-
-        for goal in goals:
-            if goal.is_collectible:
-                goals_collectable.append(goal)
-            else:
-                goals_uncollectable.append(goal)
-
-        collections = []
-
-        if goals_collectable:
-            goals_sorted = sorted(goals_collectable, key=lambda g: type(g).__name__)
-            groups = groupby(goals_sorted, lambda g: type(g))
-
-            for _, group in groups:
-                group = list(group)
-                collection = Collection(group)
-                collections.append(collection)
-
-        if goals_uncollectable:
-            for goal in goals_uncollectable:
-                collections.append(Collection([goal]))
-
-        return collections

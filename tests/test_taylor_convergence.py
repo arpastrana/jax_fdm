@@ -23,7 +23,7 @@ specific structure, so we exercise the same code paths on compact, generated
 geometry instead of the paper's heavy domes -- keeping the suite COMPAS-free and
 fixture-free. To obtain a scalar loss and its gradient over the flat parameter
 vector without running an optimization, we reuse the optimizer's own problem
-hook (``Optimizer.problem(...)["fun"]`` is ``jit(value_and_grad(loss))``), which
+hook (``Optimizer.problem(...).fun`` is ``jit(value_and_grad(loss))``), which
 is exactly how the paper's experiment scripts run their Taylor tests. Each test
 asserts both the paper's claim (slope -> 2) and that the analytical-adjoint
 gradient matches an unrolled automatic-differentiation gradient (implicit_diff
@@ -145,7 +145,7 @@ def _loss_and_grad(datastructure, parameters, tmax, is_load_local, implicit_diff
                                    tol=1e-6,
                                    jit_fn=True)
 
-    return problem["fun"], jnp.asarray(problem["x0"])
+    return problem.fun, jnp.asarray(problem.x0)
 
 
 def _linear_problem(num_vertices, implicit_diff):

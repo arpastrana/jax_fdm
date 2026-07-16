@@ -7,6 +7,7 @@ from scipy.optimize import OptimizeResult
 from scipy.optimize import approx_fprime
 
 from jax_fdm.optimization.optimizers import Optimizer
+from jax_fdm.optimization.optimizers import OptProblem
 
 # ==========================================================================
 # Gradient descent
@@ -16,17 +17,19 @@ class GradientDescent(Optimizer):
     """
     The gradient descent algorithm.
     """
+    name = "gradient-descent"
+
     def __init__(self, learning_rate: float = 0.01, **kwargs: Any):
-        super().__init__(name="gradient-descent", **kwargs)
+        super().__init__(**kwargs)
         self.learning_rate = learning_rate
 
-    def _minimize(self, opt_problem: dict[str, Any]) -> OptimizeResult:
+    def _minimize(self, opt_problem: OptProblem) -> OptimizeResult:
         """
         Custom backend method to minimize a loss function.
         """
-        opt_problem["options"]["learning_rate"] = self.learning_rate
+        opt_problem.options["learning_rate"] = self.learning_rate
 
-        return gradient_descent(**opt_problem)
+        return gradient_descent(**opt_problem.to_kwargs())
 
 
 # ==========================================================================

@@ -1,29 +1,9 @@
 import warnings
-from importlib.util import find_spec
 from typing import Any
 
+from jax_fdm import has_backend
+
 __all__ = ["has_backend", "null_viewer"]
-
-
-def has_backend(name: str) -> bool:
-    """
-    Check whether an optional visualization backend is installed.
-
-    The 3D viewer (``compas_viewer``), the notebook viewer (``compas_notebook``)
-    and the 2D plotter (``compas_plotter``) are optional dependencies. Their
-    absence should degrade gracefully instead of breaking ``import jax_fdm``.
-
-    Parameters
-    ----------
-    name : str
-        The import name of the backend package.
-
-    Returns
-    -------
-    bool
-        ``True`` if the package can be imported, ``False`` otherwise.
-    """
-    return find_spec(name) is not None
 
 
 class _NullObject:

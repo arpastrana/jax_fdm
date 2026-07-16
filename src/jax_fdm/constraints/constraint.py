@@ -26,10 +26,11 @@ class Constraint:
         self._key: int | tuple[int, int] | list[int] | list[tuple[int, int]] | None = None
         self.key = key
 
-        self._bound_low: float | Float[Array, "..."] | None = None
+        # normalized to a finite bound or +/- inf by the setters; never None after
+        self._bound_low: float | Float[Array, "..."]
         self.bound_low = bound_low
 
-        self._bound_up: float | Float[Array, "..."] | None = None
+        self._bound_up: float | Float[Array, "..."]
         self.bound_up = bound_up
 
         # set in init() from the equilibrium structure, before any constraint runs
@@ -72,7 +73,7 @@ class Constraint:
         return bound
 
     @property
-    def bound_low(self) -> float | Float[Array, "..."] | None:
+    def bound_low(self) -> float | Float[Array, "..."]:
         """
         The lower bound of this constraint.
         """
@@ -85,7 +86,7 @@ class Constraint:
         self._bound_low = self._bound_setter(bound)
 
     @property
-    def bound_up(self) -> float | Float[Array, "..."] | None:
+    def bound_up(self) -> float | Float[Array, "..."]:
         """
         The upper bound of this constraint.
         """

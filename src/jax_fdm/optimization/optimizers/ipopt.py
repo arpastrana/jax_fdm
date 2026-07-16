@@ -1,5 +1,6 @@
 from collections.abc import Callable
 from functools import partial
+from typing import TYPE_CHECKING
 from typing import Any
 
 import jax.numpy as jnp
@@ -9,15 +10,21 @@ from jax import vjp
 from jaxtyping import Array
 from jaxtyping import Float
 
-from jax_fdm.constraints import Constraint
+from jax_fdm import has_backend
 from jax_fdm.equilibrium import EquilibriumModel
+from jax_fdm.equilibrium import EquilibriumStructure
+from jax_fdm.optimization import collect_constraints
 from jax_fdm.optimization.optimizers import ConstrainedOptimizer
+from jax_fdm.optimization.optimizers import OptProblem
 from jax_fdm.optimization.optimizers import SecondOrderOptimizer
 
-try:
-    from cyipopt import minimize_ipopt  # pyright: ignore[reportMissingImports]  # cyipopt is an optional (ipopt extra) dependency
-except (ImportError, ModuleNotFoundError):
-    pass
+if TYPE_CHECKING:
+    # Annotation-only import: pulling jax_fdm.constraints at runtime would form a
+    # cycle (constraints -> equilibrium -> optimization).
+    from jax_fdm.constraints import Constraint
+
+if has_backend("cyipopt"):
+    from cyipopt import minimize_ipopt  # pyright: ignore[reportMissingImports]  # cyipopt is an optional (ipopt extra) dependency, gated by has_backend above
 
 
 # ==========================================================================
@@ -34,35 +41,57 @@ class IPOPT(ConstrainedOptimizer, SecondOrderOptimizer):
     -----
     Ipopt expects that the loss and constraint functions are twice differentiable.
     """
-    def __init__(self, acc_tol: float = 1e-9, disp: int = 1, **kwargs: Any):
-        super().__init__(name="IPOPT", disp=disp, **kwargs)  # pyright: ignore[reportArgumentType]  # disp is declared as bool but scipy/cyipopt-style verbosity accepts an int level too
+    name = "IPOPT"
+
+    def __init__(self, acc_tol: float = 1e-9, **kwargs: Any):
+        super().__init__(**kwargs)
         self.acceptable_tol = acc_tol
 
-    def _minimize(self, opt_problem: dict[str, Any]) -> Any:
+    def _minimize(self, opt_problem: OptProblem) -> Any:
         """
         Cyipopt backend method to minimize a loss function.
         """
-        opt_problem["options"]["acceptable_tol"] = self.acceptable_tol
+        opt_problem.options["acceptable_tol"] = self.acceptable_tol
+        # Ipopt expects an integer print level rather than a boolean flag.
+        opt_problem.options["disp"] = int(self.disp)
 
-        return minimize_ipopt(**opt_problem)
+        return minimize_ipopt(**opt_problem.to_kwargs())
 
-    def constraint_eq(self, params_opt: Float[Array, "parameters"], constraint: Constraint, model: EquilibriumModel) -> Float[Array, "constraints"]:
+    def constraint_eq(
+        self,
+        params_opt: Float[Array, "parameters"],
+        constraint: "Constraint",
+        model: EquilibriumModel,
+        structure: EquilibriumStructure,
+    ) -> Float[Array, "constraints"]:
         """
         A wrapper function for an equality constraint on the parameters.
         """
-        return self.constraint_ineq_low(params_opt, constraint, model)
+        return self.constraint_ineq_low(params_opt, constraint, model, structure)
 
-    def constraint_ineq_up(self, params_opt: Float[Array, "parameters"], constraint: Constraint, model: EquilibriumModel) -> Float[Array, "constraints"]:
+    def constraint_ineq_up(
+        self,
+        params_opt: Float[Array, "parameters"],
+        constraint: "Constraint",
+        model: EquilibriumModel,
+        structure: EquilibriumStructure,
+    ) -> Float[Array, "constraints"]:
         """
         A wrapper function for an inequality constraint on an upper bound of the parameters.
         """
-        return constraint.bound_up - self.constraint(params_opt, constraint, model)  # pyright: ignore[reportCallIssue]  # ConstrainedOptimizer.constraint() also requires a `structure` arg; this IPOPT-specific 3-arg wrapper predates that signature
+        return constraint.bound_up - self.constraint(params_opt, constraint, model, structure)
 
-    def constraint_ineq_low(self, params_opt: Float[Array, "parameters"], constraint: Constraint, model: EquilibriumModel) -> Float[Array, "constraints"]:
+    def constraint_ineq_low(
+        self,
+        params_opt: Float[Array, "parameters"],
+        constraint: "Constraint",
+        model: EquilibriumModel,
+        structure: EquilibriumStructure,
+    ) -> Float[Array, "constraints"]:
         """
         A wrapper function for an inequality constraint on a lower bound of the parameters.
         """
-        return self.constraint(params_opt, constraint, model) - constraint.bound_low  # pyright: ignore[reportCallIssue]  # ConstrainedOptimizer.constraint() also requires a `structure` arg; this IPOPT-specific 3-arg wrapper predates that signature
+        return self.constraint(params_opt, constraint, model, structure) - constraint.bound_low
 
     @staticmethod
     def hvp(x: Float[Array, "parameters"], v: Float[Array, "constraints"], f: Callable) -> Float[Array, "parameters"]:
@@ -79,9 +108,15 @@ class IPOPT(ConstrainedOptimizer, SecondOrderOptimizer):
         """
         Return a tuple of arrays with the upper and the lower bounds of optimization parameters.
         """
-        return list(zip(self.pm.bounds_low, self.pm.bounds_up))  # pyright: ignore[reportOptionalMemberAccess]  # self.pm is Optional by declaration but populated by problem() before this is called
+        return list(zip(self.pm.bounds_low, self.pm.bounds_up))
 
-    def constraints(self, constraints: list[Constraint], model: EquilibriumModel, params_opt: Float[Array, "parameters"]) -> list[dict[str, Any]]:
+    def constraints(
+        self,
+        constraints: list["Constraint"],
+        model: EquilibriumModel,
+        structure: EquilibriumStructure,
+        params_opt: Float[Array, "parameters"],
+    ) -> list[dict[str, Any]]:
         """
         Returns the defined constraints in a format amenable to `cyipopt`.
         """
@@ -89,27 +124,27 @@ class IPOPT(ConstrainedOptimizer, SecondOrderOptimizer):
             return []
 
         print(f"Constraints: {len(constraints)}")
-        constraints = self.collect_constraints(constraints)  # pyright: ignore[reportAssignmentType]  # reused as a local for the resulting Collection list, shadowing the incoming list[Constraint] parameter type
-        print(f"\tConstraint colections: {len(constraints)}")
+        collections = collect_constraints(constraints)
+        print(f"\tConstraint colections: {len(collections)}")
 
         clist = []
-        for constraint in constraints:
+        for constraint in collections:
 
             # initialize constraint
-            constraint.init(model)  # pyright: ignore[reportCallIssue]  # base Constraint.init() takes (model, structure); IPOPT's collect_constraints path predates that signature and only ever calls it with model
+            constraint.init(model, structure)
 
             # select constraint functions
             funs = []
-            if jnp.allclose(constraint.bound_low, constraint.bound_up):  # pyright: ignore[reportArgumentType]  # bound_low/bound_up are declared Optional but are always populated to a float/array by their setters before this point
+            if jnp.allclose(constraint.bound_low, constraint.bound_up):
                 ctype = "eq"
                 funs.append(self.constraint_eq)
                 print("\tAdding one equality constraint")
             else:
                 ctype = "ineq"
-                if not jnp.allclose(constraint.bound_low, -jnp.inf):  # pyright: ignore[reportArgumentType]  # bound_low is declared Optional but always populated to a float/array by its setter before this point
+                if not jnp.allclose(constraint.bound_low, -jnp.inf):
                     print("\tAdding bound low inequality constraint")
                     funs.append(self.constraint_ineq_low)
-                if not jnp.allclose(constraint.bound_up, jnp.inf):  # pyright: ignore[reportArgumentType]  # bound_up is declared Optional but always populated to a float/array by its setter before this point
+                if not jnp.allclose(constraint.bound_up, jnp.inf):
                     print("\tAdding bound high inequality constraint")
                     funs.append(self.constraint_ineq_up)
             if len(funs) == 0:
@@ -121,7 +156,7 @@ class IPOPT(ConstrainedOptimizer, SecondOrderOptimizer):
 
                 cdict = {}
 
-                cfun = partial(fun, constraint=constraint, model=model)
+                cfun = partial(fun, constraint=constraint, model=model, structure=structure)
                 jac = jit(jacfwd(cfun))
                 hvp = jit(partial(self.hvp, f=cfun))
 

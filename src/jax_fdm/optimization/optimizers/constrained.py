@@ -2,7 +2,8 @@
 A gradient-based optimizer that deals with equality and inequality constraints.
 """
 from functools import partial
-from itertools import groupby
+from typing import TYPE_CHECKING
+from typing import Any
 
 from jax import jacfwd
 from jax import jit
@@ -10,12 +11,16 @@ from jaxtyping import Array
 from jaxtyping import Float
 from scipy.optimize import NonlinearConstraint
 
-from jax_fdm.constraints import Constraint
 from jax_fdm.equilibrium import EquilibriumModel
 from jax_fdm.equilibrium import EquilibriumParametersState
 from jax_fdm.equilibrium import EquilibriumStructure
-from jax_fdm.optimization import Collection
+from jax_fdm.optimization import collect_constraints
 from jax_fdm.optimization.optimizers import Optimizer
+
+if TYPE_CHECKING:
+    # Annotation-only import: pulling jax_fdm.constraints at runtime would form a
+    # cycle (constraints -> equilibrium -> optimization).
+    from jax_fdm.constraints import Constraint
 
 # ==========================================================================
 # Constrained optimizer
@@ -27,23 +32,26 @@ class ConstrainedOptimizer(Optimizer):
     """
     def constraints(
         self,
-        constraints: list[Constraint],
+        constraints: list["Constraint"],
         model: EquilibriumModel,
         structure: EquilibriumStructure,
         params_opt: Float[Array, "parameters"],
-    ) -> list[NonlinearConstraint] | None:
+    ) -> list[Any] | None:
         """
         Returns the defined constraints in a format amenable to `scipy.minimize`.
+
+        Subclasses may return a different container: `IPOPT` returns a list of
+        cyipopt constraint dictionaries rather than scipy `NonlinearConstraint`s.
         """
         if not constraints:
             return
 
         print(f"Constraints: {len(constraints)}")
-        constraints = self.collect_constraints(constraints)  # pyright: ignore[reportAssignmentType]  # reused as a local for the resulting Collection list, shadowing the incoming list[Constraint] parameter type
-        print(f"\tConstraint colections: {len(constraints)}")
+        collections = collect_constraints(constraints)
+        print(f"\tConstraint colections: {len(collections)}")
 
         clist = []
-        for constraint in constraints:
+        for constraint in collections:
 
             # initialize constraint
             constraint.init(model, structure)
@@ -72,7 +80,7 @@ class ConstrainedOptimizer(Optimizer):
     def constraint(
         self,
         params_opt: Float[Array, "parameters"],
-        constraint: Constraint,
+        constraint: "Constraint",
         model: EquilibriumModel,
         structure: EquilibriumStructure,
     ) -> Float[Array, "constraints"]:
@@ -82,18 +90,3 @@ class ConstrainedOptimizer(Optimizer):
         params: EquilibriumParametersState = self.parameters_fdm(params_opt)
 
         return constraint(params, model, structure)
-
-    @staticmethod
-    def collect_constraints(constraints: list[Constraint]) -> list[Collection]:
-        """
-        Convert a list of constraints into a list of constraint collections.
-        """
-        constraints = sorted(constraints, key=lambda g: type(g).__name__)
-        groups = groupby(constraints, lambda g: type(g))
-
-        collections = []
-        for _, group in groups:
-            collection = Collection(list(group))
-            collections.append(collection)
-
-        return collections
