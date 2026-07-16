@@ -68,7 +68,6 @@ def help(ctx):
     'builds': 'True to clean up build/packaging artifacts, otherwise False.'})
 def clean(ctx, bytecode=True, builds=True):
     """Cleans the local copy from compiled artifacts."""
-
     with chdir(BASE_FOLDER):
         if bytecode:
             for root, dirs, files in os.walk(BASE_FOLDER):

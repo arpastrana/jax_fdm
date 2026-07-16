@@ -92,7 +92,9 @@ target-version = "py310"
 extend-exclude = ["notebooks"]
 
 [tool.ruff.lint]
-select = ["E", "F", "I", "W"]
+# D202 (no blank line after docstring) and D300 (triple double quotes) enforce the
+# multi-line docstring style; ruff check applies them even though ruff format is off.
+select = ["D202", "D300", "E", "F", "I", "W"]
 # jaxtyping shape strings (e.g. Float[Array, "nodes 3"]) are not valid forward
 # references, tripping pyflakes' F722 everywhere jaxtyping is used. F722 has no
 # legitimate hit in this codebase, so it is silenced globally rather than
@@ -113,6 +115,8 @@ known-first-party = ["compas", "jax_fdm"]
 # undefined names package-wide, F821 here is redundant, so it is silenced for the
 # entire package rather than enumerated per shape-annotated subpackage.
 "src/jax_fdm/**/*.py" = ["F821"]
+# Tests use JAX bool comparisons (E712) and long inline arrays (E501).
+"tests/*" = ["E712", "E501"]
 
 [tool.bumpversion]
 current_version = "0.12.0"
