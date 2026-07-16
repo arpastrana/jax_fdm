@@ -1,17 +1,14 @@
 from collections.abc import Callable
 from typing import Any
 
-import jax
-
-try:
-    from lineax import SVD
-    from optimistix import Newton
-    from optimistix import root_find
-
-except ImportError:
-    pass
+from jaxtyping import Array
+from jaxtyping import Float
+from lineax import SVD
+from optimistix import Newton
+from optimistix import root_find
 
 from jax_fdm.equilibrium.solvers import solver_optimistix
+from jax_fdm.equilibrium.solvers.types import SolverIterParams
 
 # ==========================================================================
 # Optimistix solvers
@@ -19,11 +16,12 @@ from jax_fdm.equilibrium.solvers import solver_optimistix
 
 def solver_newton(
     fn: Callable,
-    theta: jax.Array,
-    x_init: jax.Array,
+    theta: SolverIterParams,
+    x_init: Float[Array, "nodes_free_flat"],
     solver_config: dict[str, Any],
-) -> jax.Array:
+) -> Float[Array, "nodes_free_flat"]:
     """
+    Find a root of function f(theta, x) = 0 using Newton's method.
     """
     solver_config["verbose"] = False
     solver_kwargs = {"linear_solver": SVD()}

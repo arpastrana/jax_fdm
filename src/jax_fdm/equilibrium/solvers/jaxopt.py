@@ -1,17 +1,20 @@
 from collections.abc import Callable
 from typing import Any
 
-import jax
+from jaxtyping import Array
+from jaxtyping import Float
+
+from jax_fdm.equilibrium.solvers.types import SolverIterParams
 
 
 def solver_jaxopt(
     solver_cls: Callable,
     fn: Callable,
-    a: jax.Array,
-    x_init: jax.Array,
+    a: SolverIterParams,
+    x_init: Float[Array, "..."],
     solver_config: dict[str, Any],
     solver_kwargs: dict[str, Any] | None = None,
-) -> jax.Array:
+) -> Float[Array, "..."]:
     """
     Solve for a fixed point of a function f(a, x) using a jaxopt solver.
 

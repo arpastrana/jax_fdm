@@ -2,10 +2,13 @@ from collections.abc import Callable
 from functools import partial
 from typing import Any
 
-import jax
 from jax import custom_vjp
 from jax import vjp
 from jaxopt.linear_solve import solve_normal_cg
+from jaxtyping import Array
+from jaxtyping import Float
+
+from jax_fdm.equilibrium.solvers.types import SolverIterParams
 
 # ==========================================================================
 # Custom VJP via implicit differentiation
@@ -14,11 +17,11 @@ from jaxopt.linear_solve import solve_normal_cg
 @partial(custom_vjp, nondiff_argnums=(0, 1, 2))
 def solver_nonlinear_implicit(
     solver: Callable,
-    solver_config: Any,
+    solver_config: dict[str, Any],
     fn: Callable,
-    theta: jax.Array,
-    x_init: jax.Array,
-) -> jax.Array:
+    theta: SolverIterParams,
+    x_init: Float[Array, "nodes_free_flat"],
+) -> Float[Array, "nodes_free_flat"]:
     """
     Find a minimum of f(theta, x) in a least-squares sense using an iterative solver.
     """
@@ -27,11 +30,11 @@ def solver_nonlinear_implicit(
 
 def nonlinear_fwd(
     solver: Callable,
-    solver_config: Any,
+    solver_config: dict[str, Any],
     fn: Callable,
-    theta: jax.Array,
-    x_init: jax.Array,
-) -> tuple[jax.Array, tuple[jax.Array, jax.Array]]:
+    theta: SolverIterParams,
+    x_init: Float[Array, "nodes_free_flat"],
+) -> tuple[Float[Array, "nodes_free_flat"], tuple[SolverIterParams, Float[Array, "nodes_free_flat"]]]:
     """
     The forward pass of an iterative least squares solver.
 
@@ -55,11 +58,11 @@ def nonlinear_fwd(
 
 def nonlinear_bwd(
     solver: Callable,
-    solver_config: Any,
+    solver_config: dict[str, Any],
     fn: Callable,
-    res: tuple[jax.Array, jax.Array],
-    vec: jax.Array,
-) -> tuple[jax.Array, None]:
+    res: tuple[SolverIterParams, Float[Array, "nodes_free_flat"]],
+    vec: Float[Array, "nodes_free_flat"],
+) -> tuple[SolverIterParams, None]:
     """
     The backward pass of an iterative least squares solver.
 

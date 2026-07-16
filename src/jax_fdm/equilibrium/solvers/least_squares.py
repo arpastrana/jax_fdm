@@ -1,20 +1,16 @@
 from collections.abc import Callable
 from typing import Any
 
-import jax
 from jaxopt import GaussNewton
+from jaxtyping import Array
+from jaxtyping import Float
+from optimistix import Dogleg
+from optimistix import LevenbergMarquardt
+from optimistix import least_squares
 
 from jax_fdm.equilibrium.solvers.jaxopt import solver_jaxopt
 from jax_fdm.equilibrium.solvers.optimistix import solver_optimistix
-
-try:
-    from optimistix import Dogleg
-    from optimistix import LevenbergMarquardt
-    from optimistix import least_squares
-
-except ImportError:
-    pass
-
+from jax_fdm.equilibrium.solvers.types import SolverIterParams
 
 # ==========================================================================
 # JAXOPT solvers
@@ -22,10 +18,10 @@ except ImportError:
 
 def solver_gauss_newton(
     fn: Callable,
-    theta: jax.Array,
-    x_init: jax.Array,
+    theta: SolverIterParams,
+    x_init: Float[Array, "nodes_free_flat"],
     solver_config: dict[str, Any],
-) -> jax.Array:
+) -> Float[Array, "nodes_free_flat"]:
     """
     Minimize the residual of function f(theta, x) = 0 using the Gauss Newton algorithm.
 
@@ -49,10 +45,10 @@ def solver_gauss_newton(
 
 def solver_levenberg_marquardt(
     fn: Callable,
-    theta: jax.Array,
-    x_init: jax.Array,
+    theta: SolverIterParams,
+    x_init: Float[Array, "nodes_free_flat"],
     solver_config: dict[str, Any],
-) -> jax.Array:
+) -> Float[Array, "nodes_free_flat"]:
     """
     Minimize the residual of function f(theta, x) = 0 using the Levenberg Marquardt algorithm.
 
@@ -89,11 +85,12 @@ def solver_levenberg_marquardt(
 
 def solver_dogleg(
     fn: Callable,
-    theta: jax.Array,
-    x_init: jax.Array,
+    theta: SolverIterParams,
+    x_init: Float[Array, "nodes_free_flat"],
     solver_config: dict[str, Any],
-) -> jax.Array:
+) -> Float[Array, "nodes_free_flat"]:
     """
+    Minimize the residual of function f(theta, x) = 0 using the Dogleg trust-region algorithm.
     """
     solver_kwargs = {}
 

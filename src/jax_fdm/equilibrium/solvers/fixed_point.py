@@ -1,5 +1,6 @@
 from collections.abc import Callable
 from functools import partial
+from typing import Any
 
 import jax
 import jax.numpy as jnp
@@ -12,12 +13,15 @@ from jax.lax import custom_linear_solve
 from jax.scipy.sparse.linalg import bicgstab
 from jaxopt import AndersonAcceleration
 from jaxopt import FixedPointIteration
+from jaxtyping import Array
+from jaxtyping import Float
 from lineax import CG
 from lineax import FunctionLinearOperator
 from lineax import Normal
 from lineax import linear_solve
 
 from jax_fdm.equilibrium.solvers.jaxopt import solver_jaxopt
+from jax_fdm.equilibrium.solvers.types import SolverIterParams
 from jax_fdm.equilibrium.sparse import splu_cpu as splu
 from jax_fdm.equilibrium.sparse import splu_solve_cpu as splu_solve
 
@@ -25,7 +29,7 @@ from jax_fdm.equilibrium.sparse import splu_solve_cpu as splu_solve
 # Iterative solvers - JAXOPT
 # ==========================================================================
 
-def solver_anderson(f: Callable, a: jax.Array, x_init: jax.Array, solver_config: dict) -> jax.Array:
+def solver_anderson(f: Callable, a: SolverIterParams, x_init: Float[Array, "nodes_free 3"], solver_config: dict[str, Any]) -> Float[Array, "nodes_free 3"]:
     """
     Find a fixed point of a function f(a, x) using Anderson acceleration.
 
@@ -45,7 +49,7 @@ def solver_anderson(f: Callable, a: jax.Array, x_init: jax.Array, solver_config:
     return solver_jaxopt(AndersonAcceleration, f, a, x_init, solver_config, solver_kwargs)
 
 
-def solver_fixedpoint(f: Callable, a: jax.Array, x_init: jax.Array, solver_config: dict) -> jax.Array:
+def solver_fixedpoint(f: Callable, a: SolverIterParams, x_init: Float[Array, "nodes_free 3"], solver_config: dict[str, Any]) -> Float[Array, "nodes_free 3"]:
     """
     Find a fixed point of a function f(a, x) using Anderson acceleration.
 
@@ -88,7 +92,7 @@ def is_solver_fixedpoint(solver_fn: Callable) -> bool:
 # Homecooked solvers
 # ==========================================================================
 
-def solver_forward(f: Callable, a: jax.Array, x_init: jax.Array, solver_config: dict) -> jax.Array:
+def solver_forward(f: Callable, a: Any, x_init: Float[Array, "..."], solver_config: dict[str, Any]) -> Float[Array, "..."]:
     """
     Solve for a fixed point of a function f(a, x) using forward iteration.
 
@@ -139,11 +143,11 @@ def solver_forward(f: Callable, a: jax.Array, x_init: jax.Array, solver_config: 
 @partial(custom_vjp, nondiff_argnums=(0, 1, 2))
 def solver_fixedpoint_implicit(
     solver: Callable,
-    solver_config: dict,
+    solver_config: dict[str, Any],
     f: Callable,
-    a: jax.Array,
-    x_init: jax.Array,
-) -> jax.Array:
+    a: SolverIterParams,
+    x_init: Float[Array, "nodes_free 3"],
+) -> Float[Array, "nodes_free 3"]:
     """
     Solve for a fixed point of a function f(a, x) using an iterative solver.
     """
@@ -152,11 +156,11 @@ def solver_fixedpoint_implicit(
 
 def fixed_point_fwd(
     solver: Callable,
-    solver_config: dict,
+    solver_config: dict[str, Any],
     f: Callable,
-    a: jax.Array,
-    x_init: jax.Array,
-) -> tuple[jax.Array, tuple[jax.Array, jax.Array]]:
+    a: SolverIterParams,
+    x_init: Float[Array, "nodes_free 3"],
+) -> tuple[Float[Array, "nodes_free 3"], tuple[SolverIterParams, Float[Array, "nodes_free 3"]]]:
     """
     The forward pass of an iterative fixed point solver.
 
@@ -184,11 +188,11 @@ def fixed_point_fwd(
 
 def fixed_point_bwd_materialize(
     solver: Callable,
-    solver_config: dict,
+    solver_config: dict[str, Any],
     f: Callable,
-    res: tuple[jax.Array, jax.Array],
-    vec: jax.Array,
-) -> tuple[jax.Array, None]:
+    res: tuple[SolverIterParams, Float[Array, "nodes_free 3"]],
+    vec: Float[Array, "nodes_free 3"],
+) -> tuple[SolverIterParams, None]:
     """
     The backward pass of a fixed point solver materializing the Jacobian.
 
@@ -245,11 +249,11 @@ def fixed_point_bwd_materialize(
 
 def fixed_point_bwd_fixedpoint(
     solver: Callable,
-    solver_config: dict,
+    solver_config: dict[str, Any],
     f: Callable,
-    res: tuple[jax.Array, jax.Array],
-    vec: jax.Array,
-) -> tuple[jax.Array, None]:
+    res: tuple[SolverIterParams, Float[Array, "nodes_free 3"]],
+    vec: Float[Array, "nodes_free 3"],
+) -> tuple[SolverIterParams, None]:
     """
     The backward pass of an iterative fixed point solver.
 
@@ -310,11 +314,11 @@ def fixed_point_bwd_fixedpoint(
 
 def fixed_point_bwd_adjoint_general(
     solver: Callable,
-    solver_config: dict,
+    solver_config: dict[str, Any],
     f: Callable,
-    res: tuple[jax.Array, jax.Array],
-    vec: jax.Array,
-) -> tuple[jax.Array, None]:
+    res: tuple[SolverIterParams, Float[Array, "nodes_free 3"]],
+    vec: Float[Array, "nodes_free 3"],
+) -> tuple[SolverIterParams, None]:
     """
     The backward pass of a fixed point solver with the adjoint method.
 
@@ -362,11 +366,11 @@ def fixed_point_bwd_adjoint_general(
 
 def fixed_point_bwd_adjoint(
     solver: Callable,
-    solver_config: dict,
+    solver_config: dict[str, Any],
     f: Callable,
-    res: tuple[jax.Array, jax.Array],
-    vec: jax.Array,
-) -> tuple[jax.Array, None]:
+    res: tuple[SolverIterParams, Float[Array, "nodes_free 3"]],
+    vec: Float[Array, "nodes_free 3"],
+) -> tuple[SolverIterParams, None]:
     """
     The backward pass of an iterative fixed point solver with a pseudo-adjoint method.
 
