@@ -24,7 +24,30 @@ def solver_nonlinear_implicit(
     x_init: Float[Array, "nodes_free_flat"],
 ) -> Float[Array, "nodes_free_flat"]:
     """
-    Find a minimum of f(theta, x) in a least-squares sense using an iterative solver.
+    Solve a nonlinear system for ``x`` with implicit differentiation.
+
+    Parameters
+    ----------
+    solver :
+        The function that runs the nonlinear solve.
+    solver_config :
+        The configuration options of the solver.
+    fn :
+        The residual function to drive to zero.
+    theta :
+        The function parameters, differentiated through implicitly.
+    x_init :
+        The initial guess for the flattened solution vector.
+
+    Returns
+    -------
+    x_star :
+        The flattened solution vector.
+
+    Notes
+    -----
+    Wrapped in a custom VJP so the backward pass differentiates through the
+    solution implicitly rather than unrolling the solver iterations.
     """
     return solver(fn, theta, x_init, solver_config)
 
@@ -40,20 +63,26 @@ def nonlinear_fwd(
     tuple[SolverIterParams, Float[Array, "nodes_free_flat"]],
 ]:
     """
-    The forward pass of an iterative least squares solver.
+    Run the forward pass of the implicit nonlinear solver.
 
     Parameters
     ----------
-    solver: The function that executes a least_squares solver.
-    solver_config: The configuration options of the solver.
-    fn : The function to iterate upon.
-    theta : The function parameters.
-    x_init: An initial guess for the values of the solution vector.
+    solver :
+        The function that runs the nonlinear solve.
+    solver_config :
+        The configuration options of the solver.
+    fn :
+        The residual function to drive to zero.
+    theta :
+        The function parameters.
+    x_init :
+        The initial guess for the flattened solution vector.
 
     Returns
     -------
-    x_star : The solution vector at a fixed point.
-    res : Auxiliary data to transfer to the backward pass.
+    result :
+        The solution vector and the residual ``(theta, x_star)`` saved for the
+        backward pass.
     """
     x_star = solver_nonlinear_implicit(solver, solver_config, fn, theta, x_init)
 
@@ -70,19 +99,31 @@ def nonlinear_bwd(
     vec: Float[Array, "nodes_free_flat"],
 ) -> tuple[SolverIterParams, None]:
     """
-    The backward pass of an iterative least squares solver.
+    Run the backward pass of the implicit nonlinear solver.
 
     Parameters
     ----------
-    solver: The function that executes a fixed point solver.
-    solver_config: The configuration options of the solver.
-    fn : The function to iterate upon.
-    res : Auxiliary data transferred from the forward pass.
-    vec: The vector on the left of the VJP.
+    solver :
+        The function that runs the nonlinear solve. Unused here.
+    solver_config :
+        The configuration options of the solver. Unused here.
+    fn :
+        The residual function driven to zero.
+    res :
+        The residual from the forward pass: the parameters and the solution.
+    vec :
+        The cotangent vector on the left of the VJP.
 
     Returns
     -------
-    theta_bar: the VJP vector of fn w.r.t. the parameters `theta`
+    grads :
+        The cotangent with respect to the parameters, and None for the unused
+        initial guess.
+
+    Notes
+    -----
+    The adjoint system is solved matrix-free with normal-equation conjugate
+    gradients rather than by materializing the Jacobian.
     """
     theta, x_star = res
 

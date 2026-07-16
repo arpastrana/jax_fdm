@@ -24,18 +24,23 @@ def solver_gauss_newton(
     solver_config: dict[str, Any],
 ) -> Float[Array, "nodes_free_flat"]:
     """
-    Minimize the residual of function f(theta, x) = 0 using the Gauss Newton algorithm.
+    Drive the residual ``fn(theta, x)`` to zero with the Gauss-Newton algorithm.
 
     Parameters
     ----------
-    fn : The function to iterate upon.
-    theta : The function parameters.
-    x_init : An initial guess for the values of the solution vector.
-    solver_config : The configuration options of the solver.
+    fn :
+        The residual function to drive to zero.
+    theta :
+        The function parameters.
+    x_init :
+        The initial guess for the flattened solution vector.
+    solver_config :
+        The configuration options of the solver.
 
     Returns
     -------
-    x_star : The solution vector at the fixed point.
+    x_star :
+        The flattened solution vector at the residual minimum.
     """
     return solver_jaxopt(GaussNewton, fn, theta, x_init, solver_config)
 
@@ -52,24 +57,28 @@ def solver_levenberg_marquardt(
     solver_config: dict[str, Any],
 ) -> Float[Array, "nodes_free_flat"]:
     """
-    Minimize the residual of function f(theta, x) = 0 using the Levenberg Marquardt
-    algorithm.
+    Drive the residual ``fn(theta, x)`` to zero with the Levenberg-Marquardt method.
 
     Parameters
     ----------
-    fn : The function to iterate upon.
-    theta : The function parameters.
-    x_init : An initial guess for the values of the solution vector.
-    solver_config : The configuration options of the solver.
+    fn :
+        The residual function to drive to zero.
+    theta :
+        The function parameters.
+    x_init :
+        The initial guess for the flattened solution vector.
+    solver_config :
+        The configuration options of the solver.
 
     Returns
     -------
-    x_star : The solution vector at the fixed point.
+    x_star :
+        The flattened solution vector at the residual minimum.
 
     Notes
     -----
-    This solver is incompatible with `EquilibriumModelSparse` because
-    `jax.experimental.sparse.csr_matmat` does not implement a batching rule yet.
+    Incompatible with the sparse equilibrium model because
+    ``jax.experimental.sparse.csr_matmat`` does not implement a batching rule yet.
     """
     solver_kwargs = {}
 
@@ -93,8 +102,23 @@ def solver_dogleg(
     solver_config: dict[str, Any],
 ) -> Float[Array, "nodes_free_flat"]:
     """
-    Minimize the residual of function f(theta, x) = 0 using the Dogleg trust-region
-    algorithm.
+    Drive the residual ``fn(theta, x)`` to zero with the Dogleg trust-region method.
+
+    Parameters
+    ----------
+    fn :
+        The residual function to drive to zero.
+    theta :
+        The function parameters.
+    x_init :
+        The initial guess for the flattened solution vector.
+    solver_config :
+        The configuration options of the solver.
+
+    Returns
+    -------
+    x_star :
+        The flattened solution vector at the residual minimum.
     """
     solver_kwargs = {}
 
@@ -118,15 +142,17 @@ def solver_dogleg(
 
 def is_solver_leastsquares(solver_fn: Callable) -> bool:
     """
-    Test if a solver function is a least squares solver.
+    Test whether a solver function is a least-squares solver.
 
     Parameters
     ----------
-    `solver_fn`: A solver function
+    solver_fn :
+        The solver function to test.
 
     Returns
     -------
-    `True` if the solver is a least squares solver. Otherwise, `False`.
+    is_leastsquares :
+        True if the solver is a least-squares solver, otherwise False.
     """
     solver_fns = {solver_gauss_newton, solver_levenberg_marquardt, solver_dogleg}
 

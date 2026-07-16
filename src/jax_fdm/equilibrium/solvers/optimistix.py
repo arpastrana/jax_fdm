@@ -19,19 +19,37 @@ def solver_optimistix(
     solver_kwargs: dict[str, Any] | None = None,
 ) -> Float[Array, "..."]:
     """
-    Find a root of a function f(a, x) with optimistix.
+    Solve ``fn(a, x)`` with an Optimistix solver and routine.
 
     Parameters
     ----------
-    fn : The function to iterate upon.
-    a : The function parameters.
-    x_init: An initial guess for the values of the solution vector.
-    solver_config: The configuration options of the solver.
+    solver_cls :
+        The Optimistix solver class to instantiate.
+    routine_fn :
+        The Optimistix routine that runs the solve, e.g. ``least_squares`` or
+        ``root_find``.
+    fn :
+        The function to iterate upon.
+    a :
+        The function parameters.
+    x_init :
+        The initial guess for the solution vector.
+    solver_config :
+        The configuration options of the solver, read for ``tmax``, ``eta``,
+        ``verbose``, and ``implicit_diff``.
+    solver_kwargs :
+        Extra keyword arguments forwarded to the solver class. If None, no extras
+        are passed.
 
     Returns
     -------
-    x : The solution vector at a fixed point.
+    x_star :
+        The solution vector.
 
+    Notes
+    -----
+    Selects implicit-adjoint differentiation when ``implicit_diff`` is set, and
+    recursive-checkpoint adjoint otherwise.
     """
     tmax = solver_config["tmax"]
     eta = solver_config["eta"]

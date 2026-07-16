@@ -1,6 +1,4 @@
-"""
-NOTE: Sparse solver does not support forward mode auto-differentiation yet.
-"""
+"""Sparse linear solvers for the FDM system; reverse-mode autodiff only."""
 
 from collections.abc import Callable
 
@@ -35,21 +33,27 @@ SystemSolution = Float[Array, "unknowns rhs"]
 
 def spsolve_gpu_ravel(A: SystemMatrixLHS, b: SystemMatrixRHS) -> SystemSolution:
     """
-    A wrapper around cuda sparse linear solver that is GPU friendly.
+    Solve the sparse system on GPU by raveling all right-hand sides into one.
+
+    Parameters
+    ----------
+    A :
+        The left-hand side matrix, assumed symmetric.
+    b :
+        The right-hand side, one column per coordinate.
+
+    Returns
+    -------
+    x :
+        The solution, one column per right-hand side.
 
     Notes
     -----
-    We ravel b into a single vector because the CUDA sparse solver backend
-    cannot take b as a matrix.
-    Accordingly, we must construct a sparse block diagonal matrix that
-    repeats matrix A three times (one time per spatial coordinate XYZ).
-
-    This "raveled" linear solver could be faster than the `spsolve_gpu_stack`
-    alternative, because this functions solves the block linear system
-    all at once instead of 3 times in sequence.
-
-    This limitation with CUDA might make a GPU sparse solve more expensive
-    than a CPU sparse solve. So use this method with a pinch of salt.
+    The CUDA sparse backend cannot take a matrix right-hand side, so ``b`` is
+    raveled into one vector and ``A`` is repeated into a block-diagonal matrix (one
+    block per coordinate). This solves the whole block system at once, which can be
+    faster than :func:`spsolve_gpu_stack`, though the CUDA limitation may still make
+    a GPU solve costlier than a CPU one. So use this method with a pinch of salt.
     """
     # NOTE: we can pass CSC indices directly to the JAX solver because we can!
     # Just kidding. This is because the matrix A is symmetric :)
@@ -62,19 +66,25 @@ def spsolve_gpu_ravel(A: SystemMatrixLHS, b: SystemMatrixRHS) -> SystemSolution:
 
 def spsolve_gpu_stack(A: SystemMatrixLHS, b: SystemMatrixRHS) -> SystemSolution:
     """
-    A wrapper around cuda sparse linear solver that is GPU friendly.
+    Solve the sparse system on GPU one right-hand side column at a time.
+
+    Parameters
+    ----------
+    A :
+        The left-hand side matrix, assumed symmetric.
+    b :
+        The right-hand side, one column per coordinate.
+
+    Returns
+    -------
+    x :
+        The solution, one column per right-hand side.
 
     Notes
     -----
-    We must split b into three vectors (one per spatial coordinate XYZ),
-    and then solve a sparse system 3 times because the CUDA sparse solver
-    in the backend cannot take b as a matrix, but only as a vector.
-
-    The sparse solve in a GPU could thus be 3x more expensive than if it could
-    solve for the b matrix all at once?
-
-    This limitation with CUDA might make a GPU sparse solve more expensive
-    than a CPU sparse solve. So use this method with a pinch of salt.
+    The CUDA sparse backend only accepts vector right-hand sides, so the three
+    coordinate columns are solved separately and stacked. This can be up to three
+    times costlier than solving them together, as :func:`spsolve_gpu_ravel` does.
     """
     # NOTE: JAX requires a csr matrix as input,
     # but we can pass csc indices directly because we can!
@@ -99,7 +109,19 @@ spsolve_gpu = spsolve_gpu_ravel
 
 def spsolve_cpu(A: SystemMatrixLHS, b: SystemMatrixRHS) -> SystemSolution:
     """
-    A wrapper around scipy sparse linear solver that acts as a JAX pure callback.
+    Solve the sparse system on CPU via SciPy, wrapped as a JAX pure callback.
+
+    Parameters
+    ----------
+    A :
+        The left-hand side matrix.
+    b :
+        The right-hand side, one column per coordinate.
+
+    Returns
+    -------
+    x :
+        The solution, one column per right-hand side.
     """
 
     def callback(data, indices, indptr, _b):
@@ -124,7 +146,22 @@ def spsolve_cpu(A: SystemMatrixLHS, b: SystemMatrixRHS) -> SystemSolution:
 
 def register_sparse_solver(solvers: dict[str, Callable]) -> Callable:
     """
-    Register the sparse solver used by the FDM model based on JAX default backend.
+    Pick the sparse solver matching the active JAX backend.
+
+    Parameters
+    ----------
+    solvers :
+        A mapping from backend name (``"cpu"`` or ``"gpu"``) to solver function.
+
+    Returns
+    -------
+    solver :
+        The solver registered for the current default backend.
+
+    Raises
+    ------
+    ValueError
+        If no solver is registered for the active backend.
     """
     backend = jax.default_backend()
     sparse_solver = solvers.get(backend)
@@ -148,7 +185,25 @@ spsolve = register_sparse_solver(solvers)
 @jax.custom_vjp
 def sparse_solve(A: SystemMatrixLHS, b: SystemMatrixRHS) -> SystemSolution:
     """
-    The sparse linear solver.
+    Solve the sparse linear system with a custom-differentiable solver.
+
+    Parameters
+    ----------
+    A :
+        The left-hand side matrix, assumed symmetric.
+    b :
+        The right-hand side, one column per coordinate.
+
+    Returns
+    -------
+    x :
+        The solution, one column per right-hand side.
+
+    Notes
+    -----
+    Dispatches to the backend solver registered by :func:`register_sparse_solver`.
+    A custom VJP supplies the backward pass, so only reverse-mode differentiation
+    is supported.
     """
     return spsolve(A, b)
 
@@ -167,9 +222,20 @@ def sparse_solve_fwd(
     b: SystemMatrixRHS,
 ) -> tuple[SystemSolution, SparseSolveResidual]:
     """
-    Forward pass of the sparse linear solver.
+    Run the forward pass of the differentiable sparse solve.
 
-    Call the linear solve and save parameters and solution for the backward pass.
+    Parameters
+    ----------
+    A :
+        The left-hand side matrix, assumed symmetric.
+    b :
+        The right-hand side, one column per coordinate.
+
+    Returns
+    -------
+    solution :
+        The solve result together with the residual (solution, ``A``, ``b``) saved
+        for the backward pass.
     """
     xk = sparse_solve(A, b)
 
@@ -181,7 +247,24 @@ def sparse_solve_bwd(
     g: SystemMatrixRHS,
 ) -> tuple[SystemMatrixLHS, SystemMatrixRHS]:
     """
-    Backward pass of the sparse linear solver.
+    Run the backward pass of the differentiable sparse solve.
+
+    Parameters
+    ----------
+    res :
+        The residual saved by the forward pass: the solution, ``A``, and ``b``.
+    g :
+        The cotangent of the solution.
+
+    Returns
+    -------
+    grads :
+        The cotangents with respect to ``A`` and ``b``.
+
+    Notes
+    -----
+    Differentiates implicitly through the linear system rather than through the
+    solver. The adjoint system reuses ``A`` directly because it is symmetric.
     """
     xk, A, b = res
 
@@ -214,8 +297,26 @@ def blockdiag_matrix_sparse(
     format: type[CSC] = CSC,
 ) -> Float[CSC, "equations_blocks unknowns_blocks"]:
     """
-    Build a block diagonal sparse matrix in the input format by repeating
-    a square sparse matrix a prescribed number of times.
+    Repeat a square sparse matrix along the diagonal into a block matrix.
+
+    Parameters
+    ----------
+    A :
+        The square sparse matrix to repeat.
+    num :
+        The number of diagonal blocks; must be at least two.
+    format :
+        The sparse matrix class of the result.
+
+    Returns
+    -------
+    block_matrix :
+        The block-diagonal matrix with ``num`` copies of ``A`` on its diagonal.
+
+    Raises
+    ------
+    AssertionError
+        If fewer than two blocks are requested, or if ``A`` is not square.
     """
     indptr = []
     indices = []
@@ -265,7 +366,7 @@ _SPLU_CACHE = {"factorization": None, "session_id": 0}
 
 def splu_clear() -> None:
     """
-    Clear the SPLU cache to free memory.
+    Reset the cached sparse LU factorization to free memory.
     """
     _SPLU_CACHE["session_id"] = 0
     _SPLU_CACHE["factorization"] = None
@@ -273,25 +374,27 @@ def splu_clear() -> None:
 
 def splu_cpu(A: SystemMatrixLHS, session_id: int | None = None) -> Int[Array, ""]:
     """
-    A wrapper around scipy sparse LU factorization that acts as a JAX pure callback.
+    Factorize the sparse matrix on CPU via SciPy, caching the factorization.
 
     Parameters
     ----------
-    A : CSC matrix
+    A :
         The sparse matrix to factorize.
-    session_id : int, optional
-        Session identifier. If None, uses a default session (0).
+    session_id :
+        The session identifier keying the cache. If None, uses session ``0``.
+
+    Returns
+    -------
+    session_id :
+        The session identifier the factorization was stored under.
 
     Notes
     -----
-    Since SuperLU objects cannot be passed through JAX's tracing system, we store
-    the factorization in a simple global cache. Only one factorization is kept at
-    a time per session. The structure (indices, indptr) must remain constant; only
-    the data values may change between factorizations.
-
-    Note that this function modifies the global cache in-place, so it violates
-    the JAX function purity guarantee. Therefore, we only use it in functions
-    that need not be transformed directly with grad or vmap.
+    SuperLU objects cannot flow through JAX tracing, so the factorization is kept
+    in a single-entry global cache; :func:`splu_solve_cpu` retrieves it by session
+    id. Only the matrix data may change between factorizations, not its sparsity
+    structure. Because it mutates the global cache, this callback is impure and must
+    not be transformed directly with ``grad`` or ``vmap``.
     """
     if session_id is None:
         session_id = 0
@@ -331,14 +434,25 @@ def splu_cpu(A: SystemMatrixLHS, session_id: int | None = None) -> Int[Array, ""
 
 def splu_solve_cpu(session_id: Int[Array, ""], b: SystemMatrixRHS) -> SystemSolution:
     """
-    A wrapper around scipy sparse LU solve that acts as a JAX pure callback.
+    Solve the sparse system on CPU from a cached LU factorization.
 
     Parameters
     ----------
-    session_id : scalar int64
-        The session ID returned by splu_cpu.
-    b : array
-        The right-hand side vector or matrix.
+    session_id :
+        The session identifier returned by :func:`splu_cpu`, keying the cached
+        factorization to reuse.
+    b :
+        The right-hand side, one column per coordinate.
+
+    Returns
+    -------
+    x :
+        The solution, one column per right-hand side.
+
+    Raises
+    ------
+    ValueError
+        If the cached session id does not match, or if no factorization is cached.
     """
 
     def callback(sid, _b):
