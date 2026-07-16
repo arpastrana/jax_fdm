@@ -1208,74 +1208,38 @@ or <code>viewer.add(network.copy(cls=Network))</code>.</p>
 
 
 <p><span class="doc-section-title">Parameters:</span></p>
-    <table>
-      <thead>
-        <tr>
-          <th>Name</th>
-          <th>Type</th>
-          <th>Description</th>
-          <th>Default</th>
-        </tr>
-      </thead>
-      <tbody>
-          <tr class="doc-section-item">
-            <td>
-                <code>data</code>
-            </td>
-            <td>
-                  <code>:class:`compas.geometry.Geometry` |</code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>:class:<code>compas.datastructures.Datastructure</code>
-The object to visualize.</p>
-              </div>
-            </td>
-            <td>
-                <em>required</em>
-            </td>
-          </tr>
-          <tr class="doc-section-item">
-            <td>
-                <code>**kwargs</code>
-            </td>
-            <td>
-                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#dict">dict</a></code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>Additional visualization options.</p>
-              </div>
-            </td>
-            <td>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>data</code></b>
+              (<code><a class="autorefs autorefs-external" title="compas.geometry.Geometry" href="https://compas.dev/compas/latest/api/generated/compas.geometry.Geometry.html#compas.geometry.Geometry">Geometry</a> | <span title="compas.datastructures.Datastructure">Datastructure</span></code>)
+          –
+          <div class="doc-md-description">
+            <p>The geometry or datastructure to visualize.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>kwargs</code></b>
+              (<code><a class="autorefs autorefs-external" title="typing.Any" href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a></code>, default:
                   <code>{}</code>
-            </td>
-          </tr>
-      </tbody>
-    </table>
+)
+          –
+          <div class="doc-md-description">
+            <p>Additional visualization options passed to the scene object.</p>
+          </div>
+        </li>
+    </ul>
 
 
-    <p><span class="doc-section-title">Returns:</span></p>
-    <table>
-      <thead>
-        <tr>
-          <th>Type</th>
-          <th>Description</th>
-        </tr>
-      </thead>
-      <tbody>
-          <tr class="doc-section-item">
-            <td>
-                  <code>The created scene object.</code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                
-              </div>
-            </td>
-          </tr>
-      </tbody>
-    </table>
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>scene_object</code></b> (              <code><a class="autorefs autorefs-external" title="compas.scene.SceneObject" href="https://compas.dev/compas/latest/api/generated/compas.scene.SceneObject.html#compas.scene.SceneObject">SceneObject</a></code>
+)          –
+          <div class="doc-md-description">
+            <p>The created scene object.</p>
+          </div>
+        </li>
+    </ul>
 
 
     </div>

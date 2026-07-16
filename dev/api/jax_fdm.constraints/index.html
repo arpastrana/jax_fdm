@@ -2167,8 +2167,50 @@ upper limit during constrained form-finding with
 
 
 
-        <p>Base class for all constraints.</p>
+        <p>The base class for all constraints, bounds an equilibrium quantity must obey.</p>
 
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>key</code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a> | <a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#tuple">tuple</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a>, <a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a>] | <a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#list">list</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a>] | <a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#list">list</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#tuple">tuple</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a>, <a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a>]]</code>)
+          –
+          <div class="doc-md-description">
+            <p>The key or keys of the element(s) the constraint acts on.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>bound_low</code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a> | <span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, ...] | None</code>, default:
+                  <code>None</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>The lower bound on the constrained quantity. If None, unbounded below.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>bound_up</code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a> | <span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, ...] | None</code>, default:
+                  <code>None</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>The upper bound on the constrained quantity. If None, unbounded above.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<details class="note" open>
+  <summary>Notes</summary>
+  <p>A constraint is initialized in two phases: construction stores the key and
+bounds, then :meth:<code>init</code> resolves the key to an index against an equilibrium
+structure before the constraint is evaluated. Subclasses supply the constrained
+quantity via :meth:<code>constraint</code>. Missing bounds normalize to negative or
+positive infinity rather than None.</p>
+</details>
 
 
 
@@ -2304,7 +2346,40 @@ equilibrium structure.</p>
 
     <div class="doc doc-contents ">
 
-        <p>Get the index in the model of the constraint key.</p>
+        <p>Resolve the constraint's key to an index in an equilibrium structure.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>model</code></b>
+              (<code><a class="autorefs autorefs-internal" title="            EquilibriumModel (jax_fdm.equilibrium.EquilibriumModel)" href="../jax_fdm.equilibrium/#jax_fdm.equilibrium.models.EquilibriumModel">EquilibriumModel</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>The equilibrium model.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>structure</code></b>
+              (<code><a class="autorefs autorefs-internal" title="            EquilibriumStructure (jax_fdm.equilibrium.EquilibriumStructure)" href="../jax_fdm.equilibrium/#jax_fdm.equilibrium.structures.structures.EquilibriumStructure">EquilibriumStructure</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>The structure whose element ordering defines the index.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>index</code></b> (              <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a> | <a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#tuple">tuple</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a>, ...]</code>
+)          –
+          <div class="doc-md-description">
+            <p>The index, or tuple of indices, of the constraint's element(s).</p>
+          </div>
+        </li>
+    </ul>
 
 
     </div>
@@ -2324,8 +2399,35 @@ equilibrium structure.</p>
 
     <div class="doc doc-contents ">
 
-        <p>Initialize the constraint with information from an equilibrium model.</p>
+        <p>Bind the constraint to a structure by resolving its key to an index.</p>
 
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>model</code></b>
+              (<code><a class="autorefs autorefs-internal" title="            EquilibriumModel (jax_fdm.equilibrium.EquilibriumModel)" href="../jax_fdm.equilibrium/#jax_fdm.equilibrium.models.EquilibriumModel">EquilibriumModel</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>The equilibrium model.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>structure</code></b>
+              (<code><a class="autorefs autorefs-internal" title="            EquilibriumStructure (jax_fdm.equilibrium.EquilibriumStructure)" href="../jax_fdm.equilibrium/#jax_fdm.equilibrium.structures.structures.EquilibriumStructure">EquilibriumStructure</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>The structure whose element ordering defines the index.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<details class="note" open>
+  <summary>Notes</summary>
+  <p>Must be called once before the constraint is evaluated; it populates the
+index that :meth:<code>constraint</code> reads.</p>
+</details>
 
     </div>
 
@@ -2344,7 +2446,48 @@ equilibrium structure.</p>
 
     <div class="doc doc-contents ">
 
-        <p>The called constraint function.</p>
+        <p>Evaluate the constraint by solving for equilibrium first.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>params</code></b>
+              (<code><a class="autorefs autorefs-internal" title="            EquilibriumParametersState (jax_fdm.equilibrium.EquilibriumParametersState)" href="../jax_fdm.equilibrium/#jax_fdm.equilibrium.states.EquilibriumParametersState">EquilibriumParametersState</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>The parameters defining the equilibrium problem.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>model</code></b>
+              (<code><a class="autorefs autorefs-internal" title="            EquilibriumModel (jax_fdm.equilibrium.EquilibriumModel)" href="../jax_fdm.equilibrium/#jax_fdm.equilibrium.models.EquilibriumModel">EquilibriumModel</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>The equilibrium model that computes the equilibrium state.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>structure</code></b>
+              (<code><a class="autorefs autorefs-internal" title="            EquilibriumStructure (jax_fdm.equilibrium.EquilibriumStructure)" href="../jax_fdm.equilibrium/#jax_fdm.equilibrium.structures.structures.EquilibriumStructure">EquilibriumStructure</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>The structure that provides the connectivity.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>constraint</code></b> (              <code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, <span title="elements">elements</span>]</code>
+)          –
+          <div class="doc-md-description">
+            <p>The constrained quantity for each element, flattened.</p>
+          </div>
+        </li>
+    </ul>
 
 
     </div>
@@ -2364,7 +2507,40 @@ equilibrium structure.</p>
 
     <div class="doc doc-contents ">
 
-        <p>The constraint function.</p>
+        <p>Extract the constrained quantity for one element from an equilibrium state.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>eq_state</code></b>
+              (<code><a class="autorefs autorefs-internal" title="            EquilibriumState (jax_fdm.equilibrium.EquilibriumState)" href="../jax_fdm.equilibrium/#jax_fdm.equilibrium.states.EquilibriumState">EquilibriumState</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>The equilibrium state to read the quantity from.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>index</code></b>
+              (<code><span title="jaxtyping.Int">Int</span>[<span title="jaxtyping.Array">Array</span>, ...]</code>)
+          –
+          <div class="doc-md-description">
+            <p>The index of the element within the equilibrium state.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>constraint</code></b> (              <code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, ...]</code>
+)          –
+          <div class="doc-md-description">
+            <p>The value of the constrained quantity.</p>
+          </div>
+        </li>
+    </ul>
 
 
     </div>
@@ -2406,7 +2582,7 @@ equilibrium structure.</p>
 
 
 
-        <p>Constraints the length of an edge between a lower and an upper bound.</p>
+        <p>Bound the length of an edge between a lower and an upper value.</p>
 
 
 
@@ -2442,7 +2618,40 @@ equilibrium structure.</p>
 
     <div class="doc doc-contents ">
 
-        <p>Returns the length of an edge from an equilibrium state.</p>
+        <p>The length of the edge.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>eq_state</code></b>
+              (<code><a class="autorefs autorefs-internal" title="            EquilibriumState (jax_fdm.equilibrium.EquilibriumState)" href="../jax_fdm.equilibrium/#jax_fdm.equilibrium.states.EquilibriumState">EquilibriumState</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>The equilibrium state to read the length from.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>index</code></b>
+              (<code><span title="jaxtyping.Int">Int</span>[<span title="jaxtyping.Array">Array</span>, &#39;&#39;]</code>)
+          –
+          <div class="doc-md-description">
+            <p>The index of the edge.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>constraint</code></b> (              <code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, &#39;&#39;]</code>
+)          –
+          <div class="doc-md-description">
+            <p>The edge's length.</p>
+          </div>
+        </li>
+    </ul>
 
 
     </div>
@@ -2473,7 +2682,7 @@ equilibrium structure.</p>
 
 
 
-        <p>Constraints the force of an edge between a lower and an upper bound.</p>
+        <p>Bound the internal force of an edge between a lower and an upper value.</p>
 
 
 
@@ -2509,7 +2718,40 @@ equilibrium structure.</p>
 
     <div class="doc doc-contents ">
 
-        <p>Returns the force of an edge from an equilibrium state.</p>
+        <p>The internal force in the edge.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>eq_state</code></b>
+              (<code><a class="autorefs autorefs-internal" title="            EquilibriumState (jax_fdm.equilibrium.EquilibriumState)" href="../jax_fdm.equilibrium/#jax_fdm.equilibrium.states.EquilibriumState">EquilibriumState</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>The equilibrium state to read the force from.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>index</code></b>
+              (<code><span title="jaxtyping.Int">Int</span>[<span title="jaxtyping.Array">Array</span>, &#39;&#39;]</code>)
+          –
+          <div class="doc-md-description">
+            <p>The index of the edge.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>constraint</code></b> (              <code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, &#39;&#39;]</code>
+)          –
+          <div class="doc-md-description">
+            <p>The edge's internal force, signed positive in tension.</p>
+          </div>
+        </li>
+    </ul>
 
 
     </div>
@@ -2540,8 +2782,44 @@ equilibrium structure.</p>
 
 
 
-        <p>Constraints the angle formed by an edge and a vector between a lower and an
-upper bound.</p>
+        <p>Bound the angle between an edge and a reference vector.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>key</code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#tuple">tuple</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a>, <a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a>] | <a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#list">list</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#tuple">tuple</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a>, <a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a>]]</code>)
+          –
+          <div class="doc-md-description">
+            <p>The key or keys of the edge(s) the constraint acts on.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>vector</code></b>
+              (<code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, ...]</code>)
+          –
+          <div class="doc-md-description">
+            <p>The reference vector each edge's angle is measured against.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>bound_low</code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a> | <span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, ...] | None</code>)
+          –
+          <div class="doc-md-description">
+            <p>The lower bound on the angle, in radians. If None, unbounded below.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>bound_up</code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a> | <span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, ...] | None</code>)
+          –
+          <div class="doc-md-description">
+            <p>The upper bound on the angle, in radians. If None, unbounded above.</p>
+          </div>
+        </li>
+    </ul>
 
 
 
@@ -2580,7 +2858,7 @@ upper bound.</p>
 
     <div class="doc doc-contents ">
 
-        <p>The vector to take the angle with.</p>
+        <p>The reference vector each edge's angle is measured against.</p>
 
     </div>
 
@@ -2602,7 +2880,19 @@ upper bound.</p>
 
     <div class="doc doc-contents ">
 
-        <p>Create a matrix of vectors.</p>
+        <p>Scatter the reference vectors into a per-index matrix.</p>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>vectors</code></b> (              <code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, &#39;vectors 3&#39;]</code>
+)          –
+          <div class="doc-md-description">
+            <p>A matrix holding each edge's reference vector at its structure index.</p>
+          </div>
+        </li>
+    </ul>
 
 
     </div>
@@ -2622,7 +2912,28 @@ upper bound.</p>
 
     <div class="doc doc-contents ">
 
-        <p>Initialize the constraint with information from an equilibrium model.</p>
+        <p>Bind the constraint to a structure and reindex its reference vectors.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>model</code></b>
+              (<code><a class="autorefs autorefs-internal" title="            EquilibriumModel (jax_fdm.equilibrium.EquilibriumModel)" href="../jax_fdm.equilibrium/#jax_fdm.equilibrium.models.EquilibriumModel">EquilibriumModel</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>The equilibrium model.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>structure</code></b>
+              (<code><a class="autorefs autorefs-internal" title="            EquilibriumStructure (jax_fdm.equilibrium.EquilibriumStructure)" href="../jax_fdm.equilibrium/#jax_fdm.equilibrium.structures.structures.EquilibriumStructure">EquilibriumStructure</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>The structure whose edge ordering defines the indices.</p>
+          </div>
+        </li>
+    </ul>
 
 
     </div>
@@ -2642,7 +2953,40 @@ upper bound.</p>
 
     <div class="doc doc-contents ">
 
-        <p>Returns the angle between an edge in an equilibrium state and a vector.</p>
+        <p>The angle between the edge and its reference vector.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>eq_state</code></b>
+              (<code><a class="autorefs autorefs-internal" title="            EquilibriumState (jax_fdm.equilibrium.EquilibriumState)" href="../jax_fdm.equilibrium/#jax_fdm.equilibrium.states.EquilibriumState">EquilibriumState</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>The equilibrium state to read the edge vector from.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>index</code></b>
+              (<code><span title="jaxtyping.Int">Int</span>[<span title="jaxtyping.Array">Array</span>, &#39;&#39;]</code>)
+          –
+          <div class="doc-md-description">
+            <p>The index of the edge.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>constraint</code></b> (              <code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, &#39;&#39;]</code>
+)          –
+          <div class="doc-md-description">
+            <p>The angle between the edge and its reference vector, in radians.</p>
+          </div>
+        </li>
+    </ul>
 
 
     </div>
@@ -2675,7 +3019,7 @@ upper bound.</p>
 
 
 
-        <p>Constraint the X coordinate of a node between a lower and an upper bound.</p>
+        <p>Bound the X coordinate of a node between a lower and an upper value.</p>
 
 
 
@@ -2711,7 +3055,40 @@ upper bound.</p>
 
     <div class="doc doc-contents ">
 
-        <p>Returns the X coordinate of a node from an equilibrium state.</p>
+        <p>The X coordinate of the node.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>eq_state</code></b>
+              (<code><a class="autorefs autorefs-internal" title="            EquilibriumState (jax_fdm.equilibrium.EquilibriumState)" href="../jax_fdm.equilibrium/#jax_fdm.equilibrium.states.EquilibriumState">EquilibriumState</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>The equilibrium state to read the coordinate from.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>index</code></b>
+              (<code><span title="jaxtyping.Int">Int</span>[<span title="jaxtyping.Array">Array</span>, &#39;&#39;]</code>)
+          –
+          <div class="doc-md-description">
+            <p>The index of the node.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>constraint</code></b> (              <code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, &#39;&#39;]</code>
+)          –
+          <div class="doc-md-description">
+            <p>The node's X coordinate.</p>
+          </div>
+        </li>
+    </ul>
 
 
     </div>
@@ -2742,7 +3119,7 @@ upper bound.</p>
 
 
 
-        <p>Constraint the Y coordinate of a node between a lower and an upper bound.</p>
+        <p>Bound the Y coordinate of a node between a lower and an upper value.</p>
 
 
 
@@ -2778,7 +3155,40 @@ upper bound.</p>
 
     <div class="doc doc-contents ">
 
-        <p>Returns the Y coordinate of a node from an equilibrium state.</p>
+        <p>The Y coordinate of the node.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>eq_state</code></b>
+              (<code><a class="autorefs autorefs-internal" title="            EquilibriumState (jax_fdm.equilibrium.EquilibriumState)" href="../jax_fdm.equilibrium/#jax_fdm.equilibrium.states.EquilibriumState">EquilibriumState</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>The equilibrium state to read the coordinate from.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>index</code></b>
+              (<code><span title="jaxtyping.Int">Int</span>[<span title="jaxtyping.Array">Array</span>, &#39;&#39;]</code>)
+          –
+          <div class="doc-md-description">
+            <p>The index of the node.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>constraint</code></b> (              <code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, &#39;&#39;]</code>
+)          –
+          <div class="doc-md-description">
+            <p>The node's Y coordinate.</p>
+          </div>
+        </li>
+    </ul>
 
 
     </div>
@@ -2809,7 +3219,7 @@ upper bound.</p>
 
 
 
-        <p>Constraint the Z coordinate of a node between a lower and an upper bound.</p>
+        <p>Bound the Z coordinate of a node between a lower and an upper value.</p>
 
 
 
@@ -2845,7 +3255,40 @@ upper bound.</p>
 
     <div class="doc doc-contents ">
 
-        <p>Returns the Z coordinate of a node from an equilibrium state.</p>
+        <p>The Z coordinate of the node.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>eq_state</code></b>
+              (<code><a class="autorefs autorefs-internal" title="            EquilibriumState (jax_fdm.equilibrium.EquilibriumState)" href="../jax_fdm.equilibrium/#jax_fdm.equilibrium.states.EquilibriumState">EquilibriumState</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>The equilibrium state to read the coordinate from.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>index</code></b>
+              (<code><span title="jaxtyping.Int">Int</span>[<span title="jaxtyping.Array">Array</span>, &#39;&#39;]</code>)
+          –
+          <div class="doc-md-description">
+            <p>The index of the node.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>constraint</code></b> (              <code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, &#39;&#39;]</code>
+)          –
+          <div class="doc-md-description">
+            <p>The node's Z coordinate.</p>
+          </div>
+        </li>
+    </ul>
 
 
     </div>
@@ -2876,8 +3319,44 @@ upper bound.</p>
 
 
 
-        <p>Constraints the (discrete) curvature of a node based on a polygon of
-neighboring nodes.</p>
+        <p>Bound the discrete curvature at a node over its one-hop neighborhood.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>key</code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a> | <a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#list">list</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a>]</code>)
+          –
+          <div class="doc-md-description">
+            <p>The key or keys of the node(s) the constraint acts on.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>polygon</code></b>
+              (<code><span title="jaxtyping.Int">Int</span>[<span title="jaxtyping.Array">Array</span>, &#39;nodes neighbors&#39;]</code>)
+          –
+          <div class="doc-md-description">
+            <p>The neighboring node keys forming the polygon around each node.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>bound_low</code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a> | <span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, ...] | None</code>)
+          –
+          <div class="doc-md-description">
+            <p>The lower bound on the curvature. If None, unbounded below.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>bound_up</code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a> | <span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, ...] | None</code>)
+          –
+          <div class="doc-md-description">
+            <p>The upper bound on the curvature. If None, unbounded above.</p>
+          </div>
+        </li>
+    </ul>
 
 
 
@@ -2913,7 +3392,28 @@ neighboring nodes.</p>
 
     <div class="doc doc-contents ">
 
-        <p>Initialize the constraint with information from an equilibrium model.</p>
+        <p>Bind the constraint to a structure, resolving its neighborhood polygon.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>model</code></b>
+              (<code><a class="autorefs autorefs-internal" title="            EquilibriumModel (jax_fdm.equilibrium.EquilibriumModel)" href="../jax_fdm.equilibrium/#jax_fdm.equilibrium.models.EquilibriumModel">EquilibriumModel</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>The equilibrium model.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>structure</code></b>
+              (<code><a class="autorefs autorefs-internal" title="            EquilibriumStructure (jax_fdm.equilibrium.EquilibriumStructure)" href="../jax_fdm.equilibrium/#jax_fdm.equilibrium.structures.structures.EquilibriumStructure">EquilibriumStructure</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>The structure whose node ordering defines the indices.</p>
+          </div>
+        </li>
+    </ul>
 
 
     </div>
@@ -2933,7 +3433,40 @@ neighboring nodes.</p>
 
     <div class="doc doc-contents ">
 
-        <p>Obtains the indices of the polygon from a model.</p>
+        <p>Resolve each node's neighborhood polygon keys to structure indices.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>model</code></b>
+              (<code><a class="autorefs autorefs-internal" title="            EquilibriumModel (jax_fdm.equilibrium.EquilibriumModel)" href="../jax_fdm.equilibrium/#jax_fdm.equilibrium.models.EquilibriumModel">EquilibriumModel</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>The equilibrium model.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>structure</code></b>
+              (<code><a class="autorefs autorefs-internal" title="            EquilibriumStructure (jax_fdm.equilibrium.EquilibriumStructure)" href="../jax_fdm.equilibrium/#jax_fdm.equilibrium.structures.structures.EquilibriumStructure">EquilibriumStructure</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>The structure whose node ordering defines the indices.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>index_polygon</code></b> (              <code><span title="jaxtyping.Int">Int</span>[<span title="jaxtyping.Array">Array</span>, &#39;nodes neighbors&#39;]</code>
+)          –
+          <div class="doc-md-description">
+            <p>The neighbor indices of each constrained node, keyed by structure index.</p>
+          </div>
+        </li>
+    </ul>
 
 
     </div>
@@ -2953,8 +3486,40 @@ neighboring nodes.</p>
 
     <div class="doc doc-contents ">
 
-        <p>Returns the curvature at a node based on the xyz coordinates of its
-one-hop neighborhood.</p>
+        <p>The discrete curvature at the node over its one-hop neighborhood.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>eq_state</code></b>
+              (<code><a class="autorefs autorefs-internal" title="            EquilibriumState (jax_fdm.equilibrium.EquilibriumState)" href="../jax_fdm.equilibrium/#jax_fdm.equilibrium.states.EquilibriumState">EquilibriumState</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>The equilibrium state to read the node coordinates from.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>index</code></b>
+              (<code><span title="jaxtyping.Int">Int</span>[<span title="jaxtyping.Array">Array</span>, &#39;&#39;]</code>)
+          –
+          <div class="doc-md-description">
+            <p>The index of the node.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>constraint</code></b> (              <code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, &#39;&#39;]</code>
+)          –
+          <div class="doc-md-description">
+            <p>The discrete curvature at the node given its neighbors' coordinates.</p>
+          </div>
+        </li>
+    </ul>
 
 
     </div>
@@ -2987,7 +3552,7 @@ one-hop neighborhood.</p>
 
 
 
-        <p>Constraint the X coordinate of a vertex between a lower and an upper bound.</p>
+        <p>Bound the X coordinate of a vertex between a lower and an upper value.</p>
 
 
 
@@ -3023,7 +3588,40 @@ one-hop neighborhood.</p>
 
     <div class="doc doc-contents ">
 
-        <p>Returns the X coordinate of a vertex from an equilibrium state.</p>
+        <p>The X coordinate of the vertex.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>eq_state</code></b>
+              (<code><a class="autorefs autorefs-internal" title="            EquilibriumState (jax_fdm.equilibrium.EquilibriumState)" href="../jax_fdm.equilibrium/#jax_fdm.equilibrium.states.EquilibriumState">EquilibriumState</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>The equilibrium state to read the coordinate from.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>index</code></b>
+              (<code><span title="jaxtyping.Int">Int</span>[<span title="jaxtyping.Array">Array</span>, &#39;&#39;]</code>)
+          –
+          <div class="doc-md-description">
+            <p>The index of the vertex.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>constraint</code></b> (              <code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, &#39;&#39;]</code>
+)          –
+          <div class="doc-md-description">
+            <p>The vertex's X coordinate.</p>
+          </div>
+        </li>
+    </ul>
 
 
     </div>
@@ -3054,7 +3652,7 @@ one-hop neighborhood.</p>
 
 
 
-        <p>Constraint the Y coordinate of a vertex between a lower and an upper bound.</p>
+        <p>Bound the Y coordinate of a vertex between a lower and an upper value.</p>
 
 
 
@@ -3090,7 +3688,40 @@ one-hop neighborhood.</p>
 
     <div class="doc doc-contents ">
 
-        <p>Returns the Y coordinate of a vertex from an equilibrium state.</p>
+        <p>The Y coordinate of the vertex.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>eq_state</code></b>
+              (<code><a class="autorefs autorefs-internal" title="            EquilibriumState (jax_fdm.equilibrium.EquilibriumState)" href="../jax_fdm.equilibrium/#jax_fdm.equilibrium.states.EquilibriumState">EquilibriumState</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>The equilibrium state to read the coordinate from.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>index</code></b>
+              (<code><span title="jaxtyping.Int">Int</span>[<span title="jaxtyping.Array">Array</span>, &#39;&#39;]</code>)
+          –
+          <div class="doc-md-description">
+            <p>The index of the vertex.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>constraint</code></b> (              <code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, &#39;&#39;]</code>
+)          –
+          <div class="doc-md-description">
+            <p>The vertex's Y coordinate.</p>
+          </div>
+        </li>
+    </ul>
 
 
     </div>
@@ -3121,7 +3752,7 @@ one-hop neighborhood.</p>
 
 
 
-        <p>Constraint the Z coordinate of a vertex between a lower and an upper bound.</p>
+        <p>Bound the Z coordinate of a vertex between a lower and an upper value.</p>
 
 
 
@@ -3157,7 +3788,40 @@ one-hop neighborhood.</p>
 
     <div class="doc doc-contents ">
 
-        <p>Returns the Z coordinate of a vertex from an equilibrium state.</p>
+        <p>The Z coordinate of the vertex.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>eq_state</code></b>
+              (<code><a class="autorefs autorefs-internal" title="            EquilibriumState (jax_fdm.equilibrium.EquilibriumState)" href="../jax_fdm.equilibrium/#jax_fdm.equilibrium.states.EquilibriumState">EquilibriumState</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>The equilibrium state to read the coordinate from.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>index</code></b>
+              (<code><span title="jaxtyping.Int">Int</span>[<span title="jaxtyping.Array">Array</span>, &#39;&#39;]</code>)
+          –
+          <div class="doc-md-description">
+            <p>The index of the vertex.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>constraint</code></b> (              <code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, &#39;&#39;]</code>
+)          –
+          <div class="doc-md-description">
+            <p>The vertex's Z coordinate.</p>
+          </div>
+        </li>
+    </ul>
 
 
     </div>
@@ -3190,7 +3854,7 @@ one-hop neighborhood.</p>
 
 
 
-        <p>Set constraint bounds to the length of all the edges of a network.</p>
+        <p>Bound the length of every edge of a network.</p>
 
 
 
@@ -3226,7 +3890,40 @@ one-hop neighborhood.</p>
 
     <div class="doc doc-contents ">
 
-        <p>The constraint function relative to an equilibrium state.</p>
+        <p>The length of every edge.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>eq_state</code></b>
+              (<code><a class="autorefs autorefs-internal" title="            EquilibriumState (jax_fdm.equilibrium.EquilibriumState)" href="../jax_fdm.equilibrium/#jax_fdm.equilibrium.states.EquilibriumState">EquilibriumState</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>The equilibrium state to read the lengths from.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>index</code></b>
+              (<code><span title="jaxtyping.Int">Int</span>[<span title="jaxtyping.Array">Array</span>, &#39;&#39;]</code>)
+          –
+          <div class="doc-md-description">
+            <p>The sentinel index, unused.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>constraint</code></b> (              <code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, <span title="edges">edges</span>]</code>
+)          –
+          <div class="doc-md-description">
+            <p>The length of each edge, flattened.</p>
+          </div>
+        </li>
+    </ul>
 
 
     </div>
@@ -3257,7 +3954,7 @@ one-hop neighborhood.</p>
 
 
 
-        <p>Set constraint bounds to the force passing through every edge of a network.</p>
+        <p>Bound the internal force of every edge of a network.</p>
 
 
 
@@ -3293,7 +3990,40 @@ one-hop neighborhood.</p>
 
     <div class="doc doc-contents ">
 
-        <p>The constraint function relative to an equilibrium state.</p>
+        <p>The internal force in every edge.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>eq_state</code></b>
+              (<code><a class="autorefs autorefs-internal" title="            EquilibriumState (jax_fdm.equilibrium.EquilibriumState)" href="../jax_fdm.equilibrium/#jax_fdm.equilibrium.states.EquilibriumState">EquilibriumState</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>The equilibrium state to read the forces from.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>index</code></b>
+              (<code><span title="jaxtyping.Int">Int</span>[<span title="jaxtyping.Array">Array</span>, &#39;&#39;]</code>)
+          –
+          <div class="doc-md-description">
+            <p>The sentinel index, unused.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>constraint</code></b> (              <code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, <span title="edges">edges</span>]</code>
+)          –
+          <div class="doc-md-description">
+            <p>The internal force of each edge, flattened.</p>
+          </div>
+        </li>
+    </ul>
 
 
     </div>

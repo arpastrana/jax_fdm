@@ -2623,73 +2623,48 @@ component, a support coordinate — as a variable the
 
 
 
-        <p>The base class for all parameters.</p>
+        <p>The base class for all optimization parameters.</p>
 
 
 <p><span class="doc-section-title">Parameters:</span></p>
-    <table>
-      <thead>
-        <tr>
-          <th>Name</th>
-          <th>Type</th>
-          <th>Description</th>
-          <th>Default</th>
-        </tr>
-      </thead>
-      <tbody>
-          <tr class="doc-section-item">
-            <td>
-                <code>key</code>
-            </td>
-            <td>
-                  <code>`int` | `Tuple[int]`</code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>The key of the element in the datastructure being parametrized.</p>
-              </div>
-            </td>
-            <td>
-                <em>required</em>
-            </td>
-          </tr>
-          <tr class="doc-section-item">
-            <td>
-                <code>bound_low</code>
-            </td>
-            <td>
-                  <code>`float`</code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>The lower bound of this parameter for optimization.
-Defaults to <code>-inf</code>.</p>
-              </div>
-            </td>
-            <td>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>key</code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a> | <a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#tuple">tuple</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a>, <a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a>] | <a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#list">list</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a>] | <a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#list">list</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#tuple">tuple</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a>, <a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a>]]</code>)
+          –
+          <div class="doc-md-description">
+            <p>The key of the element in the datastructure being parametrized.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>bound_low</code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a> | None</code>, default:
                   <code>None</code>
-            </td>
-          </tr>
-          <tr class="doc-section-item">
-            <td>
-                <code>bound_up</code>
-            </td>
-            <td>
-                  <code>`float`</code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>The upper bound of this parameter for optimization.
-Defaults to <code>+inf</code>.</p>
-              </div>
-            </td>
-            <td>
+)
+          –
+          <div class="doc-md-description">
+            <p>The lower bound for optimization. If None, unbounded below.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>bound_up</code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a> | None</code>, default:
                   <code>None</code>
-            </td>
-          </tr>
-      </tbody>
-    </table>
+)
+          –
+          <div class="doc-md-description">
+            <p>The upper bound for optimization. If None, unbounded above.</p>
+          </div>
+        </li>
+    </ul>
 
+
+<details class="note" open>
+  <summary>Notes</summary>
+  <p>Concrete subclasses set <code>attr_name</code> to the datastructure attribute they
+parametrize and implement :meth:<code>index</code> and :meth:<code>value</code> for their element type.
+Missing bounds normalize to negative or positive infinity rather than None.</p>
+</details>
 
 
 
@@ -2774,7 +2749,40 @@ Defaults to <code>+inf</code>.</p>
 
     <div class="doc doc-contents ">
 
-        <p>Get the index of the parameter key in the structure of a model.</p>
+        <p>Resolve the parameter's key to an index in an equilibrium structure.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>model</code></b>
+              (<code><a class="autorefs autorefs-internal" title="            EquilibriumModel (jax_fdm.equilibrium.EquilibriumModel)" href="../jax_fdm.equilibrium/#jax_fdm.equilibrium.models.EquilibriumModel">EquilibriumModel</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>The equilibrium model.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>structure</code></b>
+              (<code><a class="autorefs autorefs-internal" title="            EquilibriumStructure (jax_fdm.equilibrium.EquilibriumStructure)" href="../jax_fdm.equilibrium/#jax_fdm.equilibrium.structures.structures.EquilibriumStructure">EquilibriumStructure</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>The structure whose element ordering defines the index.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>index</code></b> (              <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a></code>
+)          –
+          <div class="doc-md-description">
+            <p>The index of the parametrized element.</p>
+          </div>
+        </li>
+    </ul>
 
 
     </div>
@@ -2794,7 +2802,40 @@ Defaults to <code>+inf</code>.</p>
 
     <div class="doc doc-contents ">
 
-        <p>Get the current value of a parameter from the structure of a model.</p>
+        <p>Read the parameter's current value from a datastructure.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>model</code></b>
+              (<code><a class="autorefs autorefs-internal" title="            EquilibriumModel (jax_fdm.equilibrium.EquilibriumModel)" href="../jax_fdm.equilibrium/#jax_fdm.equilibrium.models.EquilibriumModel">EquilibriumModel</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>The equilibrium model.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>datastructure</code></b>
+              (<code><a class="autorefs autorefs-internal" title="            FDNetwork (jax_fdm.datastructures.FDNetwork)" href="../jax_fdm.datastructures/#jax_fdm.datastructures.FDNetwork">FDNetwork</a> | <a class="autorefs autorefs-internal" title="            FDMesh (jax_fdm.datastructures.FDMesh)" href="../jax_fdm.datastructures/#jax_fdm.datastructures.FDMesh">FDMesh</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>The network or mesh to read the parametrized attribute from.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>value</code></b> (              <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a></code>
+)          –
+          <div class="doc-md-description">
+            <p>The current value of the parametrized attribute.</p>
+          </div>
+        </li>
+    </ul>
 
 
     </div>
@@ -2825,7 +2866,47 @@ Defaults to <code>+inf</code>.</p>
 
 
 
-        <p>A parent class for groups of parameters.</p>
+        <p>The base class for a single parameter shared across a group of elements.</p>
+
+
+<details class="note" open>
+  <summary>Notes</summary>
+  <p>A group parameter drives one value that is applied to, and read as the average
+over, all its elements. Its key is always a sequence of element keys.</p>
+</details>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>key</code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#list">list</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a>] | <a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#list">list</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#tuple">tuple</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a>, <a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a>]]</code>)
+          –
+          <div class="doc-md-description">
+            <p>The keys of the elements sharing the parameter.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>bound_low</code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a> | None</code>, default:
+                  <code>None</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>The lower bound for optimization. If None, unbounded below.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>bound_up</code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a> | None</code>, default:
+                  <code>None</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>The upper bound for optimization. If None, unbounded above.</p>
+          </div>
+        </li>
+    </ul>
 
 
 
@@ -2861,8 +2942,40 @@ Defaults to <code>+inf</code>.</p>
 
     <div class="doc doc-contents ">
 
-        <p>Get the indices of the keys of the parametrized group from the structure of a
-model.</p>
+        <p>Resolve the group's keys to indices in an equilibrium structure.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>model</code></b>
+              (<code><a class="autorefs autorefs-internal" title="            EquilibriumModel (jax_fdm.equilibrium.EquilibriumModel)" href="../jax_fdm.equilibrium/#jax_fdm.equilibrium.models.EquilibriumModel">EquilibriumModel</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>The equilibrium model.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>structure</code></b>
+              (<code><a class="autorefs autorefs-internal" title="            EquilibriumStructure (jax_fdm.equilibrium.EquilibriumStructure)" href="../jax_fdm.equilibrium/#jax_fdm.equilibrium.structures.structures.EquilibriumStructure">EquilibriumStructure</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>The structure whose element ordering defines the indices.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>indices</code></b> (              <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#list">list</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a>]</code>
+)          –
+          <div class="doc-md-description">
+            <p>The indices of the parametrized elements.</p>
+          </div>
+        </li>
+    </ul>
 
 
     </div>
@@ -2893,55 +3006,52 @@ model.</p>
 
 
 
-        <p>A parameter manager for optimization.</p>
+        <p>Order, bound, and split optimization parameters for the FDM optimizer.</p>
 
 
 <p><span class="doc-section-title">Parameters:</span></p>
-    <table>
-      <thead>
-        <tr>
-          <th>Name</th>
-          <th>Type</th>
-          <th>Description</th>
-          <th>Default</th>
-        </tr>
-      </thead>
-      <tbody>
-          <tr class="doc-section-item">
-            <td>
-                <code>model</code>
-            </td>
-            <td>
-                  <code>`jax_fdm.equilibrium.EquilibriumModel`</code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>An equilibrium model.</p>
-              </div>
-            </td>
-            <td>
-                <em>required</em>
-            </td>
-          </tr>
-          <tr class="doc-section-item">
-            <td>
-                <code>parameters</code>
-            </td>
-            <td>
-                  <code>`List[jax_fdm.parameters.OptimizationParameter]`</code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>A list of optimization parameters.</p>
-              </div>
-            </td>
-            <td>
-                <em>required</em>
-            </td>
-          </tr>
-      </tbody>
-    </table>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>model</code></b>
+              (<code><a class="autorefs autorefs-internal" title="            EquilibriumModel (jax_fdm.equilibrium.EquilibriumModel)" href="../jax_fdm.equilibrium/#jax_fdm.equilibrium.models.EquilibriumModel">EquilibriumModel</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>The equilibrium model.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>parameters</code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#list">list</a>[<a class="autorefs autorefs-internal" title="            Parameter (jax_fdm.parameters.Parameter)" href="#jax_fdm.parameters.Parameter">Parameter</a>]</code>)
+          –
+          <div class="doc-md-description">
+            <p>The optimization parameters to manage.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>structure</code></b>
+              (<code><a class="autorefs autorefs-internal" title="            EquilibriumStructure (jax_fdm.equilibrium.EquilibriumStructure)" href="../jax_fdm.equilibrium/#jax_fdm.equilibrium.structures.structures.EquilibriumStructure">EquilibriumStructure</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>The structure the parameters are defined on.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>network</code></b>
+              (<code><a class="autorefs autorefs-internal" title="            FDNetwork (jax_fdm.datastructures.FDNetwork)" href="../jax_fdm.datastructures/#jax_fdm.datastructures.FDNetwork">FDNetwork</a> | <a class="autorefs autorefs-internal" title="            FDMesh (jax_fdm.datastructures.FDMesh)" href="../jax_fdm.datastructures/#jax_fdm.datastructures.FDMesh">FDMesh</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>The network or mesh the parameters read their initial values from.</p>
+          </div>
+        </li>
+    </ul>
 
+
+<details class="note" open>
+  <summary>Notes</summary>
+  <p>On construction the manager precomputes the type-sorted parameter ordering, the
+optimizable/frozen split, and the index maps between optimization space and the
+flat model parameter vector, so later property access is static.</p>
+</details>
 
 
 
@@ -3409,7 +3519,33 @@ after this call.</p>
 
     <div class="doc doc-contents ">
 
-        <p>Convert optimization parameters into fdm parameters.</p>
+        <p>Expand optimization parameters into the FDM model parameters.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>params_opt</code></b>
+              (<code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, <span title="jax_fdm.parameters.manager.ParameterManager.parameters">parameters</span>]</code>)
+          –
+          <div class="doc-md-description">
+            <p>The flat optimization parameter vector.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>params_fdm</code></b> (              <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#tuple">tuple</a>[<span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, <span title="edges">edges</span>], <span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, &#39;supports 3&#39;], <span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, &#39;nodes 3&#39;]]</code>
+)          –
+          <div class="doc-md-description">
+            <p>The force densities, fixed node coordinates, and node loads, merged with
+the frozen parameters and reshaped for the model.</p>
+          </div>
+        </li>
+    </ul>
 
 
     </div>
@@ -3429,9 +3565,33 @@ after this call.</p>
 
     <div class="doc doc-contents ">
 
-        <p>Returns two boolean masks.</p>
-<p>One with ones denoting the optimizable parameters.
-The second one denoting the frozen parameters.</p>
+        <p>Build masks separating the optimizable parameters from the frozen ones.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>array</code></b>
+              (<code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, <span title="jax_fdm.parameters.manager.ParameterManager.parameters">parameters</span>]</code>)
+          –
+          <div class="doc-md-description">
+            <p>The flat parameter array to shape the masks after.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>masks</code></b> (              <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#tuple">tuple</a>[<span title="jaxtyping.Int">Int</span>[<a class="autorefs autorefs-external" title="numpy.ndarray" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray">ndarray</a>, <span title="jax_fdm.parameters.manager.ParameterManager.parameters">parameters</span>], <span title="jaxtyping.Bool">Bool</span>[<a class="autorefs autorefs-external" title="numpy.ndarray" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray">ndarray</a>, <span title="jax_fdm.parameters.manager.ParameterManager.parameters">parameters</span>]]</code>
+)          –
+          <div class="doc-md-description">
+            <p>A mask flagging the optimizable parameters and its complement flagging
+the frozen ones.</p>
+          </div>
+        </li>
+    </ul>
 
 
     </div>
@@ -3451,8 +3611,33 @@ The second one denoting the frozen parameters.</p>
 
     <div class="doc doc-contents ">
 
-        <p>Returns an iterator over boolean masks for the force density, xyz fixed, and
-loads parameters.</p>
+        <p>Yield a mask per FDM parameter block.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>array</code></b>
+              (<code><span title="jaxtyping.Shaped">Shaped</span>[<a class="autorefs autorefs-external" title="numpy.ndarray" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray">ndarray</a>, <span title="jax_fdm.parameters.manager.ParameterManager.parameters">parameters</span>]</code>)
+          –
+          <div class="doc-md-description">
+            <p>The flat parameter array to shape the masks after.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Yields:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>mask</code></b> (              <code><span title="jaxtyping.Int">Int</span>[<a class="autorefs autorefs-external" title="numpy.ndarray" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray">ndarray</a>, <span title="jax_fdm.parameters.manager.ParameterManager.parameters">parameters</span>]</code>
+)          –
+          <div class="doc-md-description">
+            <p>A mask selecting, in turn, the force density, fixed coordinate, and load
+entries.</p>
+          </div>
+        </li>
+    </ul>
 
 
     </div>
@@ -3572,7 +3757,8 @@ loads parameters.</p>
 
 
 
-        <p>A single force density value to rule them all.</p>
+        <p>A single force density value to rule them all: one value shared across a
+group of edges.</p>
 
 
 
@@ -4877,7 +5063,41 @@ vertices.</p>
 
     <div class="doc doc-contents ">
 
-        <p>Combine a sequence of flat arrays given a filter function.</p>
+        <p>Merge subarrays back into one flat array, inverting a split.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>parrays</code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#tuple">tuple</a>[<span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, ...], ...]</code>)
+          –
+          <div class="doc-md-description">
+            <p>The subarrays to concatenate, in the order they were split.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>adef</code></b>
+              (<code><span title="jaxtyping.Int">Int</span>[<a class="autorefs autorefs-external" title="numpy.ndarray" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray">ndarray</a>, <span title="jax_fdm.parameters.parameters">parameters</span>]</code>)
+          –
+          <div class="doc-md-description">
+            <p>The permutation returned by :func:<code>split_parameters</code> that restores the
+original element order.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>parray</code></b> (              <code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, <span title="jax_fdm.parameters.parameters">parameters</span>]</code>
+)          –
+          <div class="doc-md-description">
+            <p>The recombined flat parameter array.</p>
+          </div>
+        </li>
+    </ul>
 
 
     </div>
@@ -4897,7 +5117,41 @@ vertices.</p>
 
     <div class="doc doc-contents ">
 
-        <p>Split a flat array into flat subarrays given a filter function.</p>
+        <p>Split a flat array into subarrays selected by a masking function.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>parray</code></b>
+              (<code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, <span title="jax_fdm.parameters.parameters">parameters</span>]</code>)
+          –
+          <div class="doc-md-description">
+            <p>The flat parameter array to split.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>func</code></b>
+              (<code><a class="autorefs autorefs-external" title="collections.abc.Callable" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable">Callable</a>[[<span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, <span title="jax_fdm.parameters.parameters">parameters</span>]], <a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#tuple">tuple</a>[<span title="jaxtyping.Shaped">Shaped</span>[<a class="autorefs autorefs-external" title="numpy.ndarray" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray">ndarray</a>, <span title="jax_fdm.parameters.parameters">parameters</span>], ...]]</code>)
+          –
+          <div class="doc-md-description">
+            <p>A function returning one boolean mask per output subarray.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>split</code></b> (              <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#tuple">tuple</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#list">list</a>[<span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, ...]], <span title="jaxtyping.Int">Int</span>[<a class="autorefs autorefs-external" title="numpy.ndarray" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray">ndarray</a>, <span title="jax_fdm.parameters.parameters">parameters</span>]]</code>
+)          –
+          <div class="doc-md-description">
+            <p>The list of masked subarrays, and the permutation that reverses the split
+so :func:<code>combine_parameters</code> can restore the original order.</p>
+          </div>
+        </li>
+    </ul>
 
 
     </div>
@@ -4917,7 +5171,40 @@ vertices.</p>
 
     <div class="doc doc-contents ">
 
-        <p>Reshape a sequence of flat arrays.</p>
+        <p>Reshape each flat array to its paired target shape.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>sarrays</code></b>
+              (<code><a class="autorefs autorefs-external" title="collections.abc.Iterable" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterable">Iterable</a>[<span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, ...]]</code>)
+          –
+          <div class="doc-md-description">
+            <p>The flat arrays to reshape.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>shapes</code></b>
+              (<code><a class="autorefs autorefs-external" title="collections.abc.Iterable" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterable">Iterable</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#tuple">tuple</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a>, ...]]</code>)
+          –
+          <div class="doc-md-description">
+            <p>The target shape for each array, paired by position.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Yields:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>array</code></b> (              <code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, ...]</code>
+)          –
+          <div class="doc-md-description">
+            <p>Each input array reshaped to its target shape.</p>
+          </div>
+        </li>
+    </ul>
 
 
     </div>

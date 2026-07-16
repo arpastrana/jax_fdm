@@ -2420,7 +2420,42 @@ inherit from it to avoid a redundant inheritance diamond.</p>
 
     <div class="doc doc-contents ">
 
-        <p>Gets or sets a load on an edge.</p>
+        <p>Get or set the load vector on a single edge.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>key</code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#tuple">tuple</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a>, <a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a>]</code>)
+          –
+          <div class="doc-md-description">
+            <p>The edge to access.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>load</code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#list">list</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a>] | None</code>, default:
+                  <code>None</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>The load vector to set. If None, the current load is returned.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>load</code></b> (              <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#list">list</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a>] | None</code>
+)          –
+          <div class="doc-md-description">
+            <p>The edge's load vector.</p>
+          </div>
+        </li>
+    </ul>
 
 
     </div>
@@ -2440,7 +2475,42 @@ inherit from it to avoid a redundant inheritance diamond.</p>
 
     <div class="doc doc-contents ">
 
-        <p>Gets or sets the force density on a single edge.</p>
+        <p>Get or set the force density on a single edge.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>key</code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#tuple">tuple</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a>, <a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a>]</code>)
+          –
+          <div class="doc-md-description">
+            <p>The edge to access.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>q</code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a> | None</code>, default:
+                  <code>None</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>The force density to set. If None, the current value is returned.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>q</code></b> (              <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a> | None</code>
+)          –
+          <div class="doc-md-description">
+            <p>The edge's force density.</p>
+          </div>
+        </li>
+    </ul>
 
 
     </div>
@@ -2460,7 +2530,32 @@ inherit from it to avoid a redundant inheritance diamond.</p>
 
     <div class="doc doc-contents ">
 
-        <p>Gets the forces at a single edge the network.</p>
+        <p>Get the internal force in a single edge.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>key</code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#tuple">tuple</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a>, <a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a>]</code>)
+          –
+          <div class="doc-md-description">
+            <p>The edge to access.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>force</code></b> (              <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a></code>
+)          –
+          <div class="doc-md-description">
+            <p>The edge's internal force.</p>
+          </div>
+        </li>
+    </ul>
 
 
     </div>
@@ -2480,7 +2575,32 @@ inherit from it to avoid a redundant inheritance diamond.</p>
 
     <div class="doc doc-contents ">
 
-        <p>Gets the load path at a single edge the network.</p>
+        <p>Get the load path of a single edge.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>key</code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#tuple">tuple</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a>, <a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a>]</code>)
+          –
+          <div class="doc-md-description">
+            <p>The edge to access.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>loadpath</code></b> (              <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a></code>
+)          –
+          <div class="doc-md-description">
+            <p>The absolute product of the edge's force and length.</p>
+          </div>
+        </li>
+    </ul>
 
 
     </div>
@@ -2500,7 +2620,44 @@ inherit from it to avoid a redundant inheritance diamond.</p>
 
     <div class="doc doc-contents ">
 
-        <p>Gets or sets the force densities on a list of edges.</p>
+        <p>Get or set the force densities on many edges.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>q</code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#list">list</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a>] | None</code>, default:
+                  <code>None</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>The force densities to set. If None, the current values are returned.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>keys</code></b>
+              (<code><a class="autorefs autorefs-external" title="collections.abc.Sequence" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Sequence">Sequence</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#tuple">tuple</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a>, <a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a>]] | None</code>, default:
+                  <code>None</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>The edges to access. If None, all edges are used.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>q</code></b> (              <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#list">list</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a>] | None</code>
+)          –
+          <div class="doc-md-description">
+            <p>The force density of each edge.</p>
+          </div>
+        </li>
+    </ul>
 
 
     </div>
@@ -2520,7 +2677,34 @@ inherit from it to avoid a redundant inheritance diamond.</p>
 
     <div class="doc doc-contents ">
 
-        <p>Gets the forces on the edges of the network.</p>
+        <p>Get the internal forces of many edges.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>keys</code></b>
+              (<code><a class="autorefs autorefs-external" title="collections.abc.Sequence" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Sequence">Sequence</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#tuple">tuple</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a>, <a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a>]] | None</code>, default:
+                  <code>None</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>The edges to access. If None, all edges are used.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>forces</code></b> (              <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#list">list</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a>]</code>
+)          –
+          <div class="doc-md-description">
+            <p>The internal force of each edge.</p>
+          </div>
+        </li>
+    </ul>
 
 
     </div>
@@ -2540,7 +2724,34 @@ inherit from it to avoid a redundant inheritance diamond.</p>
 
     <div class="doc doc-contents ">
 
-        <p>Gets the lengths on the edges of the network.</p>
+        <p>Get the lengths of many edges.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>keys</code></b>
+              (<code><a class="autorefs autorefs-external" title="collections.abc.Sequence" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Sequence">Sequence</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#tuple">tuple</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a>, <a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a>]] | None</code>, default:
+                  <code>None</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>The edges to access. If None, all edges are used.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>lengths</code></b> (              <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#list">list</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a>]</code>
+)          –
+          <div class="doc-md-description">
+            <p>The length of each edge.</p>
+          </div>
+        </li>
+    </ul>
 
 
     </div>
@@ -2560,7 +2771,44 @@ inherit from it to avoid a redundant inheritance diamond.</p>
 
     <div class="doc doc-contents ">
 
-        <p>Gets or sets a load to the edges of the datastructure.</p>
+        <p>Get or set the load vectors on many edges.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>load</code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#list">list</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a>] | None</code>, default:
+                  <code>None</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>The load vector to set on each edge. If None, current loads are returned.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>keys</code></b>
+              (<code><a class="autorefs autorefs-external" title="collections.abc.Sequence" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Sequence">Sequence</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#tuple">tuple</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a>, <a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a>]] | None</code>, default:
+                  <code>None</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>The edges to access. If None, all edges are used.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>loads</code></b> (              <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#list">list</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#list">list</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a>]] | None</code>
+)          –
+          <div class="doc-md-description">
+            <p>The load vector of each edge.</p>
+          </div>
+        </li>
+    </ul>
 
 
     </div>
@@ -2580,7 +2828,34 @@ inherit from it to avoid a redundant inheritance diamond.</p>
 
     <div class="doc doc-contents ">
 
-        <p>Gets the load path on the edges of the network.</p>
+        <p>Iterate over the load path of many edges.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>keys</code></b>
+              (<code><a class="autorefs autorefs-external" title="collections.abc.Sequence" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Sequence">Sequence</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#tuple">tuple</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a>, <a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a>]] | None</code>, default:
+                  <code>None</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>The edges to access. If None, all edges are used.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Yields:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>loadpath</code></b> (              <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a></code>
+)          –
+          <div class="doc-md-description">
+            <p>The load path of each edge.</p>
+          </div>
+        </li>
+    </ul>
 
 
     </div>
@@ -2600,7 +2875,19 @@ inherit from it to avoid a redundant inheritance diamond.</p>
 
     <div class="doc doc-contents ">
 
-        <p>Gets the total load path of the network.</p>
+        <p>Get the total load path summed over all edges.</p>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>loadpath</code></b> (              <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a></code>
+)          –
+          <div class="doc-md-description">
+            <p>The sum of the per-edge load paths.</p>
+          </div>
+        </li>
+    </ul>
 
 
     </div>
@@ -2620,7 +2907,32 @@ inherit from it to avoid a redundant inheritance diamond.</p>
 
     <div class="doc doc-contents ">
 
-        <p>Print information aboud the equilibrium state of the network.</p>
+        <p>Print summary statistics of the datastructure's equilibrium state.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>other_stats</code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#dict">dict</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a>, <a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#list">list</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a>]] | None</code>, default:
+                  <code>None</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>Extra named value lists to summarize alongside the built-in ones.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>ndigits</code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a></code>, default:
+                  <code>3</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>The number of digits to round the printed statistics to.</p>
+          </div>
+        </li>
+    </ul>
 
 
     </div>
@@ -2691,7 +3003,32 @@ inherit from it to avoid a redundant inheritance diamond.</p>
 
     <div class="doc doc-contents ">
 
-        <p>Create a force density network from a mesh.</p>
+        <p>Build a force density network from a mesh's vertices and edges.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>mesh</code></b>
+              (<code><a class="autorefs autorefs-external" title="compas.datastructures.Mesh" href="https://compas.dev/compas/latest/api/compas.datastructures.Mesh.html#compas.datastructures.Mesh">Mesh</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>The mesh to copy vertices, edges, and their attributes from.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>network</code></b> (              <code><a class="autorefs autorefs-internal" title="            FDNetwork (jax_fdm.datastructures.network.FDNetwork)" href="#jax_fdm.datastructures.FDNetwork">FDNetwork</a></code>
+)          –
+          <div class="doc-md-description">
+            <p>The network mirroring the mesh's connectivity and attributes.</p>
+          </div>
+        </li>
+    </ul>
 
 
     </div>
@@ -2711,7 +3048,44 @@ inherit from it to avoid a redundant inheritance diamond.</p>
 
     <div class="doc doc-contents ">
 
-        <p>Gets or sets the x, y, z coordinates of a list of nodes.</p>
+        <p>Get the coordinates of many nodes.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>keys</code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#list">list</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a>] | None</code>, default:
+                  <code>None</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>The nodes to access. If None, all nodes are used.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>axes</code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></code>, default:
+                  <code>&#39;xyz&#39;</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>The coordinate axes to return, as a subset of <code>"xyz"</code>.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>coordinates</code></b> (              <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#list">list</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#list">list</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a>]]</code>
+)          –
+          <div class="doc-md-description">
+            <p>The selected coordinates of each node.</p>
+          </div>
+        </li>
+    </ul>
 
 
     </div>
@@ -2731,7 +3105,45 @@ inherit from it to avoid a redundant inheritance diamond.</p>
 
     <div class="doc doc-contents ">
 
-        <p>Gets the x, y, z coordinates of the anchors of the network.</p>
+        <p>Get the coordinates of the supported nodes.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>keys</code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#list">list</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a>] | None</code>, default:
+                  <code>None</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>The candidate nodes; only the supported ones are kept. If None, all
+supported nodes are used.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>axes</code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></code>, default:
+                  <code>&#39;xyz&#39;</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>The coordinate axes to return, as a subset of <code>"xyz"</code>.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>coordinates</code></b> (              <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#list">list</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#list">list</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a>]]</code>
+)          –
+          <div class="doc-md-description">
+            <p>The selected coordinates of each supported node.</p>
+          </div>
+        </li>
+    </ul>
 
 
     </div>
@@ -2791,7 +3203,20 @@ inherit from it to avoid a redundant inheritance diamond.</p>
 
     <div class="doc doc-contents ">
 
-        <p>Sets a node as a fixed anchor.</p>
+        <p>Mark a node as a support.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>key</code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>The node to fix.</p>
+          </div>
+        </li>
+    </ul>
 
 
     </div>
@@ -2811,8 +3236,26 @@ inherit from it to avoid a redundant inheritance diamond.</p>
 
     <div class="doc doc-contents ">
 
-        <p>Sets a node as a fixed anchor.</p>
+        <p>Mark a node as a support.</p>
 
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>key</code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>The node to fix.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<details class="note" open>
+  <summary>Notes</summary>
+  <p>An alias of :meth:<code>node_support</code>; anchor and support are synonyms here.</p>
+</details>
 
     </div>
 
@@ -2831,7 +3274,32 @@ inherit from it to avoid a redundant inheritance diamond.</p>
 
     <div class="doc doc-contents ">
 
-        <p>Test if the node is a fixed node.</p>
+        <p>Test whether a node is a support.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>key</code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>The node to test.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>is_support</code></b> (              <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></code>
+)          –
+          <div class="doc-md-description">
+            <p>True if the node is a support.</p>
+          </div>
+        </li>
+    </ul>
 
 
     </div>
@@ -2851,7 +3319,35 @@ inherit from it to avoid a redundant inheritance diamond.</p>
 
     <div class="doc doc-contents ">
 
-        <p>Gets or sets the node keys where a support has been assigned.</p>
+        <p>Get the support nodes, or mark nodes as supports.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>keys</code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#list">list</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a>] | None</code>, default:
+                  <code>None</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>The nodes to mark as supports. If None, the existing support nodes are
+returned instead.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>supports</code></b> (              <code><a class="autorefs autorefs-external" title="collections.abc.Iterator" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterator">Iterator</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a>] | None</code>
+)          –
+          <div class="doc-md-description">
+            <p>The support node keys when reading; None when setting.</p>
+          </div>
+        </li>
+    </ul>
 
 
     </div>
@@ -2871,8 +3367,41 @@ inherit from it to avoid a redundant inheritance diamond.</p>
 
     <div class="doc doc-contents ">
 
-        <p>Gets or sets the node keys where a support has been assigned.</p>
+        <p>Get the support nodes, or mark nodes as supports.</p>
 
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>keys</code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#list">list</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a>] | None</code>, default:
+                  <code>None</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>The nodes to mark as supports. If None, the existing support nodes are
+returned instead.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>supports</code></b> (              <code><a class="autorefs autorefs-external" title="collections.abc.Iterator" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterator">Iterator</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a>] | None</code>
+)          –
+          <div class="doc-md-description">
+            <p>The support node keys when reading; None when setting.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<details class="note" open>
+  <summary>Notes</summary>
+  <p>An alias of :meth:<code>nodes_supports</code>.</p>
+</details>
 
     </div>
 
@@ -2891,8 +3420,41 @@ inherit from it to avoid a redundant inheritance diamond.</p>
 
     <div class="doc doc-contents ">
 
-        <p>Gets or sets the node keys where an anchor has been assigned.</p>
+        <p>Get the support nodes, or mark nodes as supports.</p>
 
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>keys</code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#list">list</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a>] | None</code>, default:
+                  <code>None</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>The nodes to mark as supports. If None, the existing support nodes are
+returned instead.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>supports</code></b> (              <code><a class="autorefs autorefs-external" title="collections.abc.Iterator" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterator">Iterator</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a>] | None</code>
+)          –
+          <div class="doc-md-description">
+            <p>The support node keys when reading; None when setting.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<details class="note" open>
+  <summary>Notes</summary>
+  <p>An alias of :meth:<code>nodes_supports</code>.</p>
+</details>
 
     </div>
 
@@ -2911,7 +3473,19 @@ inherit from it to avoid a redundant inheritance diamond.</p>
 
     <div class="doc doc-contents ">
 
-        <p>The keys of the nodes where there is no support assigned.</p>
+        <p>Iterate over the free (unsupported) nodes.</p>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>nodes_free</code></b> (              <code><a class="autorefs autorefs-external" title="collections.abc.Iterator" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterator">Iterator</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a>]</code>
+)          –
+          <div class="doc-md-description">
+            <p>The keys of the nodes that are not supports.</p>
+          </div>
+        </li>
+    </ul>
 
 
     </div>
@@ -2931,7 +3505,42 @@ inherit from it to avoid a redundant inheritance diamond.</p>
 
     <div class="doc doc-contents ">
 
-        <p>Gets or sets a load to the nodes of the network.</p>
+        <p>Get or set the load vector on a single node.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>key</code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>The node to access.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>load</code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#list">list</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a>] | None</code>, default:
+                  <code>None</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>The load vector to set. If None, the current load is returned.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>load</code></b> (              <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#list">list</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a>] | None</code>
+)          –
+          <div class="doc-md-description">
+            <p>The node's load vector.</p>
+          </div>
+        </li>
+    </ul>
 
 
     </div>
@@ -2951,7 +3560,44 @@ inherit from it to avoid a redundant inheritance diamond.</p>
 
     <div class="doc doc-contents ">
 
-        <p>Gets or sets a load to the nodes of the network.</p>
+        <p>Get or set the load vectors on many nodes.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>load</code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#list">list</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a>] | None</code>, default:
+                  <code>None</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>The load vector to set on each node. If None, current loads are returned.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>keys</code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#list">list</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a>] | None</code>, default:
+                  <code>None</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>The nodes to access. If None, all nodes are used.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>loads</code></b> (              <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#list">list</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#list">list</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a>]] | None</code>
+)          –
+          <div class="doc-md-description">
+            <p>The load vector of each node.</p>
+          </div>
+        </li>
+    </ul>
 
 
     </div>
@@ -2971,7 +3617,34 @@ inherit from it to avoid a redundant inheritance diamond.</p>
 
     <div class="doc doc-contents ">
 
-        <p>Gets the residual forces of the nodes of the network.</p>
+        <p>Get the residual force vectors of many nodes.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>keys</code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#list">list</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a>] | None</code>, default:
+                  <code>None</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>The nodes to access. If None, all nodes are used.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>residuals</code></b> (              <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#list">list</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#list">list</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a>]]</code>
+)          –
+          <div class="doc-md-description">
+            <p>The residual force vector of each node.</p>
+          </div>
+        </li>
+    </ul>
 
 
     </div>
@@ -2991,7 +3664,32 @@ inherit from it to avoid a redundant inheritance diamond.</p>
 
     <div class="doc doc-contents ">
 
-        <p>Gets the residual force of a single node of the network.</p>
+        <p>Get the residual force vector of a single node.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>key</code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>The node to access.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>residual</code></b> (              <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#list">list</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a>]</code>
+)          –
+          <div class="doc-md-description">
+            <p>The node's residual force vector.</p>
+          </div>
+        </li>
+    </ul>
 
 
     </div>
@@ -3011,7 +3709,34 @@ inherit from it to avoid a redundant inheritance diamond.</p>
 
     <div class="doc doc-contents ">
 
-        <p>Gets the reaction forces of the nodes of the network.</p>
+        <p>Get the reaction force vectors of the support nodes.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>keys</code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#list">list</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a>] | None</code>, default:
+                  <code>None</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>The nodes to access. If None, all support nodes are used.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>reactions</code></b> (              <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#list">list</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#list">list</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a>]]</code>
+)          –
+          <div class="doc-md-description">
+            <p>The reaction force vector of each selected node.</p>
+          </div>
+        </li>
+    </ul>
 
 
     </div>
@@ -3031,7 +3756,32 @@ inherit from it to avoid a redundant inheritance diamond.</p>
 
     <div class="doc doc-contents ">
 
-        <p>Gets the reaction force of a single node of the network.</p>
+        <p>Get the reaction force vector of a single node.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>key</code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>The node to access.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>reaction</code></b> (              <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#list">list</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a>]</code>
+)          –
+          <div class="doc-md-description">
+            <p>The node's reaction force vector.</p>
+          </div>
+        </li>
+    </ul>
 
 
     </div>
@@ -3054,6 +3804,33 @@ inherit from it to avoid a redundant inheritance diamond.</p>
         <p>Iterate over the edges of the network.</p>
 
 
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>data</code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></code>, default:
+                  <code>False</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>If True, yield each edge with its attribute dictionary.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>edges</code></b> (              <code><a class="autorefs autorefs-external" title="collections.abc.Iterator" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterator">Iterator</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#tuple">tuple</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a>, <a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a>]]</code>
+)          –
+          <div class="doc-md-description">
+            <p>An iterator over the edge keys.</p>
+          </div>
+        </li>
+    </ul>
+
+
     </div>
 
 </div>
@@ -3071,7 +3848,32 @@ inherit from it to avoid a redundant inheritance diamond.</p>
 
     <div class="doc doc-contents ">
 
-        <p>Test if any of the two nodes connected by the edge is a support.</p>
+        <p>Test whether either end node of an edge is a support.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>key</code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#tuple">tuple</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a>, <a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a>]</code>)
+          –
+          <div class="doc-md-description">
+            <p>The edge to test.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>is_supported</code></b> (              <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></code>
+)          –
+          <div class="doc-md-description">
+            <p>True if at least one of the edge's nodes is a support.</p>
+          </div>
+        </li>
+    </ul>
 
 
     </div>
@@ -3091,7 +3893,32 @@ inherit from it to avoid a redundant inheritance diamond.</p>
 
     <div class="doc doc-contents ">
 
-        <p>Test if the two nodes connected the edge are a support.</p>
+        <p>Test whether both end nodes of an edge are supports.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>key</code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#tuple">tuple</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a>, <a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a>]</code>)
+          –
+          <div class="doc-md-description">
+            <p>The edge to test.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>is_fully_supported</code></b> (              <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></code>
+)          –
+          <div class="doc-md-description">
+            <p>True if both of the edge's nodes are supports.</p>
+          </div>
+        </li>
+    </ul>
 
 
     </div>
@@ -3111,7 +3938,20 @@ inherit from it to avoid a redundant inheritance diamond.</p>
 
     <div class="doc doc-contents ">
 
-        <p>Return the design parameters of the network.</p>
+        <p>Return the force density design parameters of the network.</p>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>parameters</code></b> (              <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#tuple">tuple</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#list">list</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a>], <a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#list">list</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#list">list</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a>]], <a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#list">list</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#list">list</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a>]]]</code>
+)          –
+          <div class="doc-md-description">
+            <p>The edge force densities, the fixed node coordinates, and the node
+loads.</p>
+          </div>
+        </li>
+    </ul>
 
 
     </div>
@@ -3178,7 +4018,32 @@ inherit from it to avoid a redundant inheritance diamond.</p>
 
     <div class="doc doc-contents ">
 
-        <p>Test if the vertex is a support.</p>
+        <p>Test whether a vertex is a support.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>key</code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>The vertex to test.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>is_support</code></b> (              <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></code>
+)          –
+          <div class="doc-md-description">
+            <p>True if the vertex is a support.</p>
+          </div>
+        </li>
+    </ul>
 
 
     </div>
@@ -3198,7 +4063,19 @@ inherit from it to avoid a redundant inheritance diamond.</p>
 
     <div class="doc doc-contents ">
 
-        <p>The number of supported vertices.</p>
+        <p>Count the supported vertices.</p>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>count</code></b> (              <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a></code>
+)          –
+          <div class="doc-md-description">
+            <p>The number of support vertices.</p>
+          </div>
+        </li>
+    </ul>
 
 
     </div>
@@ -3218,7 +4095,20 @@ inherit from it to avoid a redundant inheritance diamond.</p>
 
     <div class="doc doc-contents ">
 
-        <p>Sets a vertex to a fixed support.</p>
+        <p>Mark a vertex as a support.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>key</code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>The vertex to fix.</p>
+          </div>
+        </li>
+    </ul>
 
 
     </div>
@@ -3238,7 +4128,42 @@ inherit from it to avoid a redundant inheritance diamond.</p>
 
     <div class="doc doc-contents ">
 
-        <p>Gets or sets a load to a vertex.</p>
+        <p>Get or set the load vector on a single vertex.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>key</code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>The vertex to access.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>load</code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#list">list</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a>] | None</code>, default:
+                  <code>None</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>The load vector to set. If None, the current load is returned.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>load</code></b> (              <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#list">list</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a>] | None</code>
+)          –
+          <div class="doc-md-description">
+            <p>The vertex's load vector.</p>
+          </div>
+        </li>
+    </ul>
 
 
     </div>
@@ -3258,7 +4183,32 @@ inherit from it to avoid a redundant inheritance diamond.</p>
 
     <div class="doc doc-contents ">
 
-        <p>Gets the residual force of a mesh vertex.</p>
+        <p>Get the residual force vector of a single vertex.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>key</code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>The vertex to access.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>residual</code></b> (              <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#list">list</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a>]</code>
+)          –
+          <div class="doc-md-description">
+            <p>The vertex's residual force vector.</p>
+          </div>
+        </li>
+    </ul>
 
 
     </div>
@@ -3278,7 +4228,32 @@ inherit from it to avoid a redundant inheritance diamond.</p>
 
     <div class="doc doc-contents ">
 
-        <p>Gets the reaction force of a mesh vertex.</p>
+        <p>Get the reaction force vector of a single vertex.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>key</code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>The vertex to access.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>reaction</code></b> (              <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#list">list</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a>]</code>
+)          –
+          <div class="doc-md-description">
+            <p>The vertex's reaction force, equal to its residual.</p>
+          </div>
+        </li>
+    </ul>
 
 
     </div>
@@ -3298,7 +4273,44 @@ inherit from it to avoid a redundant inheritance diamond.</p>
 
     <div class="doc doc-contents ">
 
-        <p>Gets or sets the x, y, z coordinates of a list of vertices.</p>
+        <p>Get the coordinates of many vertices.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>keys</code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#list">list</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a>] | None</code>, default:
+                  <code>None</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>The vertices to access. If None, all vertices are used.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>axes</code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></code>, default:
+                  <code>&#39;xyz&#39;</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>The coordinate axes to return, as a subset of <code>"xyz"</code>.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>coordinates</code></b> (              <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#list">list</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#list">list</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a>]]</code>
+)          –
+          <div class="doc-md-description">
+            <p>The selected coordinates of each vertex.</p>
+          </div>
+        </li>
+    </ul>
 
 
     </div>
@@ -3318,7 +4330,45 @@ inherit from it to avoid a redundant inheritance diamond.</p>
 
     <div class="doc doc-contents ">
 
-        <p>Gets the x, y, z coordinates of the supports of the network.</p>
+        <p>Get the coordinates of the supported vertices.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>keys</code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#list">list</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a>] | None</code>, default:
+                  <code>None</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>The candidate vertices; only the supported ones are kept. If None, all
+supported vertices are used.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>axes</code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></code>, default:
+                  <code>&#39;xyz&#39;</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>The coordinate axes to return, as a subset of <code>"xyz"</code>.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>coordinates</code></b> (              <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#list">list</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#list">list</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a>]]</code>
+)          –
+          <div class="doc-md-description">
+            <p>The selected coordinates of each supported vertex.</p>
+          </div>
+        </li>
+    </ul>
 
 
     </div>
@@ -3338,7 +4388,35 @@ inherit from it to avoid a redundant inheritance diamond.</p>
 
     <div class="doc doc-contents ">
 
-        <p>Gets or sets the vertex keys where a support has been assigned.</p>
+        <p>Get the support vertices, or mark vertices as supports.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>keys</code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#list">list</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a>] | None</code>, default:
+                  <code>None</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>The vertices to mark as supports. If None, the existing support vertices
+are returned instead.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>supports</code></b> (              <code><a class="autorefs autorefs-external" title="collections.abc.Iterator" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterator">Iterator</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a>] | None</code>
+)          –
+          <div class="doc-md-description">
+            <p>The support vertex keys when reading; None when setting.</p>
+          </div>
+        </li>
+    </ul>
 
 
     </div>
@@ -3358,8 +4436,41 @@ inherit from it to avoid a redundant inheritance diamond.</p>
 
     <div class="doc doc-contents ">
 
-        <p>Gets or sets the vertex keys where a support has been assigned.</p>
+        <p>Get the support vertices, or mark vertices as supports.</p>
 
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>keys</code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#list">list</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a>] | None</code>, default:
+                  <code>None</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>The vertices to mark as supports. If None, the existing support vertices
+are returned instead.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>supports</code></b> (              <code><a class="autorefs autorefs-external" title="collections.abc.Iterator" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterator">Iterator</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a>] | None</code>
+)          –
+          <div class="doc-md-description">
+            <p>The support vertex keys when reading; None when setting.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<details class="note" open>
+  <summary>Notes</summary>
+  <p>An alias of :meth:<code>vertices_supports</code>.</p>
+</details>
 
     </div>
 
@@ -3378,7 +4489,19 @@ inherit from it to avoid a redundant inheritance diamond.</p>
 
     <div class="doc doc-contents ">
 
-        <p>The keys of the vertices where there is no support assigned.</p>
+        <p>Iterate over the free (unsupported) vertices.</p>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>vertices_free</code></b> (              <code><a class="autorefs autorefs-external" title="collections.abc.Iterator" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterator">Iterator</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a>]</code>
+)          –
+          <div class="doc-md-description">
+            <p>The keys of the vertices that are not supports.</p>
+          </div>
+        </li>
+    </ul>
 
 
     </div>
@@ -3398,7 +4521,45 @@ inherit from it to avoid a redundant inheritance diamond.</p>
 
     <div class="doc doc-contents ">
 
-        <p>Gets or sets a load to the vertices of the mesh.</p>
+        <p>Get or set the load vectors on many vertices.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>load</code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#list">list</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a>] | None</code>, default:
+                  <code>None</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>The load vector to set on each vertex. If None, current loads are
+returned.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>keys</code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#list">list</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a>] | None</code>, default:
+                  <code>None</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>The vertices to access. If None, all vertices are used.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>loads</code></b> (              <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#list">list</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#list">list</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a>]] | None</code>
+)          –
+          <div class="doc-md-description">
+            <p>The load vector of each vertex.</p>
+          </div>
+        </li>
+    </ul>
 
 
     </div>
@@ -3418,7 +4579,34 @@ inherit from it to avoid a redundant inheritance diamond.</p>
 
     <div class="doc doc-contents ">
 
-        <p>Gets the residual forces at the vertices of the mesh.</p>
+        <p>Get the residual force vectors of many vertices.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>keys</code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#list">list</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a>] | None</code>, default:
+                  <code>None</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>The vertices to access. If None, all vertices are used.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>residuals</code></b> (              <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#list">list</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#list">list</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a>]]</code>
+)          –
+          <div class="doc-md-description">
+            <p>The residual force vector of each vertex.</p>
+          </div>
+        </li>
+    </ul>
 
 
     </div>
@@ -3438,7 +4626,34 @@ inherit from it to avoid a redundant inheritance diamond.</p>
 
     <div class="doc doc-contents ">
 
-        <p>Gets the reaction forces at the vertices of the mesh.</p>
+        <p>Get the reaction force vectors of the support vertices.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>keys</code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#list">list</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a>] | None</code>, default:
+                  <code>None</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>The vertices to access. If None, all support vertices are used.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>reactions</code></b> (              <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#list">list</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#list">list</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a>]]</code>
+)          –
+          <div class="doc-md-description">
+            <p>The reaction force vector of each selected vertex.</p>
+          </div>
+        </li>
+    </ul>
 
 
     </div>
@@ -3461,6 +4676,33 @@ inherit from it to avoid a redundant inheritance diamond.</p>
         <p>Iterate over the edges of the mesh.</p>
 
 
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>data</code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></code>, default:
+                  <code>False</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>If True, yield each edge with its attribute dictionary.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>edges</code></b> (              <code><a class="autorefs autorefs-external" title="collections.abc.Iterator" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterator">Iterator</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#tuple">tuple</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a>, <a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a>]]</code>
+)          –
+          <div class="doc-md-description">
+            <p>An iterator over the edge keys.</p>
+          </div>
+        </li>
+    </ul>
+
+
     </div>
 
 </div>
@@ -3478,7 +4720,32 @@ inherit from it to avoid a redundant inheritance diamond.</p>
 
     <div class="doc doc-contents ">
 
-        <p>Test if any of edge vertices is a support.</p>
+        <p>Test whether either end vertex of an edge is a support.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>key</code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#tuple">tuple</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a>, <a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a>]</code>)
+          –
+          <div class="doc-md-description">
+            <p>The edge to test.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>is_supported</code></b> (              <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></code>
+)          –
+          <div class="doc-md-description">
+            <p>True if at least one of the edge's vertices is a support.</p>
+          </div>
+        </li>
+    </ul>
 
 
     </div>
@@ -3498,7 +4765,32 @@ inherit from it to avoid a redundant inheritance diamond.</p>
 
     <div class="doc doc-contents ">
 
-        <p>Test if all the edge vertices are a support.</p>
+        <p>Test whether both end vertices of an edge are supports.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>key</code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#tuple">tuple</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a>, <a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a>]</code>)
+          –
+          <div class="doc-md-description">
+            <p>The edge to test.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>is_fully_supported</code></b> (              <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></code>
+)          –
+          <div class="doc-md-description">
+            <p>True if both of the edge's vertices are supports.</p>
+          </div>
+        </li>
+    </ul>
 
 
     </div>
@@ -3518,7 +4810,32 @@ inherit from it to avoid a redundant inheritance diamond.</p>
 
     <div class="doc doc-contents ">
 
-        <p>Calculate the local coordinate system (LCS) of this face.</p>
+        <p>Compute the local coordinate frame of a face.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>key</code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>The face to access.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>lcs</code></b> (              <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#list">list</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#list">list</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a>]]</code>
+)          –
+          <div class="doc-md-description">
+            <p>The three axes of the face's local coordinate system.</p>
+          </div>
+        </li>
+    </ul>
 
 
     </div>
@@ -3538,7 +4855,42 @@ inherit from it to avoid a redundant inheritance diamond.</p>
 
     <div class="doc doc-contents ">
 
-        <p>Gets or sets a load on a face.</p>
+        <p>Get or set the load vector on a single face.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>key</code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>The face to access.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>load</code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#list">list</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a>] | None</code>, default:
+                  <code>None</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>The load vector to set. If None, the current load is returned.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>load</code></b> (              <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#list">list</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a>] | None</code>
+)          –
+          <div class="doc-md-description">
+            <p>The face's load vector.</p>
+          </div>
+        </li>
+    </ul>
 
 
     </div>
@@ -3558,7 +4910,32 @@ inherit from it to avoid a redundant inheritance diamond.</p>
 
     <div class="doc doc-contents ">
 
-        <p>Test if any of the face vertices is a support.</p>
+        <p>Test whether any vertex of a face is a support.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>key</code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>The face to test.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>is_supported</code></b> (              <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></code>
+)          –
+          <div class="doc-md-description">
+            <p>True if at least one of the face's vertices is a support.</p>
+          </div>
+        </li>
+    </ul>
 
 
     </div>
@@ -3578,7 +4955,32 @@ inherit from it to avoid a redundant inheritance diamond.</p>
 
     <div class="doc doc-contents ">
 
-        <p>Test if all the face vertices are a support.</p>
+        <p>Test whether every vertex of a face is a support.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>key</code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>The face to test.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>is_fully_supported</code></b> (              <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></code>
+)          –
+          <div class="doc-md-description">
+            <p>True if all of the face's vertices are supports.</p>
+          </div>
+        </li>
+    </ul>
 
 
     </div>
@@ -3598,7 +5000,44 @@ inherit from it to avoid a redundant inheritance diamond.</p>
 
     <div class="doc doc-contents ">
 
-        <p>Gets or sets a load on the faces.</p>
+        <p>Get or set the load vectors on many faces.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>load</code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#list">list</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a>] | None</code>, default:
+                  <code>None</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>The load vector to set on each face. If None, current loads are returned.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>keys</code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#list">list</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a>] | None</code>, default:
+                  <code>None</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>The faces to access. If None, all faces are used.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>loads</code></b> (              <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#list">list</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#list">list</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a>]] | None</code>
+)          –
+          <div class="doc-md-description">
+            <p>The load vector of each face.</p>
+          </div>
+        </li>
+    </ul>
 
 
     </div>
@@ -3618,7 +5057,20 @@ inherit from it to avoid a redundant inheritance diamond.</p>
 
     <div class="doc doc-contents ">
 
-        <p>Return the design parameters of the network.</p>
+        <p>Return the force density design parameters of the mesh.</p>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>parameters</code></b> (              <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#tuple">tuple</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#list">list</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a>], <a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#list">list</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#list">list</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a>]], <a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#list">list</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#list">list</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a>]]]</code>
+)          –
+          <div class="doc-md-description">
+            <p>The edge force densities, the fixed vertex coordinates, and the vertex
+loads.</p>
+          </div>
+        </li>
+    </ul>
 
 
     </div>
@@ -3638,11 +5090,26 @@ inherit from it to avoid a redundant inheritance diamond.</p>
 
     <div class="doc doc-contents ">
 
-        <p>Returns a dictionary that maps edges in a list to the corresponding
-vertex key pairs.</p>
-<p>Mirrors <code>compas.datastructures.Graph.index_edge</code>, which compas 2.x does
-not provide on <code>Mesh</code>, so <code>FDMesh</code> and <code>FDNetwork</code> share the API.</p>
+        <p>Map each edge's enumeration index to its vertex key pair.</p>
 
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>index_edge</code></b> (              <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#dict">dict</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a>, <a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#tuple">tuple</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a>, <a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a>]]</code>
+)          –
+          <div class="doc-md-description">
+            <p>A mapping from edge index to its <code>(u, v)</code> vertex key pair.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<details class="note" open>
+  <summary>Notes</summary>
+  <p>Mirrors <code>compas.datastructures.Graph.index_edge</code>, which COMPAS 2.x does
+not provide on <code>Mesh</code>, so <code>FDMesh</code> and <code>FDNetwork</code> share the API.</p>
+</details>
 
     </div>
 
@@ -3661,8 +5128,19 @@ not provide on <code>Mesh</code>, so <code>FDMesh</code> and <code>FDNetwork</co
 
     <div class="doc doc-contents ">
 
-        <p>Returns a dictionary that maps edge keys (i.e. pairs of vertex keys)
-to the corresponding edge index in a list or array of edges.</p>
+        <p>Map each edge's vertex key pair to its enumeration index.</p>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>uv_index</code></b> (              <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#dict">dict</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#tuple">tuple</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a>, <a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a>], <a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a>]</code>
+)          –
+          <div class="doc-md-description">
+            <p>A mapping from each <code>(u, v)</code> vertex key pair to its edge index.</p>
+          </div>
+        </li>
+    </ul>
 
 
     </div>

@@ -3861,9 +3861,48 @@ Goals are collected into an error term of a <a href="../jax_fdm.losses/">loss fu
 
 
 
-        <p>The base goal.</p>
-<p>All goal subclasses must inherit from this class.</p>
+        <p>The base class for all goals, targets an equilibrium quantity reaches.</p>
 
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>key</code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a> | <a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#tuple">tuple</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a>, <a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a>] | <a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#list">list</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a>] | <a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#list">list</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#tuple">tuple</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a>, <a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a>]]</code>)
+          –
+          <div class="doc-md-description">
+            <p>The key or keys of the element(s) the goal acts on.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>target</code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a> | <span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, ...]</code>)
+          –
+          <div class="doc-md-description">
+            <p>The value the goal drives its quantity of interest toward.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>weight</code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a> | <span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, ...]</code>, default:
+                  <code>1.0</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>The relative importance of the goal in the loss.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<details class="note" open>
+  <summary>Notes</summary>
+  <p>A goal is initialized in two phases: construction stores the key, target, and
+weight, then :meth:<code>init</code> resolves the key to an index against an equilibrium
+structure before any prediction runs. Subclasses supply the quantity of
+interest via :meth:<code>prediction</code> and mix in :class:<code>ScalarGoal</code> or
+:class:<code>VectorGoal</code> for the target's shape.</p>
+</details>
 
 
 
@@ -3998,7 +4037,41 @@ Goals are collected into an error term of a <a href="../jax_fdm.losses/">loss fu
 
     <div class="doc doc-contents ">
 
-        <p>The goal value to compare the prediction against.</p>
+        <p>The reference value the prediction is compared against.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>target</code></b>
+              (<code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, ...]</code>)
+          –
+          <div class="doc-md-description">
+            <p>The goal's target value.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>prediction</code></b>
+              (<code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, ...]</code>)
+          –
+          <div class="doc-md-description">
+            <p>The current value of the quantity of interest.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>goal</code></b> (              <code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, ...]</code>
+)          –
+          <div class="doc-md-description">
+            <p>The reference value. The base goal returns the target unchanged;
+subclasses may combine it with the prediction (e.g. projections).</p>
+          </div>
+        </li>
+    </ul>
 
 
     </div>
@@ -4018,7 +4091,40 @@ Goals are collected into an error term of a <a href="../jax_fdm.losses/">loss fu
 
     <div class="doc doc-contents ">
 
-        <p>The current value of the quantity of interest.</p>
+        <p>Extract the quantity of interest for one element from an equilibrium state.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>eq_state</code></b>
+              (<code><a class="autorefs autorefs-internal" title="            EquilibriumState (jax_fdm.equilibrium.EquilibriumState)" href="../jax_fdm.equilibrium/#jax_fdm.equilibrium.states.EquilibriumState">EquilibriumState</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>The equilibrium state to read the quantity from.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>index</code></b>
+              (<code><span title="jaxtyping.Int">Int</span>[<span title="jaxtyping.Array">Array</span>, ...]</code>)
+          –
+          <div class="doc-md-description">
+            <p>The index of the element within the equilibrium state.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>prediction</code></b> (              <code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, ...]</code>
+)          –
+          <div class="doc-md-description">
+            <p>The current value of the quantity of interest.</p>
+          </div>
+        </li>
+    </ul>
 
 
     </div>
@@ -4038,7 +4144,40 @@ Goals are collected into an error term of a <a href="../jax_fdm.losses/">loss fu
 
     <div class="doc doc-contents ">
 
-        <p>The index of the goal key in an equilibrium structure.</p>
+        <p>Resolve the goal's key to an index in an equilibrium structure.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>model</code></b>
+              (<code><a class="autorefs autorefs-internal" title="            EquilibriumModel (jax_fdm.equilibrium.EquilibriumModel)" href="../jax_fdm.equilibrium/#jax_fdm.equilibrium.models.EquilibriumModel">EquilibriumModel</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>The equilibrium model.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>structure</code></b>
+              (<code><a class="autorefs autorefs-internal" title="            EquilibriumStructure (jax_fdm.equilibrium.EquilibriumStructure)" href="../jax_fdm.equilibrium/#jax_fdm.equilibrium.structures.structures.EquilibriumStructure">EquilibriumStructure</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>The structure whose element ordering defines the index.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>index</code></b> (              <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a> | <a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#tuple">tuple</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a>, ...]</code>
+)          –
+          <div class="doc-md-description">
+            <p>The index, or tuple of indices, of the goal's element(s).</p>
+          </div>
+        </li>
+    </ul>
 
 
     </div>
@@ -4058,8 +4197,35 @@ Goals are collected into an error term of a <a href="../jax_fdm.losses/">loss fu
 
     <div class="doc doc-contents ">
 
-        <p>Initialize the goal with information from an equilibrium model.</p>
+        <p>Bind the goal to a structure by resolving its key to an index.</p>
 
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>model</code></b>
+              (<code><a class="autorefs autorefs-internal" title="            EquilibriumModel (jax_fdm.equilibrium.EquilibriumModel)" href="../jax_fdm.equilibrium/#jax_fdm.equilibrium.models.EquilibriumModel">EquilibriumModel</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>The equilibrium model.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>structure</code></b>
+              (<code><a class="autorefs autorefs-internal" title="            EquilibriumStructure (jax_fdm.equilibrium.EquilibriumStructure)" href="../jax_fdm.equilibrium/#jax_fdm.equilibrium.structures.structures.EquilibriumStructure">EquilibriumStructure</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>The structure whose element ordering defines the index.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<details class="note" open>
+  <summary>Notes</summary>
+  <p>Must be called once before the goal is evaluated; it populates the index
+that :meth:<code>prediction</code> reads.</p>
+</details>
 
     </div>
 
@@ -4078,7 +4244,33 @@ Goals are collected into an error term of a <a href="../jax_fdm.losses/">loss fu
 
     <div class="doc doc-contents ">
 
-        <p>Return the current goal state.</p>
+        <p>Evaluate the goal against an equilibrium state.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>eqstate</code></b>
+              (<code><a class="autorefs autorefs-internal" title="            EquilibriumState (jax_fdm.equilibrium.EquilibriumState)" href="../jax_fdm.equilibrium/#jax_fdm.equilibrium.states.EquilibriumState">EquilibriumState</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>The equilibrium state to evaluate the goal on.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>goal_state</code></b> (              <code><a class="autorefs autorefs-internal" title="            GoalState (jax_fdm.goals.GoalState)" href="#jax_fdm.goals.GoalState">GoalState</a></code>
+)          –
+          <div class="doc-md-description">
+            <p>The goal state bundling the reference values, the predictions, and the
+weights, vmapped over the goal's elements.</p>
+          </div>
+        </li>
+    </ul>
 
 
     </div>
@@ -4108,8 +4300,13 @@ Goals are collected into an error term of a <a href="../jax_fdm.losses/">loss fu
 
 
 
-        <p>A goal that is expressed as a scalar quantity.</p>
+        <p>A mixin for goals whose target is a scalar quantity per element.</p>
 
+
+<details class="note" open>
+  <summary>Notes</summary>
+  <p>Reshapes the target to a column so each element carries one scalar value.</p>
+</details>
 
 
 
@@ -4147,7 +4344,7 @@ Goals are collected into an error term of a <a href="../jax_fdm.losses/">loss fu
 
     <div class="doc doc-contents ">
 
-        <p>The target to achieve.</p>
+        <p>The scalar target value of each element.</p>
 
     </div>
 
@@ -4179,8 +4376,13 @@ Goals are collected into an error term of a <a href="../jax_fdm.losses/">loss fu
 
 
 
-        <p>A goal that is expressed as a vector 3D quantity.</p>
+        <p>A mixin for goals whose target is a 3D vector quantity per element.</p>
 
+
+<details class="note" open>
+  <summary>Notes</summary>
+  <p>Reshapes the target so each element carries one xyz vector.</p>
+</details>
 
 
 
@@ -4218,7 +4420,7 @@ Goals are collected into an error term of a <a href="../jax_fdm.losses/">loss fu
 
     <div class="doc doc-contents ">
 
-        <p>The target to achieve</p>
+        <p>The 3D vector target of each element.</p>
 
     </div>
 
@@ -4249,6 +4451,37 @@ Goals are collected into an error term of a <a href="../jax_fdm.losses/">loss fu
     <div class="doc doc-contents ">
 
 
+
+        <p>The evaluated state of a goal at an equilibrium state.</p>
+
+
+<p><span class="doc-section-title">Attributes:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+          <b><code><span title="jax_fdm.goals.GoalState.goal">goal</span></code></b>
+              (<code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, ...]</code>)
+          –
+          <div class="doc-md-description">
+            <p>The reference value the prediction is compared against.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+          <b><code><span title="jax_fdm.goals.GoalState.weight">weight</span></code></b>
+              (<code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, ...]</code>)
+          –
+          <div class="doc-md-description">
+            <p>The relative importance of the goal in the loss.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+          <b><code><span title="jax_fdm.goals.GoalState.prediction">prediction</span></code></b>
+              (<code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, ...]</code>)
+          –
+          <div class="doc-md-description">
+            <p>The current value of the goal's quantity of interest.</p>
+          </div>
+        </li>
+    </ul>
 
 
 
@@ -4306,7 +4539,7 @@ Goals are collected into an error term of a <a href="../jax_fdm.losses/">loss fu
 
 
 
-        <p>Make a node of a network to reach target xyz coordinates.</p>
+        <p>Drive a node toward target xyz coordinates.</p>
 
 
 
@@ -4342,7 +4575,40 @@ Goals are collected into an error term of a <a href="../jax_fdm.losses/">loss fu
 
     <div class="doc doc-contents ">
 
-        <p>The current xyz coordinates of the node in a network.</p>
+        <p>The current xyz coordinates of the node.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>eq_state</code></b>
+              (<code><a class="autorefs autorefs-internal" title="            EquilibriumState (jax_fdm.equilibrium.EquilibriumState)" href="../jax_fdm.equilibrium/#jax_fdm.equilibrium.states.EquilibriumState">EquilibriumState</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>The equilibrium state to read the coordinates from.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>index</code></b>
+              (<code><span title="jaxtyping.Int">Int</span>[<span title="jaxtyping.Array">Array</span>, &#39;&#39;]</code>)
+          –
+          <div class="doc-md-description">
+            <p>The index of the node.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>prediction</code></b> (              <code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, 3]</code>
+)          –
+          <div class="doc-md-description">
+            <p>The node's xyz coordinates.</p>
+          </div>
+        </li>
+    </ul>
 
 
     </div>
@@ -4373,7 +4639,7 @@ Goals are collected into an error term of a <a href="../jax_fdm.losses/">loss fu
 
 
 
-        <p>Pulls the position of a node to a target line ray.</p>
+        <p>Pull a node onto a target line, defined by two points.</p>
 
 
 
@@ -4412,7 +4678,7 @@ Goals are collected into an error term of a <a href="../jax_fdm.losses/">loss fu
 
     <div class="doc doc-contents ">
 
-        <p>The target to achieve</p>
+        <p>The two points defining the target line of each element.</p>
 
     </div>
 
@@ -4434,7 +4700,40 @@ Goals are collected into an error term of a <a href="../jax_fdm.losses/">loss fu
 
     <div class="doc doc-contents ">
 
-        <p>The closest point on the target line.</p>
+        <p>The point on the target line closest to the node.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>target</code></b>
+              (<code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, &#39;2 3&#39;]</code>)
+          –
+          <div class="doc-md-description">
+            <p>The two points defining the target line.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>prediction</code></b>
+              (<code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, 3]</code>)
+          –
+          <div class="doc-md-description">
+            <p>The current node coordinates.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>goal</code></b> (              <code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, 3]</code>
+)          –
+          <div class="doc-md-description">
+            <p>The closest point on the (infinite) line through the two points.</p>
+          </div>
+        </li>
+    </ul>
 
 
     </div>
@@ -4465,7 +4764,7 @@ Goals are collected into an error term of a <a href="../jax_fdm.losses/">loss fu
 
 
 
-        <p>Pulls the xyz position of a node to a target plane.</p>
+        <p>Pull a node onto a target plane, defined by a point and a normal.</p>
 
 
 
@@ -4504,7 +4803,7 @@ Goals are collected into an error term of a <a href="../jax_fdm.losses/">loss fu
 
     <div class="doc doc-contents ">
 
-        <p>The target to achieve.</p>
+        <p>The origin and normal defining the target plane of each element.</p>
 
     </div>
 
@@ -4526,8 +4825,40 @@ Goals are collected into an error term of a <a href="../jax_fdm.losses/">loss fu
 
     <div class="doc doc-contents ">
 
-        <p>Calculate the closest point on the target plane given the current node
-coordinates.</p>
+        <p>The point on the target plane closest to the node.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>target</code></b>
+              (<code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, &#39;2 3&#39;]</code>)
+          –
+          <div class="doc-md-description">
+            <p>The origin and normal defining the target plane.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>prediction</code></b>
+              (<code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, 3]</code>)
+          –
+          <div class="doc-md-description">
+            <p>The current node coordinates.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>goal</code></b> (              <code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, 3]</code>
+)          –
+          <div class="doc-md-description">
+            <p>The orthogonal projection of the node onto the plane.</p>
+          </div>
+        </li>
+    </ul>
 
 
     </div>
@@ -4558,7 +4889,7 @@ coordinates.</p>
 
 
 
-        <p>Pulls the xyz position of a node to a target line ray.</p>
+        <p>Pull a node onto a target segment, defined by its two endpoints.</p>
 
 
 
@@ -4594,7 +4925,40 @@ coordinates.</p>
 
     <div class="doc doc-contents ">
 
-        <p>The closes point on the target seegment.</p>
+        <p>The point on the target segment closest to the node.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>target</code></b>
+              (<code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, &#39;2 3&#39;]</code>)
+          –
+          <div class="doc-md-description">
+            <p>The two endpoints of the target segment.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>prediction</code></b>
+              (<code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, 3]</code>)
+          –
+          <div class="doc-md-description">
+            <p>The current node coordinates.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>goal</code></b> (              <code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, 3]</code>
+)          –
+          <div class="doc-md-description">
+            <p>The closest point on the segment, clamped to lie between the endpoints.</p>
+          </div>
+        </li>
+    </ul>
 
 
     </div>
@@ -4625,7 +4989,7 @@ coordinates.</p>
 
 
 
-        <p>Make a node of a network to reach a target X coordinate.</p>
+        <p>Drive a node toward a target X coordinate.</p>
 
 
 
@@ -4661,7 +5025,40 @@ coordinates.</p>
 
     <div class="doc doc-contents ">
 
-        <p>The current X coordinate of the node in a network.</p>
+        <p>The current X coordinate of the node.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>eq_state</code></b>
+              (<code><a class="autorefs autorefs-internal" title="            EquilibriumState (jax_fdm.equilibrium.EquilibriumState)" href="../jax_fdm.equilibrium/#jax_fdm.equilibrium.states.EquilibriumState">EquilibriumState</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>The equilibrium state to read the coordinate from.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>index</code></b>
+              (<code><span title="jaxtyping.Int">Int</span>[<span title="jaxtyping.Array">Array</span>, &#39;&#39;]</code>)
+          –
+          <div class="doc-md-description">
+            <p>The index of the node.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>prediction</code></b> (              <code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, 1]</code>
+)          –
+          <div class="doc-md-description">
+            <p>The node's X coordinate.</p>
+          </div>
+        </li>
+    </ul>
 
 
     </div>
@@ -4692,7 +5089,7 @@ coordinates.</p>
 
 
 
-        <p>Make a node of a network to reach a target Y coordinate.</p>
+        <p>Drive a node toward a target Y coordinate.</p>
 
 
 
@@ -4728,7 +5125,40 @@ coordinates.</p>
 
     <div class="doc doc-contents ">
 
-        <p>The current Y coordinate of the node in a network.</p>
+        <p>The current Y coordinate of the node.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>eq_state</code></b>
+              (<code><a class="autorefs autorefs-internal" title="            EquilibriumState (jax_fdm.equilibrium.EquilibriumState)" href="../jax_fdm.equilibrium/#jax_fdm.equilibrium.states.EquilibriumState">EquilibriumState</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>The equilibrium state to read the coordinate from.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>index</code></b>
+              (<code><span title="jaxtyping.Int">Int</span>[<span title="jaxtyping.Array">Array</span>, &#39;&#39;]</code>)
+          –
+          <div class="doc-md-description">
+            <p>The index of the node.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>prediction</code></b> (              <code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, 1]</code>
+)          –
+          <div class="doc-md-description">
+            <p>The node's Y coordinate.</p>
+          </div>
+        </li>
+    </ul>
 
 
     </div>
@@ -4759,7 +5189,7 @@ coordinates.</p>
 
 
 
-        <p>Make a node of a network to reach a target Z coordinate.</p>
+        <p>Drive a node toward a target Z coordinate.</p>
 
 
 
@@ -4795,7 +5225,40 @@ coordinates.</p>
 
     <div class="doc doc-contents ">
 
-        <p>The current Z coordinate of the node in a network.</p>
+        <p>The current Z coordinate of the node.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>eq_state</code></b>
+              (<code><a class="autorefs autorefs-internal" title="            EquilibriumState (jax_fdm.equilibrium.EquilibriumState)" href="../jax_fdm.equilibrium/#jax_fdm.equilibrium.states.EquilibriumState">EquilibriumState</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>The equilibrium state to read the coordinate from.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>index</code></b>
+              (<code><span title="jaxtyping.Int">Int</span>[<span title="jaxtyping.Array">Array</span>, &#39;&#39;]</code>)
+          –
+          <div class="doc-md-description">
+            <p>The index of the node.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>prediction</code></b> (              <code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, 1]</code>
+)          –
+          <div class="doc-md-description">
+            <p>The node's Z coordinate.</p>
+          </div>
+        </li>
+    </ul>
 
 
     </div>
@@ -4826,7 +5289,7 @@ coordinates.</p>
 
 
 
-        <p>Make the residual force in a network to match a non-negative magnitude.</p>
+        <p>Drive the residual force magnitude at a node toward a target value.</p>
 
 
 
@@ -4862,7 +5325,40 @@ coordinates.</p>
 
     <div class="doc doc-contents ">
 
-        <p>The residual at the the predicted node of the network.</p>
+        <p>The magnitude of the residual force at the node.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>eq_state</code></b>
+              (<code><a class="autorefs autorefs-internal" title="            EquilibriumState (jax_fdm.equilibrium.EquilibriumState)" href="../jax_fdm.equilibrium/#jax_fdm.equilibrium.states.EquilibriumState">EquilibriumState</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>The equilibrium state to read the residual from.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>index</code></b>
+              (<code><span title="jaxtyping.Int">Int</span>[<span title="jaxtyping.Array">Array</span>, &#39;&#39;]</code>)
+          –
+          <div class="doc-md-description">
+            <p>The index of the node.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>prediction</code></b> (              <code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, 1]</code>
+)          –
+          <div class="doc-md-description">
+            <p>The Euclidean magnitude of the node's residual force.</p>
+          </div>
+        </li>
+    </ul>
 
 
     </div>
@@ -4893,8 +5389,7 @@ coordinates.</p>
 
 
 
-        <p>Make the residual force in a network to match the magnitude and direction of
-a vector.</p>
+        <p>Drive the residual force at a node toward a target vector.</p>
 
 
 
@@ -4930,7 +5425,40 @@ a vector.</p>
 
     <div class="doc doc-contents ">
 
-        <p>The residual at the the predicted node of the network.</p>
+        <p>The residual force vector at the node.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>eq_state</code></b>
+              (<code><a class="autorefs autorefs-internal" title="            EquilibriumState (jax_fdm.equilibrium.EquilibriumState)" href="../jax_fdm.equilibrium/#jax_fdm.equilibrium.states.EquilibriumState">EquilibriumState</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>The equilibrium state to read the residual from.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>index</code></b>
+              (<code><span title="jaxtyping.Int">Int</span>[<span title="jaxtyping.Array">Array</span>, &#39;&#39;]</code>)
+          –
+          <div class="doc-md-description">
+            <p>The index of the node.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>prediction</code></b> (              <code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, 3]</code>
+)          –
+          <div class="doc-md-description">
+            <p>The node's residual force vector.</p>
+          </div>
+        </li>
+    </ul>
 
 
     </div>
@@ -4961,18 +5489,16 @@ a vector.</p>
 
 
 
-        <p>Make the residual force in a network to match the direction of a vector.</p>
-<p>Another effective proxy for cosine distance can be obtained by
-L2 normalisation of the vectors, followed by the application of normal
-Euclidean distance. Using this technique each term in each vector is
-first divided by the magnitude of the vector, yielding a vector of unit
-length. Then, it is clear, the Euclidean distance over the end-points
-of any two vectors is a proper metric which gives the same ordering as
-the cosine distance (a monotonic transformation of Euclidean distance;
-see below) for any comparison of vectors, and furthermore avoids the
-potentially expensive trigonometric operations required to yield
-a proper metric.</p>
+        <p>Drive the residual force at a node toward a target direction.</p>
 
+
+<details class="note" open>
+  <summary>Notes</summary>
+  <p>Both the prediction and the target are unit-normalized, so only direction is
+compared while magnitude is ignored. Euclidean distance between the normalized
+vectors gives the same ordering as cosine distance, without the cost of
+trigonometric operations.</p>
+</details>
 
 
 
@@ -5007,7 +5533,40 @@ a proper metric.</p>
 
     <div class="doc doc-contents ">
 
-        <p>The residual at the the predicted node of the network.</p>
+        <p>The unit direction of the residual force at the node.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>eq_state</code></b>
+              (<code><a class="autorefs autorefs-internal" title="            EquilibriumState (jax_fdm.equilibrium.EquilibriumState)" href="../jax_fdm.equilibrium/#jax_fdm.equilibrium.states.EquilibriumState">EquilibriumState</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>The equilibrium state to read the residual from.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>index</code></b>
+              (<code><span title="jaxtyping.Int">Int</span>[<span title="jaxtyping.Array">Array</span>, &#39;&#39;]</code>)
+          –
+          <div class="doc-md-description">
+            <p>The index of the node.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>prediction</code></b> (              <code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, 3]</code>
+)          –
+          <div class="doc-md-description">
+            <p>The normalized residual force vector.</p>
+          </div>
+        </li>
+    </ul>
 
 
     </div>
@@ -5026,6 +5585,41 @@ a proper metric.</p>
 </code></pre></div>
 
     <div class="doc doc-contents ">
+
+        <p>The unit direction of the target vector.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>target</code></b>
+              (<code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, 3]</code>)
+          –
+          <div class="doc-md-description">
+            <p>The target direction vector.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>prediction</code></b>
+              (<code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, 3]</code>)
+          –
+          <div class="doc-md-description">
+            <p>The current normalized residual, unused.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>goal</code></b> (              <code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, 3]</code>
+)          –
+          <div class="doc-md-description">
+            <p>The normalized target vector.</p>
+          </div>
+        </li>
+    </ul>
 
 
     </div>
@@ -5102,8 +5696,35 @@ This goal favors solutions where points are evenly spaced.</p>
 
     <div class="doc doc-contents ">
 
-        <p>Initialize the goal with information from an equilibrium model.</p>
+        <p>Bind the goal to a structure, keeping the node indices as one collection.</p>
 
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>model</code></b>
+              (<code><a class="autorefs autorefs-internal" title="            EquilibriumModel (jax_fdm.equilibrium.EquilibriumModel)" href="../jax_fdm.equilibrium/#jax_fdm.equilibrium.models.EquilibriumModel">EquilibriumModel</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>The equilibrium model.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>structure</code></b>
+              (<code><a class="autorefs autorefs-internal" title="            EquilibriumStructure (jax_fdm.equilibrium.EquilibriumStructure)" href="../jax_fdm.equilibrium/#jax_fdm.equilibrium.structures.structures.EquilibriumStructure">EquilibriumStructure</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>The structure whose node ordering defines the indices.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<details class="note" open>
+  <summary>Notes</summary>
+  <p>The indices are kept two-dimensional so the whole ordered sequence is fed
+to a single :meth:<code>prediction</code> call rather than vmapped per node.</p>
+</details>
 
     </div>
 
@@ -5122,7 +5743,40 @@ This goal favors solutions where points are evenly spaced.</p>
 
     <div class="doc doc-contents ">
 
-        <p>Length-normalized colinearity energy of the ordered points.</p>
+        <p>The length-normalized colinearity energy of the ordered nodes.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>eq_state</code></b>
+              (<code><a class="autorefs autorefs-internal" title="            EquilibriumState (jax_fdm.equilibrium.EquilibriumState)" href="../jax_fdm.equilibrium/#jax_fdm.equilibrium.states.EquilibriumState">EquilibriumState</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>The equilibrium state to read the node coordinates from.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>index</code></b>
+              (<code><span title="jaxtyping.Int">Int</span>[<span title="jaxtyping.Array">Array</span>, <span title="points">points</span>]</code>)
+          –
+          <div class="doc-md-description">
+            <p>The indices of the ordered nodes.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>prediction</code></b> (              <code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, 1]</code>
+)          –
+          <div class="doc-md-description">
+            <p>The colinearity energy, zero when the nodes are evenly spaced on a line.</p>
+          </div>
+        </li>
+    </ul>
 
 
     </div>
@@ -5199,8 +5853,35 @@ of points.</p>
 
     <div class="doc doc-contents ">
 
-        <p>Initialize the goal with information from an equilibrium model.</p>
+        <p>Bind the goal to a structure, keeping the node indices as one collection.</p>
 
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>model</code></b>
+              (<code><a class="autorefs autorefs-internal" title="            EquilibriumModel (jax_fdm.equilibrium.EquilibriumModel)" href="../jax_fdm.equilibrium/#jax_fdm.equilibrium.models.EquilibriumModel">EquilibriumModel</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>The equilibrium model.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>structure</code></b>
+              (<code><a class="autorefs autorefs-internal" title="            EquilibriumStructure (jax_fdm.equilibrium.EquilibriumStructure)" href="../jax_fdm.equilibrium/#jax_fdm.equilibrium.structures.structures.EquilibriumStructure">EquilibriumStructure</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>The structure whose node ordering defines the indices.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<details class="note" open>
+  <summary>Notes</summary>
+  <p>The indices are kept two-dimensional so the whole ordered sequence is fed
+to a single :meth:<code>prediction</code> call rather than vmapped per node.</p>
+</details>
 
     </div>
 
@@ -5219,7 +5900,40 @@ of points.</p>
 
     <div class="doc doc-contents ">
 
-        <p>Curvature energy of the ordered points.</p>
+        <p>The curvature energy of the ordered nodes.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>eq_state</code></b>
+              (<code><a class="autorefs autorefs-internal" title="            EquilibriumState (jax_fdm.equilibrium.EquilibriumState)" href="../jax_fdm.equilibrium/#jax_fdm.equilibrium.states.EquilibriumState">EquilibriumState</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>The equilibrium state to read the node coordinates from.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>index</code></b>
+              (<code><span title="jaxtyping.Int">Int</span>[<span title="jaxtyping.Array">Array</span>, <span title="points">points</span>]</code>)
+          –
+          <div class="doc-md-description">
+            <p>The indices of the ordered nodes.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>prediction</code></b> (              <code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, 1]</code>
+)          –
+          <div class="doc-md-description">
+            <p>The curvature energy, the total turning angle along the sequence.</p>
+          </div>
+        </li>
+    </ul>
 
 
     </div>
@@ -5252,7 +5966,7 @@ of points.</p>
 
 
 
-        <p>Make an edge of a network to reach a certain length.</p>
+        <p>Drive an edge toward a target length.</p>
 
 
 
@@ -5288,7 +6002,40 @@ of points.</p>
 
     <div class="doc doc-contents ">
 
-        <p>The current edge length.</p>
+        <p>The current length of the edge.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>eq_state</code></b>
+              (<code><a class="autorefs autorefs-internal" title="            EquilibriumState (jax_fdm.equilibrium.EquilibriumState)" href="../jax_fdm.equilibrium/#jax_fdm.equilibrium.states.EquilibriumState">EquilibriumState</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>The equilibrium state to read the length from.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>index</code></b>
+              (<code><span title="jaxtyping.Int">Int</span>[<span title="jaxtyping.Array">Array</span>, &#39;&#39;]</code>)
+          –
+          <div class="doc-md-description">
+            <p>The index of the edge.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>prediction</code></b> (              <code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, 1]</code>
+)          –
+          <div class="doc-md-description">
+            <p>The edge's length.</p>
+          </div>
+        </li>
+    </ul>
 
 
     </div>
@@ -5319,9 +6066,14 @@ of points.</p>
 
 
 
-        <p>Equalize the length of a selection of edges by minimizing
-the normalized variance of their lengths.</p>
+        <p>Equalize the lengths of a selection of edges.</p>
 
+
+<details class="note" open>
+  <summary>Notes</summary>
+  <p>Applies to a collection of edges at once, so it is not collectible. The goal
+drives the normalized variance of the lengths to zero.</p>
+</details>
 
 
 
@@ -5356,7 +6108,28 @@ the normalized variance of their lengths.</p>
 
     <div class="doc doc-contents ">
 
-        <p>Initialize the goal with information from an equilibrium model.</p>
+        <p>Bind the goal to a structure, keeping the edge indices as one collection.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>model</code></b>
+              (<code><a class="autorefs autorefs-internal" title="            EquilibriumModel (jax_fdm.equilibrium.EquilibriumModel)" href="../jax_fdm.equilibrium/#jax_fdm.equilibrium.models.EquilibriumModel">EquilibriumModel</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>The equilibrium model.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>structure</code></b>
+              (<code><a class="autorefs autorefs-internal" title="            EquilibriumStructure (jax_fdm.equilibrium.EquilibriumStructure)" href="../jax_fdm.equilibrium/#jax_fdm.equilibrium.structures.structures.EquilibriumStructure">EquilibriumStructure</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>The structure whose edge ordering defines the indices.</p>
+          </div>
+        </li>
+    </ul>
 
 
     </div>
@@ -5376,7 +6149,40 @@ the normalized variance of their lengths.</p>
 
     <div class="doc doc-contents ">
 
-        <p>The normalized variance of the lengths of the edges.</p>
+        <p>The variance of the edge lengths, normalized by their mean.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>eq_state</code></b>
+              (<code><a class="autorefs autorefs-internal" title="            EquilibriumState (jax_fdm.equilibrium.EquilibriumState)" href="../jax_fdm.equilibrium/#jax_fdm.equilibrium.states.EquilibriumState">EquilibriumState</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>The equilibrium state to read the lengths from.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>index</code></b>
+              (<code><span title="jaxtyping.Int">Int</span>[<span title="jaxtyping.Array">Array</span>, <span title="elements">elements</span>]</code>)
+          –
+          <div class="doc-md-description">
+            <p>The indices of the edges.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>prediction</code></b> (              <code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, 1]</code>
+)          –
+          <div class="doc-md-description">
+            <p>The mean-normalized variance of the lengths, zero when all equal.</p>
+          </div>
+        </li>
+    </ul>
 
 
     </div>
@@ -5407,7 +6213,7 @@ the normalized variance of their lengths.</p>
 
 
 
-        <p>Make an edge of a network to reach a target force.</p>
+        <p>Drive an edge toward a target internal force.</p>
 
 
 
@@ -5443,7 +6249,40 @@ the normalized variance of their lengths.</p>
 
     <div class="doc doc-contents ">
 
-        <p>The predicted edge force.</p>
+        <p>The current internal force in the edge.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>eq_state</code></b>
+              (<code><a class="autorefs autorefs-internal" title="            EquilibriumState (jax_fdm.equilibrium.EquilibriumState)" href="../jax_fdm.equilibrium/#jax_fdm.equilibrium.states.EquilibriumState">EquilibriumState</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>The equilibrium state to read the force from.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>index</code></b>
+              (<code><span title="jaxtyping.Int">Int</span>[<span title="jaxtyping.Array">Array</span>, &#39;&#39;]</code>)
+          –
+          <div class="doc-md-description">
+            <p>The index of the edge.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>prediction</code></b> (              <code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, 1]</code>
+)          –
+          <div class="doc-md-description">
+            <p>The edge's internal force, signed positive in tension.</p>
+          </div>
+        </li>
+    </ul>
 
 
     </div>
@@ -5474,9 +6313,14 @@ the normalized variance of their lengths.</p>
 
 
 
-        <p>Equalize the internal force in a selection of edges by minimizing
-the normalized variance of their internal forces.</p>
+        <p>Equalize the internal forces of a selection of edges.</p>
 
+
+<details class="note" open>
+  <summary>Notes</summary>
+  <p>Applies to a collection of edges at once, so it is not collectible. The goal
+drives the normalized variance of the forces to zero.</p>
+</details>
 
 
 
@@ -5511,7 +6355,28 @@ the normalized variance of their internal forces.</p>
 
     <div class="doc doc-contents ">
 
-        <p>Initialize the goal with information from an equilibrium model.</p>
+        <p>Bind the goal to a structure, keeping the edge indices as one collection.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>model</code></b>
+              (<code><a class="autorefs autorefs-internal" title="            EquilibriumModel (jax_fdm.equilibrium.EquilibriumModel)" href="../jax_fdm.equilibrium/#jax_fdm.equilibrium.models.EquilibriumModel">EquilibriumModel</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>The equilibrium model.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>structure</code></b>
+              (<code><a class="autorefs autorefs-internal" title="            EquilibriumStructure (jax_fdm.equilibrium.EquilibriumStructure)" href="../jax_fdm.equilibrium/#jax_fdm.equilibrium.structures.structures.EquilibriumStructure">EquilibriumStructure</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>The structure whose edge ordering defines the indices.</p>
+          </div>
+        </li>
+    </ul>
 
 
     </div>
@@ -5531,7 +6396,40 @@ the normalized variance of their internal forces.</p>
 
     <div class="doc doc-contents ">
 
-        <p>The normalized variance of the forces of the edges.</p>
+        <p>The variance of the edge forces, normalized by their mean magnitude.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>eq_state</code></b>
+              (<code><a class="autorefs autorefs-internal" title="            EquilibriumState (jax_fdm.equilibrium.EquilibriumState)" href="../jax_fdm.equilibrium/#jax_fdm.equilibrium.states.EquilibriumState">EquilibriumState</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>The equilibrium state to read the forces from.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>index</code></b>
+              (<code><span title="jaxtyping.Int">Int</span>[<span title="jaxtyping.Array">Array</span>, <span title="elements">elements</span>]</code>)
+          –
+          <div class="doc-md-description">
+            <p>The indices of the edges.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>prediction</code></b> (              <code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, 1]</code>
+)          –
+          <div class="doc-md-description">
+            <p>The magnitude-normalized variance of the forces, zero when all equal.</p>
+          </div>
+        </li>
+    </ul>
 
 
     </div>
@@ -5562,8 +6460,14 @@ the normalized variance of their internal forces.</p>
 
 
 
-        <p>Make the direction of the edge of a network to be parallel to a target vector.</p>
+        <p>Align an edge's direction with a target vector.</p>
 
+
+<details class="note" open>
+  <summary>Notes</summary>
+  <p>Both the prediction and target are unit-normalized, so only direction is
+compared and edge length is ignored.</p>
+</details>
 
 
 
@@ -5598,7 +6502,40 @@ the normalized variance of their internal forces.</p>
 
     <div class="doc doc-contents ">
 
-        <p>The edge vector in the network.</p>
+        <p>The unit direction of the edge.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>eq_state</code></b>
+              (<code><a class="autorefs autorefs-internal" title="            EquilibriumState (jax_fdm.equilibrium.EquilibriumState)" href="../jax_fdm.equilibrium/#jax_fdm.equilibrium.states.EquilibriumState">EquilibriumState</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>The equilibrium state to read the edge vector from.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>index</code></b>
+              (<code><span title="jaxtyping.Int">Int</span>[<span title="jaxtyping.Array">Array</span>, &#39;&#39;]</code>)
+          –
+          <div class="doc-md-description">
+            <p>The index of the edge.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>prediction</code></b> (              <code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, 3]</code>
+)          –
+          <div class="doc-md-description">
+            <p>The normalized edge vector.</p>
+          </div>
+        </li>
+    </ul>
 
 
     </div>
@@ -5618,7 +6555,40 @@ the normalized variance of their internal forces.</p>
 
     <div class="doc doc-contents ">
 
-        <p>The target vector.</p>
+        <p>The unit direction of the target vector.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>target</code></b>
+              (<code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, 3]</code>)
+          –
+          <div class="doc-md-description">
+            <p>The target direction vector.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>prediction</code></b>
+              (<code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, 3]</code>)
+          –
+          <div class="doc-md-description">
+            <p>The current normalized edge vector, unused.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>goal</code></b> (              <code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, 3]</code>
+)          –
+          <div class="doc-md-description">
+            <p>The normalized target vector.</p>
+          </div>
+        </li>
+    </ul>
 
 
     </div>
@@ -5649,7 +6619,46 @@ the normalized variance of their internal forces.</p>
 
 
 
-        <p>Reach a target angle between the direction of an edge and a reference vector.</p>
+        <p>Drive the angle between an edge and a reference vector toward a target.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>key</code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a> | <a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#tuple">tuple</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a>, <a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a>] | <a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#list">list</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a>] | <a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#list">list</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#tuple">tuple</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a>, <a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a>]]</code>)
+          –
+          <div class="doc-md-description">
+            <p>The key or keys of the edge(s) the goal acts on.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>vector</code></b>
+              (<code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, ...]</code>)
+          –
+          <div class="doc-md-description">
+            <p>The reference vector each edge's angle is measured against.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>target</code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a> | <span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, ...]</code>)
+          –
+          <div class="doc-md-description">
+            <p>The target angle, in radians.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>weight</code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a></code>, default:
+                  <code>1.0</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>The relative importance of the goal in the loss.</p>
+          </div>
+        </li>
+    </ul>
 
 
 
@@ -5688,7 +6697,7 @@ the normalized variance of their internal forces.</p>
 
     <div class="doc doc-contents ">
 
-        <p>The vector to take the angle with.</p>
+        <p>The reference vector each edge's angle is measured against.</p>
 
     </div>
 
@@ -5710,8 +6719,26 @@ the normalized variance of their internal forces.</p>
 
     <div class="doc doc-contents ">
 
-        <p>Create a matrix of vectors.</p>
+        <p>Scatter the reference vectors into a per-index matrix.</p>
 
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>vectors</code></b> (              <code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, &#39;vectors 3&#39;]</code>
+)          –
+          <div class="doc-md-description">
+            <p>A matrix holding each edge's reference vector at its structure index.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<details class="note" open>
+  <summary>Notes</summary>
+  <p>Rebuilds the reference vectors indexed by structure position so that
+:meth:<code>prediction</code> can gather them with the same index as the edges.</p>
+</details>
 
     </div>
 
@@ -5730,7 +6757,28 @@ the normalized variance of their internal forces.</p>
 
     <div class="doc doc-contents ">
 
-        <p>Initialize the goal with information from an equilibrium model.</p>
+        <p>Bind the goal to a structure and reindex its reference vectors.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>model</code></b>
+              (<code><a class="autorefs autorefs-internal" title="            EquilibriumModel (jax_fdm.equilibrium.EquilibriumModel)" href="../jax_fdm.equilibrium/#jax_fdm.equilibrium.models.EquilibriumModel">EquilibriumModel</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>The equilibrium model.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>structure</code></b>
+              (<code><a class="autorefs autorefs-internal" title="            EquilibriumStructure (jax_fdm.equilibrium.EquilibriumStructure)" href="../jax_fdm.equilibrium/#jax_fdm.equilibrium.structures.structures.EquilibriumStructure">EquilibriumStructure</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>The structure whose edge ordering defines the indices.</p>
+          </div>
+        </li>
+    </ul>
 
 
     </div>
@@ -5750,7 +6798,40 @@ the normalized variance of their internal forces.</p>
 
     <div class="doc doc-contents ">
 
-        <p>The angle between the edge and the reference vector.</p>
+        <p>The angle between the edge and its reference vector.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>eq_state</code></b>
+              (<code><a class="autorefs autorefs-internal" title="            EquilibriumState (jax_fdm.equilibrium.EquilibriumState)" href="../jax_fdm.equilibrium/#jax_fdm.equilibrium.states.EquilibriumState">EquilibriumState</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>The equilibrium state to read the edge vector from.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>index</code></b>
+              (<code><span title="jaxtyping.Int">Int</span>[<span title="jaxtyping.Array">Array</span>, &#39;&#39;]</code>)
+          –
+          <div class="doc-md-description">
+            <p>The index of the edge.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>prediction</code></b> (              <code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, 1]</code>
+)          –
+          <div class="doc-md-description">
+            <p>The angle between the edge and its reference vector, in radians.</p>
+          </div>
+        </li>
+    </ul>
 
 
     </div>
@@ -5781,7 +6862,7 @@ the normalized variance of their internal forces.</p>
 
 
 
-        <p>Make an edge of a network to reach a target force.</p>
+        <p>Drive an edge's load path toward a target value.</p>
 
 
 
@@ -5817,7 +6898,40 @@ the normalized variance of their internal forces.</p>
 
     <div class="doc doc-contents ">
 
-        <p>The predicted edge force.</p>
+        <p>The load path of the edge.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>eq_state</code></b>
+              (<code><a class="autorefs autorefs-internal" title="            EquilibriumState (jax_fdm.equilibrium.EquilibriumState)" href="../jax_fdm.equilibrium/#jax_fdm.equilibrium.states.EquilibriumState">EquilibriumState</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>The equilibrium state to read the force and length from.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>index</code></b>
+              (<code><span title="jaxtyping.Int">Int</span>[<span title="jaxtyping.Array">Array</span>, &#39;&#39;]</code>)
+          –
+          <div class="doc-md-description">
+            <p>The index of the edge.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>prediction</code></b> (              <code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, 1]</code>
+)          –
+          <div class="doc-md-description">
+            <p>The edge load path, the product of absolute force and length.</p>
+          </div>
+        </li>
+    </ul>
 
 
     </div>
@@ -5850,8 +6964,46 @@ the normalized variance of their internal forces.</p>
 
 
 
-        <p>Reach a target value for the angle formed by the vertex normal and a reference
-vector.</p>
+        <p>Drive the angle between a vertex normal and a reference vector toward a target.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>key</code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a> | <a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#tuple">tuple</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a>, <a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a>] | <a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#list">list</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a>] | <a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#list">list</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#tuple">tuple</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a>, <a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a>]]</code>)
+          –
+          <div class="doc-md-description">
+            <p>The key or keys of the vertex(es) the goal acts on.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>vector</code></b>
+              (<code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, ...]</code>)
+          –
+          <div class="doc-md-description">
+            <p>The reference vector each vertex normal's angle is measured against.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>target</code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a> | <span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, ...]</code>)
+          –
+          <div class="doc-md-description">
+            <p>The target angle, in radians.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>weight</code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a></code>, default:
+                  <code>1.0</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>The relative importance of the goal in the loss.</p>
+          </div>
+        </li>
+    </ul>
 
 
 <details class="note" open>
@@ -5905,7 +7057,7 @@ the winding of a mesh upfront if needed.</p>
 
     <div class="doc doc-contents ">
 
-        <p>The vector to take the angle with.</p>
+        <p>The reference vector each vertex normal's angle is measured against.</p>
 
     </div>
 
@@ -5927,7 +7079,19 @@ the winding of a mesh upfront if needed.</p>
 
     <div class="doc doc-contents ">
 
-        <p>Create a matrix of vectors.</p>
+        <p>Scatter the reference vectors into a per-index matrix.</p>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>vectors</code></b> (              <code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, &#39;vectors 3&#39;]</code>
+)          –
+          <div class="doc-md-description">
+            <p>A matrix holding each vertex's reference vector at its structure index.</p>
+          </div>
+        </li>
+    </ul>
 
 
     </div>
@@ -5947,7 +7111,28 @@ the winding of a mesh upfront if needed.</p>
 
     <div class="doc doc-contents ">
 
-        <p>Initialize the goal with information from an equilibrium model.</p>
+        <p>Bind the goal to a mesh, caching face topology and reference vectors.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>model</code></b>
+              (<code><a class="autorefs autorefs-internal" title="            EquilibriumModel (jax_fdm.equilibrium.EquilibriumModel)" href="../jax_fdm.equilibrium/#jax_fdm.equilibrium.models.EquilibriumModel">EquilibriumModel</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>The equilibrium model.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>structure</code></b>
+              (<code><a class="autorefs autorefs-internal" title="            EquilibriumMeshStructure (jax_fdm.equilibrium.EquilibriumMeshStructure)" href="../jax_fdm.equilibrium/#jax_fdm.equilibrium.structures.structures.EquilibriumMeshStructure">EquilibriumMeshStructure</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>The mesh structure providing face indices and face-vertex connectivity.</p>
+          </div>
+        </li>
+    </ul>
 
 
     </div>
@@ -5967,7 +7152,33 @@ the winding of a mesh upfront if needed.</p>
 
     <div class="doc doc-contents ">
 
-        <p>Compute the (unnormalized) normal of every face in the mesh.</p>
+        <p>Compute the unnormalized normal of every face in the mesh.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>xyz</code></b>
+              (<code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, &#39;nodes 3&#39;]</code>)
+          –
+          <div class="doc-md-description">
+            <p>The coordinates of the mesh vertices.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>normals</code></b> (              <code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, &#39;faces 3&#39;]</code>
+)          –
+          <div class="doc-md-description">
+            <p>The unnormalized normal of each face, its magnitude proportional to
+face area.</p>
+          </div>
+        </li>
+    </ul>
 
 
     </div>
@@ -5987,8 +7198,47 @@ the winding of a mesh upfront if needed.</p>
 
     <div class="doc doc-contents ">
 
-        <p>Get the unitized normal vector at a vertex.</p>
+        <p>The unitized normal at a vertex, averaged over its incident faces.</p>
 
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>eq_state</code></b>
+              (<code><a class="autorefs autorefs-internal" title="            EquilibriumState (jax_fdm.equilibrium.EquilibriumState)" href="../jax_fdm.equilibrium/#jax_fdm.equilibrium.states.EquilibriumState">EquilibriumState</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>The equilibrium state to read the vertex coordinates from.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>index</code></b>
+              (<code><span title="jaxtyping.Int">Int</span>[<span title="jaxtyping.Array">Array</span>, &#39;&#39;]</code>)
+          –
+          <div class="doc-md-description">
+            <p>The index of the vertex.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>normal</code></b> (              <code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, 3]</code>
+)          –
+          <div class="doc-md-description">
+            <p>The unit normal at the vertex.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<details class="note" open>
+  <summary>Notes</summary>
+  <p>The incident faces are selected by masking the face-vertex connectivity, so
+area-weighted face normals sum into the vertex normal before normalizing.</p>
+</details>
 
     </div>
 
@@ -6007,7 +7257,41 @@ the winding of a mesh upfront if needed.</p>
 
     <div class="doc doc-contents ">
 
-        <p>Returns the angle between the vertex normal and the reference vector.</p>
+        <p>The angle between the vertex normal and the reference vector.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>eq_state</code></b>
+              (<code><a class="autorefs autorefs-internal" title="            EquilibriumState (jax_fdm.equilibrium.EquilibriumState)" href="../jax_fdm.equilibrium/#jax_fdm.equilibrium.states.EquilibriumState">EquilibriumState</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>The equilibrium state to read the vertex coordinates from.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>index</code></b>
+              (<code><span title="jaxtyping.Int">Int</span>[<span title="jaxtyping.Array">Array</span>, &#39;&#39;]</code>)
+          –
+          <div class="doc-md-description">
+            <p>The index of the vertex.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>prediction</code></b> (              <code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, 1]</code>
+)          –
+          <div class="doc-md-description">
+            <p>The signed angle between the vertex normal and its reference vector, in
+radians.</p>
+          </div>
+        </li>
+    </ul>
 
 
     </div>
@@ -6038,15 +7322,56 @@ the winding of a mesh upfront if needed.</p>
 
 
 
-        <p>Reach a target value for the angle formed by the vertex tangent and a reference
-vector.</p>
-<p>The tangent angle is calculated as 90 degrees minus the vertex normal
-angle, so it is signed and spans [-pi / 2, pi / 2]: positive when the
-vertex normal points within 90 degrees of the reference vector (the
-surface rises toward it) and negative when the normal is folded away.
-The sign follows the winding of the mesh faces, which must be unified;
-see the notes of <code>VertexNormalAngleGoal</code>.</p>
+        <p>Drive the angle between a vertex tangent and a reference vector toward a target.</p>
 
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>key</code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a> | <a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#tuple">tuple</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a>, <a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a>] | <a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#list">list</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a>] | <a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#list">list</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#tuple">tuple</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a>, <a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a>]]</code>)
+          –
+          <div class="doc-md-description">
+            <p>The key or keys of the vertex(es) the goal acts on.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>vector</code></b>
+              (<code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, ...]</code>)
+          –
+          <div class="doc-md-description">
+            <p>The reference vector each vertex tangent's angle is measured against.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>target</code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a> | <span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, ...]</code>)
+          –
+          <div class="doc-md-description">
+            <p>The target angle, in radians.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>weight</code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a></code>, default:
+                  <code>1.0</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>The relative importance of the goal in the loss.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<details class="note" open>
+  <summary>Notes</summary>
+  <p>The tangent angle is 90 degrees minus the vertex normal angle, so it is signed
+and spans [-pi / 2, pi / 2]: positive when the vertex normal points within 90
+degrees of the reference vector (the surface rises toward it) and negative when
+the normal is folded away. The sign follows the winding of the mesh faces, which
+must be unified; see the notes of :class:<code>VertexNormalAngleGoal</code>.</p>
+</details>
 
 
 
@@ -6081,7 +7406,41 @@ see the notes of <code>VertexNormalAngleGoal</code>.</p>
 
     <div class="doc doc-contents ">
 
-        <p>Returns the angle between the vertex tangent and the reference vector.</p>
+        <p>The angle between the vertex tangent and the reference vector.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>eq_state</code></b>
+              (<code><a class="autorefs autorefs-internal" title="            EquilibriumState (jax_fdm.equilibrium.EquilibriumState)" href="../jax_fdm.equilibrium/#jax_fdm.equilibrium.states.EquilibriumState">EquilibriumState</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>The equilibrium state to read the vertex coordinates from.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>index</code></b>
+              (<code><span title="jaxtyping.Int">Int</span>[<span title="jaxtyping.Array">Array</span>, &#39;&#39;]</code>)
+          –
+          <div class="doc-md-description">
+            <p>The index of the vertex.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>prediction</code></b> (              <code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, 1]</code>
+)          –
+          <div class="doc-md-description">
+            <p>The signed tangent angle, 90 degrees minus the vertex normal angle, in
+radians.</p>
+          </div>
+        </li>
+    </ul>
 
 
     </div>
@@ -6155,7 +7514,28 @@ see the notes of <code>VertexNormalAngleGoal</code>.</p>
 
     <div class="doc doc-contents ">
 
-        <p>Initialize the goal with information of a model and a structure.</p>
+        <p>Bind the goal to a mesh, caching the four corner indices of each face.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>model</code></b>
+              (<code><a class="autorefs autorefs-internal" title="            EquilibriumModel (jax_fdm.equilibrium.EquilibriumModel)" href="../jax_fdm.equilibrium/#jax_fdm.equilibrium.models.EquilibriumModel">EquilibriumModel</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>The equilibrium model.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>structure</code></b>
+              (<code><a class="autorefs autorefs-internal" title="            EquilibriumMeshStructure (jax_fdm.equilibrium.EquilibriumMeshStructure)" href="../jax_fdm.equilibrium/#jax_fdm.equilibrium.structures.structures.EquilibriumMeshStructure">EquilibriumMeshStructure</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>The mesh structure whose face ordering defines the indices.</p>
+          </div>
+        </li>
+    </ul>
 
 
     </div>
@@ -6175,7 +7555,41 @@ see the notes of <code>VertexNormalAngleGoal</code>.</p>
 
     <div class="doc doc-contents ">
 
-        <p>The sum of the cosine of the internal angles of a face.</p>
+        <p>A measure of how far a face is from rectangular.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>eq_state</code></b>
+              (<code><a class="autorefs autorefs-internal" title="            EquilibriumState (jax_fdm.equilibrium.EquilibriumState)" href="../jax_fdm.equilibrium/#jax_fdm.equilibrium.states.EquilibriumState">EquilibriumState</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>The equilibrium state to read the face coordinates from.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>index</code></b>
+              (<code><span title="jaxtyping.Int">Int</span>[<span title="jaxtyping.Array">Array</span>, &#39;&#39;]</code>)
+          –
+          <div class="doc-md-description">
+            <p>The index of the face.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>prediction</code></b> (              <code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, 1]</code>
+)          –
+          <div class="doc-md-description">
+            <p>The summed mean absolute cosine of the face's corner angles, zero when
+every corner is a right angle.</p>
+          </div>
+        </li>
+    </ul>
 
 
     </div>
@@ -6208,8 +7622,14 @@ see the notes of <code>VertexNormalAngleGoal</code>.</p>
 
 
 
-        <p>Maximize the negative area of a mesh.</p>
+        <p>Drive the total surface area of a mesh toward a target.</p>
 
+
+<details class="note" open>
+  <summary>Notes</summary>
+  <p>The prediction is the negated total area, so a target of zero paired with a
+minimizing loss maximizes the mesh area.</p>
+</details>
 
 
 
@@ -6244,7 +7664,28 @@ see the notes of <code>VertexNormalAngleGoal</code>.</p>
 
     <div class="doc doc-contents ">
 
-        <p>Initialize the goal with information of a model and a structure.</p>
+        <p>Bind the goal to a mesh, caching its face indices.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>model</code></b>
+              (<code><a class="autorefs autorefs-internal" title="            EquilibriumModel (jax_fdm.equilibrium.EquilibriumModel)" href="../jax_fdm.equilibrium/#jax_fdm.equilibrium.models.EquilibriumModel">EquilibriumModel</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>The equilibrium model.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>structure</code></b>
+              (<code><a class="autorefs autorefs-internal" title="            EquilibriumMeshStructure (jax_fdm.equilibrium.EquilibriumMeshStructure)" href="../jax_fdm.equilibrium/#jax_fdm.equilibrium.structures.structures.EquilibriumMeshStructure">EquilibriumMeshStructure</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>The mesh structure whose face indices are cached.</p>
+          </div>
+        </li>
+    </ul>
 
 
     </div>
@@ -6264,7 +7705,40 @@ see the notes of <code>VertexNormalAngleGoal</code>.</p>
 
     <div class="doc doc-contents ">
 
-        <p>The current load path of the network.</p>
+        <p>The negated total surface area of the mesh.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>eq_state</code></b>
+              (<code><a class="autorefs autorefs-internal" title="            EquilibriumState (jax_fdm.equilibrium.EquilibriumState)" href="../jax_fdm.equilibrium/#jax_fdm.equilibrium.states.EquilibriumState">EquilibriumState</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>The equilibrium state to read vertex coordinates from.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>index</code></b>
+              (<code><span title="jaxtyping.Int">Int</span>[<span title="jaxtyping.Array">Array</span>, &#39;&#39;]</code>)
+          –
+          <div class="doc-md-description">
+            <p>The sentinel index, unused.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>prediction</code></b> (              <code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, 1]</code>
+)          –
+          <div class="doc-md-description">
+            <p>The negated sum of the face areas.</p>
+          </div>
+        </li>
+    </ul>
 
 
     </div>
@@ -6295,8 +7769,13 @@ see the notes of <code>VertexNormalAngleGoal</code>.</p>
 
 
 
-        <p>Maximize the negative area of a mesh.</p>
+        <p>Equalize the areas of the faces of a mesh.</p>
 
+
+<details class="note" open>
+  <summary>Notes</summary>
+  <p>The goal drives the mean-normalized variance of the face areas to zero.</p>
+</details>
 
 
 
@@ -6331,7 +7810,28 @@ see the notes of <code>VertexNormalAngleGoal</code>.</p>
 
     <div class="doc doc-contents ">
 
-        <p>Initialize the goal with information of a model and a structure.</p>
+        <p>Bind the goal to a mesh, caching its face indices.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>model</code></b>
+              (<code><a class="autorefs autorefs-internal" title="            EquilibriumModel (jax_fdm.equilibrium.EquilibriumModel)" href="../jax_fdm.equilibrium/#jax_fdm.equilibrium.models.EquilibriumModel">EquilibriumModel</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>The equilibrium model.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>structure</code></b>
+              (<code><a class="autorefs autorefs-internal" title="            EquilibriumMeshStructure (jax_fdm.equilibrium.EquilibriumMeshStructure)" href="../jax_fdm.equilibrium/#jax_fdm.equilibrium.structures.structures.EquilibriumMeshStructure">EquilibriumMeshStructure</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>The mesh structure whose face indices are cached.</p>
+          </div>
+        </li>
+    </ul>
 
 
     </div>
@@ -6351,7 +7851,40 @@ see the notes of <code>VertexNormalAngleGoal</code>.</p>
 
     <div class="doc doc-contents ">
 
-        <p>The current load path of the network.</p>
+        <p>The variance of the face areas, normalized by their mean.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>eq_state</code></b>
+              (<code><a class="autorefs autorefs-internal" title="            EquilibriumState (jax_fdm.equilibrium.EquilibriumState)" href="../jax_fdm.equilibrium/#jax_fdm.equilibrium.states.EquilibriumState">EquilibriumState</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>The equilibrium state to read vertex coordinates from.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>index</code></b>
+              (<code><span title="jaxtyping.Int">Int</span>[<span title="jaxtyping.Array">Array</span>, &#39;&#39;]</code>)
+          –
+          <div class="doc-md-description">
+            <p>The sentinel index, unused.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>prediction</code></b> (              <code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, 1]</code>
+)          –
+          <div class="doc-md-description">
+            <p>The mean-normalized variance of the face areas, zero when all equal.</p>
+          </div>
+        </li>
+    </ul>
 
 
     </div>
@@ -6382,8 +7915,14 @@ see the notes of <code>VertexNormalAngleGoal</code>.</p>
 
 
 
-        <p>A thin wrapper of NetworkXYZLaplacianGoal.</p>
+        <p>Minimize the Laplacian energy of a mesh's coordinates.</p>
 
+
+<details class="note" open>
+  <summary>Notes</summary>
+  <p>A thin wrapper of :class:<code>NetworkXYZLaplacianGoal</code> that fixes the key to the
+mesh sentinel.</p>
+</details>
 
 
 
@@ -6475,7 +8014,28 @@ to its neighboring faces centroid.</p>
 
     <div class="doc doc-contents ">
 
-        <p>Initialize the goal with information of a model and a structure.</p>
+        <p>Bind the goal to a mesh, caching its face-vertex connectivity.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>model</code></b>
+              (<code><a class="autorefs autorefs-internal" title="            EquilibriumModel (jax_fdm.equilibrium.EquilibriumModel)" href="../jax_fdm.equilibrium/#jax_fdm.equilibrium.models.EquilibriumModel">EquilibriumModel</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>The equilibrium model.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>structure</code></b>
+              (<code><a class="autorefs autorefs-internal" title="            EquilibriumMeshStructure (jax_fdm.equilibrium.EquilibriumMeshStructure)" href="../jax_fdm.equilibrium/#jax_fdm.equilibrium.structures.structures.EquilibriumMeshStructure">EquilibriumMeshStructure</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>The mesh structure whose face-vertex connectivity is cached.</p>
+          </div>
+        </li>
+    </ul>
 
 
     </div>
@@ -6495,7 +8055,41 @@ to its neighboring faces centroid.</p>
 
     <div class="doc doc-contents ">
 
-        <p>The current mesh Laplacian.</p>
+        <p>The per-vertex Laplacian energy against neighboring face centroids.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>eq_state</code></b>
+              (<code><a class="autorefs autorefs-internal" title="            EquilibriumState (jax_fdm.equilibrium.EquilibriumState)" href="../jax_fdm.equilibrium/#jax_fdm.equilibrium.states.EquilibriumState">EquilibriumState</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>The equilibrium state to read vertex coordinates from.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>index</code></b>
+              (<code><span title="jaxtyping.Int">Int</span>[<span title="jaxtyping.Array">Array</span>, &#39;&#39;]</code>)
+          –
+          <div class="doc-md-description">
+            <p>The sentinel index, unused.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>laplacians</code></b> (              <code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, <span title="vertices">vertices</span>]</code>
+)          –
+          <div class="doc-md-description">
+            <p>The squared distance from each vertex to the mean of its incident face
+centroids.</p>
+          </div>
+        </li>
+    </ul>
 
 
     </div>
@@ -6515,7 +8109,40 @@ to its neighboring faces centroid.</p>
 
     <div class="doc doc-contents ">
 
-        <p>The current mesh Laplacian.</p>
+        <p>The mean per-vertex Laplacian energy of the mesh.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>eq_state</code></b>
+              (<code><a class="autorefs autorefs-internal" title="            EquilibriumState (jax_fdm.equilibrium.EquilibriumState)" href="../jax_fdm.equilibrium/#jax_fdm.equilibrium.states.EquilibriumState">EquilibriumState</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>The equilibrium state to read vertex coordinates from.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>index</code></b>
+              (<code><span title="jaxtyping.Int">Int</span>[<span title="jaxtyping.Array">Array</span>, &#39;&#39;]</code>)
+          –
+          <div class="doc-md-description">
+            <p>The sentinel index, unused.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>prediction</code></b> (              <code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, 1]</code>
+)          –
+          <div class="doc-md-description">
+            <p>The mean over vertices of the face-centroid Laplacian energy.</p>
+          </div>
+        </li>
+    </ul>
 
 
     </div>
@@ -6546,8 +8173,14 @@ to its neighboring faces centroid.</p>
 
 
 
-        <p>Make the total load path of a mesh to reach a target magnitude.</p>
+        <p>Drive the total load path of a mesh toward a target magnitude.</p>
 
+
+<details class="note" open>
+  <summary>Notes</summary>
+  <p>A thin wrapper of :class:<code>NetworkLoadPathGoal</code> that fixes the key to the mesh
+sentinel.</p>
+</details>
 
 
 
@@ -6600,10 +8233,9 @@ to its neighboring faces centroid.</p>
   <summary>Notes</summary>
   <p>Smoothness, or fairness, is an energy that measures the squared distance
 between the position of a vertex and the centroid of its neighbors' positions.</p>
-<p>Based on Eq. 2 in Tang et al. (2013). DOI: 10.1145/2601097.2601213
-Modifications:
-    - The fairness is computed only for the free vertices.
-    - No reweighting is performed based on vertex valences.</p>
+<p>Based on Eq. 2 in Tang et al. (2013). DOI: 10.1145/2601097.2601213.
+The fairness is computed only for the free vertices, and each vertex term is
+reweighted by the square of its valence.</p>
 </details>
 
 
@@ -6639,7 +8271,28 @@ Modifications:
 
     <div class="doc doc-contents ">
 
-        <p>Initialize the constraint with information from an equilibrium model.</p>
+        <p>Bind the goal to a mesh, caching its adjacency and free-vertex indices.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>model</code></b>
+              (<code><a class="autorefs autorefs-internal" title="            EquilibriumModel (jax_fdm.equilibrium.EquilibriumModel)" href="../jax_fdm.equilibrium/#jax_fdm.equilibrium.models.EquilibriumModel">EquilibriumModel</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>The equilibrium model.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>structure</code></b>
+              (<code><a class="autorefs autorefs-internal" title="            EquilibriumMeshStructure (jax_fdm.equilibrium.EquilibriumMeshStructure)" href="../jax_fdm.equilibrium/#jax_fdm.equilibrium.structures.structures.EquilibriumMeshStructure">EquilibriumMeshStructure</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>The mesh structure whose adjacency and free-vertex indices are cached.</p>
+          </div>
+        </li>
+    </ul>
 
 
     </div>
@@ -6659,7 +8312,41 @@ Modifications:
 
     <div class="doc doc-contents ">
 
-        <p>The current smoothness of the vertex.</p>
+        <p>The mean fairness energy over the mesh's free vertices.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>eq_state</code></b>
+              (<code><a class="autorefs autorefs-internal" title="            EquilibriumState (jax_fdm.equilibrium.EquilibriumState)" href="../jax_fdm.equilibrium/#jax_fdm.equilibrium.states.EquilibriumState">EquilibriumState</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>The equilibrium state to read vertex coordinates from.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>index</code></b>
+              (<code><span title="jaxtyping.Int">Int</span>[<span title="jaxtyping.Array">Array</span>, &#39;&#39;]</code>)
+          –
+          <div class="doc-md-description">
+            <p>The sentinel index, unused.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>prediction</code></b> (              <code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, 1]</code>
+)          –
+          <div class="doc-md-description">
+            <p>The mean valence-weighted squared distance from each free vertex to its
+neighbors' centroid.</p>
+          </div>
+        </li>
+    </ul>
 
 
     </div>
@@ -6735,7 +8422,28 @@ for padded faces or faces with more than 4 vertices. Use with caution!</p>
 
     <div class="doc doc-contents ">
 
-        <p>Initialize the goal with information of a model and a structure.</p>
+        <p>Bind the goal to a mesh, caching its face indices.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>model</code></b>
+              (<code><a class="autorefs autorefs-internal" title="            EquilibriumModel (jax_fdm.equilibrium.EquilibriumModel)" href="../jax_fdm.equilibrium/#jax_fdm.equilibrium.models.EquilibriumModel">EquilibriumModel</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>The equilibrium model.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>structure</code></b>
+              (<code><a class="autorefs autorefs-internal" title="            EquilibriumMeshStructure (jax_fdm.equilibrium.EquilibriumMeshStructure)" href="../jax_fdm.equilibrium/#jax_fdm.equilibrium.structures.structures.EquilibriumMeshStructure">EquilibriumMeshStructure</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>The mesh structure whose face indices are cached.</p>
+          </div>
+        </li>
+    </ul>
 
 
     </div>
@@ -6756,6 +8464,39 @@ for padded faces or faces with more than 4 vertices. Use with caution!</p>
     <div class="doc doc-contents ">
 
         <p>The average planarity of the mesh faces.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>eq_state</code></b>
+              (<code><a class="autorefs autorefs-internal" title="            EquilibriumState (jax_fdm.equilibrium.EquilibriumState)" href="../jax_fdm.equilibrium/#jax_fdm.equilibrium.states.EquilibriumState">EquilibriumState</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>The equilibrium state to read vertex coordinates from.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>index</code></b>
+              (<code><span title="jaxtyping.Int">Int</span>[<span title="jaxtyping.Array">Array</span>, &#39;&#39;]</code>)
+          –
+          <div class="doc-md-description">
+            <p>The sentinel index, unused.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>prediction</code></b> (              <code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, 1]</code>
+)          –
+          <div class="doc-md-description">
+            <p>The mean face planarity, zero when every face is planar.</p>
+          </div>
+        </li>
+    </ul>
 
 
     </div>
@@ -6788,10 +8529,14 @@ for padded faces or faces with more than 4 vertices. Use with caution!</p>
 
 
 
-        <p>Make the total load path of a network to reach a target magnitude.</p>
-<p>The load path of an edge is the absolute value of the product of the
-the force on the edge time its length.</p>
+        <p>Drive the total load path of a network toward a target magnitude.</p>
 
+
+<details class="note" open>
+  <summary>Notes</summary>
+  <p>The load path of an edge is the absolute value of its force times its length;
+the network load path is the sum over all edges.</p>
+</details>
 
 
 
@@ -6826,7 +8571,40 @@ the force on the edge time its length.</p>
 
     <div class="doc doc-contents ">
 
-        <p>The current load path of the network.</p>
+        <p>The total load path of the network.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>eq_state</code></b>
+              (<code><a class="autorefs autorefs-internal" title="            EquilibriumState (jax_fdm.equilibrium.EquilibriumState)" href="../jax_fdm.equilibrium/#jax_fdm.equilibrium.states.EquilibriumState">EquilibriumState</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>The equilibrium state to read edge forces and lengths from.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>index</code></b>
+              (<code><span title="jaxtyping.Int">Int</span>[<span title="jaxtyping.Array">Array</span>, &#39;&#39;]</code>)
+          –
+          <div class="doc-md-description">
+            <p>The sentinel index, unused.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>prediction</code></b> (              <code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, 1]</code>
+)          –
+          <div class="doc-md-description">
+            <p>The sum of the absolute force-length product over all edges.</p>
+          </div>
+        </li>
+    </ul>
 
 
     </div>
@@ -6916,7 +8694,40 @@ product of U in the raveled state.</p>
 
     <div class="doc doc-contents ">
 
-        <p>The current load path of the network.</p>
+        <p>The Laplacian energy of the network coordinates.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>eq_state</code></b>
+              (<code><a class="autorefs autorefs-internal" title="            EquilibriumState (jax_fdm.equilibrium.EquilibriumState)" href="../jax_fdm.equilibrium/#jax_fdm.equilibrium.states.EquilibriumState">EquilibriumState</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>The equilibrium state to read the edge vectors from.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>index</code></b>
+              (<code><span title="jaxtyping.Int">Int</span>[<span title="jaxtyping.Array">Array</span>, &#39;&#39;]</code>)
+          –
+          <div class="doc-md-description">
+            <p>The sentinel index, unused.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>prediction</code></b> (              <code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, 1]</code>
+)          –
+          <div class="doc-md-description">
+            <p>The Laplacian energy, equal to the sum of squared edge lengths.</p>
+          </div>
+        </li>
+    </ul>
 
 
     </div>
@@ -6991,7 +8802,28 @@ vector between every node position and their neighbors' centroid.</p>
 
     <div class="doc doc-contents ">
 
-        <p>Initialize the constraint with information from an equilibrium model.</p>
+        <p>Bind the goal to a structure, caching its adjacency matrix.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>model</code></b>
+              (<code><a class="autorefs autorefs-internal" title="            EquilibriumModel (jax_fdm.equilibrium.EquilibriumModel)" href="../jax_fdm.equilibrium/#jax_fdm.equilibrium.models.EquilibriumModel">EquilibriumModel</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>The equilibrium model.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>structure</code></b>
+              (<code><a class="autorefs autorefs-internal" title="            EquilibriumStructure (jax_fdm.equilibrium.EquilibriumStructure)" href="../jax_fdm.equilibrium/#jax_fdm.equilibrium.structures.structures.EquilibriumStructure">EquilibriumStructure</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>The structure whose adjacency matrix defines node neighborhoods.</p>
+          </div>
+        </li>
+    </ul>
 
 
     </div>
@@ -7011,7 +8843,41 @@ vector between every node position and their neighbors' centroid.</p>
 
     <div class="doc doc-contents ">
 
-        <p>The current fairness value of the node.</p>
+        <p>The mean fairness energy over the network's nodes.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>eq_state</code></b>
+              (<code><a class="autorefs autorefs-internal" title="            EquilibriumState (jax_fdm.equilibrium.EquilibriumState)" href="../jax_fdm.equilibrium/#jax_fdm.equilibrium.states.EquilibriumState">EquilibriumState</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>The equilibrium state to read the node coordinates from.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>index</code></b>
+              (<code><span title="jaxtyping.Int">Int</span>[<span title="jaxtyping.Array">Array</span>, &#39;&#39;]</code>)
+          –
+          <div class="doc-md-description">
+            <p>The sentinel index, unused.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>prediction</code></b> (              <code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, 1]</code>
+)          –
+          <div class="doc-md-description">
+            <p>The mean over nodes of the squared distance from each node to its
+neighbors' centroid.</p>
+          </div>
+        </li>
+    </ul>
 
 
     </div>

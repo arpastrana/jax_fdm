@@ -1118,7 +1118,38 @@ Without it, the plotter degrades to a null object that warns on use.</p>
 
 
 
-        <p>Plot a loss function.</p>
+        <p>Chart a loss and its component errors over an optimization history.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>loss</code></b>
+              (<code><a class="autorefs autorefs-internal" title="            Loss (jax_fdm.losses.Loss)" href="../jax_fdm.losses/#jax_fdm.losses.Loss">Loss</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>The loss function whose terms are re-evaluated and plotted.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>datastructure</code></b>
+              (<code><a class="autorefs autorefs-internal" title="            FDNetwork (jax_fdm.datastructures.FDNetwork)" href="../jax_fdm.datastructures/#jax_fdm.datastructures.FDNetwork">FDNetwork</a> | <a class="autorefs autorefs-internal" title="            FDMesh (jax_fdm.datastructures.FDMesh)" href="../jax_fdm.datastructures/#jax_fdm.datastructures.FDMesh">FDMesh</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>The network or mesh the history parameters belong to.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>kwargs</code></b>
+              (<code><a class="autorefs autorefs-external" title="typing.Any" href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a></code>, default:
+                  <code>{}</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>Extra keyword arguments forwarded to the matplotlib figure.</p>
+          </div>
+        </li>
+    </ul>
 
 
 
@@ -1154,9 +1185,90 @@ Without it, the plotter degrades to a null object that warns on use.</p>
 
     <div class="doc doc-contents ">
 
-        <p>Plot the loss function and its error components on a list of fdm
-parameter states.</p>
+        <p>Plot the loss and its component errors over a parameter history.</p>
 
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>history</code></b>
+              (<code><a class="autorefs autorefs-internal" title="            EquilibriumParametersState (jax_fdm.equilibrium.EquilibriumParametersState)" href="../jax_fdm.equilibrium/#jax_fdm.equilibrium.states.EquilibriumParametersState">EquilibriumParametersState</a> | <a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#list">list</a>[<a class="autorefs autorefs-external" title="typing.Any" href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a>]</code>)
+          –
+          <div class="doc-md-description">
+            <p>The per-iteration parameter states to replay through the loss.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>report_breakdown</code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></code>, default:
+                  <code>True</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>If True, plot each error and regularization term separately and print
+its statistics.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>error_names</code></b>
+              (<code><a class="autorefs autorefs-external" title="collections.abc.Iterable" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterable">Iterable</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a>] | None</code>, default:
+                  <code>None</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>The subset of term names to break down. If None, every term is shown.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>plot_legend</code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></code>, default:
+                  <code>True</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>Whether to draw the plot legend.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>yscale</code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></code>, default:
+                  <code>&#39;log&#39;</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>The matplotlib y-axis scale, e.g. <code>"log"</code> or <code>"linear"</code>.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>eq_kwargs</code></b>
+              (<code><a class="autorefs autorefs-external" title="typing.Any" href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a></code>, default:
+                  <code>{}</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>Extra equilibrium model options. Defaults to a single FDM step.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>losses</code></b> (              <code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, <span title="iterations">iterations</span>]</code>
+)          –
+          <div class="doc-md-description">
+            <p>The total loss at each iteration.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<details class="note" open>
+  <summary>Notes</summary>
+  <p>Equilibrium is recomputed with a dense model vmapped over the history, since
+the sparse model does not support vmap.</p>
+</details>
 
     </div>
 
@@ -1199,7 +1311,28 @@ parameter states.</p>
 
     <div class="doc doc-contents ">
 
-        <p>Print error statistics</p>
+        <p>Print first, last, min, and max of an error series.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>errors</code></b>
+              (<code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, <span title="iterations">iterations</span>]</code>)
+          –
+          <div class="doc-md-description">
+            <p>The error value at each iteration.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>error_name</code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>The label to print the statistics under.</p>
+          </div>
+        </li>
+    </ul>
 
 
     </div>

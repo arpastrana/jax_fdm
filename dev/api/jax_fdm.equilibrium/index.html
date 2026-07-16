@@ -2703,8 +2703,115 @@ a loss function, subject to constraints.</p>
 
     <div class="doc doc-contents first">
 
-        <p>Compute a datastructure in a state of static equilibrium using the force density
-method.</p>
+        <p>Compute a datastructure in static equilibrium with the force density method.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>datastructure</code></b>
+              (<code><a class="autorefs autorefs-internal" title="            FDNetwork (jax_fdm.datastructures.FDNetwork)" href="../jax_fdm.datastructures/#jax_fdm.datastructures.FDNetwork">FDNetwork</a> | <a class="autorefs autorefs-internal" title="            FDMesh (jax_fdm.datastructures.FDMesh)" href="../jax_fdm.datastructures/#jax_fdm.datastructures.FDMesh">FDMesh</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>The network or mesh to form-find.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>sparse</code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></code>, default:
+                  <code>True</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>If True, assemble and solve the equilibrium system with a sparse solver.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>is_load_local</code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></code>, default:
+                  <code>False</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>If True, apply edge and face loads in their local coordinate systems
+(follower loads).</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>tmax</code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a></code>, default:
+                  <code>1</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>The maximum number of iterations. With <code>tmax=1</code> a single linear FDM step
+is taken and edge and face loads are ignored.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>eta</code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a></code>, default:
+                  <code>1e-06</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>The convergence tolerance for the iterative solve.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>itersolve_fn</code></b>
+              (<code><a class="autorefs autorefs-external" title="collections.abc.Callable" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable">Callable</a> | None</code>, default:
+                  <code>None</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>The iterative equilibrium solver. If None, forward fixed-point iteration
+is used.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>iterload_fn</code></b>
+              (<code><a class="autorefs autorefs-external" title="collections.abc.Callable" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable">Callable</a> | None</code>, default:
+                  <code>None</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>A load callback invoked once before iterative equilibrium starts.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>implicit_diff</code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></code>, default:
+                  <code>True</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>If True, apply implicit differentiation for the backward pass.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>verbose</code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></code>, default:
+                  <code>False</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>Whether to print calculation info to the terminal.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>datastructure</code></b> (              <code><a class="autorefs autorefs-internal" title="            FDNetwork (jax_fdm.datastructures.FDNetwork)" href="../jax_fdm.datastructures/#jax_fdm.datastructures.FDNetwork">FDNetwork</a> | <a class="autorefs autorefs-internal" title="            FDMesh (jax_fdm.datastructures.FDMesh)" href="../jax_fdm.datastructures/#jax_fdm.datastructures.FDMesh">FDMesh</a></code>
+)          –
+          <div class="doc-md-description">
+            <p>A copy of the input datastructure in static equilibrium.</p>
+          </div>
+        </li>
+    </ul>
 
 
     </div>
@@ -2724,9 +2831,210 @@ method.</p>
 
     <div class="doc doc-contents first">
 
-        <p>Generate a network in a constrained state of static equilibrium using the force
-density method.</p>
+        <p>Form-find a datastructure in constrained static equilibrium via optimization.</p>
 
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>datastructure</code></b>
+              (<code><a class="autorefs autorefs-internal" title="            FDNetwork (jax_fdm.datastructures.FDNetwork)" href="../jax_fdm.datastructures/#jax_fdm.datastructures.FDNetwork">FDNetwork</a> | <a class="autorefs autorefs-internal" title="            FDMesh (jax_fdm.datastructures.FDMesh)" href="../jax_fdm.datastructures/#jax_fdm.datastructures.FDMesh">FDMesh</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>The network or mesh to form-find.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>optimizer</code></b>
+              (<code><a class="autorefs autorefs-internal" title="            Optimizer (jax_fdm.optimization.Optimizer)" href="../jax_fdm.optimization/#jax_fdm.optimization.optimizers.optimizer.Optimizer">Optimizer</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>The optimizer that minimizes the loss over the design parameters.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>loss</code></b>
+              (<code><a class="autorefs autorefs-internal" title="            Loss (jax_fdm.losses.Loss)" href="../jax_fdm.losses/#jax_fdm.losses.Loss">Loss</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>The loss function assembled from goals to minimize.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>parameters</code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#list">list</a>[<a class="autorefs autorefs-internal" title="            Parameter (jax_fdm.parameters.Parameter)" href="../jax_fdm.parameters/#jax_fdm.parameters.Parameter">Parameter</a>] | None</code>, default:
+                  <code>None</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>The optimization parameters. If None, the optimizer uses its defaults.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>constraints</code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#list">list</a>[<a class="autorefs autorefs-internal" title="            Constraint (jax_fdm.constraints.Constraint)" href="../jax_fdm.constraints/#jax_fdm.constraints.Constraint">Constraint</a>] | None</code>, default:
+                  <code>None</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>The constraints to enforce during optimization. If None, the problem is
+unconstrained.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>maxiter</code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a></code>, default:
+                  <code>100</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>The maximum number of optimization iterations.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>tol</code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a></code>, default:
+                  <code>1e-06</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>The convergence tolerance of the optimizer.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>tmax</code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a></code>, default:
+                  <code>1</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>The maximum number of equilibrium iterations per optimization step. With
+<code>tmax=1</code> a single linear FDM step is taken.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>eta</code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a></code>, default:
+                  <code>1e-06</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>The convergence tolerance for the iterative equilibrium solve.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>callback</code></b>
+              (<code><a class="autorefs autorefs-external" title="collections.abc.Callable" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable">Callable</a> | None</code>, default:
+                  <code>None</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>A function invoked once per optimization iteration.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>sparse</code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></code>, default:
+                  <code>True</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>If True, assemble and solve the equilibrium system with a sparse solver.
+Forced to False when constraints are given, which sparse does not support.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>is_load_local</code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></code>, default:
+                  <code>False</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>If True, apply edge and face loads in their local coordinate systems
+(follower loads).</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>itersolve_fn</code></b>
+              (<code><a class="autorefs autorefs-external" title="collections.abc.Callable" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable">Callable</a> | None</code>, default:
+                  <code>None</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>The iterative equilibrium solver. If None, forward fixed-point iteration
+is used.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>iterload_fn</code></b>
+              (<code><a class="autorefs autorefs-external" title="collections.abc.Callable" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable">Callable</a> | None</code>, default:
+                  <code>None</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>A load callback invoked once before iterative equilibrium starts.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>implicit_diff</code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></code>, default:
+                  <code>True</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>If True, apply implicit differentiation for the backward pass.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>nd</code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></code>, default:
+                  <code>False</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>Unused; kept for backward compatibility.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>verbose</code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></code>, default:
+                  <code>False</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>Whether to print calculation info to the terminal.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>jit</code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></code>, default:
+                  <code>True</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>If True, just-in-time compile the optimization problem.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>datastructure</code></b> (              <code><a class="autorefs autorefs-internal" title="            FDNetwork (jax_fdm.datastructures.FDNetwork)" href="../jax_fdm.datastructures/#jax_fdm.datastructures.FDNetwork">FDNetwork</a> | <a class="autorefs autorefs-internal" title="            FDMesh (jax_fdm.datastructures.FDMesh)" href="../jax_fdm.datastructures/#jax_fdm.datastructures.FDMesh">FDMesh</a></code>
+)          –
+          <div class="doc-md-description">
+            <p>A copy of the input datastructure in constrained static equilibrium.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<details class="note" open>
+  <summary>Notes</summary>
+  <p>Constraints are not yet supported for sparse inputs; passing constraints with
+<code>sparse=True</code> switches the solve to dense and prints a warning.</p>
+</details>
 
     </div>
 
@@ -2754,145 +3062,84 @@ density method.</p>
 
 
 <p><span class="doc-section-title">Parameters:</span></p>
-    <table>
-      <thead>
-        <tr>
-          <th>Name</th>
-          <th>Type</th>
-          <th>Description</th>
-          <th>Default</th>
-        </tr>
-      </thead>
-      <tbody>
-          <tr class="doc-section-item">
-            <td>
-                <code>tmax</code>
-            </td>
-            <td>
-                  <code>`int`</code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>The maximum number of iterations to calculate an equilibrium state.
-If <code>tmax=1</code>, the model is equivalent to doing one linear FDM step, and the rest
-of the parameters of this model are ignored. The edge and face loads are
-discarded too.
-Defaults to <code>100</code>.</p>
-              </div>
-            </td>
-            <td>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>tmax</code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a></code>, default:
                   <code>100</code>
-            </td>
-          </tr>
-          <tr class="doc-section-item">
-            <td>
-                <code>eta</code>
-            </td>
-            <td>
-                  <code>`float`</code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>The convergence tolerance for calculating an equilibrium state.
-Defaults to <code>1e-6</code>.</p>
-              </div>
-            </td>
-            <td>
+)
+          –
+          <div class="doc-md-description">
+            <p>The maximum number of iterations to calculate an equilibrium state.
+If <code>tmax=1</code>, the model does one linear FDM step and the remaining
+parameters are ignored; the edge and face loads are discarded too.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>eta</code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a></code>, default:
                   <code>1e-06</code>
-            </td>
-          </tr>
-          <tr class="doc-section-item">
-            <td>
-                <code>is_load_local</code>
-            </td>
-            <td>
-                  <code>`bool`</code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>If set to <code>True</code>, the face and edge loads are applied in their local
-coordinate system at every iteration (follower loads).
-Defaults to <code>False</code>.</p>
-              </div>
-            </td>
-            <td>
+)
+          –
+          <div class="doc-md-description">
+            <p>The convergence tolerance for calculating an equilibrium state.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>is_load_local</code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></code>, default:
                   <code>False</code>
-            </td>
-          </tr>
-          <tr class="doc-section-item">
-            <td>
-                <code>itersolve_fn</code>
-            </td>
-            <td>
-                  <code>`Callable`</code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>The function that calculates an equilibrium state iteratively.
-If <code>None</code>, the model defaults to forward fixed-point iteration.
-Note that the solver must be consistent with the choice of residual function.
-Defaults to <code>None</code>.</p>
-              </div>
-            </td>
-            <td>
+)
+          –
+          <div class="doc-md-description">
+            <p>If True, the face and edge loads are applied in their local
+coordinate system at every iteration (follower loads).</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>itersolve_fn</code></b>
+              (<code><a class="autorefs autorefs-external" title="collections.abc.Callable" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable">Callable</a> | None</code>, default:
                   <code>None</code>
-            </td>
-          </tr>
-          <tr class="doc-section-item">
-            <td>
-                <code>iterload_fn</code>
-            </td>
-            <td>
-                  <code>`Callable`</code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>A load callback that is invoked before starting iterative equilibrium
-computation.
-Defaults to <code>None</code>.</p>
-              </div>
-            </td>
-            <td>
+)
+          –
+          <div class="doc-md-description">
+            <p>The function that calculates an equilibrium state iteratively.
+If None, defaults to forward fixed-point iteration. The solver must be
+consistent with the choice of residual function.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>iterload_fn</code></b>
+              (<code><a class="autorefs autorefs-external" title="collections.abc.Callable" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable">Callable</a> | None</code>, default:
                   <code>None</code>
-            </td>
-          </tr>
-          <tr class="doc-section-item">
-            <td>
-                <code>implicit_diff</code>
-            </td>
-            <td>
-                  <code>`bool`</code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>If set to <code>True</code>, it applies implicit differentiation to speed up
-backpropagation.
-Defaults to <code>True</code>.</p>
-              </div>
-            </td>
-            <td>
+)
+          –
+          <div class="doc-md-description">
+            <p>A load callback invoked once before iterative equilibrium starts.
+If None, the load state is left untouched.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>implicit_diff</code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></code>, default:
                   <code>True</code>
-            </td>
-          </tr>
-          <tr class="doc-section-item">
-            <td>
-                <code>verbose</code>
-            </td>
-            <td>
-                  <code>`bool`</code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>Whether to print out calculation info to the terminal.
-Defaults to <code>False</code>.</p>
-              </div>
-            </td>
-            <td>
+)
+          –
+          <div class="doc-md-description">
+            <p>If True, apply implicit differentiation to speed up backpropagation.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>verbose</code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></code>, default:
                   <code>False</code>
-            </td>
-          </tr>
-      </tbody>
-    </table>
+)
+          –
+          <div class="doc-md-description">
+            <p>Whether to print calculation info to the terminal.</p>
+          </div>
+        </li>
+    </ul>
 
 
 
@@ -2932,7 +3179,40 @@ Defaults to <code>False</code>.</p>
 
     <div class="doc doc-contents ">
 
-        <p>Calculate the unnormalized edge directions (nodal coordinate differences).</p>
+        <p>Calculate the unnormalized edge vectors as nodal coordinate differences.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>xyz</code></b>
+              (<code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, &#39;nodes 3&#39;]</code>)
+          –
+          <div class="doc-md-description">
+            <p>The coordinates of the nodes.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>connectivity</code></b>
+              (<code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, &#39;edges nodes&#39;]</code>)
+          –
+          <div class="doc-md-description">
+            <p>The signed edge-node incidence matrix of the structure.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>vectors</code></b> (              <code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, &#39;edges 3&#39;]</code>
+)          –
+          <div class="doc-md-description">
+            <p>The edge vectors pointing from tail to head node.</p>
+          </div>
+        </li>
+    </ul>
 
 
     </div>
@@ -2959,6 +3239,31 @@ Defaults to <code>False</code>.</p>
         <p>Compute the length of the edges.</p>
 
 
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>vectors</code></b>
+              (<code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, &#39;edges 3&#39;]</code>)
+          –
+          <div class="doc-md-description">
+            <p>The edge vectors.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>lengths</code></b> (              <code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, &#39;edges 1&#39;]</code>
+)          –
+          <div class="doc-md-description">
+            <p>The Euclidean length of each edge.</p>
+          </div>
+        </li>
+    </ul>
+
+
     </div>
 
 </div>
@@ -2980,7 +3285,40 @@ Defaults to <code>False</code>.</p>
 
     <div class="doc doc-contents ">
 
-        <p>Calculate the force in the edges.</p>
+        <p>Calculate the axial force in the edges.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>q</code></b>
+              (<code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, <span title="edges">edges</span>]</code>)
+          –
+          <div class="doc-md-description">
+            <p>The force densities of the edges.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>lengths</code></b>
+              (<code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, &#39;edges 1&#39;]</code>)
+          –
+          <div class="doc-md-description">
+            <p>The lengths of the edges.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>forces</code></b> (              <code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, &#39;edges 1&#39;]</code>
+)          –
+          <div class="doc-md-description">
+            <p>The axial force in each edge, the product of force density and length.</p>
+          </div>
+        </li>
+    </ul>
 
 
     </div>
@@ -3007,6 +3345,55 @@ Defaults to <code>False</code>.</p>
         <p>Compute the residual forces on the nodes of the structure.</p>
 
 
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>q</code></b>
+              (<code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, <span title="edges">edges</span>]</code>)
+          –
+          <div class="doc-md-description">
+            <p>The force densities of the edges.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>loads</code></b>
+              (<code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, &#39;nodes 3&#39;]</code>)
+          –
+          <div class="doc-md-description">
+            <p>The loads applied to the nodes.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>vectors</code></b>
+              (<code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, &#39;edges 3&#39;]</code>)
+          –
+          <div class="doc-md-description">
+            <p>The edge vectors.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>connectivity</code></b>
+              (<code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, &#39;edges nodes&#39;]</code>)
+          –
+          <div class="doc-md-description">
+            <p>The signed edge-node incidence matrix of the structure.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>residuals</code></b> (              <code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, &#39;nodes 3&#39;]</code>
+)          –
+          <div class="doc-md-description">
+            <p>The residual force at each node, zero at nodes in equilibrium.</p>
+          </div>
+        </li>
+    </ul>
+
+
     </div>
 
 </div>
@@ -3028,7 +3415,48 @@ Defaults to <code>False</code>.</p>
 
     <div class="doc doc-contents ">
 
-        <p>Concatenate in order the position of the free and the fixed nodes.</p>
+        <p>Concatenate the free and fixed node positions back into node order.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>xyz_free</code></b>
+              (<code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, &#39;nodes_free 3&#39;]</code>)
+          –
+          <div class="doc-md-description">
+            <p>The coordinates of the free nodes.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>xyz_fixed</code></b>
+              (<code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, &#39;nodes_fixed 3&#39;]</code>)
+          –
+          <div class="doc-md-description">
+            <p>The coordinates of the fixed (supported) nodes.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>structure</code></b>
+              (<code><a class="autorefs autorefs-internal" title="            EquilibriumStructure (jax_fdm.equilibrium.structures.EquilibriumStructure)" href="#jax_fdm.equilibrium.structures.structures.EquilibriumStructure">EquilibriumStructure</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>The structure whose free/fixed index map reorders the nodes.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>xyz</code></b> (              <code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, &#39;nodes 3&#39;]</code>
+)          –
+          <div class="doc-md-description">
+            <p>The coordinates of all nodes, restored to the structure's node order.</p>
+          </div>
+        </li>
+    </ul>
 
 
     </div>
@@ -3048,8 +3476,63 @@ Defaults to <code>False</code>.</p>
 
     <div class="doc doc-contents ">
 
-        <p>Calculate the XYZ coordinates of the free nodes.</p>
+        <p>Calculate the coordinates of the free nodes by solving the FDM system.</p>
 
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>q</code></b>
+              (<code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, <span title="edges">edges</span>]</code>)
+          –
+          <div class="doc-md-description">
+            <p>The force densities of the edges.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>xyz_fixed</code></b>
+              (<code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, &#39;nodes_fixed 3&#39;]</code>)
+          –
+          <div class="doc-md-description">
+            <p>The coordinates of the fixed (supported) nodes.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>loads</code></b>
+              (<code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, &#39;nodes 3&#39;]</code>)
+          –
+          <div class="doc-md-description">
+            <p>The loads applied to the nodes.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>structure</code></b>
+              (<code><a class="autorefs autorefs-internal" title="            EquilibriumStructure (jax_fdm.equilibrium.structures.EquilibriumStructure)" href="#jax_fdm.equilibrium.structures.structures.EquilibriumStructure">EquilibriumStructure</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>The structure that provides the connectivity matrices.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>xyz_free</code></b> (              <code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, &#39;nodes_free 3&#39;]</code>
+)          –
+          <div class="doc-md-description">
+            <p>The coordinates of the free nodes at equilibrium.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<details class="note" open>
+  <summary>Notes</summary>
+  <p>Solves <code>K @ xyz_free = P</code>, the linear FDM equilibrium system, with the
+stiffness matrix <code>K</code> and the load matrix <code>P</code>.</p>
+</details>
 
     </div>
 
@@ -3071,6 +3554,55 @@ Defaults to <code>False</code>.</p>
         <p>Calculate static equilibrium on the nodes of a structure.</p>
 
 
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>q</code></b>
+              (<code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, <span title="edges">edges</span>]</code>)
+          –
+          <div class="doc-md-description">
+            <p>The force densities of the edges.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>xyz_fixed</code></b>
+              (<code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, &#39;nodes_fixed 3&#39;]</code>)
+          –
+          <div class="doc-md-description">
+            <p>The coordinates of the fixed (supported) nodes.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>loads_nodes</code></b>
+              (<code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, &#39;nodes 3&#39;]</code>)
+          –
+          <div class="doc-md-description">
+            <p>The loads applied to the nodes.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>structure</code></b>
+              (<code><a class="autorefs autorefs-internal" title="            EquilibriumStructure (jax_fdm.equilibrium.structures.EquilibriumStructure)" href="#jax_fdm.equilibrium.structures.structures.EquilibriumStructure">EquilibriumStructure</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>The structure that provides the connectivity matrices.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>xyz_free</code></b> (              <code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, &#39;nodes_free 3&#39;]</code>
+)          –
+          <div class="doc-md-description">
+            <p>The coordinates of the free nodes at equilibrium.</p>
+          </div>
+        </li>
+    </ul>
+
+
     </div>
 
 </div>
@@ -3088,8 +3620,57 @@ Defaults to <code>False</code>.</p>
 
     <div class="doc doc-contents ">
 
-        <p>Calculate the loads applied to the nodes of the structure.</p>
+        <p>Calculate the total load applied to the nodes of the structure.</p>
 
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>xyz</code></b>
+              (<code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, &#39;nodes 3&#39;]</code>)
+          –
+          <div class="doc-md-description">
+            <p>The coordinates of all nodes.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>load_state</code></b>
+              (<code><a class="autorefs autorefs-internal" title="            LoadState (jax_fdm.equilibrium.states.LoadState)" href="#jax_fdm.equilibrium.states.LoadState">LoadState</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>The nodal, edge, and face loads to aggregate onto the nodes.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>structure</code></b>
+              (<code><a class="autorefs autorefs-internal" title="            EquilibriumStructure (jax_fdm.equilibrium.structures.EquilibriumStructure)" href="#jax_fdm.equilibrium.structures.structures.EquilibriumStructure">EquilibriumStructure</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>The structure that provides the connectivity used to distribute
+edge and face loads to the nodes.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>loads</code></b> (              <code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, &#39;nodes 3&#39;]</code>
+)          –
+          <div class="doc-md-description">
+            <p>The load at each node, including tributary edge and face loads.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<details class="note" open>
+  <summary>Notes</summary>
+  <p>Edge and face loads are added only when present (non-scalar). A non-scalar
+face load occurs only for meshes, so <code>structure</code> is a mesh structure in
+that branch.</p>
+</details>
 
     </div>
 
@@ -3112,7 +3693,59 @@ Defaults to <code>False</code>.</p>
 
     <div class="doc doc-contents ">
 
-        <p>Calculate the tributary face loads aplied to the nodes of a structure.</p>
+        <p>Distribute face area loads to the nodes of a structure.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>xyz</code></b>
+              (<code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, &#39;nodes 3&#39;]</code>)
+          –
+          <div class="doc-md-description">
+            <p>The coordinates of all nodes.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>faces_load</code></b>
+              (<code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, &#39;faces 3&#39;]</code>)
+          –
+          <div class="doc-md-description">
+            <p>The area load on each face.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>structure</code></b>
+              (<code><a class="autorefs autorefs-internal" title="            EquilibriumMeshStructure (jax_fdm.equilibrium.structures.EquilibriumMeshStructure)" href="#jax_fdm.equilibrium.structures.structures.EquilibriumMeshStructure">EquilibriumMeshStructure</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>The mesh structure that maps faces to their nodes.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>is_local</code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></code>, default:
+                  <code>False</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>If True, the face load is applied in the face's local coordinate
+system (a follower load that tracks the deformed geometry).</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>loads</code></b> (              <code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, &#39;nodes 3&#39;]</code>
+)          –
+          <div class="doc-md-description">
+            <p>The tributary face load carried by each node.</p>
+          </div>
+        </li>
+    </ul>
 
 
     </div>
@@ -3136,7 +3769,59 @@ Defaults to <code>False</code>.</p>
 
     <div class="doc doc-contents ">
 
-        <p>Calculate the tributary edge loads aplied to the nodes of a structure.</p>
+        <p>Distribute edge line loads to the nodes of a structure.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>xyz</code></b>
+              (<code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, &#39;nodes 3&#39;]</code>)
+          –
+          <div class="doc-md-description">
+            <p>The coordinates of all nodes.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>edges_load</code></b>
+              (<code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, &#39;edges 3&#39;]</code>)
+          –
+          <div class="doc-md-description">
+            <p>The line load on each edge.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>structure</code></b>
+              (<code><a class="autorefs autorefs-internal" title="            EquilibriumStructure (jax_fdm.equilibrium.structures.EquilibriumStructure)" href="#jax_fdm.equilibrium.structures.structures.EquilibriumStructure">EquilibriumStructure</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>The structure that maps edges to their nodes.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>is_local</code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></code>, default:
+                  <code>False</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>If True, the edge load is applied in the edge's local coordinate
+system (a follower load that tracks the deformed geometry).</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>loads</code></b> (              <code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, &#39;nodes 3&#39;]</code>
+)          –
+          <div class="doc-md-description">
+            <p>The tributary edge load carried by each node.</p>
+          </div>
+        </li>
+    </ul>
 
 
     </div>
@@ -3159,6 +3844,47 @@ Defaults to <code>False</code>.</p>
         <p>Compute an equilibrium state using the force density method (FDM).</p>
 
 
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>params</code></b>
+              (<code><a class="autorefs autorefs-internal" title="            EquilibriumParametersState (jax_fdm.equilibrium.states.EquilibriumParametersState)" href="#jax_fdm.equilibrium.states.EquilibriumParametersState">EquilibriumParametersState</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>The force densities, fixed node coordinates, and load state.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>structure</code></b>
+              (<code><a class="autorefs autorefs-internal" title="            EquilibriumStructure (jax_fdm.equilibrium.structures.EquilibriumStructure)" href="#jax_fdm.equilibrium.structures.structures.EquilibriumStructure">EquilibriumStructure</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>The structure that provides the connectivity matrices.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>eq_state</code></b> (              <code><a class="autorefs autorefs-internal" title="            EquilibriumState (jax_fdm.equilibrium.states.EquilibriumState)" href="#jax_fdm.equilibrium.states.EquilibriumState">EquilibriumState</a></code>
+)          –
+          <div class="doc-md-description">
+            <p>The equilibrium state with node coordinates, residuals, edge lengths,
+edge forces, node loads, and edge vectors.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<details class="note" open>
+  <summary>Notes</summary>
+  <p>A single linear FDM step is taken first. When <code>tmax &gt; 1</code> the solution is
+refined iteratively to account for shape-dependent loads, optionally with
+implicit differentiation for the backward pass.</p>
+</details>
+
     </div>
 
 </div>
@@ -3176,7 +3902,56 @@ Defaults to <code>False</code>.</p>
 
     <div class="doc doc-contents ">
 
-        <p>Calculate static equilibrium on a structure.</p>
+        <p>Calculate one linear force density step on a structure.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>q</code></b>
+              (<code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, <span title="edges">edges</span>]</code>)
+          –
+          <div class="doc-md-description">
+            <p>The force densities of the edges.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>xyz_fixed</code></b>
+              (<code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, &#39;nodes_fixed 3&#39;]</code>)
+          –
+          <div class="doc-md-description">
+            <p>The coordinates of the fixed (supported) nodes.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>loads_nodes</code></b>
+              (<code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, &#39;nodes 3&#39;]</code>)
+          –
+          <div class="doc-md-description">
+            <p>The loads applied to the nodes.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>structure</code></b>
+              (<code><a class="autorefs autorefs-internal" title="            EquilibriumStructure (jax_fdm.equilibrium.structures.EquilibriumStructure)" href="#jax_fdm.equilibrium.structures.structures.EquilibriumStructure">EquilibriumStructure</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>The structure that provides the connectivity matrices.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>xyz_free</code></b> (              <code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, &#39;nodes_free 3&#39;]</code>
+)          –
+          <div class="doc-md-description">
+            <p>The coordinates of the free nodes at equilibrium.</p>
+          </div>
+        </li>
+    </ul>
 
 
     </div>
@@ -3196,7 +3971,117 @@ Defaults to <code>False</code>.</p>
 
     <div class="doc doc-contents ">
 
-        <p>Calculate static equilibrium on a structure iteratively.</p>
+        <p>Calculate static equilibrium iteratively via fixed-point iteration on xyz.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>q</code></b>
+              (<code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, <span title="edges">edges</span>]</code>)
+          –
+          <div class="doc-md-description">
+            <p>The force densities of the edges.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>xyz_fixed</code></b>
+              (<code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, &#39;nodes_fixed 3&#39;]</code>)
+          –
+          <div class="doc-md-description">
+            <p>The coordinates of the fixed (supported) nodes.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>load_state</code></b>
+              (<code><a class="autorefs autorefs-internal" title="            LoadState (jax_fdm.equilibrium.states.LoadState)" href="#jax_fdm.equilibrium.states.LoadState">LoadState</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>The nodal, edge, and face loads.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>structure</code></b>
+              (<code><a class="autorefs autorefs-internal" title="            EquilibriumStructure (jax_fdm.equilibrium.structures.EquilibriumStructure)" href="#jax_fdm.equilibrium.structures.structures.EquilibriumStructure">EquilibriumStructure</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>The structure that provides the connectivity matrices.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>xyz_free_init</code></b>
+              (<code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, &#39;nodes_free 3&#39;] | None</code>, default:
+                  <code>None</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>The initial guess for the free node coordinates. If None, it is seeded
+with one linear FDM step.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>tmax</code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a></code>, default:
+                  <code>100</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>The maximum number of fixed-point iterations.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>eta</code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a></code>, default:
+                  <code>1e-06</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>The convergence tolerance on the iterates.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>solver</code></b>
+              (<code><a class="autorefs autorefs-external" title="collections.abc.Callable" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable">Callable</a> | None</code>, default:
+                  <code>None</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>The fixed-point solver. If None, the model's default solver is used.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>implicit_diff</code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></code>, default:
+                  <code>True</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>If True, differentiate through the fixed point implicitly.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>verbose</code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></code>, default:
+                  <code>False</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>Whether to print convergence info to the terminal.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>xyz_free</code></b> (              <code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, &#39;nodes_free 3&#39;]</code>
+)          –
+          <div class="doc-md-description">
+            <p>The coordinates of the free nodes at the converged fixed point.</p>
+          </div>
+        </li>
+    </ul>
 
 
 <details class="note" open>
@@ -3223,7 +4108,118 @@ differentiation.</p>
 
     <div class="doc doc-contents ">
 
-        <p>Calculate static equilibrium on a structure iteratively.</p>
+        <p>Calculate static equilibrium iteratively by driving nodal residuals to zero.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>q</code></b>
+              (<code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, <span title="edges">edges</span>]</code>)
+          –
+          <div class="doc-md-description">
+            <p>The force densities of the edges.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>xyz_fixed</code></b>
+              (<code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, &#39;nodes_fixed 3&#39;]</code>)
+          –
+          <div class="doc-md-description">
+            <p>The coordinates of the fixed (supported) nodes.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>load_state</code></b>
+              (<code><a class="autorefs autorefs-internal" title="            LoadState (jax_fdm.equilibrium.states.LoadState)" href="#jax_fdm.equilibrium.states.LoadState">LoadState</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>The nodal, edge, and face loads.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>structure</code></b>
+              (<code><a class="autorefs autorefs-internal" title="            EquilibriumStructure (jax_fdm.equilibrium.structures.EquilibriumStructure)" href="#jax_fdm.equilibrium.structures.structures.EquilibriumStructure">EquilibriumStructure</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>The structure that provides the connectivity matrices.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>xyz_free_init</code></b>
+              (<code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, &#39;nodes_free 3&#39;] | None</code>, default:
+                  <code>None</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>The initial guess for the free node coordinates. If None, it is seeded
+with one linear FDM step.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>tmax</code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a></code>, default:
+                  <code>100</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>The maximum number of solver iterations.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>eta</code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a></code>, default:
+                  <code>1e-06</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>The convergence tolerance on the residuals.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>solver</code></b>
+              (<code><a class="autorefs autorefs-external" title="collections.abc.Callable" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable">Callable</a> | None</code>, default:
+                  <code>None</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>The least-squares or root-finding solver. If None, the model's default
+solver is used.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>implicit_diff</code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></code>, default:
+                  <code>True</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>If True, differentiate through the solution implicitly.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>verbose</code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></code>, default:
+                  <code>False</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>Whether to print convergence info to the terminal.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>xyz_free</code></b> (              <code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, &#39;nodes_free 3&#39;]</code>
+)          –
+          <div class="doc-md-description">
+            <p>The coordinates of the free nodes where the residuals vanish.</p>
+          </div>
+        </li>
+    </ul>
 
 
 <details class="note" open>
@@ -3250,7 +4246,45 @@ differentiation.</p>
 
     <div class="doc doc-contents ">
 
-        <p>Pick the equilibrium function that is compatible with the input solver function.</p>
+        <p>Pick the iterative equilibrium function compatible with a solver.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>solver</code></b>
+              (<code><a class="autorefs autorefs-external" title="collections.abc.Callable" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable">Callable</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>The iterative solver function to match.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>equilibrium_fn</code></b> (              <code><a class="autorefs autorefs-external" title="collections.abc.Callable" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable">Callable</a></code>
+)          –
+          <div class="doc-md-description">
+            <p>The fixed-point (xyz) function for fixed-point solvers, or the residual
+function for least-squares and root-finding solvers.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Raises:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+              <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/exceptions.html#ValueError">ValueError</a></code>
+            –
+          <div class="doc-md-description">
+            <p>If the solver does not belong to a supported family.</p>
+          </div>
+        </li>
+    </ul>
 
 
     </div>
@@ -3270,7 +4304,57 @@ differentiation.</p>
 
     <div class="doc doc-contents ">
 
-        <p>Assembles an equilibrium state object.</p>
+        <p>Assemble an equilibrium state from the equilibrated geometry.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>q</code></b>
+              (<code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, <span title="edges">edges</span>]</code>)
+          –
+          <div class="doc-md-description">
+            <p>The force densities of the edges.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>xyz</code></b>
+              (<code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, &#39;nodes 3&#39;]</code>)
+          –
+          <div class="doc-md-description">
+            <p>The coordinates of all nodes.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>loads_nodes</code></b>
+              (<code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, &#39;nodes 3&#39;]</code>)
+          –
+          <div class="doc-md-description">
+            <p>The loads applied to the nodes.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>structure</code></b>
+              (<code><a class="autorefs autorefs-internal" title="            EquilibriumStructure (jax_fdm.equilibrium.structures.EquilibriumStructure)" href="#jax_fdm.equilibrium.structures.structures.EquilibriumStructure">EquilibriumStructure</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>The structure that provides the connectivity matrix.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>eq_state</code></b> (              <code><a class="autorefs autorefs-internal" title="            EquilibriumState (jax_fdm.equilibrium.states.EquilibriumState)" href="#jax_fdm.equilibrium.states.EquilibriumState">EquilibriumState</a></code>
+)          –
+          <div class="doc-md-description">
+            <p>The equilibrium state bundling node coordinates, residuals, edge
+lengths, edge forces, node loads, and edge vectors.</p>
+          </div>
+        </li>
+    </ul>
 
 
     </div>
@@ -3294,7 +4378,40 @@ differentiation.</p>
 
     <div class="doc doc-contents ">
 
-        <p>The stiffness matrix of the structure.</p>
+        <p>Assemble the force density stiffness matrix of the free nodes.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>q</code></b>
+              (<code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, <span title="edges">edges</span>]</code>)
+          –
+          <div class="doc-md-description">
+            <p>The force densities of the edges.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>structure</code></b>
+              (<code><a class="autorefs autorefs-internal" title="            EquilibriumStructure (jax_fdm.equilibrium.structures.EquilibriumStructure)" href="#jax_fdm.equilibrium.structures.structures.EquilibriumStructure">EquilibriumStructure</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>The structure that provides the free-node connectivity matrix.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>stiffness</code></b> (              <code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, &#39;nodes_free nodes_free&#39;]</code>
+)          –
+          <div class="doc-md-description">
+            <p>The stiffness matrix <code>Cf.T @ diag(q) @ Cf</code> of the free nodes.</p>
+          </div>
+        </li>
+    </ul>
 
 
     </div>
@@ -3314,7 +4431,56 @@ differentiation.</p>
 
     <div class="doc doc-contents ">
 
-        <p>The load matrix of the structure.</p>
+        <p>Assemble the right-hand side load matrix of the FDM system.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>q</code></b>
+              (<code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, <span title="edges">edges</span>]</code>)
+          –
+          <div class="doc-md-description">
+            <p>The force densities of the edges.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>xyz_fixed</code></b>
+              (<code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, &#39;nodes_fixed 3&#39;]</code>)
+          –
+          <div class="doc-md-description">
+            <p>The coordinates of the fixed (supported) nodes.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>load_nodes</code></b>
+              (<code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, &#39;nodes 3&#39;]</code>)
+          –
+          <div class="doc-md-description">
+            <p>The loads applied to the nodes.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>structure</code></b>
+              (<code><a class="autorefs autorefs-internal" title="            EquilibriumStructure (jax_fdm.equilibrium.structures.EquilibriumStructure)" href="#jax_fdm.equilibrium.structures.structures.EquilibriumStructure">EquilibriumStructure</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>The structure that provides the connectivity matrices.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>load_matrix</code></b> (              <code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, &#39;nodes_free 3&#39;]</code>
+)          –
+          <div class="doc-md-description">
+            <p>The free-node loads minus the fixed nodes' residual contribution.</p>
+          </div>
+        </li>
+    </ul>
 
 
     </div>
@@ -3334,9 +4500,55 @@ differentiation.</p>
 
     <div class="doc doc-contents ">
 
-        <p>Calculate loads matrix of the free nodes of the system for shape-dependent
-loads.</p>
+        <p>Assemble the free-node load matrix for shape-dependent loads.</p>
 
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>params</code></b>
+              (<code><a class="autorefs autorefs-internal" title="            EquilibriumParametersState (jax_fdm.equilibrium.states.EquilibriumParametersState)" href="#jax_fdm.equilibrium.states.EquilibriumParametersState">EquilibriumParametersState</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>The force densities, fixed node coordinates, and load state.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>xyz_free</code></b>
+              (<code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, &#39;nodes_free 3&#39;]</code>)
+          –
+          <div class="doc-md-description">
+            <p>The current coordinates of the free nodes.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>structure</code></b>
+              (<code><a class="autorefs autorefs-internal" title="            EquilibriumStructure (jax_fdm.equilibrium.structures.EquilibriumStructure)" href="#jax_fdm.equilibrium.structures.structures.EquilibriumStructure">EquilibriumStructure</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>The structure that provides the connectivity matrices.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>load_matrix</code></b> (              <code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, &#39;nodes_free 3&#39;]</code>
+)          –
+          <div class="doc-md-description">
+            <p>The right-hand side load matrix evaluated at the current geometry.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<details class="note" open>
+  <summary>Notes</summary>
+  <p>The full node coordinates are reassembled first so that edge and face
+loads can be recomputed against the current shape.</p>
+</details>
 
     </div>
 
@@ -3355,9 +4567,56 @@ loads.</p>
 
     <div class="doc doc-contents ">
 
-        <p>Calculate loads matrix of the free nodes of the system for shape-dependent
-loads.</p>
+        <p>Assemble the free-node load matrix reusing a precomputed fixed residual.</p>
 
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>params</code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#tuple">tuple</a>[<span title="jax_fdm.equilibrium.models.StiffnessMatrix">StiffnessMatrix</span>, <span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, &#39;nodes_free 3&#39;], <span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, &#39;nodes_fixed 3&#39;], <a class="autorefs autorefs-internal" title="            LoadState (jax_fdm.equilibrium.states.LoadState)" href="#jax_fdm.equilibrium.states.LoadState">LoadState</a>]</code>)
+          –
+          <div class="doc-md-description">
+            <p>A tuple of the stiffness matrix, the precomputed fixed-node residual
+matrix, the fixed node coordinates, and the load state.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>xyz_free</code></b>
+              (<code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, &#39;nodes_free 3&#39;]</code>)
+          –
+          <div class="doc-md-description">
+            <p>The current coordinates of the free nodes.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>structure</code></b>
+              (<code><a class="autorefs autorefs-internal" title="            EquilibriumStructure (jax_fdm.equilibrium.structures.EquilibriumStructure)" href="#jax_fdm.equilibrium.structures.structures.EquilibriumStructure">EquilibriumStructure</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>The structure that provides the connectivity matrices.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>load_matrix</code></b> (              <code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, &#39;nodes_free 3&#39;]</code>
+)          –
+          <div class="doc-md-description">
+            <p>The right-hand side load matrix evaluated at the current geometry.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<details class="note" open>
+  <summary>Notes</summary>
+  <p>This is the iteration hot path: the fixed-node residual is passed in rather
+than recomputed each step, unlike :meth:<code>load_xyz_matrix</code>.</p>
+</details>
 
     </div>
 
@@ -3380,7 +4639,49 @@ loads.</p>
 
     <div class="doc doc-contents ">
 
-        <p>The load matrix with the contribution of the fixed nodes's residuals.</p>
+        <p>Compute the fixed nodes' residual contribution to the free-node loads.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>q</code></b>
+              (<code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, <span title="edges">edges</span>]</code>)
+          –
+          <div class="doc-md-description">
+            <p>The force densities of the edges.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>xyz_fixed</code></b>
+              (<code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, &#39;nodes_fixed 3&#39;]</code>)
+          –
+          <div class="doc-md-description">
+            <p>The coordinates of the fixed (supported) nodes.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>structure</code></b>
+              (<code><a class="autorefs autorefs-internal" title="            EquilibriumStructure (jax_fdm.equilibrium.structures.EquilibriumStructure)" href="#jax_fdm.equilibrium.structures.structures.EquilibriumStructure">EquilibriumStructure</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>The structure that provides the free and fixed connectivity matrices.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>residual</code></b> (              <code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, &#39;nodes_free 3&#39;]</code>
+)          –
+          <div class="doc-md-description">
+            <p>The term <code>Cf.T @ diag(q) @ Cb @ xyz_fixed</code> subtracted from the loads
+to form the right-hand side of the FDM system.</p>
+          </div>
+        </li>
+    </ul>
 
 
     </div>
@@ -3400,7 +4701,49 @@ loads.</p>
 
     <div class="doc doc-contents ">
 
-        <p>The residuals of the free nodes of the structure.</p>
+        <p>Compute the residual forces at the free nodes for a given geometry.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>params</code></b>
+              (<code><a class="autorefs autorefs-internal" title="            EquilibriumParametersState (jax_fdm.equilibrium.states.EquilibriumParametersState)" href="#jax_fdm.equilibrium.states.EquilibriumParametersState">EquilibriumParametersState</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>The force densities, fixed node coordinates, and load state.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>xyz_free</code></b>
+              (<code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, &#39;nodes_free 3&#39;]</code>)
+          –
+          <div class="doc-md-description">
+            <p>The current coordinates of the free nodes.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>structure</code></b>
+              (<code><a class="autorefs autorefs-internal" title="            EquilibriumStructure (jax_fdm.equilibrium.structures.EquilibriumStructure)" href="#jax_fdm.equilibrium.structures.structures.EquilibriumStructure">EquilibriumStructure</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>The structure that provides the connectivity matrices.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>residuals</code></b> (              <code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, &#39;nodes_free 3&#39;]</code>
+)          –
+          <div class="doc-md-description">
+            <p>The out-of-balance force <code>K @ xyz_free - P</code> at each free node, zero
+at equilibrium.</p>
+          </div>
+        </li>
+    </ul>
 
 
     </div>
@@ -3431,8 +4774,15 @@ loads.</p>
 
 
 
-        <p>The equilibrium model. Sparse.</p>
+        <p>An FDM model that solves the equilibrium system with a sparse linear solver.</p>
 
+
+<details class="note" open>
+  <summary>Notes</summary>
+  <p>Identical to :class:<code>EquilibriumModel</code> except the stiffness matrix is assembled
+in sparse format and the linear system is solved with a sparse solver, which
+scales to larger structures.</p>
+</details>
 
 
 
@@ -3471,8 +4821,49 @@ loads.</p>
 
     <div class="doc doc-contents ">
 
-        <p>Computes the LHS matrix in CSC format from a vector of force densities.</p>
+        <p>Assemble the force density stiffness matrix in sparse format.</p>
 
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>q</code></b>
+              (<code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, <span title="edges">edges</span>]</code>)
+          –
+          <div class="doc-md-description">
+            <p>The force densities of the edges.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>structure</code></b>
+              (<code><a class="autorefs autorefs-internal" title="            EquilibriumStructureSparse (jax_fdm.equilibrium.structures.EquilibriumStructureSparse)" href="#jax_fdm.equilibrium.structures.structures.EquilibriumStructureSparse">EquilibriumStructureSparse</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>The sparse structure that provides the sparse index array, diagonal
+indices, and the node-edge incidence used for the diagonal.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>stiffness</code></b> (              <code><span title="jaxtyping.Float">Float</span>[<a class="autorefs autorefs-external" title="jax.experimental.sparse.CSC" href="https://docs.jax.dev/en/latest/_autosummary/jax.experimental.sparse.CSC.html#jax.experimental.sparse.CSC">CSC</a>, &#39;nodes_free nodes_free&#39;]</code>
+)          –
+          <div class="doc-md-description">
+            <p>The stiffness matrix of the free nodes, stored in sparse format.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<details class="note" open>
+  <summary>Notes</summary>
+  <p>The off-diagonal entries are the negated force densities gathered through
+the precomputed index array; the diagonal holds the per-node sum of
+incident force densities.</p>
+</details>
 
     </div>
 
@@ -3502,6 +4893,61 @@ loads.</p>
     <div class="doc doc-contents first">
 
 
+
+        <p>The static equilibrium of a structure under load.</p>
+
+
+<p><span class="doc-section-title">Attributes:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+          <b><code><span title="jax_fdm.equilibrium.states.EquilibriumState.xyz">xyz</span></code></b>
+              (<code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, &#39;nodes 3&#39;]</code>)
+          –
+          <div class="doc-md-description">
+            <p>The coordinates of the nodes.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+          <b><code><span title="jax_fdm.equilibrium.states.EquilibriumState.residuals">residuals</span></code></b>
+              (<code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, &#39;nodes 3&#39;]</code>)
+          –
+          <div class="doc-md-description">
+            <p>The residual force at each node, zero at nodes in equilibrium.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+          <b><code><span title="jax_fdm.equilibrium.states.EquilibriumState.lengths">lengths</span></code></b>
+              (<code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, &#39;edges 1&#39;]</code>)
+          –
+          <div class="doc-md-description">
+            <p>The length of each edge.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+          <b><code><span title="jax_fdm.equilibrium.states.EquilibriumState.forces">forces</span></code></b>
+              (<code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, &#39;edges 1&#39;]</code>)
+          –
+          <div class="doc-md-description">
+            <p>The axial force in each edge.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+          <b><code><span title="jax_fdm.equilibrium.states.EquilibriumState.loads">loads</span></code></b>
+              (<code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, &#39;nodes 3&#39;]</code>)
+          –
+          <div class="doc-md-description">
+            <p>The load applied to each node.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+          <b><code><span title="jax_fdm.equilibrium.states.EquilibriumState.vectors">vectors</span></code></b>
+              (<code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, &#39;edges 3&#39;]</code>)
+          –
+          <div class="doc-md-description">
+            <p>The edge vectors pointing from tail to head node.</p>
+          </div>
+        </li>
+    </ul>
 
 
 
@@ -3547,6 +4993,44 @@ loads.</p>
 
 
 
+        <p>The loads applied to a structure, grouped by the element they act on.</p>
+
+
+<p><span class="doc-section-title">Attributes:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+          <b><code><span title="jax_fdm.equilibrium.states.LoadState.nodes">nodes</span></code></b>
+              (<code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, &#39;nodes 3&#39;]</code>)
+          –
+          <div class="doc-md-description">
+            <p>The load applied directly to each node.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+          <b><code><span title="jax_fdm.equilibrium.states.LoadState.edges">edges</span></code></b>
+              (<code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, &#39;edges 3&#39;] | <a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>The line load on each edge, or <code>0.0</code> when there is no edge load.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+          <b><code><span title="jax_fdm.equilibrium.states.LoadState.faces">faces</span></code></b>
+              (<code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, &#39;faces 3&#39;] | <a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>The area load on each face, or <code>0.0</code> when there is no face load.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<details class="note" open>
+  <summary>Notes</summary>
+  <p>Edge and face loads collapse to the scalar <code>0.0</code> when all their entries
+vanish, which lets the model skip distributing them to the nodes. Networks
+always carry <code>faces=0.0</code>.</p>
+</details>
 
 
 
@@ -3585,7 +5069,44 @@ loads.</p>
 
     <div class="doc doc-contents ">
 
-        <p>Create a load state from a datastructure.</p>
+        <p>Create a load state from a network or mesh.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>datastructure</code></b>
+              (<code><a class="autorefs autorefs-internal" title="            FDNetwork (jax_fdm.datastructures.FDNetwork)" href="../jax_fdm.datastructures/#jax_fdm.datastructures.FDNetwork">FDNetwork</a> | <a class="autorefs autorefs-internal" title="            FDMesh (jax_fdm.datastructures.FDMesh)" href="../jax_fdm.datastructures/#jax_fdm.datastructures.FDMesh">FDMesh</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>The network or mesh to read the node, edge, and face loads from.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>dtype</code></b>
+              (<code><a class="autorefs autorefs-external" title="jax.typing.DTypeLike" href="https://docs.jax.dev/en/latest/_autosummary/jax.typing.DTypeLike.html#jax.typing.DTypeLike">DTypeLike</a> | None</code>, default:
+                  <code>None</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>The floating-point dtype for the load arrays. If None, uses the array
+library default.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>load_state</code></b> (              <code><a class="autorefs autorefs-internal" title="            LoadState (jax_fdm.equilibrium.states.LoadState)" href="#jax_fdm.equilibrium.states.LoadState">LoadState</a></code>
+)          –
+          <div class="doc-md-description">
+            <p>The load state, with edge and face loads collapsed to <code>0.0</code> when
+they are all zero.</p>
+          </div>
+        </li>
+    </ul>
 
 
     </div>
@@ -3614,6 +5135,37 @@ loads.</p>
     <div class="doc doc-contents first">
 
 
+
+        <p>The independent parameters that define an equilibrium problem.</p>
+
+
+<p><span class="doc-section-title">Attributes:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+          <b><code><span title="jax_fdm.equilibrium.states.EquilibriumParametersState.q">q</span></code></b>
+              (<code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, <span title="edges">edges</span>]</code>)
+          –
+          <div class="doc-md-description">
+            <p>The force density of each edge.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+          <b><code><span title="jax_fdm.equilibrium.states.EquilibriumParametersState.xyz_fixed">xyz_fixed</span></code></b>
+              (<code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, &#39;nodes_fixed 3&#39;]</code>)
+          –
+          <div class="doc-md-description">
+            <p>The coordinates of the fixed (supported) nodes.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+          <b><code><span title="jax_fdm.equilibrium.states.EquilibriumParametersState.loads">loads</span></code></b>
+              (<code><a class="autorefs autorefs-internal" title="            LoadState (jax_fdm.equilibrium.states.LoadState)" href="#jax_fdm.equilibrium.states.LoadState">LoadState</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>The load state applied to the structure.</p>
+          </div>
+        </li>
+    </ul>
 
 
 
@@ -3653,7 +5205,56 @@ loads.</p>
 
     <div class="doc doc-contents ">
 
-        <p>Create a parameter state from a datastructure.</p>
+        <p>Create a parameter state from a network or mesh.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>datastructure</code></b>
+              (<code><a class="autorefs autorefs-internal" title="            FDNetwork (jax_fdm.datastructures.FDNetwork)" href="../jax_fdm.datastructures/#jax_fdm.datastructures.FDNetwork">FDNetwork</a> | <a class="autorefs autorefs-internal" title="            FDMesh (jax_fdm.datastructures.FDMesh)" href="../jax_fdm.datastructures/#jax_fdm.datastructures.FDMesh">FDMesh</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>The network or mesh to read force densities, fixed coordinates, and
+loads from.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>dtype</code></b>
+              (<code><a class="autorefs autorefs-external" title="jax.typing.DTypeLike" href="https://docs.jax.dev/en/latest/_autosummary/jax.typing.DTypeLike.html#jax.typing.DTypeLike">DTypeLike</a> | None</code>, default:
+                  <code>None</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>The floating-point dtype for the parameter arrays. If None, uses
+<code>DTYPE_JAX</code>.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>params_state</code></b> (              <code><a class="autorefs autorefs-internal" title="            EquilibriumParametersState (jax_fdm.equilibrium.states.EquilibriumParametersState)" href="#jax_fdm.equilibrium.states.EquilibriumParametersState">EquilibriumParametersState</a></code>
+)          –
+          <div class="doc-md-description">
+            <p>The force densities, fixed node coordinates, and load state.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Raises:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+              <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/exceptions.html#ValueError">ValueError</a></code>
+            –
+          <div class="doc-md-description">
+            <p>If the datastructure is neither a network nor a mesh.</p>
+          </div>
+        </li>
+    </ul>
 
 
     </div>
@@ -3688,8 +5289,15 @@ equilibrium model can run shape updates as pure array operations.</p>
 
 
 
-        <p>A structure.</p>
+        <p>A graph with supports and the connectivity matrices the FDM solve needs.</p>
 
+
+<details class="note" open>
+  <summary>Notes</summary>
+  <p>Extends :class:<code>Graph</code> with a support mask and the free/fixed node partition,
+precomputing the free and fixed connectivity submatrices and the index maps
+that reorder nodes between the free-fixed and native orderings.</p>
+</details>
 
 
 
@@ -3750,7 +5358,7 @@ equilibrium model can run shape updates as pure array operations.</p>
 
     <div class="doc doc-contents ">
 
-        <p>The number of supports.</p>
+        <p>The number of free (unsupported) nodes.</p>
 
     </div>
 
@@ -3858,7 +5466,32 @@ equilibrium model can run shape updates as pure array operations.</p>
 
     <div class="doc doc-contents ">
 
-        <p>Create a structure from a force density network.</p>
+        <p>Build an equilibrium structure from a force density network.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>network</code></b>
+              (<code><a class="autorefs autorefs-internal" title="            FDNetwork (jax_fdm.datastructures.FDNetwork)" href="../jax_fdm.datastructures/#jax_fdm.datastructures.FDNetwork">FDNetwork</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>The network to read nodes, edges, and supports from.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>structure</code></b> (              <code><a class="autorefs autorefs-internal" title="            EquilibriumStructure (jax_fdm.equilibrium.structures.structures.EquilibriumStructure)" href="#jax_fdm.equilibrium.structures.structures.EquilibriumStructure">EquilibriumStructure</a></code>
+)          –
+          <div class="doc-md-description">
+            <p>The structure with the network's connectivity and support mask.</p>
+          </div>
+        </li>
+    </ul>
 
 
     </div>
@@ -3889,8 +5522,15 @@ equilibrium model can run shape updates as pure array operations.</p>
 
 
 
-        <p>A sparse structure.</p>
+        <p>An equilibrium structure that precomputes sparse stiffness-assembly helpers.</p>
 
+
+<details class="note" open>
+  <summary>Notes</summary>
+  <p>Precomputes an index array, the diagonal data positions, and a diagonal
+selector matrix so the sparse model can assemble the stiffness matrix by
+indexing rather than rebuilding its structure at every solve.</p>
+</details>
 
 
 
@@ -3936,8 +5576,14 @@ equilibrium model can run shape updates as pure array operations.</p>
 
 
 
-        <p>An equilibrium mesh structure.</p>
+        <p>An equilibrium structure that also carries mesh face topology.</p>
 
+
+<details class="note" open>
+  <summary>Notes</summary>
+  <p>Adds face connectivity to :class:<code>EquilibriumStructure</code>, so mesh vertices play
+the role of nodes while faces enable tributary face-load distribution.</p>
+</details>
 
 
 
@@ -3974,7 +5620,7 @@ equilibrium model can run shape updates as pure array operations.</p>
 
     <div class="doc doc-contents ">
 
-        <p>The number of supports.</p>
+        <p>The number of free (unsupported) vertices.</p>
 
     </div>
 
@@ -4027,7 +5673,7 @@ equilibrium model can run shape updates as pure array operations.</p>
 
     <div class="doc doc-contents ">
 
-        <p>The free vertices.</p>
+        <p>The free (unsupported) vertices.</p>
 
     </div>
 
@@ -4056,7 +5702,7 @@ equilibrium model can run shape updates as pure array operations.</p>
 
     <div class="doc doc-contents ">
 
-        <p>The fixed vertices.</p>
+        <p>The fixed (supported) vertices.</p>
 
     </div>
 
@@ -4082,8 +5728,51 @@ equilibrium model can run shape updates as pure array operations.</p>
 
     <div class="doc doc-contents ">
 
-        <p>Create a structure from a force density mesh.</p>
+        <p>Build an equilibrium mesh structure from a force density mesh.</p>
 
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>mesh</code></b>
+              (<code><a class="autorefs autorefs-internal" title="            FDMesh (jax_fdm.datastructures.FDMesh)" href="../jax_fdm.datastructures/#jax_fdm.datastructures.FDMesh">FDMesh</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>The mesh to read vertices, faces, edges, and supports from.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>structure</code></b> (              <code><a class="autorefs autorefs-internal" title="            EquilibriumMeshStructure (jax_fdm.equilibrium.structures.structures.EquilibriumMeshStructure)" href="#jax_fdm.equilibrium.structures.structures.EquilibriumMeshStructure">EquilibriumMeshStructure</a></code>
+)          –
+          <div class="doc-md-description">
+            <p>The mesh structure with connectivity, support mask, and face topology.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Raises:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+              <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/exceptions.html#AssertionError">AssertionError</a></code>
+            –
+          <div class="doc-md-description">
+            <p>If any face has fewer than three vertices.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<details class="note" open>
+  <summary>Notes</summary>
+  <p>Faces are padded with <code>-1</code> to a common length so they fit a rectangular
+index array; the padding is masked out downstream.</p>
+</details>
 
     </div>
 
@@ -4113,8 +5802,14 @@ equilibrium model can run shape updates as pure array operations.</p>
 
 
 
-        <p>An equilibrium mesh structure.</p>
+        <p>A mesh equilibrium structure with sparse stiffness-assembly helpers.</p>
 
+
+<details class="note" open>
+  <summary>Notes</summary>
+  <p>Combines the face topology of :class:<code>EquilibriumMeshStructure</code> with the sparse
+assembly precomputation of :class:<code>EquilibriumStructureSparse</code>.</p>
+</details>
 
 
 
@@ -4160,8 +5855,15 @@ equilibrium model can run shape updates as pure array operations.</p>
 
 
 
-        <p>A graph.</p>
+        <p>An immutable graph holding node and edge connectivity as dense matrices.</p>
 
+
+<details class="note" open>
+  <summary>Notes</summary>
+  <p>An equinox Module, so instances are registered pytrees. Nodes and edges are
+kept as static NumPy index arrays, while the connectivity and adjacency
+matrices are JAX arrays used in the differentiable equilibrium computation.</p>
+</details>
 
 
 
@@ -4303,8 +6005,14 @@ equilibrium model can run shape updates as pure array operations.</p>
 
 
 
-        <p>A sparse graph.</p>
+        <p>A graph that exposes its connectivity in SciPy sparse format for assembly.</p>
 
+
+<details class="note" open>
+  <summary>Notes</summary>
+  <p>The full connectivity matrix is still dense (see :meth:<code>_connectivity_matrix</code>);
+only the derived free and fixed submatrices are consumed as sparse arrays.</p>
+</details>
 
 
 
@@ -4341,7 +6049,7 @@ equilibrium model can run shape updates as pure array operations.</p>
 
     <div class="doc doc-contents ">
 
-        <p>The connectivity matrix between edges and nodes in SciPy CSC format.</p>
+        <p>The signed edge-node incidence matrix as a SciPy sparse matrix.</p>
 
     </div>
 
@@ -4375,110 +6083,64 @@ equilibrium model can run shape updates as pure array operations.</p>
 
     <div class="doc doc-contents first">
 
-        <p>Solve for a fixed point of a function f(a, x) using forward iteration.</p>
+        <p>Find a fixed point of <code>f(a, x)</code> by forward iteration until convergence.</p>
 
 
 <p><span class="doc-section-title">Parameters:</span></p>
-    <table>
-      <thead>
-        <tr>
-          <th>Name</th>
-          <th>Type</th>
-          <th>Description</th>
-          <th>Default</th>
-        </tr>
-      </thead>
-      <tbody>
-          <tr class="doc-section-item">
-            <td>
-                <code>f</code>
-            </td>
-            <td>
-                  <code>The function to iterate upon.</code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                
-              </div>
-            </td>
-            <td>
-                <em>required</em>
-            </td>
-          </tr>
-          <tr class="doc-section-item">
-            <td>
-                <code>a</code>
-            </td>
-            <td>
-                  <code>The function parameters.</code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                
-              </div>
-            </td>
-            <td>
-                <em>required</em>
-            </td>
-          </tr>
-          <tr class="doc-section-item">
-            <td>
-                <code>x_init</code>
-            </td>
-            <td>
-                  <code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, ...]</code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                
-              </div>
-            </td>
-            <td>
-                <em>required</em>
-            </td>
-          </tr>
-          <tr class="doc-section-item">
-            <td>
-                <code>solver_config</code>
-            </td>
-            <td>
-                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#dict">dict</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a>, <a class="autorefs autorefs-external" title="typing.Any" href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a>]</code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                
-              </div>
-            </td>
-            <td>
-                <em>required</em>
-            </td>
-          </tr>
-      </tbody>
-    </table>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>f</code></b>
+              (<code><a class="autorefs autorefs-external" title="collections.abc.Callable" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable">Callable</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>The function to iterate upon.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>a</code></b>
+              (<code><a class="autorefs autorefs-external" title="typing.Any" href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>The function parameters.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>x_init</code></b>
+              (<code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, ...]</code>)
+          –
+          <div class="doc-md-description">
+            <p>The initial guess for the solution vector.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>solver_config</code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#dict">dict</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a>, <a class="autorefs autorefs-external" title="typing.Any" href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a>]</code>)
+          –
+          <div class="doc-md-description">
+            <p>The configuration options of the solver, read for <code>tmax</code>, <code>eta</code>, and
+<code>verbose</code>.</p>
+          </div>
+        </li>
+    </ul>
 
 
-    <p><span class="doc-section-title">Returns:</span></p>
-    <table>
-      <thead>
-        <tr>
-<th>Name</th>          <th>Type</th>
-          <th>Description</th>
-        </tr>
-      </thead>
-      <tbody>
-          <tr class="doc-section-item">
-<td><code>x</code></td>            <td>
-                  <code>The solution vector at a fixed point.</code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                
-              </div>
-            </td>
-          </tr>
-      </tbody>
-    </table>
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>x_star</code></b> (              <code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, ...]</code>
+)          –
+          <div class="doc-md-description">
+            <p>The solution vector at the fixed point.</p>
+          </div>
+        </li>
+    </ul>
 
+
+<details class="note" open>
+  <summary>Notes</summary>
+  <p>Iteration stops when the mean nodal move between successive iterates drops
+below <code>eta</code> or after <code>tmax</code> steps, whichever comes first.</p>
+</details>
 
     </div>
 
@@ -4497,109 +6159,56 @@ equilibrium model can run shape updates as pure array operations.</p>
 
     <div class="doc doc-contents first">
 
-        <p>Find a fixed point of a function f(a, x) using Anderson acceleration.</p>
+        <p>Find a fixed point of <code>f(a, x)</code> using plain fixed-point iteration.</p>
 
 
 <p><span class="doc-section-title">Parameters:</span></p>
-    <table>
-      <thead>
-        <tr>
-          <th>Name</th>
-          <th>Type</th>
-          <th>Description</th>
-          <th>Default</th>
-        </tr>
-      </thead>
-      <tbody>
-          <tr class="doc-section-item">
-            <td>
-                <code>f</code>
-            </td>
-            <td>
-                  <code>The function to iterate upon.</code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                
-              </div>
-            </td>
-            <td>
-                <em>required</em>
-            </td>
-          </tr>
-          <tr class="doc-section-item">
-            <td>
-                <code>a</code>
-            </td>
-            <td>
-                  <code>The function parameters.</code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                
-              </div>
-            </td>
-            <td>
-                <em>required</em>
-            </td>
-          </tr>
-          <tr class="doc-section-item">
-            <td>
-                <code>x_init</code>
-            </td>
-            <td>
-                  <code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, &#39;nodes_free 3&#39;]</code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                
-              </div>
-            </td>
-            <td>
-                <em>required</em>
-            </td>
-          </tr>
-          <tr class="doc-section-item">
-            <td>
-                <code>solver_config</code>
-            </td>
-            <td>
-                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#dict">dict</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a>, <a class="autorefs autorefs-external" title="typing.Any" href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a>]</code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                
-              </div>
-            </td>
-            <td>
-                <em>required</em>
-            </td>
-          </tr>
-      </tbody>
-    </table>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>f</code></b>
+              (<code><a class="autorefs autorefs-external" title="collections.abc.Callable" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable">Callable</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>The function to iterate upon.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>a</code></b>
+              (<code><span title="jax_fdm.equilibrium.solvers.types.SolverIterParams">SolverIterParams</span></code>)
+          –
+          <div class="doc-md-description">
+            <p>The function parameters.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>x_init</code></b>
+              (<code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, &#39;nodes_free 3&#39;]</code>)
+          –
+          <div class="doc-md-description">
+            <p>The initial guess for the solution vector.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>solver_config</code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#dict">dict</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a>, <a class="autorefs autorefs-external" title="typing.Any" href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a>]</code>)
+          –
+          <div class="doc-md-description">
+            <p>The configuration options of the solver.</p>
+          </div>
+        </li>
+    </ul>
 
 
-    <p><span class="doc-section-title">Returns:</span></p>
-    <table>
-      <thead>
-        <tr>
-<th>Name</th>          <th>Type</th>
-          <th>Description</th>
-        </tr>
-      </thead>
-      <tbody>
-          <tr class="doc-section-item">
-<td><code>x_star</code></td>            <td>
-                  <code>The solution vector at the fixed point.</code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                
-              </div>
-            </td>
-          </tr>
-      </tbody>
-    </table>
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>x_star</code></b> (              <code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, &#39;nodes_free 3&#39;]</code>
+)          –
+          <div class="doc-md-description">
+            <p>The solution vector at the fixed point.</p>
+          </div>
+        </li>
+    </ul>
 
 
     </div>
@@ -4619,109 +6228,56 @@ equilibrium model can run shape updates as pure array operations.</p>
 
     <div class="doc doc-contents first">
 
-        <p>Find a fixed point of a function f(a, x) using Anderson acceleration.</p>
+        <p>Find a fixed point of <code>f(a, x)</code> using Anderson acceleration.</p>
 
 
 <p><span class="doc-section-title">Parameters:</span></p>
-    <table>
-      <thead>
-        <tr>
-          <th>Name</th>
-          <th>Type</th>
-          <th>Description</th>
-          <th>Default</th>
-        </tr>
-      </thead>
-      <tbody>
-          <tr class="doc-section-item">
-            <td>
-                <code>f</code>
-            </td>
-            <td>
-                  <code>The function to iterate upon.</code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                
-              </div>
-            </td>
-            <td>
-                <em>required</em>
-            </td>
-          </tr>
-          <tr class="doc-section-item">
-            <td>
-                <code>a</code>
-            </td>
-            <td>
-                  <code>The function parameters.</code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                
-              </div>
-            </td>
-            <td>
-                <em>required</em>
-            </td>
-          </tr>
-          <tr class="doc-section-item">
-            <td>
-                <code>x_init</code>
-            </td>
-            <td>
-                  <code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, &#39;nodes_free 3&#39;]</code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                
-              </div>
-            </td>
-            <td>
-                <em>required</em>
-            </td>
-          </tr>
-          <tr class="doc-section-item">
-            <td>
-                <code>solver_config</code>
-            </td>
-            <td>
-                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#dict">dict</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a>, <a class="autorefs autorefs-external" title="typing.Any" href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a>]</code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                
-              </div>
-            </td>
-            <td>
-                <em>required</em>
-            </td>
-          </tr>
-      </tbody>
-    </table>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>f</code></b>
+              (<code><a class="autorefs autorefs-external" title="collections.abc.Callable" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable">Callable</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>The function to iterate upon.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>a</code></b>
+              (<code><span title="jax_fdm.equilibrium.solvers.types.SolverIterParams">SolverIterParams</span></code>)
+          –
+          <div class="doc-md-description">
+            <p>The function parameters.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>x_init</code></b>
+              (<code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, &#39;nodes_free 3&#39;]</code>)
+          –
+          <div class="doc-md-description">
+            <p>The initial guess for the solution vector.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>solver_config</code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#dict">dict</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a>, <a class="autorefs autorefs-external" title="typing.Any" href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a>]</code>)
+          –
+          <div class="doc-md-description">
+            <p>The configuration options of the solver.</p>
+          </div>
+        </li>
+    </ul>
 
 
-    <p><span class="doc-section-title">Returns:</span></p>
-    <table>
-      <thead>
-        <tr>
-<th>Name</th>          <th>Type</th>
-          <th>Description</th>
-        </tr>
-      </thead>
-      <tbody>
-          <tr class="doc-section-item">
-<td><code>x_star</code></td>            <td>
-                  <code>The solution vector at the fixed point.</code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                
-              </div>
-            </td>
-          </tr>
-      </tbody>
-    </table>
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>x_star</code></b> (              <code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, &#39;nodes_free 3&#39;]</code>
+)          –
+          <div class="doc-md-description">
+            <p>The solution vector at the fixed point.</p>
+          </div>
+        </li>
+    </ul>
 
 
     </div>
@@ -4741,8 +6297,63 @@ equilibrium model can run shape updates as pure array operations.</p>
 
     <div class="doc doc-contents first">
 
-        <p>Find a root of function f(theta, x) = 0 using Newton's method.</p>
+        <p>Find a root of <code>fn(theta, x) = 0</code> using Newton's method.</p>
 
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>fn</code></b>
+              (<code><a class="autorefs autorefs-external" title="collections.abc.Callable" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable">Callable</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>The residual function whose root is sought.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>theta</code></b>
+              (<code><span title="jax_fdm.equilibrium.solvers.types.SolverIterParams">SolverIterParams</span></code>)
+          –
+          <div class="doc-md-description">
+            <p>The function parameters.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>x_init</code></b>
+              (<code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, <span title="nodes_free_flat">nodes_free_flat</span>]</code>)
+          –
+          <div class="doc-md-description">
+            <p>The initial guess for the flattened solution vector.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>solver_config</code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#dict">dict</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a>, <a class="autorefs autorefs-external" title="typing.Any" href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a>]</code>)
+          –
+          <div class="doc-md-description">
+            <p>The configuration options of the solver.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>x_star</code></b> (              <code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, <span title="nodes_free_flat">nodes_free_flat</span>]</code>
+)          –
+          <div class="doc-md-description">
+            <p>The flattened solution vector at the root.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<details class="note" open>
+  <summary>Notes</summary>
+  <p>Uses an SVD linear solver inside Newton's method to stay robust when the
+Jacobian is singular or ill-conditioned.</p>
+</details>
 
     </div>
 
@@ -4761,109 +6372,56 @@ equilibrium model can run shape updates as pure array operations.</p>
 
     <div class="doc doc-contents first">
 
-        <p>Minimize the residual of function f(theta, x) = 0 using the Gauss Newton algorithm.</p>
+        <p>Drive the residual <code>fn(theta, x)</code> to zero with the Gauss-Newton algorithm.</p>
 
 
 <p><span class="doc-section-title">Parameters:</span></p>
-    <table>
-      <thead>
-        <tr>
-          <th>Name</th>
-          <th>Type</th>
-          <th>Description</th>
-          <th>Default</th>
-        </tr>
-      </thead>
-      <tbody>
-          <tr class="doc-section-item">
-            <td>
-                <code>fn</code>
-            </td>
-            <td>
-                  <code>The function to iterate upon.</code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                
-              </div>
-            </td>
-            <td>
-                <em>required</em>
-            </td>
-          </tr>
-          <tr class="doc-section-item">
-            <td>
-                <code>theta</code>
-            </td>
-            <td>
-                  <code>The function parameters.</code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                
-              </div>
-            </td>
-            <td>
-                <em>required</em>
-            </td>
-          </tr>
-          <tr class="doc-section-item">
-            <td>
-                <code>x_init</code>
-            </td>
-            <td>
-                  <code>An initial guess for the values of the solution vector.</code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                
-              </div>
-            </td>
-            <td>
-                <em>required</em>
-            </td>
-          </tr>
-          <tr class="doc-section-item">
-            <td>
-                <code>solver_config</code>
-            </td>
-            <td>
-                  <code>The configuration options of the solver.</code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                
-              </div>
-            </td>
-            <td>
-                <em>required</em>
-            </td>
-          </tr>
-      </tbody>
-    </table>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>fn</code></b>
+              (<code><a class="autorefs autorefs-external" title="collections.abc.Callable" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable">Callable</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>The residual function to drive to zero.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>theta</code></b>
+              (<code><span title="jax_fdm.equilibrium.solvers.types.SolverIterParams">SolverIterParams</span></code>)
+          –
+          <div class="doc-md-description">
+            <p>The function parameters.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>x_init</code></b>
+              (<code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, <span title="nodes_free_flat">nodes_free_flat</span>]</code>)
+          –
+          <div class="doc-md-description">
+            <p>The initial guess for the flattened solution vector.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>solver_config</code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#dict">dict</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a>, <a class="autorefs autorefs-external" title="typing.Any" href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a>]</code>)
+          –
+          <div class="doc-md-description">
+            <p>The configuration options of the solver.</p>
+          </div>
+        </li>
+    </ul>
 
 
-    <p><span class="doc-section-title">Returns:</span></p>
-    <table>
-      <thead>
-        <tr>
-<th>Name</th>          <th>Type</th>
-          <th>Description</th>
-        </tr>
-      </thead>
-      <tbody>
-          <tr class="doc-section-item">
-<td><code>x_star</code></td>            <td>
-                  <code>The solution vector at the fixed point.</code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                
-              </div>
-            </td>
-          </tr>
-      </tbody>
-    </table>
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>x_star</code></b> (              <code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, <span title="nodes_free_flat">nodes_free_flat</span>]</code>
+)          –
+          <div class="doc-md-description">
+            <p>The flattened solution vector at the residual minimum.</p>
+          </div>
+        </li>
+    </ul>
 
 
     </div>
@@ -4883,115 +6441,61 @@ equilibrium model can run shape updates as pure array operations.</p>
 
     <div class="doc doc-contents first">
 
-        <p>Minimize the residual of function f(theta, x) = 0 using the Levenberg Marquardt
-algorithm.</p>
+        <p>Drive the residual <code>fn(theta, x)</code> to zero with the Levenberg-Marquardt method.</p>
 
 
 <p><span class="doc-section-title">Parameters:</span></p>
-    <table>
-      <thead>
-        <tr>
-          <th>Name</th>
-          <th>Type</th>
-          <th>Description</th>
-          <th>Default</th>
-        </tr>
-      </thead>
-      <tbody>
-          <tr class="doc-section-item">
-            <td>
-                <code>fn</code>
-            </td>
-            <td>
-                  <code>The function to iterate upon.</code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                
-              </div>
-            </td>
-            <td>
-                <em>required</em>
-            </td>
-          </tr>
-          <tr class="doc-section-item">
-            <td>
-                <code>theta</code>
-            </td>
-            <td>
-                  <code>The function parameters.</code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                
-              </div>
-            </td>
-            <td>
-                <em>required</em>
-            </td>
-          </tr>
-          <tr class="doc-section-item">
-            <td>
-                <code>x_init</code>
-            </td>
-            <td>
-                  <code>An initial guess for the values of the solution vector.</code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                
-              </div>
-            </td>
-            <td>
-                <em>required</em>
-            </td>
-          </tr>
-          <tr class="doc-section-item">
-            <td>
-                <code>solver_config</code>
-            </td>
-            <td>
-                  <code>The configuration options of the solver.</code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                
-              </div>
-            </td>
-            <td>
-                <em>required</em>
-            </td>
-          </tr>
-      </tbody>
-    </table>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>fn</code></b>
+              (<code><a class="autorefs autorefs-external" title="collections.abc.Callable" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable">Callable</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>The residual function to drive to zero.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>theta</code></b>
+              (<code><span title="jax_fdm.equilibrium.solvers.types.SolverIterParams">SolverIterParams</span></code>)
+          –
+          <div class="doc-md-description">
+            <p>The function parameters.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>x_init</code></b>
+              (<code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, <span title="nodes_free_flat">nodes_free_flat</span>]</code>)
+          –
+          <div class="doc-md-description">
+            <p>The initial guess for the flattened solution vector.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>solver_config</code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#dict">dict</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a>, <a class="autorefs autorefs-external" title="typing.Any" href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a>]</code>)
+          –
+          <div class="doc-md-description">
+            <p>The configuration options of the solver.</p>
+          </div>
+        </li>
+    </ul>
 
 
-    <p><span class="doc-section-title">Returns:</span></p>
-    <table>
-      <thead>
-        <tr>
-<th>Name</th>          <th>Type</th>
-          <th>Description</th>
-        </tr>
-      </thead>
-      <tbody>
-          <tr class="doc-section-item">
-<td><code>x_star</code></td>            <td>
-                  <code>The solution vector at the fixed point.</code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                
-              </div>
-            </td>
-          </tr>
-      </tbody>
-    </table>
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>x_star</code></b> (              <code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, <span title="nodes_free_flat">nodes_free_flat</span>]</code>
+)          –
+          <div class="doc-md-description">
+            <p>The flattened solution vector at the residual minimum.</p>
+          </div>
+        </li>
+    </ul>
 
 
 <details class="note" open>
   <summary>Notes</summary>
-  <p>This solver is incompatible with <code>EquilibriumModelSparse</code> because
+  <p>Incompatible with the sparse equilibrium model because
 <code>jax.experimental.sparse.csr_matmat</code> does not implement a batching rule yet.</p>
 </details>
 
@@ -5012,8 +6516,56 @@ algorithm.</p>
 
     <div class="doc doc-contents first">
 
-        <p>Minimize the residual of function f(theta, x) = 0 using the Dogleg trust-region
-algorithm.</p>
+        <p>Drive the residual <code>fn(theta, x)</code> to zero with the Dogleg trust-region method.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>fn</code></b>
+              (<code><a class="autorefs autorefs-external" title="collections.abc.Callable" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable">Callable</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>The residual function to drive to zero.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>theta</code></b>
+              (<code><span title="jax_fdm.equilibrium.solvers.types.SolverIterParams">SolverIterParams</span></code>)
+          –
+          <div class="doc-md-description">
+            <p>The function parameters.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>x_init</code></b>
+              (<code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, <span title="nodes_free_flat">nodes_free_flat</span>]</code>)
+          –
+          <div class="doc-md-description">
+            <p>The initial guess for the flattened solution vector.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>solver_config</code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#dict">dict</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a>, <a class="autorefs autorefs-external" title="typing.Any" href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a>]</code>)
+          –
+          <div class="doc-md-description">
+            <p>The configuration options of the solver.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>x_star</code></b> (              <code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, <span title="nodes_free_flat">nodes_free_flat</span>]</code>
+)          –
+          <div class="doc-md-description">
+            <p>The flattened solution vector at the residual minimum.</p>
+          </div>
+        </li>
+    </ul>
 
 
     </div>
@@ -5038,8 +6590,71 @@ solver iterations.</p>
 
     <div class="doc doc-contents first">
 
-        <p>Solve for a fixed point of a function f(a, x) using an iterative solver.</p>
+        <p>Solve for a fixed point of <code>f(a, x)</code> with implicit differentiation.</p>
 
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>solver</code></b>
+              (<code><a class="autorefs autorefs-external" title="collections.abc.Callable" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable">Callable</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>The function that runs the fixed-point solve.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>solver_config</code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#dict">dict</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a>, <a class="autorefs autorefs-external" title="typing.Any" href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a>]</code>)
+          –
+          <div class="doc-md-description">
+            <p>The configuration options of the solver.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>f</code></b>
+              (<code><a class="autorefs autorefs-external" title="collections.abc.Callable" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable">Callable</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>The function to iterate upon.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>a</code></b>
+              (<code><span title="jax_fdm.equilibrium.solvers.types.SolverIterParams">SolverIterParams</span></code>)
+          –
+          <div class="doc-md-description">
+            <p>The function parameters, differentiated through implicitly.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>x_init</code></b>
+              (<code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, &#39;nodes_free 3&#39;]</code>)
+          –
+          <div class="doc-md-description">
+            <p>The initial guess for the solution vector.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>x_star</code></b> (              <code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, &#39;nodes_free 3&#39;]</code>
+)          –
+          <div class="doc-md-description">
+            <p>The solution vector at the fixed point.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<details class="note" open>
+  <summary>Notes</summary>
+  <p>Wrapped in a custom VJP so the backward pass differentiates through the fixed
+point implicitly rather than unrolling the solver iterations.</p>
+</details>
 
     </div>
 
@@ -5058,8 +6673,71 @@ solver iterations.</p>
 
     <div class="doc doc-contents first">
 
-        <p>Find a minimum of f(theta, x) in a least-squares sense using an iterative solver.</p>
+        <p>Solve a nonlinear system for <code>x</code> with implicit differentiation.</p>
 
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>solver</code></b>
+              (<code><a class="autorefs autorefs-external" title="collections.abc.Callable" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable">Callable</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>The function that runs the nonlinear solve.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>solver_config</code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#dict">dict</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a>, <a class="autorefs autorefs-external" title="typing.Any" href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a>]</code>)
+          –
+          <div class="doc-md-description">
+            <p>The configuration options of the solver.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>fn</code></b>
+              (<code><a class="autorefs autorefs-external" title="collections.abc.Callable" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable">Callable</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>The residual function to drive to zero.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>theta</code></b>
+              (<code><span title="jax_fdm.equilibrium.solvers.types.SolverIterParams">SolverIterParams</span></code>)
+          –
+          <div class="doc-md-description">
+            <p>The function parameters, differentiated through implicitly.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>x_init</code></b>
+              (<code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, <span title="nodes_free_flat">nodes_free_flat</span>]</code>)
+          –
+          <div class="doc-md-description">
+            <p>The initial guess for the flattened solution vector.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>x_star</code></b> (              <code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, <span title="nodes_free_flat">nodes_free_flat</span>]</code>
+)          –
+          <div class="doc-md-description">
+            <p>The flattened solution vector.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<details class="note" open>
+  <summary>Notes</summary>
+  <p>Wrapped in a custom VJP so the backward pass differentiates through the
+solution implicitly rather than unrolling the solver iterations.</p>
+</details>
 
     </div>
 
@@ -5080,8 +6758,48 @@ solver iterations.</p>
 
     <div class="doc doc-contents first">
 
-        <p>The sparse linear solver.</p>
+        <p>Solve the sparse linear system with a custom-differentiable solver.</p>
 
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>A</code></b>
+              (<code><span title="jax_fdm.equilibrium.sparse.SystemMatrixLHS">SystemMatrixLHS</span></code>)
+          –
+          <div class="doc-md-description">
+            <p>The left-hand side matrix, assumed symmetric.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>b</code></b>
+              (<code><span title="jax_fdm.equilibrium.sparse.SystemMatrixRHS">SystemMatrixRHS</span></code>)
+          –
+          <div class="doc-md-description">
+            <p>The right-hand side, one column per coordinate.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>x</code></b> (              <code><span title="jax_fdm.equilibrium.sparse.SystemSolution">SystemSolution</span></code>
+)          –
+          <div class="doc-md-description">
+            <p>The solution, one column per right-hand side.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<details class="note" open>
+  <summary>Notes</summary>
+  <p>Dispatches to the backend solver registered by :func:<code>register_sparse_solver</code>.
+A custom VJP supplies the backward pass, so only reverse-mode differentiation
+is supported.</p>
+</details>
 
     </div>
 
@@ -5100,7 +6818,44 @@ solver iterations.</p>
 
     <div class="doc doc-contents first">
 
-        <p>Register the sparse solver used by the FDM model based on JAX default backend.</p>
+        <p>Pick the sparse solver matching the active JAX backend.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>solvers</code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#dict">dict</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a>, <a class="autorefs autorefs-external" title="collections.abc.Callable" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable">Callable</a>]</code>)
+          –
+          <div class="doc-md-description">
+            <p>A mapping from backend name (<code>"cpu"</code> or <code>"gpu"</code>) to solver function.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>solver</code></b> (              <code><a class="autorefs autorefs-external" title="collections.abc.Callable" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable">Callable</a></code>
+)          –
+          <div class="doc-md-description">
+            <p>The solver registered for the current default backend.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Raises:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+              <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/exceptions.html#ValueError">ValueError</a></code>
+            –
+          <div class="doc-md-description">
+            <p>If no solver is registered for the active backend.</p>
+          </div>
+        </li>
+    </ul>
 
 
     </div>

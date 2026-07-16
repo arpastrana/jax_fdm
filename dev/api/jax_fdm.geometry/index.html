@@ -1816,6 +1816,31 @@ an equilibrium state.</p>
         <p>Calculate the length of a vector.</p>
 
 
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>u</code></b>
+              (<code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, 3]</code>)
+          –
+          <div class="doc-md-description">
+            <p>The vector.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>length</code></b> (              <code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, 1]</code>
+)          –
+          <div class="doc-md-description">
+            <p>The Euclidean length of the vector.</p>
+          </div>
+        </li>
+    </ul>
+
+
     </div>
 
 </div>
@@ -1836,6 +1861,31 @@ an equilibrium state.</p>
         <p>Calculate the squared length of a vector.</p>
 
 
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>u</code></b>
+              (<code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, 3]</code>)
+          –
+          <div class="doc-md-description">
+            <p>The vector.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>length</code></b> (              <code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, 1]</code>
+)          –
+          <div class="doc-md-description">
+            <p>The squared Euclidean length of the vector.</p>
+          </div>
+        </li>
+    </ul>
+
+
     </div>
 
 </div>
@@ -1854,6 +1904,41 @@ an equilibrium state.</p>
     <div class="doc doc-contents ">
 
         <p>Scale a vector such that it has a unit length.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>u</code></b>
+              (<code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, 3]</code>)
+          –
+          <div class="doc-md-description">
+            <p>The vector to normalize.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>safe_nan</code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></code>, default:
+                  <code>True</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>If True, replace nan entries by zeroes before normalizing.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>vector</code></b> (              <code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, 3]</code>
+)          –
+          <div class="doc-md-description">
+            <p>The unit-length vector.</p>
+          </div>
+        </li>
+    </ul>
 
 
 <details class="note" open>
@@ -1883,6 +1968,37 @@ or if all its elements are nan.</p>
         <p>Scale a vector such that it has a unit length.</p>
 
 
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>u</code></b>
+              (<code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, 3]</code>)
+          –
+          <div class="doc-md-description">
+            <p>The vector to normalize.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>vector</code></b> (              <code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, 3]</code>
+)          –
+          <div class="doc-md-description">
+            <p>The unit-length vector.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<details class="note" open>
+  <summary>Notes</summary>
+  <p>Unlike normalize_vector, this helper does not guard against zero-length or
+nan input, so it divides by the raw vector length.</p>
+</details>
+
     </div>
 
 </div>
@@ -1901,6 +2017,39 @@ or if all its elements are nan.</p>
     <div class="doc doc-contents ">
 
         <p>Subtract two vectors.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>u</code></b>
+              (<code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, 3]</code>)
+          –
+          <div class="doc-md-description">
+            <p>The vector to subtract from.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>v</code></b>
+              (<code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, 3]</code>)
+          –
+          <div class="doc-md-description">
+            <p>The vector to subtract.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>vector</code></b> (              <code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, 3]</code>
+)          –
+          <div class="doc-md-description">
+            <p>The difference u - v.</p>
+          </div>
+        </li>
+    </ul>
 
 
     </div>
@@ -1923,6 +2072,39 @@ or if all its elements are nan.</p>
         <p>Calculates the orthogonal projection of u onto v.</p>
 
 
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>u</code></b>
+              (<code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, 3]</code>)
+          –
+          <div class="doc-md-description">
+            <p>The vector to project.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>v</code></b>
+              (<code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, 3]</code>)
+          –
+          <div class="doc-md-description">
+            <p>The vector to project onto.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>projection</code></b> (              <code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, 3]</code>
+)          –
+          <div class="doc-md-description">
+            <p>The component of u parallel to v.</p>
+          </div>
+        </li>
+    </ul>
+
+
     </div>
 
 </div>
@@ -1943,6 +2125,39 @@ or if all its elements are nan.</p>
         <p>Compute the signed cosine of the angle between two vectors.</p>
 
 
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>u</code></b>
+              (<code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, 3]</code>)
+          –
+          <div class="doc-md-description">
+            <p>The first vector.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>v</code></b>
+              (<code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, 3]</code>)
+          –
+          <div class="doc-md-description">
+            <p>The second vector.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>cosine</code></b> (              <code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, &#39;&#39;]</code>
+)          –
+          <div class="doc-md-description">
+            <p>The cosine of the angle, in the range [-1, 1].</p>
+          </div>
+        </li>
+    </ul>
+
+
     </div>
 
 </div>
@@ -1960,11 +2175,58 @@ or if all its elements are nan.</p>
 
     <div class="doc doc-contents ">
 
-        <p>Compute the smallest angle in degrees between two vectors.</p>
-<p>The cosine is clipped to [-1, 1] before the arccosine, whose value and
+        <p>Compute the smallest angle between two vectors.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>u</code></b>
+              (<code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, 3]</code>)
+          –
+          <div class="doc-md-description">
+            <p>The first vector.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>v</code></b>
+              (<code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, 3]</code>)
+          –
+          <div class="doc-md-description">
+            <p>The second vector.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>deg</code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></code>, default:
+                  <code>False</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>If True, return the angle in degrees instead of radians.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>angle</code></b> (              <code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, &#39;&#39;]</code>
+)          –
+          <div class="doc-md-description">
+            <p>The smallest angle between the vectors.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<details class="note" open>
+  <summary>Notes</summary>
+  <p>The cosine is clipped to [-1, 1] before the arccosine, whose value and
 gradient are singular when the vectors are parallel: in floating point
 the cosine of two parallel vectors can overshoot 1 by a few ulps.</p>
-
+</details>
 
     </div>
 
@@ -1984,6 +2246,41 @@ the cosine of two parallel vectors can overshoot 1 by a few ulps.</p>
     <div class="doc doc-contents ">
 
         <p>Calculate the (normalized) vector formed by the difference of the line end points.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>line</code></b>
+              (<code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, &#39;2 3&#39;]</code>)
+          –
+          <div class="doc-md-description">
+            <p>The line, as its two end points.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>normalized</code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></code>, default:
+                  <code>True</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>If True, scale the vector to unit length.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>vector</code></b> (              <code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, 3]</code>
+)          –
+          <div class="doc-md-description">
+            <p>The vector from the first end point to the second.</p>
+          </div>
+        </li>
+    </ul>
 
 
     </div>
@@ -2048,6 +2345,39 @@ the cosine of two parallel vectors can overshoot 1 by a few ulps.</p>
         <p>Calculate the square of the distance between two points.</p>
 
 
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>u</code></b>
+              (<code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, 3]</code>)
+          –
+          <div class="doc-md-description">
+            <p>The first point.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>v</code></b>
+              (<code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, 3]</code>)
+          –
+          <div class="doc-md-description">
+            <p>The second point.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>distance</code></b> (              <code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, &#39;&#39;]</code>
+)          –
+          <div class="doc-md-description">
+            <p>The squared Euclidean distance between the points.</p>
+          </div>
+        </li>
+    </ul>
+
+
     </div>
 
 </div>
@@ -2066,6 +2396,39 @@ the cosine of two parallel vectors can overshoot 1 by a few ulps.</p>
     <div class="doc doc-contents ">
 
         <p>Computes the closest location on a line to a supplied point.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>point</code></b>
+              (<code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, 3]</code>)
+          –
+          <div class="doc-md-description">
+            <p>The query point.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>line</code></b>
+              (<code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, &#39;2 3&#39;]</code>)
+          –
+          <div class="doc-md-description">
+            <p>The line, as its two end points.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>point</code></b> (              <code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, 3]</code>
+)          –
+          <div class="doc-md-description">
+            <p>The orthogonal projection of the query point onto the infinite line.</p>
+          </div>
+        </li>
+    </ul>
 
 
     </div>
@@ -2088,6 +2451,39 @@ the cosine of two parallel vectors can overshoot 1 by a few ulps.</p>
         <p>Calculate the closest location on a segment to an input point.</p>
 
 
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>point</code></b>
+              (<code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, 3]</code>)
+          –
+          <div class="doc-md-description">
+            <p>The query point.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>segment</code></b>
+              (<code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, &#39;2 3&#39;]</code>)
+          –
+          <div class="doc-md-description">
+            <p>The segment, as its two end points.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>point</code></b> (              <code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, 3]</code>
+)          –
+          <div class="doc-md-description">
+            <p>The closest location on the segment, clamped to its end points.</p>
+          </div>
+        </li>
+    </ul>
+
+
     </div>
 
 </div>
@@ -2106,6 +2502,39 @@ the cosine of two parallel vectors can overshoot 1 by a few ulps.</p>
     <div class="doc doc-contents ">
 
         <p>Computes the closest location on a plane to a supplied point.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>point</code></b>
+              (<code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, 3]</code>)
+          –
+          <div class="doc-md-description">
+            <p>The query point.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>plane</code></b>
+              (<code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, &#39;2 3&#39;]</code>)
+          –
+          <div class="doc-md-description">
+            <p>The plane, as its origin and normal.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>point</code></b> (              <code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, 3]</code>
+)          –
+          <div class="doc-md-description">
+            <p>The orthogonal projection of the query point onto the plane.</p>
+          </div>
+        </li>
+    </ul>
 
 
     </div>
@@ -2129,63 +2558,34 @@ the cosine of two parallel vectors can overshoot 1 by a few ulps.</p>
 
 
 <p><span class="doc-section-title">Parameters:</span></p>
-    <table>
-      <thead>
-        <tr>
-          <th>Name</th>
-          <th>Type</th>
-          <th>Description</th>
-          <th>Default</th>
-        </tr>
-      </thead>
-      <tbody>
-          <tr class="doc-section-item">
-            <td>
-                <code>points</code>
-            </td>
-            <td>
-                  <code><a class="autorefs autorefs-external" title="jax.numpy.ndarray" href="https://docs.jax.dev/en/latest/_autosummary/jax.numpy.ndarray.html#jax.numpy.ndarray">ndarray</a></code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>(n, d) ordered points in 2D or 3D.</p>
-              </div>
-            </td>
-            <td>
-                <em>required</em>
-            </td>
-          </tr>
-      </tbody>
-    </table>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>points</code></b>
+              (<code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, &#39;points 3&#39;]</code>)
+          –
+          <div class="doc-md-description">
+            <p>The ordered sequence of points.</p>
+          </div>
+        </li>
+    </ul>
 
 
-    <p><span class="doc-section-title">Returns:</span></p>
-    <table>
-      <thead>
-        <tr>
-<th>Name</th>          <th>Type</th>
-          <th>Description</th>
-        </tr>
-      </thead>
-      <tbody>
-          <tr class="doc-section-item">
-<td><code>colinearity</code></td>            <td>
-                  <code><a class="autorefs autorefs-external" title="jax.numpy.ndarray" href="https://docs.jax.dev/en/latest/_autosummary/jax.numpy.ndarray.html#jax.numpy.ndarray">ndarray</a></code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>The colinearity energy.</p>
-              </div>
-            </td>
-          </tr>
-      </tbody>
-    </table>
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>colinearity</code></b> (              <code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, &#39;&#39;]</code>
+)          –
+          <div class="doc-md-description">
+            <p>The colinearity energy, zero when the points are colinear.</p>
+          </div>
+        </li>
+    </ul>
 
 
 <details class="note" open>
   <summary>Notes</summary>
   <p>Colinearity is defined as length-normalized fairness energy:
-    E = sum_i ||e_i - e_{i-1}||^2 / 0.5 * (||e_{i-1}||^2 + ||e_i||^2)
+    E = sum_i ||e_i - e_{i-1}||^2 / (0.5 * (||e_{i-1}||^2 + ||e_i||^2))
 where e_i = points[i+1] - points[i].</p>
 <p>The normalization makes this energy less sensitive to local point spacing
 than a raw second-difference energy. A colinearity of 0.0 indicates that
@@ -2216,57 +2616,28 @@ problem size.</p>
 
 
 <p><span class="doc-section-title">Parameters:</span></p>
-    <table>
-      <thead>
-        <tr>
-          <th>Name</th>
-          <th>Type</th>
-          <th>Description</th>
-          <th>Default</th>
-        </tr>
-      </thead>
-      <tbody>
-          <tr class="doc-section-item">
-            <td>
-                <code>points</code>
-            </td>
-            <td>
-                  <code><a class="autorefs autorefs-external" title="jax.numpy.ndarray" href="https://docs.jax.dev/en/latest/_autosummary/jax.numpy.ndarray.html#jax.numpy.ndarray">ndarray</a></code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>(n, d) ordered points in 2D or 3D.</p>
-              </div>
-            </td>
-            <td>
-                <em>required</em>
-            </td>
-          </tr>
-      </tbody>
-    </table>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>points</code></b>
+              (<code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, &#39;points 3&#39;]</code>)
+          –
+          <div class="doc-md-description">
+            <p>The ordered sequence of points.</p>
+          </div>
+        </li>
+    </ul>
 
 
-    <p><span class="doc-section-title">Returns:</span></p>
-    <table>
-      <thead>
-        <tr>
-<th>Name</th>          <th>Type</th>
-          <th>Description</th>
-        </tr>
-      </thead>
-      <tbody>
-          <tr class="doc-section-item">
-<td><code>energy</code></td>            <td>
-                  <code><a class="autorefs autorefs-external" title="jax.numpy.ndarray" href="https://docs.jax.dev/en/latest/_autosummary/jax.numpy.ndarray.html#jax.numpy.ndarray">ndarray</a></code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>The turning energy.</p>
-              </div>
-            </td>
-          </tr>
-      </tbody>
-    </table>
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>energy</code></b> (              <code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, &#39;&#39;]</code>
+)          –
+          <div class="doc-md-description">
+            <p>The turning energy, zero when the points are colinear.</p>
+          </div>
+        </li>
+    </ul>
 
 
 <details class="note" open>
@@ -2294,15 +2665,48 @@ not on edge lengths, so it is scale-invariant.</p>
 
     <div class="doc doc-contents ">
 
-        <p>Compute the discrete curvature at a point based on a polygon surrounding it.
-The discrete curvature of a node equals 2 * pi - sum(alphas).</p>
+        <p>Compute the discrete curvature at a point based on a polygon surrounding it.</p>
+<p>The discrete curvature of a node equals 2 * pi - sum(alphas).</p>
 <p>TODO: divide return value by tributary area of point.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>point</code></b>
+              (<code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, 3]</code>)
+          –
+          <div class="doc-md-description">
+            <p>The central point at which the curvature is evaluated.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>polygon</code></b>
+              (<code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, &#39;points 3&#39;]</code>)
+          –
+          <div class="doc-md-description">
+            <p>The ring of points surrounding the central point.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>curvature</code></b> (              <code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, &#39;&#39;]</code>
+)          –
+          <div class="doc-md-description">
+            <p>The discrete curvature at the central point.</p>
+          </div>
+        </li>
+    </ul>
 
 
 <details class="note" open>
   <summary>Notes</summary>
   <p>Alphas is the list of angles between each pair of successive edges as
-the outward vectors from the node. Polygon is a numpy array (# points, 3).</p>
+the outward vectors from the node.</p>
 </details>
 
     </div>
@@ -2365,8 +2769,31 @@ the outward vectors from the node. Polygon is a numpy array (# points, 3).</p>
     <div class="doc doc-contents ">
 
         <p>Computes the area of a polygon.</p>
-<p>A polygon that is defined as a sequence of unique points and must be
-defined by at least 3 points.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>polygon</code></b>
+              (<code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, &#39;points 3&#39;]</code>)
+          –
+          <div class="doc-md-description">
+            <p>The polygon, as a sequence of at least three unique points.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>area</code></b> (              <code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, &#39;&#39;]</code>
+)          –
+          <div class="doc-md-description">
+            <p>The area of the polygon.</p>
+          </div>
+        </li>
+    </ul>
 
 
     </div>
@@ -2389,10 +2816,30 @@ defined by at least 3 points.</p>
         <p>Calculate the area of a triangle.</p>
 
 
-<details class="note" open>
-  <summary>Notes</summary>
-  <p>A triangle is defined as a set of exactly three points.</p>
-</details>
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>triangle</code></b>
+              (<code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, &#39;3 3&#39;]</code>)
+          –
+          <div class="doc-md-description">
+            <p>The triangle, as exactly three points.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>area</code></b> (              <code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, &#39;&#39;]</code>
+)          –
+          <div class="doc-md-description">
+            <p>The area of the triangle.</p>
+          </div>
+        </li>
+    </ul>
+
 
     </div>
 
@@ -2414,11 +2861,45 @@ defined by at least 3 points.</p>
         <p>Computes the normal of a closed polygon.</p>
 
 
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>polygon</code></b>
+              (<code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, &#39;points 3&#39;]</code>)
+          –
+          <div class="doc-md-description">
+            <p>The polygon, as a sequence of at least three unique points.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>unitized</code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></code>, default:
+                  <code>True</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>If True, scale the normal to unit length.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>normal</code></b> (              <code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, 3]</code>
+)          –
+          <div class="doc-md-description">
+            <p>The polygon normal.</p>
+          </div>
+        </li>
+    </ul>
+
+
 <details class="note" open>
   <summary>Notes</summary>
-  <p>A polygon that is defined as a sequence of unique points and must be
-defined by at least 3 points. This function is not nan safe, because it
-loses information when cross-multiplying valid entries with nan values.</p>
+  <p>This function is not nan safe, because it loses information when
+cross-multiplying valid entries with nan values.</p>
 </details>
 
     </div>
@@ -2441,10 +2922,40 @@ loses information when cross-multiplying valid entries with nan values.</p>
         <p>Computes the normal vector of a triangle.</p>
 
 
-<details class="note" open>
-  <summary>Notes</summary>
-  <p>A triangle is defined as a set of exactly three points.</p>
-</details>
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>triangle</code></b>
+              (<code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, &#39;3 3&#39;]</code>)
+          –
+          <div class="doc-md-description">
+            <p>The triangle, as exactly three points.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>unitize</code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></code>, default:
+                  <code>False</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>If True, scale the normal to unit length.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>normal</code></b> (              <code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, 3]</code>
+)          –
+          <div class="doc-md-description">
+            <p>The triangle normal.</p>
+          </div>
+        </li>
+    </ul>
+
 
     </div>
 
@@ -2467,73 +2978,38 @@ loses information when cross-multiplying valid entries with nan values.</p>
 
 
 <p><span class="doc-section-title">Parameters:</span></p>
-    <table>
-      <thead>
-        <tr>
-          <th>Name</th>
-          <th>Type</th>
-          <th>Description</th>
-          <th>Default</th>
-        </tr>
-      </thead>
-      <tbody>
-          <tr class="doc-section-item">
-            <td>
-                <code>polygon</code>
-            </td>
-            <td>
-                  <code><a class="autorefs autorefs-external" title="jax.numpy.ndarray" href="https://docs.jax.dev/en/latest/_autosummary/jax.numpy.ndarray.html#jax.numpy.ndarray">ndarray</a></code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>(n, d) array of polygon coordinates, d=2 or 3</p>
-              </div>
-            </td>
-            <td>
-                <em>required</em>
-            </td>
-          </tr>
-          <tr class="doc-section-item">
-            <td>
-                <code>deg</code>
-            </td>
-            <td>
-                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>If True, return the angles in degrees. Default is False.</p>
-              </div>
-            </td>
-            <td>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>polygon</code></b>
+              (<code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, &#39;points 3&#39;]</code>)
+          –
+          <div class="doc-md-description">
+            <p>The polygon, as a sequence of at least three points.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>deg</code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></code>, default:
                   <code>False</code>
-            </td>
-          </tr>
-      </tbody>
-    </table>
+)
+          –
+          <div class="doc-md-description">
+            <p>If True, return the angles in degrees instead of radians.</p>
+          </div>
+        </li>
+    </ul>
 
 
-    <p><span class="doc-section-title">Returns:</span></p>
-    <table>
-      <thead>
-        <tr>
-<th>Name</th>          <th>Type</th>
-          <th>Description</th>
-        </tr>
-      </thead>
-      <tbody>
-          <tr class="doc-section-item">
-<td><code>angles</code></td>            <td>
-                  <code><a class="autorefs autorefs-external" title="jax.numpy.ndarray" href="https://docs.jax.dev/en/latest/_autosummary/jax.numpy.ndarray.html#jax.numpy.ndarray">ndarray</a></code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>(n,) array of internal angles of the polygon in radians.</p>
-              </div>
-            </td>
-          </tr>
-      </tbody>
-    </table>
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>angles</code></b> (              <code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, <span title="points">points</span>]</code>
+)          –
+          <div class="doc-md-description">
+            <p>The internal angle at each polygon vertex.</p>
+          </div>
+        </li>
+    </ul>
 
 
     </div>
@@ -2557,57 +3033,28 @@ loses information when cross-multiplying valid entries with nan values.</p>
 
 
 <p><span class="doc-section-title">Parameters:</span></p>
-    <table>
-      <thead>
-        <tr>
-          <th>Name</th>
-          <th>Type</th>
-          <th>Description</th>
-          <th>Default</th>
-        </tr>
-      </thead>
-      <tbody>
-          <tr class="doc-section-item">
-            <td>
-                <code>polygon</code>
-            </td>
-            <td>
-                  <code><a class="autorefs autorefs-external" title="jax.numpy.ndarray" href="https://docs.jax.dev/en/latest/_autosummary/jax.numpy.ndarray.html#jax.numpy.ndarray">ndarray</a></code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>(n, d) array of polygon coordinates, d=2 or 3</p>
-              </div>
-            </td>
-            <td>
-                <em>required</em>
-            </td>
-          </tr>
-      </tbody>
-    </table>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>polygon</code></b>
+              (<code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, &#39;points 3&#39;]</code>)
+          –
+          <div class="doc-md-description">
+            <p>The polygon, as a sequence of at least three points.</p>
+          </div>
+        </li>
+    </ul>
 
 
-    <p><span class="doc-section-title">Returns:</span></p>
-    <table>
-      <thead>
-        <tr>
-<th>Name</th>          <th>Type</th>
-          <th>Description</th>
-        </tr>
-      </thead>
-      <tbody>
-          <tr class="doc-section-item">
-<td><code>cosines</code></td>            <td>
-                  <code><a class="autorefs autorefs-external" title="jax.numpy.ndarray" href="https://docs.jax.dev/en/latest/_autosummary/jax.numpy.ndarray.html#jax.numpy.ndarray">ndarray</a></code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>(n,) array of internal cosine angles of the polygon.</p>
-              </div>
-            </td>
-          </tr>
-      </tbody>
-    </table>
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>cosines</code></b> (              <code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, <span title="points">points</span>]</code>
+)          –
+          <div class="doc-md-description">
+            <p>The cosine of the internal angle at each polygon vertex.</p>
+          </div>
+        </li>
+    </ul>
 
 
     </div>
@@ -2628,6 +3075,31 @@ loses information when cross-multiplying valid entries with nan values.</p>
     <div class="doc doc-contents ">
 
         <p>Calculate the planarity of a polygon.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>polygon</code></b>
+              (<code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, &#39;points 3&#39;]</code>)
+          –
+          <div class="doc-md-description">
+            <p>The polygon, as a sequence of at least three points.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>planarity</code></b> (              <code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, &#39;&#39;]</code>
+)          –
+          <div class="doc-md-description">
+            <p>The planarity energy, zero when the polygon is planar.</p>
+          </div>
+        </li>
+    </ul>
 
 
 <details class="note" open>
@@ -2656,10 +3128,30 @@ between the polygon's unitized normal vector and its unitized edge vectors.</p>
         <p>Calculate the planarity of a triangle.</p>
 
 
-<details class="note" open>
-  <summary>Notes</summary>
-  <p>The planarity of a triangle is 0.0 by construction.</p>
-</details>
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>triangle</code></b>
+              (<code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, &#39;3 3&#39;]</code>)
+          –
+          <div class="doc-md-description">
+            <p>The triangle, as exactly three points.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>planarity</code></b> (              <code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, &#39;&#39;]</code>
+)          –
+          <div class="doc-md-description">
+            <p>The planarity energy, always zero for a triangle.</p>
+          </div>
+        </li>
+    </ul>
+
 
     </div>
 
@@ -2723,6 +3215,31 @@ between the polygon's unitized normal vector and its unitized edge vectors.</p>
         <p>Returns the local coordinate system (LCS) of a line.</p>
 
 
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>line</code></b>
+              (<code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, &#39;2 3&#39;]</code>)
+          –
+          <div class="doc-md-description">
+            <p>The line, as its two end points.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>lcs</code></b> (              <code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, &#39;3 3&#39;]</code>
+)          –
+          <div class="doc-md-description">
+            <p>The orthonormal basis, as its stacked U, V, and W axes.</p>
+          </div>
+        </li>
+    </ul>
+
+
 <details class="note" open>
   <summary>Notes</summary>
   <p>The LCS is a 3D orthonormal basis formed by unit vectors U, V, and W.
@@ -2755,15 +3272,41 @@ The orthonormal basis is constructed using the following convention:</p>
         <p>Returns the local coordinate system (LCS) of a polygon.</p>
 
 
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>polygon</code></b>
+              (<code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, &#39;points 3&#39;]</code>)
+          –
+          <div class="doc-md-description">
+            <p>The polygon, as a sequence of at least three points.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>lcs</code></b> (              <code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, &#39;3 3&#39;]</code>
+)          –
+          <div class="doc-md-description">
+            <p>The orthonormal basis, as its stacked U, V, and W axes.</p>
+          </div>
+        </li>
+    </ul>
+
+
 <details class="note" open>
   <summary>Notes</summary>
   <p>The LCS is a 3D orthonormal basis formed by unit vectors U, V, and W.
 The orthonormal basis is constructed using the following convention:</p>
 <ul>
-<li>The W axis is the polygon normal.</li>
-<li>The U axis is the unit vector of the coordinate difference of the line end points.</li>
-<li>The V axis is the cross product of U and the global Z axis. If the V axis is
-    parallel to Z, then V becomes the cross product of U and the global Y axis.</li>
+<li>The W axis is the unitized polygon normal.</li>
+<li>The V axis is the cross product of W and the global X axis. If W is
+  parallel to X, then V becomes the cross product of W and the global Y axis.</li>
+<li>The U axis is the cross product of W and V, sign-aligned so it points
+  away from the reference axis used for V.</li>
 </ul>
 </details>
 

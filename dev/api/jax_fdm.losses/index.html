@@ -865,6 +865,23 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label=" SquaredError">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#jax_fdm.losses.SquaredError.error" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;error
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
         
           <li class="md-nav__item">
@@ -1717,6 +1734,23 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label=" SquaredError">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#jax_fdm.losses.SquaredError.error" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;error
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
         
           <li class="md-nav__item">
@@ -2033,7 +2067,33 @@ and the <a href="../jax_fdm.goals/">goals</a> into the objective that an
 
 
 
-        <p>A function composed of error and regularization terms.</p>
+        <p>A scalar objective summing error and regularization terms.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>args</code></b>
+              (<code><a class="autorefs autorefs-internal" title="            Error (jax_fdm.losses.Error)" href="#jax_fdm.losses.Error">Error</a> | <a class="autorefs autorefs-internal" title="            Regularizer (jax_fdm.losses.Regularizer)" href="#jax_fdm.losses.Regularizer">Regularizer</a></code>, default:
+                  <code>()</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>The error and regularization terms to sum; they are sorted into the two
+groups by type.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>name</code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a> | None</code>, default:
+                  <code>None</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>The name of the loss. If None, defaults to the class name.</p>
+          </div>
+        </li>
+    </ul>
 
 
 
@@ -2143,7 +2203,50 @@ and the <a href="../jax_fdm.goals/">goals</a> into the objective that an
 
     <div class="doc doc-contents ">
 
-        <p>Compute the scalar output of the loss function.</p>
+        <p>Evaluate the loss by solving for equilibrium and summing all terms.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>params</code></b>
+              (<code><a class="autorefs autorefs-internal" title="            EquilibriumParametersState (jax_fdm.equilibrium.EquilibriumParametersState)" href="../jax_fdm.equilibrium/#jax_fdm.equilibrium.states.EquilibriumParametersState">EquilibriumParametersState</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>The parameters defining the equilibrium problem.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>model</code></b>
+              (<code><a class="autorefs autorefs-internal" title="            EquilibriumModel (jax_fdm.equilibrium.EquilibriumModel)" href="../jax_fdm.equilibrium/#jax_fdm.equilibrium.models.EquilibriumModel">EquilibriumModel</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>The equilibrium model that computes the equilibrium state.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>structure</code></b>
+              (<code><a class="autorefs autorefs-internal" title="            EquilibriumStructure (jax_fdm.equilibrium.EquilibriumStructure)" href="../jax_fdm.equilibrium/#jax_fdm.equilibrium.structures.structures.EquilibriumStructure">EquilibriumStructure</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>The structure that provides the connectivity.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>loss</code></b> (              <code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, &#39;&#39;]</code>
+)          –
+          <div class="doc-md-description">
+            <p>The scalar loss, the sum of the error terms evaluated on the
+equilibrium state and the regularization terms evaluated on the
+parameters.</p>
+          </div>
+        </li>
+    </ul>
 
 
     </div>
@@ -2279,6 +2382,45 @@ and the <a href="../jax_fdm.goals/">goals</a> into the objective that an
         <p>The base class for an error term in a loss function.</p>
 
 
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>goals</code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#list">list</a>[<a class="autorefs autorefs-internal" title="            Goal (jax_fdm.goals.Goal)" href="../jax_fdm.goals/#jax_fdm.goals.Goal">Goal</a>]</code>)
+          –
+          <div class="doc-md-description">
+            <p>The goals whose gap from their target this term penalizes.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>alpha</code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a></code>, default:
+                  <code>1.0</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>A scalar weight scaling the whole term in the loss.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>name</code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a> | None</code>, default:
+                  <code>None</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>The name of the error term. If None, defaults to the class name.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<details class="note" open>
+  <summary>Notes</summary>
+  <p>Goals are grouped into collections in <code>collections</code>; the term evaluates one
+error per collection and aggregates them via :meth:<code>errors</code>.</p>
+</details>
+
 
 
 
@@ -2316,7 +2458,32 @@ and the <a href="../jax_fdm.goals/">goals</a> into the objective that an
 
     <div class="doc doc-contents ">
 
-        <p>The value of the error term.</p>
+        <p>The error of a single goal collection.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>gstate</code></b>
+              (<code><a class="autorefs autorefs-internal" title="            GoalState (jax_fdm.goals.GoalState)" href="../jax_fdm.goals/#jax_fdm.goals.GoalState">GoalState</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>The evaluated goal state to measure.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>error</code></b> (              <code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, &#39;&#39;]</code>
+)          –
+          <div class="doc-md-description">
+            <p>The error for the collection.</p>
+          </div>
+        </li>
+    </ul>
 
 
     </div>
@@ -2336,7 +2503,32 @@ and the <a href="../jax_fdm.goals/">goals</a> into the objective that an
 
     <div class="doc doc-contents ">
 
-        <p>The sum of the individual error terms.</p>
+        <p>Aggregate the per-collection errors into a scalar.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>errors</code></b>
+              (<code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, <a class="autorefs autorefs-internal" title="            errors (jax_fdm.losses.errors.Error.errors)" href="#jax_fdm.losses.Error.errors">errors</a>]</code>)
+          –
+          <div class="doc-md-description">
+            <p>The error of each goal collection.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>error</code></b> (              <code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, &#39;&#39;]</code>
+)          –
+          <div class="doc-md-description">
+            <p>The aggregate error; the base term returns the sum.</p>
+          </div>
+        </li>
+    </ul>
 
 
     </div>
@@ -2356,7 +2548,32 @@ and the <a href="../jax_fdm.goals/">goals</a> into the objective that an
 
     <div class="doc doc-contents ">
 
-        <p>Return the current value of the error term.</p>
+        <p>Evaluate the error term against an equilibrium state.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>eqstate</code></b>
+              (<code><a class="autorefs autorefs-internal" title="            EquilibriumState (jax_fdm.equilibrium.EquilibriumState)" href="../jax_fdm.equilibrium/#jax_fdm.equilibrium.states.EquilibriumState">EquilibriumState</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>The equilibrium state to evaluate the goals on.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>error</code></b> (              <code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, &#39;&#39;]</code>
+)          –
+          <div class="doc-md-description">
+            <p>The aggregated error scaled by <code>alpha</code>.</p>
+          </div>
+        </li>
+    </ul>
 
 
     </div>
@@ -2431,6 +2648,12 @@ and the <a href="../jax_fdm.goals/">goals</a> into the objective that an
 <p>You lose when you get too much of something.</p>
 
 
+<details class="note" open>
+  <summary>Notes</summary>
+  <p>Penalizes the magnitude of the predicted quantity directly rather than its gap
+from a target, useful for minimizing quantities such as load path.</p>
+</details>
+
 
 
 
@@ -2468,7 +2691,32 @@ and the <a href="../jax_fdm.goals/">goals</a> into the objective that an
 
     <div class="doc doc-contents ">
 
-        <p>The value of the prediction error.</p>
+        <p>The weighted sum of the predictions in a collection.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>gstate</code></b>
+              (<code><a class="autorefs autorefs-internal" title="            GoalState (jax_fdm.goals.GoalState)" href="../jax_fdm.goals/#jax_fdm.goals.GoalState">GoalState</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>The evaluated goal state to measure.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>error</code></b> (              <code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, &#39;&#39;]</code>
+)          –
+          <div class="doc-md-description">
+            <p>The weighted sum of the predictions.</p>
+          </div>
+        </li>
+    </ul>
 
 
     </div>
@@ -2536,7 +2784,32 @@ and the <a href="../jax_fdm.goals/">goals</a> into the objective that an
 
     <div class="doc doc-contents ">
 
-        <p>The mean of the individual prediction error terms.</p>
+        <p>The mean of the per-collection prediction errors.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>errors</code></b>
+              (<code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, <a class="autorefs autorefs-internal" title="            errors (jax_fdm.losses.errors.MeanPredictionError.errors)" href="#jax_fdm.losses.MeanPredictionError.errors">errors</a>]</code>)
+          –
+          <div class="doc-md-description">
+            <p>The error of each goal collection.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>error</code></b> (              <code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, &#39;&#39;]</code>
+)          –
+          <div class="doc-md-description">
+            <p>The summed error divided by the number of goals.</p>
+          </div>
+        </li>
+    </ul>
 
 
     </div>
@@ -2568,7 +2841,8 @@ and the <a href="../jax_fdm.goals/">goals</a> into the objective that an
 
 
         <p>The canonical squared error.</p>
-<p>It measures the L2 distance between the current and the target value of a goal.</p>
+<p>It measures the weighted squared L2 gap between each goal's prediction
+and target.</p>
 
 
 
@@ -2590,6 +2864,55 @@ and the <a href="../jax_fdm.goals/">goals</a> into the objective that an
 
 
 
+
+<div class="doc doc-object doc-function">
+
+
+<h5 id="jax_fdm.losses.SquaredError.error" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <span class="doc doc-object-name doc-function-name">error</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-staticmethod"><code>staticmethod</code></small>
+  </span>
+
+<a href="#jax_fdm.losses.SquaredError.error" class="headerlink" title="Permanent link">¤</a></h5>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">error</span><span class="p">(</span><span class="n">gstate</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="            GoalState (jax_fdm.goals.GoalState)" href="../jax_fdm.goals/#jax_fdm.goals.GoalState">GoalState</a></span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><span title="jaxtyping.Float">Float</span></span><span class="p">[</span><span class="n"><span title="jaxtyping.Array">Array</span></span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">]</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>The weighted sum of squared prediction-target gaps in a collection.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>gstate</code></b>
+              (<code><a class="autorefs autorefs-internal" title="            GoalState (jax_fdm.goals.GoalState)" href="../jax_fdm.goals/#jax_fdm.goals.GoalState">GoalState</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>The evaluated goal state to measure.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>error</code></b> (              <code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, &#39;&#39;]</code>
+)          –
+          <div class="doc-md-description">
+            <p>The weighted squared error.</p>
+          </div>
+        </li>
+    </ul>
+
+
+    </div>
+
+</div>
 
 
 
@@ -2652,7 +2975,32 @@ and the <a href="../jax_fdm.goals/">goals</a> into the objective that an
 
     <div class="doc doc-contents ">
 
-        <p>The mean of the individual error terms.</p>
+        <p>The mean of the per-collection squared errors.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>errors</code></b>
+              (<code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, <a class="autorefs autorefs-internal" title="            errors (jax_fdm.losses.errors.MeanSquaredError.errors)" href="#jax_fdm.losses.MeanSquaredError.errors">errors</a>]</code>)
+          –
+          <div class="doc-md-description">
+            <p>The error of each goal collection.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>error</code></b> (              <code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, &#39;&#39;]</code>
+)          –
+          <div class="doc-md-description">
+            <p>The summed error divided by the number of goals.</p>
+          </div>
+        </li>
+    </ul>
 
 
     </div>
@@ -2683,7 +3031,7 @@ and the <a href="../jax_fdm.goals/">goals</a> into the objective that an
 
 
 
-        <p>The root mean squared error.</p>
+        <p>The square root of the mean squared error.</p>
 
 
 
@@ -2719,7 +3067,32 @@ and the <a href="../jax_fdm.goals/">goals</a> into the objective that an
 
     <div class="doc doc-contents ">
 
-        <p>The root of the mean of the individual error terms.</p>
+        <p>The root of the mean squared error.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>errors</code></b>
+              (<code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, <a class="autorefs autorefs-internal" title="            errors (jax_fdm.losses.errors.RootMeanSquaredError.errors)" href="#jax_fdm.losses.RootMeanSquaredError.errors">errors</a>]</code>)
+          –
+          <div class="doc-md-description">
+            <p>The error of each goal collection.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>error</code></b> (              <code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, &#39;&#39;]</code>
+)          –
+          <div class="doc-md-description">
+            <p>The square root of the mean squared error.</p>
+          </div>
+        </li>
+    </ul>
 
 
     </div>
@@ -2751,8 +3124,8 @@ and the <a href="../jax_fdm.goals/">goals</a> into the objective that an
 
 
         <p>The canonical absolute error.</p>
-<p>It measures the absolute difference between the current and the target value
-of a goal.</p>
+<p>It measures the weighted absolute gap between each goal's prediction
+and target.</p>
 
 
 
@@ -2792,7 +3165,32 @@ of a goal.</p>
 
     <div class="doc doc-contents ">
 
-        <p>The value of the absolute error.</p>
+        <p>The weighted sum of absolute prediction-target gaps in a collection.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>gstate</code></b>
+              (<code><a class="autorefs autorefs-internal" title="            GoalState (jax_fdm.goals.GoalState)" href="../jax_fdm.goals/#jax_fdm.goals.GoalState">GoalState</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>The evaluated goal state to measure.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>error</code></b> (              <code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, &#39;&#39;]</code>
+)          –
+          <div class="doc-md-description">
+            <p>The weighted absolute error.</p>
+          </div>
+        </li>
+    </ul>
 
 
     </div>
@@ -2859,7 +3257,32 @@ of a goal.</p>
 
     <div class="doc doc-contents ">
 
-        <p>The mean of the individual absolute error terms.</p>
+        <p>The mean of the per-collection absolute errors.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>errors</code></b>
+              (<code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, <a class="autorefs autorefs-internal" title="            errors (jax_fdm.losses.errors.MeanAbsoluteError.errors)" href="#jax_fdm.losses.MeanAbsoluteError.errors">errors</a>]</code>)
+          –
+          <div class="doc-md-description">
+            <p>The error of each goal collection.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>error</code></b> (              <code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, &#39;&#39;]</code>
+)          –
+          <div class="doc-md-description">
+            <p>The summed error divided by the number of goals.</p>
+          </div>
+        </li>
+    </ul>
 
 
     </div>
@@ -2890,10 +3313,15 @@ of a goal.</p>
 
 
 
-        <p>The log error for constraints with a target maximum value that should not be
-exceeded.</p>
-<p>Helpful to deal with soft barrier constraints with an upper bound.</p>
+        <p>A soft one-sided barrier penalizing goal predictions above their target.</p>
 
+
+<details class="note" open>
+  <summary>Notes</summary>
+  <p>Only positive overshoots past the target are penalized, through <code>log1p</code> of
+the violation, so the error is zero while the prediction stays at or below the
+target. Useful for soft upper-bound constraints.</p>
+</details>
 
 
 
@@ -2932,7 +3360,32 @@ exceeded.</p>
 
     <div class="doc doc-contents ">
 
-        <p>The log error.</p>
+        <p>The weighted log-barrier penalty on target overshoot in a collection.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>gstate</code></b>
+              (<code><a class="autorefs autorefs-internal" title="            GoalState (jax_fdm.goals.GoalState)" href="../jax_fdm.goals/#jax_fdm.goals.GoalState">GoalState</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>The evaluated goal state to measure.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>error</code></b> (              <code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, &#39;&#39;]</code>
+)          –
+          <div class="doc-md-description">
+            <p>The weighted <code>log1p</code> penalty on the positive prediction-target gap.</p>
+          </div>
+        </li>
+    </ul>
 
 
     </div>
@@ -3005,7 +3458,30 @@ exceeded.</p>
 
 
 
-        <p>A regularizer is a function that penalizes the parameters of a model.</p>
+        <p>The base class for a loss term that penalizes the model parameters.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>alpha</code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>A scalar weight scaling the regularization term in the loss.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>name</code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a> | None</code>, default:
+                  <code>None</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>The name of the regularizer. If None, defaults to the class name.</p>
+          </div>
+        </li>
+    </ul>
 
 
 
@@ -3041,7 +3517,32 @@ exceeded.</p>
 
     <div class="doc doc-contents ">
 
-        <p>The regularization value.</p>
+        <p>Evaluate the regularization penalty on the parameters.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>params</code></b>
+              (<code><a class="autorefs autorefs-internal" title="            EquilibriumParametersState (jax_fdm.equilibrium.EquilibriumParametersState)" href="../jax_fdm.equilibrium/#jax_fdm.equilibrium.states.EquilibriumParametersState">EquilibriumParametersState</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>The parameter state to penalize.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>penalty</code></b> (              <code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, &#39;&#39;]</code>
+)          –
+          <div class="doc-md-description">
+            <p>The scalar regularization penalty.</p>
+          </div>
+        </li>
+    </ul>
 
 
     </div>
@@ -3072,8 +3573,14 @@ exceeded.</p>
 
 
 
-        <p>A regularizer that penalizes the L2 norm of the force densities.</p>
+        <p>A penalty on the squared force densities.</p>
 
+
+<details class="note" open>
+  <summary>Notes</summary>
+  <p>Computes <code>alpha</code> times the sum of squared force densities, the squared L2
+norm rather than the norm itself.</p>
+</details>
 
 
 
@@ -3108,7 +3615,32 @@ exceeded.</p>
 
     <div class="doc doc-contents ">
 
-        <p>The regularization value.</p>
+        <p>The weighted sum of squared force densities.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>params</code></b>
+              (<code><a class="autorefs autorefs-internal" title="            EquilibriumParametersState (jax_fdm.equilibrium.EquilibriumParametersState)" href="../jax_fdm.equilibrium/#jax_fdm.equilibrium.states.EquilibriumParametersState">EquilibriumParametersState</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>The parameter state whose force densities are penalized.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>penalty</code></b> (              <code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, &#39;&#39;]</code>
+)          –
+          <div class="doc-md-description">
+            <p><code>alpha</code> times the sum of squared force densities.</p>
+          </div>
+        </li>
+    </ul>
 
 
     </div>
