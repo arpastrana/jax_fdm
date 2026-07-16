@@ -13,18 +13,22 @@ from jax_fdm.equilibrium import EquilibriumStructure
 
 class Parameter:
     """
-    The base class for all parameters.
+    The base class for all optimization parameters.
 
     Parameters
     ----------
-    key : `int` | `Tuple[int]`
+    key :
         The key of the element in the datastructure being parametrized.
-    bound_low : `float`, optional
-        The lower bound of this parameter for optimization.
-        Defaults to `-inf`.
-    bound_up : `float`, optional
-        The upper bound of this parameter for optimization.
-        Defaults to `+inf`.
+    bound_low :
+        The lower bound for optimization. If None, unbounded below.
+    bound_up :
+        The upper bound for optimization. If None, unbounded above.
+
+    Notes
+    -----
+    Concrete subclasses set ``attr_name`` to the datastructure attribute they
+    parametrize and implement :meth:`index` and :meth:`value` for their element type.
+    Missing bounds normalize to negative or positive infinity rather than None.
     """
 
     attr_name: str | None = (
@@ -83,7 +87,19 @@ class Parameter:
         structure: EquilibriumStructure,
     ) -> int:
         """
-        Get the index of the parameter key in the structure of a model.
+        Resolve the parameter's key to an index in an equilibrium structure.
+
+        Parameters
+        ----------
+        model :
+            The equilibrium model.
+        structure :
+            The structure whose element ordering defines the index.
+
+        Returns
+        -------
+        index :
+            The index of the parametrized element.
         """
         raise NotImplementedError
 
@@ -93,7 +109,19 @@ class Parameter:
         datastructure: FDNetwork | FDMesh,
     ) -> float:
         """
-        Get the current value of a parameter from the structure of a model.
+        Read the parameter's current value from a datastructure.
+
+        Parameters
+        ----------
+        model :
+            The equilibrium model.
+        datastructure :
+            The network or mesh to read the parametrized attribute from.
+
+        Returns
+        -------
+        value :
+            The current value of the parametrized attribute.
         """
         raise NotImplementedError
 
@@ -105,20 +133,20 @@ class Parameter:
 
 class NodeParameter(Parameter):
     """
-    A node parameter.
+    A parameter on a single network node.
     """
 
     key: int  # a non-group node key is always a bare int at runtime
 
     def index(self, model: EquilibriumModel, structure: EquilibriumStructure) -> int:
         """
-        Get the index of the key of the node parameter in the structure of a model.
+        The index of the parametrized node in the structure.
         """
         return structure.node_index[self.key]
 
     def value(self, model: EquilibriumModel, datastructure: FDNetwork) -> float:
         """
-        Get the current value of the node parameter.
+        The current value of the parametrized node attribute.
         """
         # compas accessors are untyped but the attribute always holds a float here
         return datastructure.node_attribute(self.key, name=self.attr_name)  # pyright: ignore[reportReturnType]
@@ -126,7 +154,7 @@ class NodeParameter(Parameter):
 
 class VertexParameter(Parameter):
     """
-    A vertex parameter.
+    A parameter on a single mesh vertex.
     """
 
     key: int  # a non-group vertex key is always a bare int at runtime
@@ -137,13 +165,13 @@ class VertexParameter(Parameter):
         structure: EquilibriumMeshStructure,
     ) -> int:
         """
-        Get the index of the key of the node parameter in the structure of a model.
+        The index of the parametrized vertex in the structure.
         """
         return structure.vertex_index[self.key]
 
     def value(self, model: EquilibriumModel, datastructure: FDMesh) -> float:
         """
-        Get the current value of the node parameter.
+        The current value of the parametrized vertex attribute.
         """
         # compas accessors are untyped but the attribute always holds a float here
         return datastructure.vertex_attribute(self.key, name=self.attr_name)  # pyright: ignore[reportReturnType]
@@ -151,7 +179,7 @@ class VertexParameter(Parameter):
 
 class EdgeParameter(Parameter):
     """
-    An edge parameter.
+    A parameter on a single network edge.
     """
 
     # a non-group edge key is always a bare (u, v) tuple at runtime
@@ -159,7 +187,7 @@ class EdgeParameter(Parameter):
 
     def index(self, model: EquilibriumModel, structure: EquilibriumStructure) -> int:
         """
-        Get the index of the key of the edge parameter in the structure of a model.
+        The index of the parametrized edge in the structure.
         """
         return structure.edge_index[self.key]
 
@@ -169,7 +197,7 @@ class EdgeParameter(Parameter):
         datastructure: FDNetwork | FDMesh,
     ) -> float:
         """
-        Get the current value of the edge parameter.
+        The current value of the parametrized edge attribute.
         """
         # compas accessors are untyped but the attribute always holds a float here
         return datastructure.edge_attribute(self.key, name=self.attr_name)  # pyright: ignore[reportReturnType]
@@ -182,7 +210,12 @@ class EdgeParameter(Parameter):
 
 class ParameterGroup(Parameter):
     """
-    A parent class for groups of parameters.
+    The base class for a single parameter shared across a group of elements.
+
+    Notes
+    -----
+    A group parameter drives one value that is applied to, and read as the average
+    over, all its elements. Its key is always a sequence of element keys.
     """
 
     # a group's key is always a sequence of keys, never a bare int
@@ -196,6 +229,15 @@ class ParameterGroup(Parameter):
     ) -> None:
         """
         Initialize the parameter group.
+
+        Parameters
+        ----------
+        key :
+            The keys of the elements sharing the parameter.
+        bound_low :
+            The lower bound for optimization. If None, unbounded below.
+        bound_up :
+            The upper bound for optimization. If None, unbounded above.
         """
         super().__init__(key, bound_low, bound_up)
         assert len(self.key) > 0
@@ -206,15 +248,26 @@ class ParameterGroup(Parameter):
         structure: EquilibriumStructure,
     ) -> list[int]:
         """
-        Get the indices of the keys of the parametrized group from the structure of a
-        model.
+        Resolve the group's keys to indices in an equilibrium structure.
+
+        Parameters
+        ----------
+        model :
+            The equilibrium model.
+        structure :
+            The structure whose element ordering defines the indices.
+
+        Returns
+        -------
+        indices :
+            The indices of the parametrized elements.
         """
         raise NotImplementedError
 
 
 class NodeGroupParameter(ParameterGroup):
     """
-    A single parameter applied to a group of nodes.
+    A single parameter shared across a group of network nodes.
     """
 
     def index(
@@ -223,14 +276,13 @@ class NodeGroupParameter(ParameterGroup):
         structure: EquilibriumStructure,
     ) -> list[int]:
         """
-        Get the indices of the keys of the parametrized nodes from the structure of a
-        model.
+        The indices of the parametrized nodes in the structure.
         """
         return [structure.node_index[key] for key in self.key]
 
     def value(self, model: EquilibriumModel, datastructure: FDNetwork) -> float:
         """
-        Get the current average value of the parameter of the grouped nodes.
+        The current mean value of the parametrized attribute over the grouped nodes.
         """
         values = [
             datastructure.node_attribute(key, name=self.attr_name) for key in self.key
@@ -241,7 +293,7 @@ class NodeGroupParameter(ParameterGroup):
 
 class VertexGroupParameter(ParameterGroup):
     """
-    A single parameter applied to a group of nodes.
+    A single parameter shared across a group of mesh vertices.
     """
 
     def index(
@@ -250,13 +302,13 @@ class VertexGroupParameter(ParameterGroup):
         structure: EquilibriumMeshStructure,
     ) -> list[int]:
         """
-        Get the indices of the keys of the parametrized vertices of a structure.
+        The indices of the parametrized vertices in the structure.
         """
         return [structure.vertex_index[key] for key in self.key]
 
     def value(self, model: EquilibriumModel, datastructure: FDMesh) -> float:
         """
-        Get the current average value of the parameter of the grouped vertices.
+        The current mean value of the parametrized attribute over the grouped vertices.
         """
         values = [
             datastructure.vertex_attribute(key, name=self.attr_name) for key in self.key
@@ -267,7 +319,7 @@ class VertexGroupParameter(ParameterGroup):
 
 class EdgeGroupParameter(ParameterGroup):
     """
-    A single parameter applied to a group of edges.
+    A single parameter shared across a group of network edges.
     """
 
     # an edge group key is always a sequence of (u, v) tuples at runtime
@@ -279,8 +331,7 @@ class EdgeGroupParameter(ParameterGroup):
         structure: EquilibriumStructure,
     ) -> list[int]:
         """
-        Get the indices of the keys of the parametrized edges from the structure of a
-        model.
+        The indices of the parametrized edges in the structure.
         """
         return [structure.edge_index[key] for key in self.key]
 
@@ -290,7 +341,7 @@ class EdgeGroupParameter(ParameterGroup):
         datastructure: FDNetwork | FDMesh,
     ) -> float:
         """
-        Get the current average value of the parameter of the grouped edges.
+        The current mean value of the parametrized attribute over the grouped edges.
         """
         values = [
             datastructure.edge_attribute(key, name=self.attr_name) for key in self.key
@@ -314,7 +365,8 @@ class EdgeForceDensityParameter(EdgeParameter):
 
 class EdgeGroupForceDensityParameter(EdgeGroupParameter, EdgeForceDensityParameter):
     """
-    A single force density value to rule them all.
+    A single force density value to rule them all: one value shared across a
+    group of edges.
     """
 
 
@@ -330,7 +382,7 @@ class NodeSupportParameter(NodeParameter):
 
     def index(self, model: EquilibriumModel, structure: EquilibriumStructure) -> int:
         """
-        Get the index of the key of the node support in the structure of a model.
+        The index of the parametrized node among the structure's supports.
         """
         return structure.support_index[self.key]
 
@@ -375,8 +427,7 @@ class NodeGroupSupportParameter(NodeGroupParameter):
         structure: EquilibriumStructure,
     ) -> list[int]:
         """
-        Get the indices of the keys of the parametrized nodes from the structure of a
-        model.
+        The indices of the parametrized nodes among the structure's supports.
         """
         return [structure.support_index[key] for key in self.key]
 
@@ -472,7 +523,7 @@ class VertexSupportParameter(VertexParameter):
 
     def index(self, model: EquilibriumModel, structure: EquilibriumStructure) -> int:
         """
-        Get the index of the key of the vertex support in the structure of a model.
+        The index of the parametrized vertex among the structure's supports.
         """
         return structure.support_index[self.key]
 
@@ -511,8 +562,7 @@ class VertexGroupSupportParameter(VertexGroupParameter):
         structure: EquilibriumStructure,
     ) -> list[int]:
         """
-        Get the indices of the keys of the parametrized vertices of the structure of a
-        model.
+        The indices of the parametrized vertices among the structure's supports.
         """
         return [structure.support_index[key] for key in self.key]
 
