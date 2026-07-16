@@ -5,7 +5,7 @@ from jax_fdm.goals import Goal
 
 class NodeGoal(Goal):
     """
-    Base class for all goals that pertain to the node of a network.
+    The base class for goals defined on the nodes of a network.
     """
 
     def index_from_model(
@@ -14,6 +14,18 @@ class NodeGoal(Goal):
         structure: EquilibriumStructure,
     ) -> int | tuple[int, ...]:
         """
-        The index of the node in a structure.
+        Resolve the goal's node key to an index in a structure.
+
+        Parameters
+        ----------
+        model :
+            The equilibrium model.
+        structure :
+            The structure whose node ordering defines the index.
+
+        Returns
+        -------
+        index :
+            The index, or tuple of indices, of the goal's node(s).
         """
         return self._index_from_key(structure.node_index)

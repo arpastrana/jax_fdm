@@ -14,7 +14,12 @@ from jax_fdm.goals.mesh import MeshGoal
 
 class MeshAreaGoal(ScalarGoal, MeshGoal):
     """
-    Maximize the negative area of a mesh.
+    Drive the total surface area of a mesh toward a target.
+
+    Notes
+    -----
+    The prediction is the negated total area, so a target of zero paired with a
+    minimizing loss maximizes the mesh area.
     """
 
     def __init__(
@@ -32,7 +37,14 @@ class MeshAreaGoal(ScalarGoal, MeshGoal):
         structure: EquilibriumMeshStructure,
     ) -> None:
         """
-        Initialize the goal with information of a model and a structure.
+        Bind the goal to a mesh, caching its face indices.
+
+        Parameters
+        ----------
+        model :
+            The equilibrium model.
+        structure :
+            The mesh structure whose face indices are cached.
         """
         super().init(model, structure)
         self.faces = structure.faces_indexed
@@ -43,7 +55,19 @@ class MeshAreaGoal(ScalarGoal, MeshGoal):
         index: Int[Array, ""],
     ) -> Float[Array, "1"]:
         """
-        The current load path of the network.
+        The negated total surface area of the mesh.
+
+        Parameters
+        ----------
+        eq_state :
+            The equilibrium state to read vertex coordinates from.
+        index :
+            The sentinel index, unused.
+
+        Returns
+        -------
+        prediction :
+            The negated sum of the face areas.
         """
 
         def face_xyz(
@@ -87,7 +111,11 @@ class MeshAreaGoal(ScalarGoal, MeshGoal):
 
 class MeshFacesAreaEqualizeGoal(ScalarGoal, MeshGoal):
     """
-    Maximize the negative area of a mesh.
+    Equalize the areas of the faces of a mesh.
+
+    Notes
+    -----
+    The goal drives the mean-normalized variance of the face areas to zero.
     """
 
     def __init__(
@@ -105,7 +133,14 @@ class MeshFacesAreaEqualizeGoal(ScalarGoal, MeshGoal):
         structure: EquilibriumMeshStructure,
     ) -> None:
         """
-        Initialize the goal with information of a model and a structure.
+        Bind the goal to a mesh, caching its face indices.
+
+        Parameters
+        ----------
+        model :
+            The equilibrium model.
+        structure :
+            The mesh structure whose face indices are cached.
         """
         super().init(model, structure)
         self.faces = structure.faces_indexed
@@ -116,7 +151,19 @@ class MeshFacesAreaEqualizeGoal(ScalarGoal, MeshGoal):
         index: Int[Array, ""],
     ) -> Float[Array, "1"]:
         """
-        The current load path of the network.
+        The variance of the face areas, normalized by their mean.
+
+        Parameters
+        ----------
+        eq_state :
+            The equilibrium state to read vertex coordinates from.
+        index :
+            The sentinel index, unused.
+
+        Returns
+        -------
+        prediction :
+            The mean-normalized variance of the face areas, zero when all equal.
         """
 
         def face_xyz(

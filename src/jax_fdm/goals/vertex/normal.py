@@ -17,8 +17,18 @@ from jax_fdm.goals.vertex import VertexGoal
 
 class VertexNormalAngleGoal(ScalarGoal, VertexGoal):
     """
-    Reach a target value for the angle formed by the vertex normal and a reference
-    vector.
+    Drive the angle between a vertex normal and a reference vector toward a target.
+
+    Parameters
+    ----------
+    key :
+        The key or keys of the vertex(es) the goal acts on.
+    vector :
+        The reference vector each vertex normal's angle is measured against.
+    target :
+        The target angle, in radians.
+    weight :
+        The relative importance of the goal in the loss.
 
     Notes
     -----
@@ -54,7 +64,7 @@ class VertexNormalAngleGoal(ScalarGoal, VertexGoal):
     @property
     def vector(self) -> Float[Array, "vectors 3"]:
         """
-        The vector to take the angle with.
+        The reference vector each vertex normal's angle is measured against.
         """
         return self._vector
 
@@ -64,7 +74,12 @@ class VertexNormalAngleGoal(ScalarGoal, VertexGoal):
 
     def vectors(self) -> Float[Array, "vectors 3"]:
         """
-        Create a matrix of vectors.
+        Scatter the reference vectors into a per-index matrix.
+
+        Returns
+        -------
+        vectors :
+            A matrix holding each vertex's reference vector at its structure index.
         """
         matrix = np.zeros((max(self.index) + 1, 3))
         for vec, idx in zip(self.vector, self.index):
@@ -77,7 +92,14 @@ class VertexNormalAngleGoal(ScalarGoal, VertexGoal):
         structure: EquilibriumMeshStructure,
     ) -> None:
         """
-        Initialize the goal with information from an equilibrium model.
+        Bind the goal to a mesh, caching face topology and reference vectors.
+
+        Parameters
+        ----------
+        model :
+            The equilibrium model.
+        structure :
+            The mesh structure providing face indices and face-vertex connectivity.
         """
         super().init(model, structure)
         self.vector = self.vectors()
@@ -86,7 +108,18 @@ class VertexNormalAngleGoal(ScalarGoal, VertexGoal):
 
     def face_normals(self, xyz: Float[Array, "nodes 3"]) -> Float[Array, "faces 3"]:
         """
-        Compute the (unnormalized) normal of every face in the mesh.
+        Compute the unnormalized normal of every face in the mesh.
+
+        Parameters
+        ----------
+        xyz :
+            The coordinates of the mesh vertices.
+
+        Returns
+        -------
+        normals :
+            The unnormalized normal of each face, its magnitude proportional to
+            face area.
         """
 
         def face_normal(
@@ -112,7 +145,24 @@ class VertexNormalAngleGoal(ScalarGoal, VertexGoal):
         index: Int[Array, ""],
     ) -> Float[Array, "3"]:
         """
-        Get the unitized normal vector at a vertex.
+        The unitized normal at a vertex, averaged over its incident faces.
+
+        Parameters
+        ----------
+        eq_state :
+            The equilibrium state to read the vertex coordinates from.
+        index :
+            The index of the vertex.
+
+        Returns
+        -------
+        normal :
+            The unit normal at the vertex.
+
+        Notes
+        -----
+        The incident faces are selected by masking the face-vertex connectivity, so
+        area-weighted face normals sum into the vertex normal before normalizing.
         """
         face_normals = self.face_normals(eq_state.xyz)
         mask = jnp.where(self.connectivity_faces_vertices[:, index] > 0.0, 1.0, 0.0)
@@ -126,7 +176,20 @@ class VertexNormalAngleGoal(ScalarGoal, VertexGoal):
         index: Int[Array, ""],
     ) -> Float[Array, "1"]:
         """
-        Returns the angle between the vertex normal and the reference vector.
+        The angle between the vertex normal and the reference vector.
+
+        Parameters
+        ----------
+        eq_state :
+            The equilibrium state to read the vertex coordinates from.
+        index :
+            The index of the vertex.
+
+        Returns
+        -------
+        prediction :
+            The signed angle between the vertex normal and its reference vector, in
+            radians.
         """
         normal = self.vertex_normal(eq_state, index)
 

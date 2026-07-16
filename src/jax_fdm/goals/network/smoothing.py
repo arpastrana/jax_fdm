@@ -31,7 +31,14 @@ class NetworkSmoothGoal(ScalarGoal, NetworkGoal):
 
     def init(self, model: EquilibriumModel, structure: EquilibriumStructure) -> None:
         """
-        Initialize the constraint with information from an equilibrium model.
+        Bind the goal to a structure, caching its adjacency matrix.
+
+        Parameters
+        ----------
+        model :
+            The equilibrium model.
+        structure :
+            The structure whose adjacency matrix defines node neighborhoods.
         """
         super().init(model, structure)
         self.adjacency = structure.adjacency
@@ -42,7 +49,20 @@ class NetworkSmoothGoal(ScalarGoal, NetworkGoal):
         index: Int[Array, ""],
     ) -> Float[Array, "1"]:
         """
-        The current fairness value of the node.
+        The mean fairness energy over the network's nodes.
+
+        Parameters
+        ----------
+        eq_state :
+            The equilibrium state to read the node coordinates from.
+        index :
+            The sentinel index, unused.
+
+        Returns
+        -------
+        prediction :
+            The mean over nodes of the squared distance from each node to its
+            neighbors' centroid.
         """
         xyz = eq_state.xyz
         adjacency = self.adjacency
@@ -60,7 +80,21 @@ def node_nbrs_fairness_ngon(
     adjacency_node: Float[Array, "nodes"],
 ) -> Float[Array, ""]:
     """
-    Compute the fairness of an n-gon node neighborhood.
+    Compute the fairness energy of one node's neighborhood.
+
+    Parameters
+    ----------
+    xyz_all :
+        The coordinates of all nodes.
+    xyz_node :
+        The coordinates of the node whose fairness is measured.
+    adjacency_node :
+        The row of the adjacency matrix selecting the node's neighbors.
+
+    Returns
+    -------
+    fairness :
+        The squared distance from the node to its neighbors' centroid.
     """
     num_nbrs = jnp.sum(adjacency_node, axis=-1)
     centroid = (adjacency_node @ xyz_all) / num_nbrs

@@ -10,7 +10,7 @@ from jax_fdm.goals.edge import EdgeGoal
 
 class EdgeLoadPathGoal(ScalarGoal, EdgeGoal):
     """
-    Make an edge of a network to reach a target force.
+    Drive an edge's load path toward a target value.
     """
 
     def prediction(
@@ -19,6 +19,18 @@ class EdgeLoadPathGoal(ScalarGoal, EdgeGoal):
         index: Int[Array, ""],
     ) -> Float[Array, "1"]:
         """
-        The predicted edge force.
+        The load path of the edge.
+
+        Parameters
+        ----------
+        eq_state :
+            The equilibrium state to read the force and length from.
+        index :
+            The index of the edge.
+
+        Returns
+        -------
+        prediction :
+            The edge load path, the product of absolute force and length.
         """
         return jnp.abs(eq_state.forces[index]) * eq_state.lengths[index]

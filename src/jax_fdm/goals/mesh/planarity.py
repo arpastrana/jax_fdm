@@ -42,7 +42,14 @@ class MeshPlanarityGoal(ScalarGoal, MeshGoal):
         structure: EquilibriumMeshStructure,
     ) -> None:
         """
-        Initialize the goal with information of a model and a structure.
+        Bind the goal to a mesh, caching its face indices.
+
+        Parameters
+        ----------
+        model :
+            The equilibrium model.
+        structure :
+            The mesh structure whose face indices are cached.
         """
         super().init(model, structure)
         self.faces_indexed = structure.faces_indexed
@@ -54,6 +61,18 @@ class MeshPlanarityGoal(ScalarGoal, MeshGoal):
     ) -> Float[Array, "1"]:
         """
         The average planarity of the mesh faces.
+
+        Parameters
+        ----------
+        eq_state :
+            The equilibrium state to read vertex coordinates from.
+        index :
+            The sentinel index, unused.
+
+        Returns
+        -------
+        prediction :
+            The mean face planarity, zero when every face is planar.
         """
         planarities = faces_planarity(self.faces_indexed, eq_state.xyz)
 
@@ -70,13 +89,24 @@ def face_xyz(
     xyz: Float[Array, "nodes 3"],
 ) -> Float[Array, "vertices 3"]:
     """
-    Get the xyz coordinates of a face from the xyz vertices array.
+    Gather the coordinates of a face's vertices, padding safely for gradients.
+
+    Parameters
+    ----------
+    face :
+        The vertex indices of the face, with ``-1`` padding for absent vertices.
+    xyz :
+        The coordinates of all vertices.
+
+    Returns
+    -------
+    xyz_face :
+        The coordinates of the face's vertices.
 
     Notes
     -----
-    This function replaces -1 entries in the vertex indices with the index of the
-    first vertex of the face. The negative indices are used for padding to end
-    up with a uniform face array, otherwise, JAX complains.
+    Padding indices (``-1``) are replaced by the first vertex, so the rectangular
+    face array indexes valid rows without producing nan gradients.
     """
     face = jnp.ravel(face)
     xyz_face = xyz[face, :]
@@ -90,11 +120,19 @@ def face_planarity(
     xyz: Float[Array, "nodes 3"],
 ) -> Float[Array, ""]:
     """
-    Calculate face planarity according to the number of vertices in the face.
+    Compute a face's planarity, dispatching on its vertex count.
 
-    Notes
-    -----
-    A triangle face has a planarity of 0.0 by construction.
+    Parameters
+    ----------
+    face :
+        The vertex indices of the face.
+    xyz :
+        The coordinates of all vertices.
+
+    Returns
+    -------
+    planarity :
+        The face planarity, zero for a triangle by construction.
     """
     valid_face_indices = jnp.where(face >= 0, 1.0, 0.0)
     sum_indices = jnp.sum(valid_face_indices)
@@ -114,6 +152,18 @@ def faces_planarity(
     xyz: Float[Array, "nodes 3"],
 ) -> Float[Array, "faces"]:
     """
-    Compute the planarity of a set of mesh faces.
+    Compute the planarity of every face in a mesh.
+
+    Parameters
+    ----------
+    faces :
+        The vertex indices of each face.
+    xyz :
+        The coordinates of all vertices.
+
+    Returns
+    -------
+    planarities :
+        The planarity of each face.
     """
     return vmap(face_planarity, in_axes=(0, None))(faces, xyz)

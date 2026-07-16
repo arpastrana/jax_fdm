@@ -8,13 +8,13 @@ from jax_fdm.goals.node import NodePointGoal
 
 class NodePlaneGoal(NodePointGoal):
     """
-    Pulls the xyz position of a node to a target plane.
+    Pull a node onto a target plane, defined by a point and a normal.
     """
 
     @property
     def target(self) -> Float[Array, "elements 2 3"]:
         """
-        The target to achieve.
+        The origin and normal defining the target plane of each element.
         """
         return self._target
 
@@ -28,7 +28,18 @@ class NodePlaneGoal(NodePointGoal):
         prediction: Float[Array, "3"],
     ) -> Float[Array, "3"]:
         """
-        Calculate the closest point on the target plane given the current node
-        coordinates.
+        The point on the target plane closest to the node.
+
+        Parameters
+        ----------
+        target :
+            The origin and normal defining the target plane.
+        prediction :
+            The current node coordinates.
+
+        Returns
+        -------
+        goal :
+            The orthogonal projection of the node onto the plane.
         """
         return closest_point_on_plane(prediction, target)

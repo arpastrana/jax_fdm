@@ -13,7 +13,7 @@ from jax_fdm.goals.edge import EdgeGoal
 
 class EdgeForceGoal(ScalarGoal, EdgeGoal):
     """
-    Make an edge of a network to reach a target force.
+    Drive an edge toward a target internal force.
     """
 
     def prediction(
@@ -22,15 +22,31 @@ class EdgeForceGoal(ScalarGoal, EdgeGoal):
         index: Int[Array, ""],
     ) -> Float[Array, "1"]:
         """
-        The predicted edge force.
+        The current internal force in the edge.
+
+        Parameters
+        ----------
+        eq_state :
+            The equilibrium state to read the force from.
+        index :
+            The index of the edge.
+
+        Returns
+        -------
+        prediction :
+            The edge's internal force, signed positive in tension.
         """
         return eq_state.forces[index]
 
 
 class EdgesForceEqualGoal(ScalarGoal, EdgeGoal):
     """
-    Equalize the internal force in a selection of edges by minimizing
-    the normalized variance of their internal forces.
+    Equalize the internal forces of a selection of edges.
+
+    Notes
+    -----
+    Applies to a collection of edges at once, so it is not collectible. The goal
+    drives the normalized variance of the forces to zero.
     """
 
     def __init__(self, key: list[tuple[int, int]], weight: float = 1.0) -> None:
@@ -39,7 +55,14 @@ class EdgesForceEqualGoal(ScalarGoal, EdgeGoal):
 
     def init(self, model: EquilibriumModel, structure: EquilibriumStructure) -> None:
         """
-        Initialize the goal with information from an equilibrium model.
+        Bind the goal to a structure, keeping the edge indices as one collection.
+
+        Parameters
+        ----------
+        model :
+            The equilibrium model.
+        structure :
+            The structure whose edge ordering defines the indices.
         """
         self.index = np.atleast_2d(super().index_from_model(model, structure))
 
@@ -49,7 +72,19 @@ class EdgesForceEqualGoal(ScalarGoal, EdgeGoal):
         index: Int[Array, "elements"],
     ) -> Float[Array, "1"]:
         """
-        The normalized variance of the forces of the edges.
+        The variance of the edge forces, normalized by their mean magnitude.
+
+        Parameters
+        ----------
+        eq_state :
+            The equilibrium state to read the forces from.
+        index :
+            The indices of the edges.
+
+        Returns
+        -------
+        prediction :
+            The magnitude-normalized variance of the forces, zero when all equal.
         """
         forces = eq_state.forces[index]
 

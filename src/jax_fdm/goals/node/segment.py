@@ -7,7 +7,7 @@ from jax_fdm.goals.node import NodeLineGoal
 
 class NodeSegmentGoal(NodeLineGoal):
     """
-    Pulls the xyz position of a node to a target line ray.
+    Pull a node onto a target segment, defined by its two endpoints.
     """
 
     def goal(
@@ -16,6 +16,18 @@ class NodeSegmentGoal(NodeLineGoal):
         prediction: Float[Array, "3"],
     ) -> Float[Array, "3"]:
         """
-        The closes point on the target seegment.
+        The point on the target segment closest to the node.
+
+        Parameters
+        ----------
+        target :
+            The two endpoints of the target segment.
+        prediction :
+            The current node coordinates.
+
+        Returns
+        -------
+        goal :
+            The closest point on the segment, clamped to lie between the endpoints.
         """
         return closest_point_on_segment(prediction, target)

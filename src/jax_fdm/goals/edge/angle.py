@@ -14,7 +14,18 @@ from jax_fdm.goals.edge import EdgeGoal
 
 class EdgeAngleGoal(ScalarGoal, EdgeGoal):
     """
-    Reach a target angle between the direction of an edge and a reference vector.
+    Drive the angle between an edge and a reference vector toward a target.
+
+    Parameters
+    ----------
+    key :
+        The key or keys of the edge(s) the goal acts on.
+    vector :
+        The reference vector each edge's angle is measured against.
+    target :
+        The target angle, in radians.
+    weight :
+        The relative importance of the goal in the loss.
     """
 
     def __init__(
@@ -31,7 +42,7 @@ class EdgeAngleGoal(ScalarGoal, EdgeGoal):
     @property
     def vector(self) -> Float[Array, "vectors 3"]:
         """
-        The vector to take the angle with.
+        The reference vector each edge's angle is measured against.
         """
         return self._vector
 
@@ -41,7 +52,17 @@ class EdgeAngleGoal(ScalarGoal, EdgeGoal):
 
     def vectors(self) -> Float[Array, "vectors 3"]:
         """
-        Create a matrix of vectors.
+        Scatter the reference vectors into a per-index matrix.
+
+        Returns
+        -------
+        vectors :
+            A matrix holding each edge's reference vector at its structure index.
+
+        Notes
+        -----
+        Rebuilds the reference vectors indexed by structure position so that
+        :meth:`prediction` can gather them with the same index as the edges.
         """
         matrix = np.zeros((max(self.index) + 1, 3))
         for vec, idx in zip(self.vector, self.index):
@@ -50,7 +71,14 @@ class EdgeAngleGoal(ScalarGoal, EdgeGoal):
 
     def init(self, model: EquilibriumModel, structure: EquilibriumStructure) -> None:
         """
-        Initialize the goal with information from an equilibrium model.
+        Bind the goal to a structure and reindex its reference vectors.
+
+        Parameters
+        ----------
+        model :
+            The equilibrium model.
+        structure :
+            The structure whose edge ordering defines the indices.
         """
         super().init(model, structure)
         self.vector = self.vectors()
@@ -61,7 +89,19 @@ class EdgeAngleGoal(ScalarGoal, EdgeGoal):
         index: Int[Array, ""],
     ) -> Float[Array, "1"]:
         """
-        The angle between the edge and the reference vector.
+        The angle between the edge and its reference vector.
+
+        Parameters
+        ----------
+        eq_state :
+            The equilibrium state to read the edge vector from.
+        index :
+            The index of the edge.
+
+        Returns
+        -------
+        prediction :
+            The angle between the edge and its reference vector, in radians.
         """
         vector = eq_state.vectors[index, :]
 

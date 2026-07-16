@@ -13,7 +13,7 @@ from jax_fdm.goals.edge import EdgeGoal
 
 class EdgeLengthGoal(ScalarGoal, EdgeGoal):
     """
-    Make an edge of a network to reach a certain length.
+    Drive an edge toward a target length.
     """
 
     def prediction(
@@ -22,15 +22,31 @@ class EdgeLengthGoal(ScalarGoal, EdgeGoal):
         index: Int[Array, ""],
     ) -> Float[Array, "1"]:
         """
-        The current edge length.
+        The current length of the edge.
+
+        Parameters
+        ----------
+        eq_state :
+            The equilibrium state to read the length from.
+        index :
+            The index of the edge.
+
+        Returns
+        -------
+        prediction :
+            The edge's length.
         """
         return eq_state.lengths[index]
 
 
 class EdgesLengthEqualGoal(ScalarGoal, EdgeGoal):
     """
-    Equalize the length of a selection of edges by minimizing
-    the normalized variance of their lengths.
+    Equalize the lengths of a selection of edges.
+
+    Notes
+    -----
+    Applies to a collection of edges at once, so it is not collectible. The goal
+    drives the normalized variance of the lengths to zero.
     """
 
     def __init__(self, key: list[tuple[int, int]], weight: float = 1.0) -> None:
@@ -39,7 +55,14 @@ class EdgesLengthEqualGoal(ScalarGoal, EdgeGoal):
 
     def init(self, model: EquilibriumModel, structure: EquilibriumStructure) -> None:
         """
-        Initialize the goal with information from an equilibrium model.
+        Bind the goal to a structure, keeping the edge indices as one collection.
+
+        Parameters
+        ----------
+        model :
+            The equilibrium model.
+        structure :
+            The structure whose edge ordering defines the indices.
         """
         self.index = np.atleast_2d(super().index_from_model(model, structure))
 
@@ -49,7 +72,19 @@ class EdgesLengthEqualGoal(ScalarGoal, EdgeGoal):
         index: Int[Array, "elements"],
     ) -> Float[Array, "1"]:
         """
-        The normalized variance of the lengths of the edges.
+        The variance of the edge lengths, normalized by their mean.
+
+        Parameters
+        ----------
+        eq_state :
+            The equilibrium state to read the lengths from.
+        index :
+            The indices of the edges.
+
+        Returns
+        -------
+        prediction :
+            The mean-normalized variance of the lengths, zero when all equal.
         """
         lengths = eq_state.lengths[index]
 

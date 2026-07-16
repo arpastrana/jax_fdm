@@ -9,7 +9,7 @@ from jax_fdm.goals.node import NodeGoal
 
 class NodePointGoal(VectorGoal, NodeGoal):
     """
-    Make a node of a network to reach target xyz coordinates.
+    Drive a node toward target xyz coordinates.
     """
 
     def prediction(
@@ -18,6 +18,18 @@ class NodePointGoal(VectorGoal, NodeGoal):
         index: Int[Array, ""],
     ) -> Float[Array, "3"]:
         """
-        The current xyz coordinates of the node in a network.
+        The current xyz coordinates of the node.
+
+        Parameters
+        ----------
+        eq_state :
+            The equilibrium state to read the coordinates from.
+        index :
+            The index of the node.
+
+        Returns
+        -------
+        prediction :
+            The node's xyz coordinates.
         """
         return eq_state.xyz[index, :]

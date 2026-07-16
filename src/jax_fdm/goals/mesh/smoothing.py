@@ -20,10 +20,9 @@ class MeshSmoothGoal(ScalarGoal, MeshGoal):
     Smoothness, or fairness, is an energy that measures the squared distance
     between the position of a vertex and the centroid of its neighbors' positions.
 
-    Based on Eq. 2 in Tang et al. (2013). DOI: 10.1145/2601097.2601213
-    Modifications:
-        - The fairness is computed only for the free vertices.
-        - No reweighting is performed based on vertex valences.
+    Based on Eq. 2 in Tang et al. (2013). DOI: 10.1145/2601097.2601213.
+    The fairness is computed only for the free vertices, and each vertex term is
+    reweighted by the square of its valence.
     """
 
     def __init__(self) -> None:
@@ -38,7 +37,14 @@ class MeshSmoothGoal(ScalarGoal, MeshGoal):
         structure: EquilibriumMeshStructure,
     ) -> None:
         """
-        Initialize the constraint with information from an equilibrium model.
+        Bind the goal to a mesh, caching its adjacency and free-vertex indices.
+
+        Parameters
+        ----------
+        model :
+            The equilibrium model.
+        structure :
+            The mesh structure whose adjacency and free-vertex indices are cached.
         """
         super().init(model, structure)
         self.adjacency = structure.adjacency
@@ -50,7 +56,20 @@ class MeshSmoothGoal(ScalarGoal, MeshGoal):
         index: Int[Array, ""],
     ) -> Float[Array, "1"]:
         """
-        The current smoothness of the vertex.
+        The mean fairness energy over the mesh's free vertices.
+
+        Parameters
+        ----------
+        eq_state :
+            The equilibrium state to read vertex coordinates from.
+        index :
+            The sentinel index, unused.
+
+        Returns
+        -------
+        prediction :
+            The mean valence-weighted squared distance from each free vertex to its
+            neighbors' centroid.
         """
         xyz = eq_state.xyz
         adjacency = self.adjacency
@@ -69,7 +88,22 @@ def vertex_nbrs_fairness_ngon(
     adjacency_vertex: Float[Array, "vertices"],
 ) -> Float[Array, ""]:
     """
-    Compute the fairness of an n-gon vertex neighborhood.
+    Compute the valence-weighted fairness energy of one vertex's neighborhood.
+
+    Parameters
+    ----------
+    xyz_all :
+        The coordinates of all vertices.
+    xyz_vertex :
+        The coordinates of the vertex whose fairness is measured.
+    adjacency_vertex :
+        The row of the adjacency matrix selecting the vertex's neighbors.
+
+    Returns
+    -------
+    fairness :
+        The squared distance from the vertex to its neighbors' centroid, scaled by
+        the square of its valence.
     """
     num_nbrs = jnp.sum(adjacency_vertex, axis=-1)
     centroid = (adjacency_vertex @ xyz_all) / num_nbrs
