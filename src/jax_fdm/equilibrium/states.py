@@ -41,7 +41,7 @@ class LoadState(NamedTuple):
             loads_edges = 0.0
 
         if isinstance(datastructure, FDNetwork):
-            loads_nodes = jnp.asarray(datastructure.nodes_loads())
+            loads_nodes = jnp.asarray(datastructure.nodes_loads(), dtype)
             loads_faces = 0.0
 
         elif isinstance(datastructure, FDMesh):

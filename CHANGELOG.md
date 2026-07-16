@@ -42,6 +42,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Changed the unshaped `np.ndarray` returns in `equilibrium.structures` (`connectivity_matrix`, `adjacency_matrix`, `mesh_connectivity_edges_faces`, `face_matrix`) to carry concrete jaxtyping shapes on their array arm.
 - Changed the bare container annotations in `equilibrium.fdm`: typed `constraints` as `list["Constraint"]` behind a `TYPE_CHECKING` guard to avoid an import cycle, and spelled the two equilibrium-state update tuples through `ElementScalars` and `ElementVectors` aliases for the per-element `tolist()` columns.
 
+### Fixed
+
+- Fixed `LoadState.from_datastructure` in `equilibrium.states` dropping the `dtype` argument when converting a network's node loads, so all four load arrays (nodes, edges, faces, and force densities) now share the requested precision.
+
 ### Removed
 
 - Removed the unused `AbstractGoal` class (`goals/abstract_goal.py`) and the unused `goals_reindex` and `goals_state` helpers (`goals/helpers.py`) from `goals`. Their goal collation is handled by the goal collection machinery in `optimization`.
