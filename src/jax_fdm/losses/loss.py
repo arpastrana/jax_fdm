@@ -17,7 +17,15 @@ from jax_fdm.losses import Regularizer
 
 class Loss:
     """
-    A function composed of error and regularization terms.
+    A scalar objective summing error and regularization terms.
+
+    Parameters
+    ----------
+    args :
+        The error and regularization terms to sum; they are sorted into the two
+        groups by type.
+    name :
+        The name of the loss. If None, defaults to the class name.
     """
 
     def __init__(self, *args: Error | Regularizer, name: str | None = None) -> None:
@@ -35,7 +43,23 @@ class Loss:
         structure: EquilibriumStructure,
     ) -> Float[Array, ""]:
         """
-        Compute the scalar output of the loss function.
+        Evaluate the loss by solving for equilibrium and summing all terms.
+
+        Parameters
+        ----------
+        params :
+            The parameters defining the equilibrium problem.
+        model :
+            The equilibrium model that computes the equilibrium state.
+        structure :
+            The structure that provides the connectivity.
+
+        Returns
+        -------
+        loss :
+            The scalar loss, the sum of the error terms evaluated on the
+            equilibrium state and the regularization terms evaluated on the
+            parameters.
         """
         eq_state = model(params, structure)
 
