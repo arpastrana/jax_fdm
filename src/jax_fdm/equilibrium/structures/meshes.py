@@ -21,7 +21,14 @@ from jax_fdm.equilibrium.structures.graphs import build_matrix
 
 class Mesh(Graph):
     """
-    A mesh.
+    A graph enriched with face topology and face-vertex, edge-face connectivity.
+
+    Notes
+    -----
+    Extends :class:`Graph` with faces. Faces are stored as a rectangular index
+    array padded with ``-1``, since faces may have different numbers of vertices.
+    Edges are derived from the faces when not supplied and carry no topological
+    meaning beyond storing per-edge data.
     """
 
     # The faces array can have rows of different lengths. How to handle it?
@@ -90,7 +97,12 @@ class Mesh(Graph):
 
     def _faces_indexed(self) -> Int[Array, "faces vertices"]:
         """
-        An array of the faces pointing to the indices of the node keys.
+        The faces rewritten from vertex keys to contiguous vertex indices.
+
+        Notes
+        -----
+        Padding entries (``-1``) are preserved as-is rather than remapped, so the
+        rectangular face array keeps its shape.
         """
         vertex_index = self.vertex_index
 
@@ -112,10 +124,7 @@ class Mesh(Graph):
 
     def _connectivity_edges_faces_matrix(self) -> Float[Array, "edges faces"]:
         """
-        The connectivity matrix between edges and faces of a mesh.
-
-        The matrix has dimensions (M x F), where M is the number of edges
-        and F is the number of faces.
+        The edge-face incidence matrix of the mesh, with a one per incident face.
         """
         C = np.zeros((self.num_edges, self.num_faces))
 
@@ -126,7 +135,18 @@ class Mesh(Graph):
 
     def _edges_faces(self) -> tuple[tuple[int, ...], ...]:
         """
-        The connectivity matrix of the edges and the faces of a mesh.
+        The face indices incident to each edge.
+
+        Returns
+        -------
+        edges_faces :
+            For each edge, the indices of the faces that contain it (usually one
+            or two).
+
+        Notes
+        -----
+        An edge shared by more than two faces is non-manifold; it is kept but a
+        warning is printed, since it can distort area-load distribution.
         """
         edges_faces = []
         for u, v in self.edges:
@@ -163,13 +183,23 @@ class Mesh(Graph):
         faces: Int[np.ndarray, "faces vertices"],
     ) -> Int[np.ndarray, "edges 2"]:
         """
-        The the edges of the mesh.
+        Derive the unique undirected edges of the mesh from its faces.
 
-        Edges have no topological meaning on a mesh and are used only to
-        store data.
+        Parameters
+        ----------
+        faces :
+            The vertex indices of each face.
 
-        The edges are calculated by first looking at all the halfedges of the
-        faces of the mesh, and then only storing the unique halfedges.
+        Returns
+        -------
+        edges :
+            The node index pair of each unique edge.
+
+        Notes
+        -----
+        Every face halfedge is collected, then deduplicated so that an edge and
+        its reverse count once. These edges carry no topological meaning; they
+        exist only to store per-edge data.
         """
         halfedges = []
         for face in faces:
@@ -191,7 +221,7 @@ class Mesh(Graph):
 
     def _connectivity_faces_matrix(self) -> Float[Array, "faces vertices"]:
         """
-        The connectivity matrix between faces and nodes.
+        The row-normalized face-vertex incidence matrix, a face centroid operator.
         """
         F = face_matrix(self.faces_indexed, "array", normalize=True)
 
@@ -205,23 +235,19 @@ class Mesh(Graph):
 
 class MeshSparse(Mesh, GraphSparse):
     """
-    A sparse mesh.
+    A mesh that assembles its connectivity through sparse intermediates.
 
     Notes
     -----
-    The connectivity matrices are currently dense matrices instead of sparse
-    (as they should be) because I have encountered issues with the gradient
-    computation via backpropagation if I leave them as sparse matrices.
-
-    The error I see is the following:
-    "TypeError: float() argument must be a string or a number, not 'Zero'"
-
-    Which presumably arises upon calling bcoo._bcoo_dot_general_transpose.
+    The connectivity matrices are densified after a sparse build rather than kept
+    sparse: leaving them sparse breaks reverse-mode gradients with
+    ``TypeError: float() argument must be a string or a number, not 'Zero'``,
+    raised from ``bcoo._bcoo_dot_general_transpose``.
     """
 
     def _connectivity_faces_matrix(self) -> Float[Array, "faces vertices"]:
         """
-        The connectivity matrix between faces and nodes in sparse format.
+        The row-normalized face-vertex incidence matrix, built through sparse COO.
         """
         F = face_matrix(self.faces_indexed, "csc", normalize=True)
 
@@ -229,7 +255,7 @@ class MeshSparse(Mesh, GraphSparse):
 
     def _connectivity_edges_faces_matrix(self) -> Float[Array, "edges faces"]:
         """
-        The connectivity matrix between edges and faces of a mesh in sparse format.
+        The edge-face incidence matrix of the mesh.
         """
         C = np.zeros((self.num_edges, self.num_faces))
 
@@ -246,7 +272,17 @@ class MeshSparse(Mesh, GraphSparse):
 
 def mesh_edges_faces(mesh: CompasMesh) -> list[tuple[int, ...]]:
     """
-    The connectivity matrix of the edges and the faces of a mesh.
+    List the face indices incident to each edge of a COMPAS mesh.
+
+    Parameters
+    ----------
+    mesh :
+        The COMPAS mesh to read edge-face incidence from.
+
+    Returns
+    -------
+    edges_faces :
+        For each edge, the indices of its incident faces (at most two).
     """
     face_index = {fkey: idx for idx, fkey in enumerate(mesh.faces())}
 
@@ -269,7 +305,17 @@ def mesh_edges_faces(mesh: CompasMesh) -> list[tuple[int, ...]]:
 
 def mesh_connectivity_edges_faces(mesh: CompasMesh) -> Float[np.ndarray, "edges faces"]:
     """
-    The connectivity matrix between edges and faces of a mesh.
+    Build the edge-face incidence matrix of a COMPAS mesh.
+
+    Parameters
+    ----------
+    mesh :
+        The COMPAS mesh to read edge-face incidence from.
+
+    Returns
+    -------
+    connectivity :
+        The incidence matrix with a one wherever an edge belongs to a face.
     """
     num_edges = len(list(mesh.edges()))
     num_faces = mesh.number_of_faces()
@@ -290,15 +336,23 @@ def face_matrix(
     normalize: bool = True,
 ) -> Float[np.ndarray, "faces vertices"] | list | spmatrix:
     """
-    Creates a face-vertex adjacency matrix that skips -1 vertex entries.
+    Build a face-vertex incidence matrix, ignoring padding vertices.
 
-    Notes
-    -----
-    The matrix has dimensions (F x N), where F is the number of faces
-    and N is the number of vertices.
+    Parameters
+    ----------
+    face_vertices :
+        The vertex indices of each face, with ``-1`` padding for absent vertices.
+    rtype :
+        The return format: ``"array"``, ``"list"``, ``"csr"``, ``"csc"``, or
+        ``"coo"``.
+    normalize :
+        If True, each row sums to one, so the matrix averages vertex quantities
+        into face centroids; if False, each row sums to the face's vertex count.
 
-    If `normalize=True`, then the values in every row add up to `1`.
-    Otherwise, the row adds up to the number of vertices in the face.
+    Returns
+    -------
+    face_matrix :
+        The face-vertex incidence matrix in the requested format.
     """
     face_vertices_clean = []
     for face in face_vertices:

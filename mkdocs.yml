@@ -92,7 +92,7 @@ plugins:
             docstring_options:
               ignore_init_summary: true
               trim_doctest_flags: true
-            docstring_section_style: table
+            docstring_section_style: list
             filters: public
             heading_level: 2
             members_order: source

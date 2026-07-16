@@ -11,9 +11,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Added type-annotated signatures across the library, using jaxtyping shape annotations (for example `Float[Array, "nodes 3"]`) throughout. Array-carrying signatures use jaxtyping shape and dtype types (`Float`, `Int`, `Bool`, `Shaped`) everywhere they appear, including the `parameters`, `optimization` and `visualization` packages, so array dtype and shape are documented at the call site. Signatures over COMPAS objects keep COMPAS type hints.
 - Added a pyright type-checking gate that runs in CI on pull requests.
+- Added numpydoc `Parameters`/`Returns` sections across all nine packages of the library (about 700 functions and methods over 84 files). Docstring entries are deliberately typeless (`name :` form): the type of every parameter and return value is stated once, in the signature annotation, and mkdocstrings merges it into the rendered API reference, so docstrings and signatures cannot drift apart. Docstring sections render as lists rather than tables in the documentation site.
 
 ### Changed
 
+- Changed docstring summaries wherever they had drifted from the code while adding the numpydoc sections: among others, `normal_polygon_2` and `angles_polygon` in `geometry` (unitization and degrees claims), `edges_tributary_edges_load` in `equilibrium` (edge-length scaling, not face area), the fixed-point solver naming (plain fixed-point iteration, not Anderson), the mesh smoothing goal note (fairness is scaled by the squared vertex valence), and the mesh area and Laplacian goal predictions (area and energy, not load path). Docstring prose describes sparse matrices as "stored in sparse format" without naming the concrete sparse class.
 - Changed `area_polygon`, `area_triangle` and `planarity_triangle` in `geometry` to return a scalar array `Float[Array, ""]` instead of a shape `(1,)` array or a Python float.
 - Changed `PredictionError.error` in `losses` to sum over the goal state so it returns a scalar array, matching its sibling error terms.
 - Changed `Error.errors` in `losses` from a static method to an instance method, unifying the signature across the error term family.

@@ -35,15 +35,18 @@ if has_backend("cyipopt"):
 
 class IPOPT(ConstrainedOptimizer, SecondOrderOptimizer):
     """
-    Interior Point Optimizer (Ipopt) for large-scale, gradient-based nonlinear
-    optimization
+    The interior point optimizer (Ipopt) for large-scale nonlinear optimization.
 
-    The optimizer supports box bounds on the optimization parameters, and equality
-    and inequality constraints.
+    Parameters
+    ----------
+    acc_tol :
+        The acceptable convergence tolerance Ipopt may settle for.
 
     Notes
     -----
-    Ipopt expects that the loss and constraint functions are twice differentiable.
+    Supports box bounds and both equality and inequality constraints. Ipopt expects
+    the loss and constraint functions to be twice differentiable, so this optimizer
+    supplies hessians and constraint hessian-vector products.
     """
 
     name = "IPOPT"
@@ -54,7 +57,17 @@ class IPOPT(ConstrainedOptimizer, SecondOrderOptimizer):
 
     def _minimize(self, opt_problem: OptProblem) -> Any:
         """
-        Cyipopt backend method to minimize a loss function.
+        Dispatch the problem to the cyipopt backend.
+
+        Parameters
+        ----------
+        opt_problem :
+            The problem to minimize.
+
+        Returns
+        -------
+        result :
+            The cyipopt optimization result.
         """
         opt_problem.options["acceptable_tol"] = self.acceptable_tol
         # Ipopt expects an integer print level rather than a boolean flag.
@@ -70,7 +83,23 @@ class IPOPT(ConstrainedOptimizer, SecondOrderOptimizer):
         structure: EquilibriumStructure,
     ) -> Float[Array, "constraints"]:
         """
-        A wrapper function for an equality constraint on the parameters.
+        The residual of an equality constraint, zero when satisfied.
+
+        Parameters
+        ----------
+        params_opt :
+            The flat optimization parameter vector.
+        constraint :
+            The constraint to evaluate.
+        model :
+            The equilibrium model.
+        structure :
+            The structure that provides the connectivity.
+
+        Returns
+        -------
+        residual :
+            The constrained quantity minus its (shared) bound.
         """
         return self.constraint_ineq_low(params_opt, constraint, model, structure)
 
@@ -82,8 +111,23 @@ class IPOPT(ConstrainedOptimizer, SecondOrderOptimizer):
         structure: EquilibriumStructure,
     ) -> Float[Array, "constraints"]:
         """
-        A wrapper function for an inequality constraint on an upper bound of the
-        parameters.
+        The slack against a constraint's upper bound, non-negative when satisfied.
+
+        Parameters
+        ----------
+        params_opt :
+            The flat optimization parameter vector.
+        constraint :
+            The constraint to evaluate.
+        model :
+            The equilibrium model.
+        structure :
+            The structure that provides the connectivity.
+
+        Returns
+        -------
+        slack :
+            The upper bound minus the constrained quantity.
         """
         return constraint.bound_up - self.constraint(
             params_opt,
@@ -100,8 +144,23 @@ class IPOPT(ConstrainedOptimizer, SecondOrderOptimizer):
         structure: EquilibriumStructure,
     ) -> Float[Array, "constraints"]:
         """
-        A wrapper function for an inequality constraint on a lower bound of the
-        parameters.
+        The slack against a constraint's lower bound, non-negative when satisfied.
+
+        Parameters
+        ----------
+        params_opt :
+            The flat optimization parameter vector.
+        constraint :
+            The constraint to evaluate.
+        model :
+            The equilibrium model.
+        structure :
+            The structure that provides the connectivity.
+
+        Returns
+        -------
+        slack :
+            The constrained quantity minus its lower bound.
         """
         return (
             self.constraint(params_opt, constraint, model, structure)
@@ -115,8 +174,22 @@ class IPOPT(ConstrainedOptimizer, SecondOrderOptimizer):
         f: Callable,
     ) -> Float[Array, "parameters"]:
         """
-        Calculate the product of the second derivatives of the vector-valued
-        constraint function and a vector of Lagrange multipliers.
+        The constraint hessian contracted with the Lagrange multipliers.
+
+        Parameters
+        ----------
+        x :
+            The point to evaluate the hessian-vector product at.
+        v :
+            The vector of Lagrange multipliers, one per constraint component.
+        f :
+            The vector-valued constraint function.
+
+        Returns
+        -------
+        hvp :
+            The sum of each constraint component's hessian scaled by its multiplier,
+            applied at ``x``.
         """
 
         def _vjp(s: Float[Array, "parameters"]) -> Float[Array, "parameters"]:
@@ -127,8 +200,12 @@ class IPOPT(ConstrainedOptimizer, SecondOrderOptimizer):
 
     def parameters_bounds(self) -> list[tuple[float, float]]:
         """
-        Return a tuple of arrays with the upper and the lower bounds of optimization
-        parameters.
+        Return the parameter bounds as (low, high) pairs for cyipopt.
+
+        Returns
+        -------
+        bounds :
+            One (lower, upper) bound pair per optimization parameter.
         """
         return list(zip(self.pm.bounds_low, self.pm.bounds_up))
 
@@ -140,7 +217,30 @@ class IPOPT(ConstrainedOptimizer, SecondOrderOptimizer):
         params_opt: Float[Array, "parameters"],
     ) -> list[dict[str, Any]]:
         """
-        Returns the defined constraints in a format amenable to `cyipopt`.
+        Convert constraints into cyipopt constraint dictionaries.
+
+        Parameters
+        ----------
+        constraints :
+            The constraints to convert.
+        model :
+            The equilibrium model.
+        structure :
+            The structure the constraints are defined on.
+        params_opt :
+            The initial optimization parameters, used to warm up the jitted
+            functions.
+
+        Returns
+        -------
+        constraints :
+            One dictionary per constraint side, each with a value function, its
+            Jacobian, and its hessian-vector product.
+
+        Notes
+        -----
+        An equal lower and upper bound yields a single equality constraint;
+        otherwise each finite bound becomes its own one-sided inequality.
         """
         if not constraints:
             return []

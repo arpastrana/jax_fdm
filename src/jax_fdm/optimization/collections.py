@@ -6,12 +6,34 @@ from typing import Any
 
 class Collection:
     """
-    A collection of goals of the same type to speed up optimization.
+    A vectorized stand-in for many same-type goals or constraints.
+
+    Notes
+    -----
+    Instantiating a Collection returns a single object of the collectibles' own
+    class whose init arguments are the stacked per-object values, so the whole group
+    evaluates in one vmapped call. A ``_iscollection`` flag marks the result.
     """
 
     def __new__(cls, collectibles: list[Any]) -> Any:
         """
-        Gather a collection of objects into a single vectorized object.
+        Stack same-type objects into one vectorized object of their class.
+
+        Parameters
+        ----------
+        collectibles :
+            The objects to vectorize; all must share one type.
+
+        Returns
+        -------
+        collection :
+            A single object of the shared class, built from the per-object init
+            arguments gathered across the group.
+
+        Raises
+        ------
+        TypeError
+            If the collectibles are not all of the same type.
         """
         # check homogenity
         ctypes = [type(c) for c in collectibles]
@@ -39,7 +61,18 @@ class Collection:
 
 def collect_goals(goals: list[Any]) -> list[Any]:
     """
-    Convert a list of goals into a list of vectorized goal collections.
+    Group goals by type into vectorized collections.
+
+    Parameters
+    ----------
+    goals :
+        The goals to group.
+
+    Returns
+    -------
+    collections :
+        One collection per type of collectible goal, plus a singleton collection for
+        each goal flagged as not collectible.
     """
     goals_collectable = []
     goals_uncollectable = []
@@ -69,7 +102,17 @@ def collect_goals(goals: list[Any]) -> list[Any]:
 
 def collect_constraints(constraints: list[Any]) -> list[Any]:
     """
-    Convert a list of constraints into a list of vectorized constraint collections.
+    Group constraints by type into vectorized collections.
+
+    Parameters
+    ----------
+    constraints :
+        The constraints to group.
+
+    Returns
+    -------
+    collections :
+        One collection per type of constraint.
     """
     constraints = sorted(constraints, key=lambda g: type(g).__name__)
     groups = groupby(constraints, lambda g: type(g))

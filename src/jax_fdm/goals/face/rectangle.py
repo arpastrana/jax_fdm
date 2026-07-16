@@ -37,7 +37,14 @@ class FaceRectangularGoal(ScalarGoal, FaceGoal):
         structure: EquilibriumMeshStructure,
     ) -> None:
         """
-        Initialize the goal with information of a model and a structure.
+        Bind the goal to a mesh, caching the four corner indices of each face.
+
+        Parameters
+        ----------
+        model :
+            The equilibrium model.
+        structure :
+            The mesh structure whose face ordering defines the indices.
         """
         super().init(model, structure)
         face_indices = structure.faces_indexed[self.index]
@@ -49,7 +56,20 @@ class FaceRectangularGoal(ScalarGoal, FaceGoal):
         index: Int[Array, ""],
     ) -> Float[Array, "1"]:
         """
-        The sum of the cosine of the internal angles of a face.
+        A measure of how far a face is from rectangular.
+
+        Parameters
+        ----------
+        eq_state :
+            The equilibrium state to read the face coordinates from.
+        index :
+            The index of the face.
+
+        Returns
+        -------
+        prediction :
+            The summed mean absolute cosine of the face's corner angles, zero when
+            every corner is a right angle.
         """
         fxyz = eq_state.xyz[self.face_indices]
         face_cosines = vmap(cosines_angles_polygon, in_axes=(0))(fxyz)

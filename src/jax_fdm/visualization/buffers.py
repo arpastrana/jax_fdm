@@ -115,12 +115,13 @@ def rotations_to(
 
     Parameters
     ----------
-    directions : array of shape (N, 3)
+    directions :
         Unit direction vectors.
 
     Returns
     -------
-    array of shape (N, 3, 3)
+    rotations :
+        One rotation matrix per direction.
     """
     z = np.asarray(directions, dtype=np.float64)
     ref = np.zeros_like(z)

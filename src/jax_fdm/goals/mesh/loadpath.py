@@ -6,7 +6,12 @@ from jax_fdm.goals import NetworkLoadPathGoal
 
 class MeshLoadPathGoal(NetworkLoadPathGoal):
     """
-    Make the total load path of a mesh to reach a target magnitude.
+    Drive the total load path of a mesh toward a target magnitude.
+
+    Notes
+    -----
+    A thin wrapper of :class:`NetworkLoadPathGoal` that fixes the key to the mesh
+    sentinel.
     """
 
     def __init__(

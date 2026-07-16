@@ -24,7 +24,29 @@ def nodes_load_from_faces(
     is_local: bool = False,
 ) -> Float[Array, "nodes 3"]:
     """
-    Calculate the tributary face loads aplied to the nodes of a structure.
+    Distribute face area loads to the nodes of a structure.
+
+    Parameters
+    ----------
+    xyz :
+        The coordinates of all nodes.
+    faces_load :
+        The area load on each face.
+    structure :
+        The mesh structure that maps faces to their edges and nodes.
+    is_local :
+        If True, the face load is given in the face's local coordinate system and
+        is transformed to global coordinates first.
+
+    Returns
+    -------
+    loads :
+        The tributary face load carried by each node.
+
+    Notes
+    -----
+    The face load flows to nodes in two steps: it is split among the face edges by
+    triangular tributary areas, then split from edges to their nodes.
     """
     faces = structure.faces_indexed
     faces_load = calculate_faces_load(xyz, faces, faces_load, is_local)
@@ -41,7 +63,24 @@ def calculate_faces_load(
     is_local: bool,
 ) -> Float[Array, "faces 3"]:
     """
-    Transform the face loads to the XYZ cartesian coordinate system if needed.
+    Transform face loads to global cartesian coordinates when they are local.
+
+    Parameters
+    ----------
+    xyz :
+        The coordinates of all nodes.
+    faces :
+        The vertex indices of each face.
+    faces_load :
+        The load on each face.
+    is_local :
+        If True, the loads are in each face's local coordinate system and are
+        rotated to global coordinates; if False, they are returned unchanged.
+
+    Returns
+    -------
+    loads :
+        The face loads expressed in global cartesian coordinates.
     """
     if not is_local:
         return faces_load
@@ -57,7 +96,25 @@ def face_xyz(
     face: Int[Array, "vertices"],
 ) -> Float[Array, "vertices 3"]:
     """
-    Get this face XYZ coordinates from XYZ vertices array.
+    Gather the coordinates of a face's vertices, padding safely for gradients.
+
+    Parameters
+    ----------
+    xyz :
+        The coordinates of all nodes.
+    face :
+        The vertex indices of the face, with ``-1`` padding for absent vertices.
+
+    Returns
+    -------
+    xyz_face :
+        The coordinates of the face's vertices.
+
+    Notes
+    -----
+    Padding indices (``-1``) are replaced by the first vertex rather than left to
+    index nan. nan padding is harmless in the forward normal computation but
+    produces nan gradients in the backward pass.
     """
     face = jnp.ravel(face)
 
@@ -78,8 +135,26 @@ def face_load_lcs(
     face_load: Float[Array, "3"],
 ) -> Float[Array, "3"]:
     """
-    Transform the load vector applied to the face to a vector in its local coordinate
-    system.
+    Rotate a face's local load vector into global cartesian coordinates.
+
+    Parameters
+    ----------
+    xyz :
+        The coordinates of all nodes.
+    face :
+        The vertex indices of the face.
+    face_load :
+        The load on the face, in the face's local coordinate system.
+
+    Returns
+    -------
+    load :
+        The face load expressed in global cartesian coordinates.
+
+    Notes
+    -----
+    A degenerate face with a near-zero normal falls back to the identity frame, so
+    its local load passes through unrotated instead of producing nans.
     """
     # fxyz = face_xyz(xyz, face)
     fxyz = xyz[face, :]
@@ -99,7 +174,22 @@ def edges_tributary_faces_load(
     structure: EquilibriumMeshStructure,
 ) -> Float[Array, "edges 3"]:
     """
-    Calculate the face area load taken by every edge in a datastructure.
+    Split the face area loads onto the edges of a structure.
+
+    Parameters
+    ----------
+    xyz :
+        The coordinates of all nodes.
+    faces_load :
+        The area load on each face, in global coordinates.
+    structure :
+        The mesh structure that provides node, edge-face, and face-vertex
+        connectivity.
+
+    Returns
+    -------
+    edges_load :
+        The face load carried by each edge.
     """
     c_vertices = structure.connectivity
     c_edges_faces = structure.connectivity_edges_faces
@@ -119,7 +209,31 @@ def edge_tributary_faces_load(
     face_centroids: Float[Array, "faces 3"],
 ) -> Float[Array, "3"]:
     """
-    Calculate the face area load taken by one edge in a datastructure.
+    Compute the face area load taken by a single edge.
+
+    Parameters
+    ----------
+    c_edge_nodes :
+        The row of the node connectivity matrix for this edge.
+    c_edge_faces :
+        The row of the edge-face connectivity matrix for this edge.
+    xyz :
+        The coordinates of all nodes.
+    faces_load :
+        The area load on each face, in global coordinates.
+    face_centroids :
+        The centroid of each face.
+
+    Returns
+    -------
+    load :
+        The face load carried by the edge.
+
+    Notes
+    -----
+    The edge draws load from its (up to two) incident faces, weighted by the
+    triangular area spanned by the edge and each face centroid. Padding face
+    indices (``-1``) on boundary edges contribute zero.
     """
     indices = jnp.flatnonzero(c_edge_nodes, size=2)
     line = xyz[indices, :]
@@ -141,7 +255,19 @@ def edge_tributary_face_area(
     centroid: Float[Array, "3"],
 ) -> Float[Array, ""]:
     """
-    The triangle-based, face tributary area of an edge.
+    Compute an edge's tributary area within one face as a triangle area.
+
+    Parameters
+    ----------
+    line :
+        The two endpoint coordinates of the edge.
+    centroid :
+        The centroid of the incident face.
+
+    Returns
+    -------
+    area :
+        The area of the triangle formed by the edge and the face centroid.
     """
     triangle = jnp.vstack((line, jnp.reshape(centroid, (1, 3))))
 
@@ -160,7 +286,29 @@ def nodes_load_from_edges(
     is_local: bool = False,
 ) -> Float[Array, "nodes 3"]:
     """
-    Calculate the tributary edge loads aplied to the nodes of a structure.
+    Distribute edge line loads to the nodes of a structure.
+
+    Parameters
+    ----------
+    xyz :
+        The coordinates of all nodes.
+    edges_load :
+        The line load on each edge.
+    structure :
+        The structure that maps edges to their nodes.
+    is_local :
+        If True, the edge load is given in the edge's local coordinate system and
+        is transformed to global coordinates first.
+
+    Returns
+    -------
+    loads :
+        The tributary edge load carried by each node.
+
+    Notes
+    -----
+    The line load is scaled by edge length to a total force, then split equally
+    between the edge's two nodes.
     """
     edges = structure.edges_indexed
     edges_load = calculate_edges_load(xyz, edges, edges_load, is_local)
@@ -176,7 +324,24 @@ def calculate_edges_load(
     is_local: bool,
 ) -> Float[Array, "edges 3"]:
     """
-    Transform the edges load to the XYZ cartesian coordinate system if needed.
+    Transform edge loads to global cartesian coordinates when they are local.
+
+    Parameters
+    ----------
+    xyz :
+        The coordinates of all nodes.
+    edges :
+        The node indices of each edge.
+    edges_load :
+        The load on each edge.
+    is_local :
+        If True, the loads are in each edge's local coordinate system and are
+        rotated to global coordinates; if False, they are returned unchanged.
+
+    Returns
+    -------
+    loads :
+        The edge loads expressed in global cartesian coordinates.
     """
     if not is_local:
         return edges_load
@@ -192,8 +357,21 @@ def edge_load_lcs(
     edge_load: Float[Array, "3"],
 ) -> Float[Array, "3"]:
     """
-    Transform the load vector applied to an edge to a vector in its local coordinate
-    system.
+    Rotate an edge's local load vector into global cartesian coordinates.
+
+    Parameters
+    ----------
+    xyz :
+        The coordinates of all nodes.
+    edge :
+        The two node indices of the edge.
+    edge_load :
+        The load on the edge, in the edge's local coordinate system.
+
+    Returns
+    -------
+    load :
+        The edge load expressed in global cartesian coordinates.
     """
 
     def edge_xyz(xyz, edge):
@@ -211,7 +389,21 @@ def edges_tributary_edges_load(
     structure: EquilibriumStructure,
 ) -> Float[Array, "edges 3"]:
     """
-    Calculate the face area load taken by every edge in a datastructure.
+    Scale per-length edge loads into total edge forces by edge length.
+
+    Parameters
+    ----------
+    xyz :
+        The coordinates of all nodes.
+    edges_load :
+        The line load on each edge, per unit length.
+    structure :
+        The structure that provides the node connectivity matrix.
+
+    Returns
+    -------
+    edges_load :
+        The total load on each edge, the per-length load times the edge length.
     """
     # TODO: edge lengths calculated by the FDM equilibrium model, inject?
     edges_vector = structure.connectivity @ xyz
@@ -231,6 +423,18 @@ def nodes_tributary_edges_load(
     structure: EquilibriumStructure,
 ) -> Float[Array, "nodes 3"]:
     """
-    Calculate the load vector applied to the nodes based on the edge loads.
+    Split each edge's total load equally between its two nodes.
+
+    Parameters
+    ----------
+    edges_load :
+        The total load on each edge.
+    structure :
+        The structure that provides the node connectivity matrix.
+
+    Returns
+    -------
+    loads :
+        The load carried by each node, half of each incident edge's load.
     """
     return 0.5 * jnp.abs(structure.connectivity).T @ edges_load

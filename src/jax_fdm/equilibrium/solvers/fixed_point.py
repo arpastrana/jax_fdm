@@ -37,18 +37,23 @@ def solver_anderson(
     solver_config: dict[str, Any],
 ) -> Float[Array, "nodes_free 3"]:
     """
-    Find a fixed point of a function f(a, x) using Anderson acceleration.
+    Find a fixed point of ``f(a, x)`` using Anderson acceleration.
 
     Parameters
     ----------
-    f : The function to iterate upon.
-    a : The function parameters.
-    x_init: An initial guess for the values of the solution vector.
-    solver_config: The configuration options of the solver.
+    f :
+        The function to iterate upon.
+    a :
+        The function parameters.
+    x_init :
+        The initial guess for the solution vector.
+    solver_config :
+        The configuration options of the solver.
 
     Returns
     -------
-    x_star : The solution vector at the fixed point.
+    x_star :
+        The solution vector at the fixed point.
     """
     solver_kwargs = {"history_size": 5, "ridge": 1e-6}
 
@@ -69,33 +74,40 @@ def solver_fixedpoint(
     solver_config: dict[str, Any],
 ) -> Float[Array, "nodes_free 3"]:
     """
-    Find a fixed point of a function f(a, x) using Anderson acceleration.
+    Find a fixed point of ``f(a, x)`` using plain fixed-point iteration.
 
     Parameters
     ----------
-    f : The function to iterate upon.
-    a : The function parameters.
-    x_init: An initial guess for the values of the solution vector.
-    solver_config: The configuration options of the solver.
+    f :
+        The function to iterate upon.
+    a :
+        The function parameters.
+    x_init :
+        The initial guess for the solution vector.
+    solver_config :
+        The configuration options of the solver.
 
     Returns
     -------
-    x_star : The solution vector at the fixed point.
+    x_star :
+        The solution vector at the fixed point.
     """
     return solver_jaxopt(FixedPointIteration, f, a, x_init, solver_config)
 
 
 def is_solver_fixedpoint(solver_fn: Callable) -> bool:
     """
-    Test if a solver function is a fixed point solver.
+    Test whether a solver function is a fixed-point solver.
 
     Parameters
     ----------
-    `solver_fn`: A solver function
+    solver_fn :
+        The solver function to test.
 
     Returns
     -------
-    `True` if the solver is a fixed point solver. Otherwise, `False`.
+    is_fixedpoint :
+        True if the solver is a fixed-point solver, otherwise False.
     """
     solver_fns = {
         solver_anderson,
@@ -118,18 +130,29 @@ def solver_forward(
     solver_config: dict[str, Any],
 ) -> Float[Array, "..."]:
     """
-    Solve for a fixed point of a function f(a, x) using forward iteration.
+    Find a fixed point of ``f(a, x)`` by forward iteration until convergence.
 
     Parameters
     ----------
-    f : The function to iterate upon.
-    a : The function parameters.
-    x_init: An initial guess for the values of the solution vector.
-    solver_config: The configuration options of the solver.
+    f :
+        The function to iterate upon.
+    a :
+        The function parameters.
+    x_init :
+        The initial guess for the solution vector.
+    solver_config :
+        The configuration options of the solver, read for ``tmax``, ``eta``, and
+        ``verbose``.
 
     Returns
     -------
-    x : The solution vector at a fixed point.
+    x_star :
+        The solution vector at the fixed point.
+
+    Notes
+    -----
+    Iteration stops when the mean nodal move between successive iterates drops
+    below ``eta`` or after ``tmax`` steps, whichever comes first.
     """
     tmax = solver_config["tmax"]
     eta = solver_config["eta"]
@@ -176,7 +199,30 @@ def solver_fixedpoint_implicit(
     x_init: Float[Array, "nodes_free 3"],
 ) -> Float[Array, "nodes_free 3"]:
     """
-    Solve for a fixed point of a function f(a, x) using an iterative solver.
+    Solve for a fixed point of ``f(a, x)`` with implicit differentiation.
+
+    Parameters
+    ----------
+    solver :
+        The function that runs the fixed-point solve.
+    solver_config :
+        The configuration options of the solver.
+    f :
+        The function to iterate upon.
+    a :
+        The function parameters, differentiated through implicitly.
+    x_init :
+        The initial guess for the solution vector.
+
+    Returns
+    -------
+    x_star :
+        The solution vector at the fixed point.
+
+    Notes
+    -----
+    Wrapped in a custom VJP so the backward pass differentiates through the fixed
+    point implicitly rather than unrolling the solver iterations.
     """
     return solver(f, a, x_init, solver_config)
 
@@ -192,20 +238,26 @@ def fixed_point_fwd(
     tuple[SolverIterParams, Float[Array, "nodes_free 3"]],
 ]:
     """
-    The forward pass of an iterative fixed point solver.
+    Run the forward pass of the implicit fixed-point solver.
 
     Parameters
     ----------
-    solver: The function that executes a fixed point solver.
-    solver_config: The configuration options of the solver.
-    fn : The function to iterate upon.
-    a : The function parameters.
-    x_init: An initial guess for the values of the solution vector.
+    solver :
+        The function that runs the fixed-point solve.
+    solver_config :
+        The configuration options of the solver.
+    f :
+        The function to iterate upon.
+    a :
+        The function parameters.
+    x_init :
+        The initial guess for the solution vector.
 
     Returns
     -------
-    x : The solution vector at a fixed point.
-    res : Auxiliary data to transfer to the backward pass.
+    result :
+        The solution vector and the residual ``(a, x_star)`` saved for the backward
+        pass.
     """
     x_star = solver_fixedpoint_implicit(solver, solver_config, f, a, x_init)
 
@@ -227,20 +279,31 @@ def fixed_point_bwd_materialize(
     vec: Float[Array, "nodes_free 3"],
 ) -> tuple[SolverIterParams, None]:
     """
-    The backward pass of a fixed point solver materializing the Jacobian.
+    Run the backward pass by materializing the fixed-point Jacobian densely.
 
     Parameters
     ----------
-    solver: The function that executes a fixed point solver.
-    solver_config: The configuration options of the solver.
-    f : The function to iterate upon. It ought to have signature f(theta, x(theta)).
-    res : Auxiliary data transferred from the forward pass.
-    vec: The vector on the left of the VJP.
+    solver :
+        The function that runs the fixed-point solve. Unused here.
+    solver_config :
+        The configuration options of the solver. Unused here.
+    f :
+        The function iterated upon, with signature ``f(theta, x(theta))``.
+    res :
+        The residual from the forward pass: the parameters and the fixed point.
+    vec :
+        The cotangent vector on the left of the VJP.
 
     Returns
     -------
-    x : The solution vector at a fixed point.
-    res : None
+    grads :
+        The cotangent with respect to the parameters, and None for the unused
+        initial guess.
+
+    Notes
+    -----
+    Forms the dense adjoint matrix ``I - J`` and solves it directly. Simple but
+    memory-heavy; the adjoint and iterative variants avoid the dense solve.
     """
     # Unpack data from forward pass
     theta, x_star = res
@@ -289,20 +352,31 @@ def fixed_point_bwd_fixedpoint(
     vec: Float[Array, "nodes_free 3"],
 ) -> tuple[SolverIterParams, None]:
     """
-    The backward pass of an iterative fixed point solver.
+    Run the backward pass by solving the adjoint system with fixed-point iteration.
 
     Parameters
     ----------
-    solver: The function that executes a fixed point solver.
-    solver_config: The configuration options of the solver.
-    f : The function to iterate upon.
-    res : Auxiliary data transferred from the forward pass.
-    vec: The vector on the left of the VJP.
+    solver :
+        The function that runs the fixed-point solve. Unused here.
+    solver_config :
+        The configuration options of the solver.
+    f :
+        The function iterated upon.
+    res :
+        The residual from the forward pass: the parameters and the fixed point.
+    vec :
+        The cotangent vector on the left of the VJP.
 
     Returns
     -------
-    x : The solution vector at a fixed point.
-    res : None
+    grads :
+        The cotangent with respect to the parameters, and None for the unused
+        initial guess.
+
+    Notes
+    -----
+    Solves the adjoint fixed-point equation with the same forward iteration used in
+    the forward pass, avoiding an explicit Jacobian.
     """
     # Unpack data from forward pass
     a, x_star = res
@@ -355,20 +429,32 @@ def fixed_point_bwd_adjoint_general(
     vec: Float[Array, "nodes_free 3"],
 ) -> tuple[SolverIterParams, None]:
     """
-    The backward pass of a fixed point solver with the adjoint method.
+    Run the backward pass by solving the adjoint system with BiCGSTAB.
 
     Parameters
     ----------
-    solver: The function that executes a fixed point solver.
-    solver_config: The configuration options of the solver.
-    f : The function to iterate upon.
-    res : Auxiliary data transferred from the forward pass.
-    vec: The vector on the left of the VJP.
+    solver :
+        The function that runs the fixed-point solve. Unused here.
+    solver_config :
+        The configuration options of the solver. Unused here.
+    f :
+        The function iterated upon.
+    res :
+        The residual from the forward pass: the parameters and the fixed point.
+    vec :
+        The cotangent vector on the left of the VJP.
 
     Returns
     -------
-    x : The solution vector at a fixed point.
-    res : None
+    grads :
+        The cotangent with respect to the parameters, and None for the unused
+        initial guess.
+
+    Notes
+    -----
+    Solves the adjoint system matrix-free with the BiCGSTAB Krylov solver, trading
+    the dense Jacobian of the materialized variant for iterative matrix-vector
+    products.
     """
     # Unpack data from forward pass
     a, x_star = res
@@ -407,20 +493,33 @@ def fixed_point_bwd_adjoint(
     vec: Float[Array, "nodes_free 3"],
 ) -> tuple[SolverIterParams, None]:
     """
-    The backward pass of an iterative fixed point solver with a pseudo-adjoint method.
+    Run the backward pass with a pseudo-adjoint method reusing the stiffness matrix.
 
     Parameters
     ----------
-    solver: The function that executes a fixed point solver.
-    solver_config: The configuration options of the solver.
-    f : The function to iterate upon. It ought to have signature f(theta, x(theta)).
-    res : Auxiliary data transferred from the forward pass.
-    vec: The vector on the left of the VJP.
+    solver :
+        The function that runs the fixed-point solve. Unused here.
+    solver_config :
+        The configuration options of the solver, read for the ``loads_fn``.
+    f :
+        The function iterated upon, with signature ``f(theta, x(theta))``.
+    res :
+        The residual from the forward pass: the parameters and the fixed point.
+    vec :
+        The cotangent vector on the left of the VJP.
 
     Returns
     -------
-    x : The solution vector at a fixed point.
-    res : None
+    grads :
+        The cotangent with respect to the parameters, and None for the unused
+        initial guess.
+
+    Notes
+    -----
+    The adjoint operator is built from the load Jacobian and the stiffness matrix
+    ``theta[0]``, then solved with conjugate gradients. When the stiffness matrix is
+    sparse, its LU factorization is computed once and reused inside a custom linear
+    solve. This is the registered backward rule for the implicit solver.
     """
     # Unpack data from forward pass
     theta, x_star = res

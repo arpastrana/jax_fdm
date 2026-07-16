@@ -46,7 +46,19 @@ class NetworkXYZLaplacianGoal(ScalarGoal, NetworkGoal):
         index: Int[Array, ""],
     ) -> Float[Array, "1"]:
         """
-        The current load path of the network.
+        The Laplacian energy of the network coordinates.
+
+        Parameters
+        ----------
+        eq_state :
+            The equilibrium state to read the edge vectors from.
+        index :
+            The sentinel index, unused.
+
+        Returns
+        -------
+        prediction :
+            The Laplacian energy, equal to the sum of squared edge lengths.
         """
         vectors = eq_state.vectors
         laplacian = jnp.dot(jnp.ravel(vectors), jnp.reshape(vectors, (-1, 1)))

@@ -1,6 +1,4 @@
-"""
-A bunch of goals to strive for.
-"""
+"""Goals defined on the residual forces at network nodes."""
 
 from jaxtyping import Array
 from jaxtyping import Float
@@ -16,7 +14,7 @@ from jax_fdm.goals.node import NodeGoal
 
 class NodeResidualForceGoal(ScalarGoal, NodeGoal):
     """
-    Make the residual force in a network to match a non-negative magnitude.
+    Drive the residual force magnitude at a node toward a target value.
     """
 
     def prediction(
@@ -25,7 +23,19 @@ class NodeResidualForceGoal(ScalarGoal, NodeGoal):
         index: Int[Array, ""],
     ) -> Float[Array, "1"]:
         """
-        The residual at the the predicted node of the network.
+        The magnitude of the residual force at the node.
+
+        Parameters
+        ----------
+        eq_state :
+            The equilibrium state to read the residual from.
+        index :
+            The index of the node.
+
+        Returns
+        -------
+        prediction :
+            The Euclidean magnitude of the node's residual force.
         """
         residual = eq_state.residuals[index, :]
 
@@ -34,8 +44,7 @@ class NodeResidualForceGoal(ScalarGoal, NodeGoal):
 
 class NodeResidualVectorGoal(VectorGoal, NodeGoal):
     """
-    Make the residual force in a network to match the magnitude and direction of
-    a vector.
+    Drive the residual force at a node toward a target vector.
     """
 
     def prediction(
@@ -44,25 +53,33 @@ class NodeResidualVectorGoal(VectorGoal, NodeGoal):
         index: Int[Array, ""],
     ) -> Float[Array, "3"]:
         """
-        The residual at the the predicted node of the network.
+        The residual force vector at the node.
+
+        Parameters
+        ----------
+        eq_state :
+            The equilibrium state to read the residual from.
+        index :
+            The index of the node.
+
+        Returns
+        -------
+        prediction :
+            The node's residual force vector.
         """
         return eq_state.residuals[index, :]
 
 
 class NodeResidualDirectionGoal(VectorGoal, NodeGoal):
     """
-    Make the residual force in a network to match the direction of a vector.
+    Drive the residual force at a node toward a target direction.
 
-    Another effective proxy for cosine distance can be obtained by
-    L2 normalisation of the vectors, followed by the application of normal
-    Euclidean distance. Using this technique each term in each vector is
-    first divided by the magnitude of the vector, yielding a vector of unit
-    length. Then, it is clear, the Euclidean distance over the end-points
-    of any two vectors is a proper metric which gives the same ordering as
-    the cosine distance (a monotonic transformation of Euclidean distance;
-    see below) for any comparison of vectors, and furthermore avoids the
-    potentially expensive trigonometric operations required to yield
-    a proper metric.
+    Notes
+    -----
+    Both the prediction and the target are unit-normalized, so only direction is
+    compared while magnitude is ignored. Euclidean distance between the normalized
+    vectors gives the same ordering as cosine distance, without the cost of
+    trigonometric operations.
     """
 
     def prediction(
@@ -71,7 +88,19 @@ class NodeResidualDirectionGoal(VectorGoal, NodeGoal):
         index: Int[Array, ""],
     ) -> Float[Array, "3"]:
         """
-        The residual at the the predicted node of the network.
+        The unit direction of the residual force at the node.
+
+        Parameters
+        ----------
+        eq_state :
+            The equilibrium state to read the residual from.
+        index :
+            The index of the node.
+
+        Returns
+        -------
+        prediction :
+            The normalized residual force vector.
         """
         residual = eq_state.residuals[index, :]
 
@@ -82,5 +111,19 @@ class NodeResidualDirectionGoal(VectorGoal, NodeGoal):
         target: Float[Array, "3"],
         prediction: Float[Array, "3"],
     ) -> Float[Array, "3"]:
-        """ """
+        """
+        The unit direction of the target vector.
+
+        Parameters
+        ----------
+        target :
+            The target direction vector.
+        prediction :
+            The current normalized residual, unused.
+
+        Returns
+        -------
+        goal :
+            The normalized target vector.
+        """
         return normalize_vector(target)

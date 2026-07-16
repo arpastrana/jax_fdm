@@ -1,6 +1,4 @@
-"""
-A force density network.
-"""
+"""A force density network."""
 
 from collections.abc import Iterator
 from typing import Any
@@ -44,7 +42,17 @@ class FDNetwork(Network, FDDatastructure):
     @classmethod
     def from_mesh(cls, mesh: Mesh) -> "FDNetwork":
         """
-        Create a force density network from a mesh.
+        Build a force density network from a mesh's vertices and edges.
+
+        Parameters
+        ----------
+        mesh :
+            The mesh to copy vertices, edges, and their attributes from.
+
+        Returns
+        -------
+        network :
+            The network mirroring the mesh's connectivity and attributes.
         """
         nodes = {vkey: mesh.vertex_coordinates(vkey) for vkey in mesh.vertices()}
         network = cls.from_nodes_and_edges(nodes, mesh.edges())
@@ -71,7 +79,19 @@ class FDNetwork(Network, FDDatastructure):
         axes: str = "xyz",
     ) -> list[list[float]]:
         """
-        Gets or sets the x, y, z coordinates of a list of nodes.
+        Get the coordinates of many nodes.
+
+        Parameters
+        ----------
+        keys :
+            The nodes to access. If None, all nodes are used.
+        axes :
+            The coordinate axes to return, as a subset of ``"xyz"``.
+
+        Returns
+        -------
+        coordinates :
+            The selected coordinates of each node.
         """
         node_keys = keys or self.nodes()
         return [self.node_coordinates(node, axes) for node in node_keys]
@@ -82,7 +102,20 @@ class FDNetwork(Network, FDDatastructure):
         axes: str = "xyz",
     ) -> list[list[float]]:
         """
-        Gets the x, y, z coordinates of the anchors of the network.
+        Get the coordinates of the supported nodes.
+
+        Parameters
+        ----------
+        keys :
+            The candidate nodes; only the supported ones are kept. If None, all
+            supported nodes are used.
+        axes :
+            The coordinate axes to return, as a subset of ``"xyz"``.
+
+        Returns
+        -------
+        coordinates :
+            The selected coordinates of each supported node.
         """
         if keys:
             node_keys = {key for key in keys if self.is_node_support(key)}
@@ -108,27 +141,62 @@ class FDNetwork(Network, FDDatastructure):
 
     def node_support(self, key: int) -> None:
         """
-        Sets a node as a fixed anchor.
+        Mark a node as a support.
+
+        Parameters
+        ----------
+        key :
+            The node to fix.
         """
         # setter-mode call always returns None
         return self.node_attribute(key=key, name="is_support", value=True)  # pyright: ignore[reportReturnType]
 
     def node_anchor(self, key: int) -> None:
         """
-        Sets a node as a fixed anchor.
+        Mark a node as a support.
+
+        Parameters
+        ----------
+        key :
+            The node to fix.
+
+        Notes
+        -----
+        An alias of :meth:`node_support`; anchor and support are synonyms here.
         """
         return self.node_support(key)
 
     def is_node_support(self, key: int) -> bool:
         """
-        Test if the node is a fixed node.
+        Test whether a node is a support.
+
+        Parameters
+        ----------
+        key :
+            The node to test.
+
+        Returns
+        -------
+        is_support :
+            True if the node is a support.
         """
         # getter-mode call always returns the bool default
         return self.node_attribute(key=key, name="is_support")  # pyright: ignore[reportReturnType]
 
     def nodes_supports(self, keys: list[int] | None = None) -> Iterator[int] | None:
         """
-        Gets or sets the node keys where a support has been assigned.
+        Get the support nodes, or mark nodes as supports.
+
+        Parameters
+        ----------
+        keys :
+            The nodes to mark as supports. If None, the existing support nodes are
+            returned instead.
+
+        Returns
+        -------
+        supports :
+            The support node keys when reading; None when setting.
         """
         if keys is None:
             # data=False getter always yields plain node keys
@@ -139,19 +207,54 @@ class FDNetwork(Network, FDDatastructure):
 
     def nodes_fixed(self, keys: list[int] | None = None) -> Iterator[int] | None:
         """
-        Gets or sets the node keys where a support has been assigned.
+        Get the support nodes, or mark nodes as supports.
+
+        Parameters
+        ----------
+        keys :
+            The nodes to mark as supports. If None, the existing support nodes are
+            returned instead.
+
+        Returns
+        -------
+        supports :
+            The support node keys when reading; None when setting.
+
+        Notes
+        -----
+        An alias of :meth:`nodes_supports`.
         """
         return self.nodes_supports(keys)
 
     def nodes_anchors(self, keys: list[int] | None = None) -> Iterator[int] | None:
         """
-        Gets or sets the node keys where an anchor has been assigned.
+        Get the support nodes, or mark nodes as supports.
+
+        Parameters
+        ----------
+        keys :
+            The nodes to mark as supports. If None, the existing support nodes are
+            returned instead.
+
+        Returns
+        -------
+        supports :
+            The support node keys when reading; None when setting.
+
+        Notes
+        -----
+        An alias of :meth:`nodes_supports`.
         """
         return self.nodes_supports(keys)
 
     def nodes_free(self) -> Iterator[int]:
         """
-        The keys of the nodes where there is no support assigned.
+        Iterate over the free (unsupported) nodes.
+
+        Returns
+        -------
+        nodes_free :
+            The keys of the nodes that are not supports.
         """
         # data=False getter always yields plain node keys
         return self.nodes_where({"is_support": False})  # pyright: ignore[reportReturnType]
@@ -162,7 +265,19 @@ class FDNetwork(Network, FDDatastructure):
         load: list[float] | None = None,
     ) -> list[float] | None:
         """
-        Gets or sets a load to the nodes of the network.
+        Get or set the load vector on a single node.
+
+        Parameters
+        ----------
+        key :
+            The node to access.
+        load :
+            The load vector to set. If None, the current load is returned.
+
+        Returns
+        -------
+        load :
+            The node's load vector.
         """
         # names given as a non-empty tuple always returns a list
         return self.node_attributes(key=key, names=("px", "py", "pz"), values=load)  # pyright: ignore[reportReturnType]
@@ -173,28 +288,70 @@ class FDNetwork(Network, FDDatastructure):
         keys: list[int] | None = None,
     ) -> list[list[float]] | None:
         """
-        Gets or sets a load to the nodes of the network.
+        Get or set the load vectors on many nodes.
+
+        Parameters
+        ----------
+        load :
+            The load vector to set on each node. If None, current loads are returned.
+        keys :
+            The nodes to access. If None, all nodes are used.
+
+        Returns
+        -------
+        loads :
+            The load vector of each node.
         """
         # names given as a non-empty tuple always returns a list of lists
         return self.nodes_attributes(names=("px", "py", "pz"), values=load, keys=keys)  # pyright: ignore[reportReturnType]
 
     def nodes_residual(self, keys: list[int] | None = None) -> list[list[float]]:
         """
-        Gets the residual forces of the nodes of the network.
+        Get the residual force vectors of many nodes.
+
+        Parameters
+        ----------
+        keys :
+            The nodes to access. If None, all nodes are used.
+
+        Returns
+        -------
+        residuals :
+            The residual force vector of each node.
         """
         # names given as a non-empty tuple always returns a list of lists
         return self.nodes_attributes(names=("rx", "ry", "rz"), keys=keys)  # pyright: ignore[reportReturnType]
 
     def node_residual(self, key: int) -> list[float]:
         """
-        Gets the residual force of a single node of the network.
+        Get the residual force vector of a single node.
+
+        Parameters
+        ----------
+        key :
+            The node to access.
+
+        Returns
+        -------
+        residual :
+            The node's residual force vector.
         """
         # names given as a non-empty tuple always returns a list
         return self.node_attributes(key=key, names=("rx", "ry", "rz"))  # pyright: ignore[reportReturnType]
 
     def nodes_reactions(self, keys: list[int] | None = None) -> list[list[float]]:
         """
-        Gets the reaction forces of the nodes of the network.
+        Get the reaction force vectors of the support nodes.
+
+        Parameters
+        ----------
+        keys :
+            The nodes to access. If None, all support nodes are used.
+
+        Returns
+        -------
+        reactions :
+            The reaction force vector of each selected node.
         """
         # nodes_fixed() with no keys always returns a generator, never None
         keys = keys or self.nodes_fixed()  # pyright: ignore[reportAssignmentType]
@@ -203,7 +360,17 @@ class FDNetwork(Network, FDDatastructure):
 
     def node_reaction(self, key: int) -> list[float]:
         """
-        Gets the reaction force of a single node of the network.
+        Get the reaction force vector of a single node.
+
+        Parameters
+        ----------
+        key :
+            The node to access.
+
+        Returns
+        -------
+        reaction :
+            The node's reaction force vector.
         """
         # names given as a non-empty tuple always returns a list
         return self.node_attributes(key=key, names=("rx", "ry", "rz"))  # pyright: ignore[reportReturnType]
@@ -215,19 +382,49 @@ class FDNetwork(Network, FDDatastructure):
     def edges(self, data: bool = False) -> Iterator[tuple[int, int]]:
         """
         Iterate over the edges of the network.
+
+        Parameters
+        ----------
+        data :
+            If True, yield each edge with its attribute dictionary.
+
+        Returns
+        -------
+        edges :
+            An iterator over the edge keys.
         """
         # data=False getter always yields plain (u, v) edge keys
         return super().edges(data)  # pyright: ignore[reportReturnType]
 
     def is_edge_supported(self, key: tuple[int, int]) -> bool:
         """
-        Test if any of the two nodes connected by the edge is a support.
+        Test whether either end node of an edge is a support.
+
+        Parameters
+        ----------
+        key :
+            The edge to test.
+
+        Returns
+        -------
+        is_supported :
+            True if at least one of the edge's nodes is a support.
         """
         return any(self.is_node_support(node) for node in key)
 
     def is_edge_fully_supported(self, key: tuple[int, int]) -> bool:
         """
-        Test if the two nodes connected the edge are a support.
+        Test whether both end nodes of an edge are supports.
+
+        Parameters
+        ----------
+        key :
+            The edge to test.
+
+        Returns
+        -------
+        is_fully_supported :
+            True if both of the edge's nodes are supports.
         """
         return all(self.is_node_support(node) for node in key)
 
@@ -237,7 +434,13 @@ class FDNetwork(Network, FDDatastructure):
 
     def parameters(self) -> tuple[list[float], list[list[float]], list[list[float]]]:
         """
-        Return the design parameters of the network.
+        Return the force density design parameters of the network.
+
+        Returns
+        -------
+        parameters :
+            The edge force densities, the fixed node coordinates, and the node
+            loads.
         """
         q = self.edges_forcedensities()
         xyz_fixed = self.nodes_fixedcoordinates()

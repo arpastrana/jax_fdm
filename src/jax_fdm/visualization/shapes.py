@@ -17,8 +17,21 @@ Face = list[int] | tuple[int, int, int]
 
 class Arrow(Shape):
     """
-    An arrow defined by the position where it starts and the direction vector
-    it points to.
+    An arrow shape defined by a start position and a direction vector.
+
+    Parameters
+    ----------
+    position :
+        The xyz coordinates where the arrow starts.
+    direction :
+        The direction vector the arrow points along; its length sets the arrow
+        length.
+    head_portion :
+        The fraction of the arrow length taken up by the head.
+    head_width :
+        The head radius as a fraction of the arrow length.
+    body_width :
+        The body radius as a fraction of the arrow length.
 
     Notes
     -----
@@ -68,14 +81,24 @@ class Arrow(Shape):
 
     def compute_vertices(self) -> list[Vertex]:
         """
-        Compute the vertices of the discrete representation of the arrow.
+        Compute the vertices of the arrow's discrete mesh.
+
+        Returns
+        -------
+        vertices :
+            The vertex coordinates of the tessellated arrow.
         """
         vertices, _ = self.to_vertices_and_faces()
         return vertices
 
     def compute_faces(self) -> list[Face]:
         """
-        Compute the faces of the discrete representation of the arrow.
+        Compute the faces of the arrow's discrete mesh.
+
+        Returns
+        -------
+        faces :
+            The faces of the tessellated arrow, as lists of vertex indices.
         """
         _, faces = self.to_vertices_and_faces()
         return faces
@@ -87,23 +110,27 @@ class Arrow(Shape):
         v: Any = None,
     ) -> tuple[list[Vertex], list[Face]]:
         """
-        Returns a list of vertices and faces.
+        Tessellate the arrow into vertices and faces.
 
         Parameters
         ----------
-        triangulated : bool, optional
-            If ``True``, triangulate the faces.
-        u : int, optional
-            Number of faces in the "u" direction.
-            Defaults to ``self.resolution_u``.
-        v : int, optional
-            Ignored. An arrow has no "v" direction.
+        triangulated :
+            If True, triangulate the faces.
+        u :
+            The number of faces around the arrow. Defaults to ``self.resolution_u``.
+        v :
+            Ignored; an arrow has no "v" direction.
 
         Returns
         -------
-        (vertices, faces)
-            A list of vertex locations and a list of faces, with each face
-            defined as a list of indices into the list of vertices.
+        vertices_and_faces :
+            The vertex coordinates and the faces, each face a list of indices into
+            the vertices.
+
+        Raises
+        ------
+        ValueError
+            If ``u`` is less than three.
         """
         u = u or self.resolution_u
         if u < 3:
@@ -136,12 +163,12 @@ class Arrow(Shape):
 
     def transform(self, transformation: Transformation) -> None:
         """
-        Transform the arrow.
+        Transform the arrow in place.
 
         Parameters
         ----------
-        transformation : :class:`compas.geometry.Transformation`
-            The transformation used to transform the arrow.
+        transformation :
+            The transformation applied to the arrow's position and direction.
         """
         self.position.transform(transformation)
         self.direction.transform(transformation)

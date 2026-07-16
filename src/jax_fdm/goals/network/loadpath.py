@@ -10,10 +10,12 @@ from jax_fdm.goals.network import NetworkGoal
 
 class NetworkLoadPathGoal(ScalarGoal, NetworkGoal):
     """
-    Make the total load path of a network to reach a target magnitude.
+    Drive the total load path of a network toward a target magnitude.
 
-    The load path of an edge is the absolute value of the product of the
-    the force on the edge time its length.
+    Notes
+    -----
+    The load path of an edge is the absolute value of its force times its length;
+    the network load path is the sum over all edges.
     """
 
     def prediction(
@@ -22,7 +24,19 @@ class NetworkLoadPathGoal(ScalarGoal, NetworkGoal):
         index: Int[Array, ""],
     ) -> Float[Array, "1"]:
         """
-        The current load path of the network.
+        The total load path of the network.
+
+        Parameters
+        ----------
+        eq_state :
+            The equilibrium state to read edge forces and lengths from.
+        index :
+            The sentinel index, unused.
+
+        Returns
+        -------
+        prediction :
+            The sum of the absolute force-length product over all edges.
         """
         load_path = jnp.sum(jnp.abs(jnp.multiply(eq_state.lengths, eq_state.forces)))
 

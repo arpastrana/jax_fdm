@@ -8,8 +8,21 @@ from jax_fdm.goals import Goal
 
 class MeshGoal(Goal):
     """
-    Base class for all goals that pertain to a subset of the nodes, faces and
-    edges of a mesh.
+    The base class for goals defined on a mesh as a whole.
+
+    Parameters
+    ----------
+    key :
+        The sentinel element key; a mesh goal aggregates the whole structure.
+    target :
+        The value the goal drives its aggregate quantity toward.
+    weight :
+        The relative importance of the goal in the loss.
+
+    Notes
+    -----
+    A mesh goal spans the entire structure rather than one element, so it always
+    carries the sentinel key ``-1`` and is never grouped into a collection.
     """
 
     def __init__(
@@ -29,6 +42,18 @@ class MeshGoal(Goal):
         structure: EquilibriumMeshStructure,
     ) -> int:
         """
-        The index of the goal key in a structure.
+        Return the sentinel index shared by all mesh goals.
+
+        Parameters
+        ----------
+        model :
+            The equilibrium model.
+        structure :
+            The mesh structure the goal is bound to.
+
+        Returns
+        -------
+        index :
+            The sentinel index ``-1``, since the goal spans the whole mesh.
         """
         return -1

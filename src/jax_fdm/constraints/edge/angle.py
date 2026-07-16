@@ -13,8 +13,18 @@ from jax_fdm.geometry import angle_vectors
 
 class EdgeAngleConstraint(EdgeConstraint):
     """
-    Constraints the angle formed by an edge and a vector between a lower and an
-    upper bound.
+    Bound the angle between an edge and a reference vector.
+
+    Parameters
+    ----------
+    key :
+        The key or keys of the edge(s) the constraint acts on.
+    vector :
+        The reference vector each edge's angle is measured against.
+    bound_low :
+        The lower bound on the angle, in radians. If None, unbounded below.
+    bound_up :
+        The upper bound on the angle, in radians. If None, unbounded above.
     """
 
     def __init__(
@@ -31,7 +41,7 @@ class EdgeAngleConstraint(EdgeConstraint):
     @property
     def vector(self) -> Float[Array, "vectors 3"]:
         """
-        The vector to take the angle with.
+        The reference vector each edge's angle is measured against.
         """
         return self._vector
 
@@ -41,7 +51,12 @@ class EdgeAngleConstraint(EdgeConstraint):
 
     def vectors(self) -> Float[Array, "vectors 3"]:
         """
-        Create a matrix of vectors.
+        Scatter the reference vectors into a per-index matrix.
+
+        Returns
+        -------
+        vectors :
+            A matrix holding each edge's reference vector at its structure index.
         """
         matrix = np.zeros((max(self.index) + 1, 3))
         for vec, idx in zip(self.vector, self.index):
@@ -50,7 +65,14 @@ class EdgeAngleConstraint(EdgeConstraint):
 
     def init(self, model: EquilibriumModel, structure: EquilibriumStructure) -> None:
         """
-        Initialize the constraint with information from an equilibrium model.
+        Bind the constraint to a structure and reindex its reference vectors.
+
+        Parameters
+        ----------
+        model :
+            The equilibrium model.
+        structure :
+            The structure whose edge ordering defines the indices.
         """
         super().init(model, structure)
         self.vector = self.vectors()
@@ -61,7 +83,19 @@ class EdgeAngleConstraint(EdgeConstraint):
         index: Int[Array, ""],
     ) -> Float[Array, ""]:
         """
-        Returns the angle between an edge in an equilibrium state and a vector.
+        The angle between the edge and its reference vector.
+
+        Parameters
+        ----------
+        eq_state :
+            The equilibrium state to read the edge vector from.
+        index :
+            The index of the edge.
+
+        Returns
+        -------
+        constraint :
+            The angle between the edge and its reference vector, in radians.
         """
         vector = eq_state.vectors[index, :]
         return angle_vectors(vector, self.vector[index, :])

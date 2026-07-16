@@ -5,7 +5,7 @@ from jax_fdm.goals import Goal
 
 class VertexGoal(Goal):
     """
-    Base class for all constraints that pertain to a vertex in a mesh.
+    The base class for goals defined on the vertices of a mesh.
     """
 
     def index_from_model(
@@ -14,6 +14,18 @@ class VertexGoal(Goal):
         structure: EquilibriumMeshStructure,
     ) -> int | tuple[int, ...]:
         """
-        The index of the vertex in a structure.
+        Resolve the goal's vertex key to an index in a structure.
+
+        Parameters
+        ----------
+        model :
+            The equilibrium model.
+        structure :
+            The mesh structure whose vertex ordering defines the index.
+
+        Returns
+        -------
+        index :
+            The index, or tuple of indices, of the goal's vertex(es).
         """
         return self._index_from_key(structure.vertex_index)

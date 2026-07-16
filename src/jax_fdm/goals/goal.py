@@ -20,9 +20,24 @@ from jax_fdm.goals import GoalState
 
 class Goal:
     """
-    The base goal.
+    The base class for all goals, targets an equilibrium quantity reaches.
 
-    All goal subclasses must inherit from this class.
+    Parameters
+    ----------
+    key :
+        The key or keys of the element(s) the goal acts on.
+    target :
+        The value the goal drives its quantity of interest toward.
+    weight :
+        The relative importance of the goal in the loss.
+
+    Notes
+    -----
+    A goal is initialized in two phases: construction stores the key, target, and
+    weight, then :meth:`init` resolves the key to an index against an equilibrium
+    structure before any prediction runs. Subclasses supply the quantity of
+    interest via :meth:`prediction` and mix in :class:`ScalarGoal` or
+    :class:`VectorGoal` for the target's shape.
     """
 
     def __init__(
@@ -108,7 +123,20 @@ class Goal:
         prediction: Float[Array, "..."],
     ) -> Float[Array, "..."]:
         """
-        The goal value to compare the prediction against.
+        The reference value the prediction is compared against.
+
+        Parameters
+        ----------
+        target :
+            The goal's target value.
+        prediction :
+            The current value of the quantity of interest.
+
+        Returns
+        -------
+        goal :
+            The reference value. The base goal returns the target unchanged;
+            subclasses may combine it with the prediction (e.g. projections).
         """
         return target
 
@@ -118,7 +146,19 @@ class Goal:
         index: Int[Array, "..."],
     ) -> Float[Array, "..."]:
         """
-        The current value of the quantity of interest.
+        Extract the quantity of interest for one element from an equilibrium state.
+
+        Parameters
+        ----------
+        eq_state :
+            The equilibrium state to read the quantity from.
+        index :
+            The index of the element within the equilibrium state.
+
+        Returns
+        -------
+        prediction :
+            The current value of the quantity of interest.
         """
         raise NotImplementedError
 
@@ -128,15 +168,35 @@ class Goal:
         structure: EquilibriumStructure,
     ) -> int | tuple[int, ...]:
         """
-        The index of the goal key in an equilibrium structure.
+        Resolve the goal's key to an index in an equilibrium structure.
+
+        Parameters
+        ----------
+        model :
+            The equilibrium model.
+        structure :
+            The structure whose element ordering defines the index.
+
+        Returns
+        -------
+        index :
+            The index, or tuple of indices, of the goal's element(s).
         """
         raise NotImplementedError
 
     def _index_from_key(self, key_index: dict[Any, int]) -> int | tuple[int, ...]:
         """
-        Look up the goal key in an element-to-index mapping.
+        Look up the goal's key in an element-to-index mapping.
 
-        A single key maps to one index, while a list of keys maps to a tuple of indices.
+        Parameters
+        ----------
+        key_index :
+            The mapping from element key to index.
+
+        Returns
+        -------
+        index :
+            A single index for a scalar key, or a tuple of indices for a list key.
         """
         if isinstance(self.key, list):
             return tuple(key_index[k] for k in self.key)
@@ -144,13 +204,36 @@ class Goal:
 
     def init(self, model: EquilibriumModel, structure: EquilibriumStructure) -> None:
         """
-        Initialize the goal with information from an equilibrium model.
+        Bind the goal to a structure by resolving its key to an index.
+
+        Parameters
+        ----------
+        model :
+            The equilibrium model.
+        structure :
+            The structure whose element ordering defines the index.
+
+        Notes
+        -----
+        Must be called once before the goal is evaluated; it populates the index
+        that :meth:`prediction` reads.
         """
         self.index = self.index_from_model(model, structure)
 
     def __call__(self, eqstate: EquilibriumState) -> GoalState:
         """
-        Return the current goal state.
+        Evaluate the goal against an equilibrium state.
+
+        Parameters
+        ----------
+        eqstate :
+            The equilibrium state to evaluate the goal on.
+
+        Returns
+        -------
+        goal_state :
+            The goal state bundling the reference values, the predictions, and the
+            weights, vmapped over the goal's elements.
         """
         # self.index is a numpy index array populated in init and mapped to a
         # jax scalar by vmap
@@ -173,13 +256,17 @@ class Goal:
 
 class ScalarGoal:
     """
-    A goal that is expressed as a scalar quantity.
+    A mixin for goals whose target is a scalar quantity per element.
+
+    Notes
+    -----
+    Reshapes the target to a column so each element carries one scalar value.
     """
 
     @property
     def target(self) -> Float[Array, "elements 1"]:
         """
-        The target to achieve.
+        The scalar target value of each element.
         """
         return self._target
 
@@ -196,13 +283,17 @@ class ScalarGoal:
 
 class VectorGoal:
     """
-    A goal that is expressed as a vector 3D quantity.
+    A mixin for goals whose target is a 3D vector quantity per element.
+
+    Notes
+    -----
+    Reshapes the target so each element carries one xyz vector.
     """
 
     @property
     def target(self) -> Float[Array, "elements 3"]:
         """
-        The target to achieve
+        The 3D vector target of each element.
         """
         return self._target
 

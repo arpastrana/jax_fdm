@@ -1,6 +1,4 @@
-"""
-A collection of scipy-powered, gradient-free optimizers.
-"""
+"""SciPy-backed gradient-free optimizers."""
 
 from collections.abc import Callable
 from time import perf_counter
@@ -34,7 +32,12 @@ if TYPE_CHECKING:
 
 class GradientFreeOptimizer(Optimizer):
     """
-    An optimizer based on evolutionary principles.
+    The base class for optimizers that minimize without gradients.
+
+    Notes
+    -----
+    Overrides :meth:`problem` to build an objective without a gradient or hessian,
+    so the loss is only jitted for its value. Constraints are not supported.
     """
 
     def problem(
@@ -51,7 +54,35 @@ class GradientFreeOptimizer(Optimizer):
         jit_fn: bool = True,
     ) -> OptProblem:
         """
-        Set up an optimization problem.
+        Assemble a gradient-free optimization problem.
+
+        Parameters
+        ----------
+        model :
+            The equilibrium model.
+        structure :
+            The structure that provides the connectivity.
+        datastructure :
+            The network or mesh being optimized.
+        loss :
+            The loss function to minimize.
+        parameters :
+            The optimization parameters. If None, every edge force density is used.
+        constraints :
+            Ignored; gradient-free optimizers do not support constraints.
+        maxiter :
+            The maximum number of optimizer iterations.
+        tol :
+            The convergence tolerance.
+        callback :
+            A function invoked once per iteration.
+        jit_fn :
+            Whether to just-in-time compile the objective.
+
+        Returns
+        -------
+        problem :
+            The assembled optimization problem, without a gradient or hessian.
         """
         # TODO: Merge this method with that of the upstream Optimizer() to avoid
         # function duplication
@@ -116,7 +147,17 @@ class GradientFreeOptimizer(Optimizer):
 
     def solve(self, opt_problem: OptProblem) -> Float[Array, "parameters"]:
         """
-        Solve an optimization problem by minimizing a loss function.
+        Minimize an assembled gradient-free problem.
+
+        Parameters
+        ----------
+        opt_problem :
+            The problem to minimize.
+
+        Returns
+        -------
+        params_opt :
+            The optimized parameter vector.
         """
         print(f"Optimization with {self.name} started...")
         start_time = perf_counter()

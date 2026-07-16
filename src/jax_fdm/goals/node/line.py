@@ -8,13 +8,13 @@ from jax_fdm.goals.node import NodePointGoal
 
 class NodeLineGoal(NodePointGoal):
     """
-    Pulls the position of a node to a target line ray.
+    Pull a node onto a target line, defined by two points.
     """
 
     @property
     def target(self) -> Float[Array, "elements 2 3"]:
         """
-        The target to achieve
+        The two points defining the target line of each element.
         """
         return self._target
 
@@ -28,6 +28,18 @@ class NodeLineGoal(NodePointGoal):
         prediction: Float[Array, "3"],
     ) -> Float[Array, "3"]:
         """
-        The closest point on the target line.
+        The point on the target line closest to the node.
+
+        Parameters
+        ----------
+        target :
+            The two points defining the target line.
+        prediction :
+            The current node coordinates.
+
+        Returns
+        -------
+        goal :
+            The closest point on the (infinite) line through the two points.
         """
         return closest_point_on_line(prediction, target)

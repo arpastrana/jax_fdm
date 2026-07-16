@@ -71,14 +71,15 @@ class NotebookViewer(CompasNotebookViewer):
 
         Parameters
         ----------
-        data : :class:`compas.geometry.Geometry` | :class:`compas.datastructures.Datastructure`
-            The object to visualize.
-        **kwargs : dict, optional
-            Additional visualization options.
+        data :
+            The geometry or datastructure to visualize.
+        kwargs :
+            Additional visualization options passed to the scene object.
 
         Returns
         -------
-        The created scene object.
+        scene_object :
+            The created scene object.
         """
         # COMPAS 2.x aliases ``Network`` to ``Graph``; default the display name
         # to "Network" to mirror the 3D viewer wrapper.

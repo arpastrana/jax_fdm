@@ -9,7 +9,7 @@ from jax_fdm.goals.node import NodeGoal
 
 class NodeXCoordinateGoal(ScalarGoal, NodeGoal):
     """
-    Make a node of a network to reach a target X coordinate.
+    Drive a node toward a target X coordinate.
     """
 
     def prediction(
@@ -18,14 +18,26 @@ class NodeXCoordinateGoal(ScalarGoal, NodeGoal):
         index: Int[Array, ""],
     ) -> Float[Array, "1"]:
         """
-        The current X coordinate of the node in a network.
+        The current X coordinate of the node.
+
+        Parameters
+        ----------
+        eq_state :
+            The equilibrium state to read the coordinate from.
+        index :
+            The index of the node.
+
+        Returns
+        -------
+        prediction :
+            The node's X coordinate.
         """
         return eq_state.xyz[index, :1]
 
 
 class NodeYCoordinateGoal(ScalarGoal, NodeGoal):
     """
-    Make a node of a network to reach a target Y coordinate.
+    Drive a node toward a target Y coordinate.
     """
 
     def prediction(
@@ -34,14 +46,26 @@ class NodeYCoordinateGoal(ScalarGoal, NodeGoal):
         index: Int[Array, ""],
     ) -> Float[Array, "1"]:
         """
-        The current Y coordinate of the node in a network.
+        The current Y coordinate of the node.
+
+        Parameters
+        ----------
+        eq_state :
+            The equilibrium state to read the coordinate from.
+        index :
+            The index of the node.
+
+        Returns
+        -------
+        prediction :
+            The node's Y coordinate.
         """
         return eq_state.xyz[index, 1:2]
 
 
 class NodeZCoordinateGoal(ScalarGoal, NodeGoal):
     """
-    Make a node of a network to reach a target Z coordinate.
+    Drive a node toward a target Z coordinate.
     """
 
     def prediction(
@@ -50,6 +74,18 @@ class NodeZCoordinateGoal(ScalarGoal, NodeGoal):
         index: Int[Array, ""],
     ) -> Float[Array, "1"]:
         """
-        The current Z coordinate of the node in a network.
+        The current Z coordinate of the node.
+
+        Parameters
+        ----------
+        eq_state :
+            The equilibrium state to read the coordinate from.
+        index :
+            The index of the node.
+
+        Returns
+        -------
+        prediction :
+            The node's Z coordinate.
         """
         return eq_state.xyz[index, 2:]

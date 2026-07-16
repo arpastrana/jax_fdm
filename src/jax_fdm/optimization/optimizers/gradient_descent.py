@@ -16,7 +16,12 @@ from jax_fdm.optimization.optimizers import OptProblem
 
 class GradientDescent(Optimizer):
     """
-    The gradient descent algorithm.
+    A vanilla gradient descent optimizer with a fixed learning rate.
+
+    Parameters
+    ----------
+    learning_rate :
+        The step size applied to the negative gradient at each iteration.
     """
 
     name = "gradient-descent"
@@ -27,7 +32,17 @@ class GradientDescent(Optimizer):
 
     def _minimize(self, opt_problem: OptProblem) -> OptimizeResult:
         """
-        Custom backend method to minimize a loss function.
+        Dispatch the problem to the in-house gradient descent routine.
+
+        Parameters
+        ----------
+        opt_problem :
+            The problem to minimize.
+
+        Returns
+        -------
+        result :
+            The optimization result.
         """
         opt_problem.options["learning_rate"] = self.learning_rate
 
@@ -50,36 +65,40 @@ def gradient_descent(
     **kwargs: Any,
 ) -> OptimizeResult:
     """
-    Simple vanilla gradient descent with a SciPy-like interface.
+    Minimize a function by vanilla gradient descent, SciPy-style.
 
     Parameters
     ----------
-    fun : callable
-        Objective function to be minimized.
-        Signature: fun(x, *args) -> float
-    x0 : array_like
-        Initial guess.
-    args : tuple, optional
-        Extra arguments passed to `fun` and `jac`.
-    jac : {callable, None}, optional
-        Gradient (Jacobian) of `fun`.
-        Signature: jac(x, *args) -> array_like
-        If None, SciPy's approx_fprime is used.
-    tol : float, optional
-        Gradient infinity-norm tolerance for termination.
-    callback : callable, optional
-        Called after each iteration as callback(xk).
-    options : dict, optional
-        Options for the solver:
-            - 'maxiter' (int): maximum iterations (default: 1000)
-            - 'learning_rate' (float): step size (default: 1e-2)
-            - 'fd_step' (float): finite-difference step (default: 1e-8)
+    fun :
+        The objective to minimize, called as ``fun(x, *args)``. Returns ``(f, grad)``
+        when ``jac`` is True, otherwise the scalar objective.
+    x0 :
+        The initial guess.
+    args :
+        Extra positional arguments passed to ``fun`` and ``jac``.
+    jac :
+        The gradient of ``fun``, called as ``jac(x, *args)``. If True, ``fun`` itself
+        returns the gradient; if None, a finite-difference gradient is used.
+    tol :
+        The gradient infinity-norm tolerance for termination.
+    callback :
+        A function called after each accepted step as ``callback(xk)``.
+    options :
+        Solver options: ``maxiter`` (default 1000), ``learning_rate`` (default 1e-2),
+        ``fd_step`` (finite-difference step, default 1e-8), and the ``ftol`` and
+        ``fun_tol`` stopping thresholds.
 
     Returns
     -------
-    result : OptimizeResult
-        SciPy-like result object with fields:
-        x, fun, jac, nit, nfev, njev, success, status, message
+    result :
+        A SciPy-like result carrying the solution, objective, gradient, iteration
+        and evaluation counts, and convergence status.
+
+    Notes
+    -----
+    Iteration stops on any of four conditions: gradient norm below ``tol``, objective
+    below ``fun_tol``, a plateau where the objective change falls below ``ftol``, or
+    reaching ``maxiter``.
     """
     if options is None:
         options = {}

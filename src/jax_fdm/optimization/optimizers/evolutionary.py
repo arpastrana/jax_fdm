@@ -1,6 +1,4 @@
-"""
-A collection of evolutionary optimizers.
-"""
+"""SciPy-backed stochastic global optimizers."""
 
 from typing import Any
 
@@ -21,9 +19,23 @@ from jax_fdm.optimization.optimizers import OptProblem
 
 class DifferentialEvolution(GradientFreeOptimizer):
     """
-    The a differential evolution optimizer with box constraints.
+    A differential evolution global optimizer with box bounds.
 
-    This algorithm has stochastic components, so mind the seed for reproducibility.
+    Parameters
+    ----------
+    popsize :
+        The population size multiplier.
+    vectorized :
+        If True, the objective is vmapped over the whole population per generation.
+    num_workers :
+        The number of parallel workers used to evaluate the population.
+    seed :
+        The random seed. This algorithm has stochastic components, so mind the
+        seed for reproducibility.
+
+    Notes
+    -----
+    Local polishing is disabled, so the result is the best population member found.
     """
 
     name = "DifferentialEvolution"
@@ -44,7 +56,17 @@ class DifferentialEvolution(GradientFreeOptimizer):
 
     def _minimize(self, opt_problem: OptProblem) -> OptimizeResult:
         """
-        Scipy backend method to minimize a loss function.
+        Dispatch the problem to SciPy's differential evolution.
+
+        Parameters
+        ----------
+        opt_problem :
+            The problem to minimize.
+
+        Returns
+        -------
+        result :
+            The optimization result.
         """
         func = opt_problem.fun
 
@@ -76,9 +98,15 @@ class DifferentialEvolution(GradientFreeOptimizer):
 
 class DualAnnealing(GradientFreeOptimizer):
     """
-    The a dual annealing optimizer with box constraints.
+    A dual annealing global optimizer with box bounds.
 
-    This algorithm has stochastic components, so mind the seed for reproducibility.
+    Parameters
+    ----------
+    no_local_search :
+        If True, run pure generalized simulated annealing without local search.
+    seed :
+        The random seed. This algorithm has stochastic components, so mind the
+        seed for reproducibility.
     """
 
     name = "DualAnnealing"
@@ -95,7 +123,17 @@ class DualAnnealing(GradientFreeOptimizer):
 
     def _minimize(self, opt_problem: OptProblem) -> OptimizeResult:
         """
-        Scipy backend method to minimize a loss function.
+        Dispatch the problem to SciPy's dual annealing.
+
+        Parameters
+        ----------
+        opt_problem :
+            The problem to minimize.
+
+        Returns
+        -------
+        result :
+            The optimization result.
         """
         fun = opt_problem.fun
 

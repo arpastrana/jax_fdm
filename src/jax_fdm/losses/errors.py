@@ -14,6 +14,20 @@ from jax_fdm.goals import GoalState
 class Error:
     """
     The base class for an error term in a loss function.
+
+    Parameters
+    ----------
+    goals :
+        The goals whose gap from their target this term penalizes.
+    alpha :
+        A scalar weight scaling the whole term in the loss.
+    name :
+        The name of the error term. If None, defaults to the class name.
+
+    Notes
+    -----
+    Goals are grouped into collections in ``collections``; the term evaluates one
+    error per collection and aggregates them via :meth:`errors`.
     """
 
     def __init__(
@@ -32,19 +46,49 @@ class Error:
     @staticmethod
     def error(gstate: GoalState) -> Float[Array, ""]:
         """
-        The value of the error term.
+        The error of a single goal collection.
+
+        Parameters
+        ----------
+        gstate :
+            The evaluated goal state to measure.
+
+        Returns
+        -------
+        error :
+            The error for the collection.
         """
         raise NotImplementedError
 
     def errors(self, errors: Float[Array, "errors"]) -> Float[Array, ""]:
         """
-        The sum of the individual error terms.
+        Aggregate the per-collection errors into a scalar.
+
+        Parameters
+        ----------
+        errors :
+            The error of each goal collection.
+
+        Returns
+        -------
+        error :
+            The aggregate error; the base term returns the sum.
         """
         return jnp.sum(errors)
 
     def __call__(self, eqstate: EquilibriumState) -> Float[Array, ""]:
         """
-        Return the current value of the error term.
+        Evaluate the error term against an equilibrium state.
+
+        Parameters
+        ----------
+        eqstate :
+            The equilibrium state to evaluate the goals on.
+
+        Returns
+        -------
+        error :
+            The aggregated error scaled by ``alpha``.
         """
         errors = []
         for goal_collection in self.collections:
@@ -76,11 +120,25 @@ class SquaredError(Error):
     """
     The canonical squared error.
 
-    It measures the L2 distance between the current and the target value of a goal.
+    It measures the weighted squared L2 gap between each goal's prediction
+    and target.
     """
 
     @staticmethod
     def error(gstate: GoalState) -> Float[Array, ""]:
+        """
+        The weighted sum of squared prediction-target gaps in a collection.
+
+        Parameters
+        ----------
+        gstate :
+            The evaluated goal state to measure.
+
+        Returns
+        -------
+        error :
+            The weighted squared error.
+        """
         return jnp.sum(gstate.weight * jnp.square(gstate.prediction - gstate.goal))
 
 
@@ -93,19 +151,39 @@ class MeanSquaredError(SquaredError):
 
     def errors(self, errors: Float[Array, "errors"]) -> Float[Array, ""]:
         """
-        The mean of the individual error terms.
+        The mean of the per-collection squared errors.
+
+        Parameters
+        ----------
+        errors :
+            The error of each goal collection.
+
+        Returns
+        -------
+        error :
+            The summed error divided by the number of goals.
         """
         return super(MeanSquaredError, self).errors(errors) / self.number_of_goals()
 
 
 class RootMeanSquaredError(MeanSquaredError):
     """
-    The root mean squared error.
+    The square root of the mean squared error.
     """
 
     def errors(self, errors: Float[Array, "errors"]) -> Float[Array, ""]:
         """
-        The root of the mean of the individual error terms.
+        The root of the mean squared error.
+
+        Parameters
+        ----------
+        errors :
+            The error of each goal collection.
+
+        Returns
+        -------
+        error :
+            The square root of the mean squared error.
         """
         error = super(RootMeanSquaredError, self).errors(errors)
         return jnp.sqrt(error)
@@ -116,12 +194,27 @@ class PredictionError(Error):
     The prediction error.
 
     You lose when you get too much of something.
+
+    Notes
+    -----
+    Penalizes the magnitude of the predicted quantity directly rather than its gap
+    from a target, useful for minimizing quantities such as load path.
     """
 
     @staticmethod
     def error(gstate: GoalState) -> Float[Array, ""]:
         """
-        The value of the prediction error.
+        The weighted sum of the predictions in a collection.
+
+        Parameters
+        ----------
+        gstate :
+            The evaluated goal state to measure.
+
+        Returns
+        -------
+        error :
+            The weighted sum of the predictions.
         """
         return jnp.sum(gstate.prediction * gstate.weight)
 
@@ -135,7 +228,17 @@ class MeanPredictionError(PredictionError):
 
     def errors(self, errors: Float[Array, "errors"]) -> Float[Array, ""]:
         """
-        The mean of the individual prediction error terms.
+        The mean of the per-collection prediction errors.
+
+        Parameters
+        ----------
+        errors :
+            The error of each goal collection.
+
+        Returns
+        -------
+        error :
+            The summed error divided by the number of goals.
         """
         return super().errors(errors) / self.number_of_goals()
 
@@ -144,14 +247,24 @@ class AbsoluteError(Error):
     """
     The canonical absolute error.
 
-    It measures the absolute difference between the current and the target value
-    of a goal.
+    It measures the weighted absolute gap between each goal's prediction
+    and target.
     """
 
     @staticmethod
     def error(gstate: GoalState) -> Float[Array, ""]:
         """
-        The value of the absolute error.
+        The weighted sum of absolute prediction-target gaps in a collection.
+
+        Parameters
+        ----------
+        gstate :
+            The evaluated goal state to measure.
+
+        Returns
+        -------
+        error :
+            The weighted absolute error.
         """
         return jnp.sum(gstate.weight * jnp.abs(gstate.prediction - gstate.goal))
 
@@ -163,23 +276,46 @@ class MeanAbsoluteError(AbsoluteError):
 
     def errors(self, errors: Float[Array, "errors"]) -> Float[Array, ""]:
         """
-        The mean of the individual absolute error terms.
+        The mean of the per-collection absolute errors.
+
+        Parameters
+        ----------
+        errors :
+            The error of each goal collection.
+
+        Returns
+        -------
+        error :
+            The summed error divided by the number of goals.
         """
         return super().errors(errors) / self.number_of_goals()
 
 
 class LogMaxError(Error):
     """
-    The log error for constraints with a target maximum value that should not be
-    exceeded.
+    A soft one-sided barrier penalizing goal predictions above their target.
 
-    Helpful to deal with soft barrier constraints with an upper bound.
+    Notes
+    -----
+    Only positive overshoots past the target are penalized, through ``log1p`` of
+    the violation, so the error is zero while the prediction stays at or below the
+    target. Useful for soft upper-bound constraints.
     """
 
     @staticmethod
     def error(gstate: GoalState) -> Float[Array, ""]:
         """
-        The log error.
+        The weighted log-barrier penalty on target overshoot in a collection.
+
+        Parameters
+        ----------
+        gstate :
+            The evaluated goal state to measure.
+
+        Returns
+        -------
+        error :
+            The weighted ``log1p`` penalty on the positive prediction-target gap.
         """
         difference = gstate.prediction - gstate.goal
         # TODO: consider softplus as a smooth alternative

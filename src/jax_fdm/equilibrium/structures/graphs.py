@@ -20,7 +20,13 @@ from jax_fdm import DTYPE_NP
 
 class Graph(eqx.Module):
     """
-    A graph.
+    An immutable graph holding node and edge connectivity as dense matrices.
+
+    Notes
+    -----
+    An equinox Module, so instances are registered pytrees. Nodes and edges are
+    kept as static NumPy index arrays, while the connectivity and adjacency
+    matrices are JAX arrays used in the differentiable equilibrium computation.
     """
 
     nodes: Int[np.ndarray, "nodes"]
@@ -73,7 +79,7 @@ class Graph(eqx.Module):
 
     def _edges_indexed(self) -> Int[Array, "edges 2"]:
         """
-        An iterable with the edges pointing to the indices of the node keys.
+        The edges rewritten from node keys to contiguous node indices.
         """
         node_index = self.node_index
 
@@ -86,7 +92,7 @@ class Graph(eqx.Module):
 
     def _connectivity_matrix(self) -> Float[Array, "edges nodes"]:
         """
-        The connectivity matrix between edges and nodes.
+        The signed edge-node incidence matrix of the graph.
         """
         edges_indexed = self.edges_indexed
 
@@ -94,7 +100,7 @@ class Graph(eqx.Module):
 
     def _adjacency_matrix(self) -> Float[Array, "nodes nodes"]:
         """
-        The adjacency matrix between nodes and nodes.
+        The symmetric node-node adjacency matrix of the graph.
         """
         edges_indexed = self.edges_indexed
 
@@ -108,34 +114,24 @@ class Graph(eqx.Module):
 
 class GraphSparse(Graph):
     """
-    A sparse graph.
+    A graph that exposes its connectivity in SciPy sparse format for assembly.
+
+    Notes
+    -----
+    The full connectivity matrix is still dense (see :meth:`_connectivity_matrix`);
+    only the derived free and fixed submatrices are consumed as sparse arrays.
     """
 
     def _connectivity_matrix(self) -> Float[Array, "edges nodes"]:
         """
-        The connectivity matrix between edges and nodes in JAX format.
+        The signed edge-node incidence matrix, returned dense.
 
         Notes
         -----
-        This currently is a dense array, but it should be a sparse one.
-
-        How come?
-
-        Currently there is a JAX bug that prevents us from using the
-        sparse format with the connectivity matrix:
-
-          C =  BCOO.from_scipy_sparse(self.connectivity_scipy)
-
-        When not using a dense array from the next line, we get the
-        following error:
-
-          TypeError: float() argument must be a string or a number, not 'Zero'
-
-        Therefore, we use the connectivity matrix method from the parent
-        class, which outputs a dense array.
-
-        However, submatrices connectivity_free and connectivity_fixed
-        are correctly initialized and used as sparse matrices.
+        This should be sparse but is kept dense to sidestep a JAX bug: building it
+        via ``BCOO.from_scipy_sparse`` raises ``TypeError: float() argument must be
+        a string or a number, not 'Zero'``. The free and fixed submatrices are
+        still built and used as sparse arrays.
         """
         # C = super()._connectivity_matrix()
         # return BCOO.fromdense(C).astype(DTYPE_JAX)
@@ -152,7 +148,7 @@ class GraphSparse(Graph):
     @property
     def connectivity_scipy(self) -> csc_matrix:
         """
-        The connectivity matrix between edges and nodes in SciPy CSC format.
+        The signed edge-node incidence matrix as a SciPy sparse matrix.
         """
         # TODO: Refactor GraphSparse to return a JAX sparse matrix instead
         edges_indexed = self.edges_indexed
@@ -163,7 +159,7 @@ class GraphSparse(Graph):
 
     def _adjacency_matrix(self) -> Float[Array, "nodes nodes"]:
         """
-        The adjacency matrix between nodes and nodes.
+        The symmetric node-node adjacency matrix, assembled through sparse COO.
         """
         edges_indexed = self.edges_indexed
 
@@ -182,10 +178,21 @@ def connectivity_matrix(
     rtype: str = "array",
 ) -> Float[np.ndarray, "edges nodes"] | list | spmatrix:
     """
-    Creates a connectivity matrix from a list of vertex index pairs.
+    Build the signed edge-node incidence matrix from indexed edges.
 
-    Each row represents an edge, with -1 in the start node's column and +1 in
-    the end node's column.
+    Parameters
+    ----------
+    edges :
+        The node index pair of each edge.
+    rtype :
+        The return format: ``"array"``, ``"list"``, ``"csr"``, ``"csc"``, or
+        ``"coo"``.
+
+    Returns
+    -------
+    connectivity :
+        The incidence matrix, one row per edge, with ``-1`` in the start node's
+        column and ``+1`` in the end node's column, in the requested format.
     """
     m = len(edges)
     data = np.array([-1] * m + [1] * m)
@@ -202,10 +209,26 @@ def adjacency_matrix(
     rtype: str = "array",
 ) -> Float[np.ndarray, "nodes nodes"] | list | spmatrix:
     """
-    Creates a vertex-vertex adjacency matrix.
+    Build the symmetric node-node adjacency matrix from indexed edges.
 
-    It expects that vertices / nodes are continuously indexed (no skips),
-    and that edges are indexed from 0 to len(vertices) / len(nodes).
+    Parameters
+    ----------
+    edges :
+        The node index pair of each edge.
+    rtype :
+        The return format: ``"array"``, ``"list"``, ``"csr"``, ``"csc"``, or
+        ``"coo"``.
+
+    Returns
+    -------
+    adjacency :
+        The symmetric adjacency matrix, with a one wherever two nodes share an
+        edge, in the requested format.
+
+    Notes
+    -----
+    Assumes nodes are contiguously indexed from ``0``, so the matrix size is the
+    largest node index plus one.
     """
     num_vertices = np.max(np.ravel(edges)) + 1
 
@@ -227,7 +250,20 @@ def adjacency_matrix(
 
 def build_matrix(M: spmatrix, rtype: str) -> np.ndarray | list | spmatrix:
     """
-    Returns a scipy sparse matrix in the requested format.
+    Convert a SciPy sparse matrix to the requested representation.
+
+    Parameters
+    ----------
+    M :
+        The sparse matrix to convert.
+    rtype :
+        The target format: ``"list"``, ``"array"``, ``"csr"``, ``"csc"``, or
+        ``"coo"``. Any other value returns the matrix unchanged.
+
+    Returns
+    -------
+    matrix :
+        The matrix in the requested representation.
     """
     if rtype == "list":
         return M.toarray().tolist()

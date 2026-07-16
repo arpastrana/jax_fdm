@@ -8,7 +8,7 @@ from jax_fdm.equilibrium import EquilibriumState
 
 class NodeXCoordinateConstraint(NodeConstraint):
     """
-    Constraint the X coordinate of a node between a lower and an upper bound.
+    Bound the X coordinate of a node between a lower and an upper value.
     """
 
     def constraint(
@@ -17,14 +17,26 @@ class NodeXCoordinateConstraint(NodeConstraint):
         index: Int[Array, ""],
     ) -> Float[Array, ""]:
         """
-        Returns the X coordinate of a node from an equilibrium state.
+        The X coordinate of the node.
+
+        Parameters
+        ----------
+        eq_state :
+            The equilibrium state to read the coordinate from.
+        index :
+            The index of the node.
+
+        Returns
+        -------
+        constraint :
+            The node's X coordinate.
         """
         return eq_state.xyz[index, 0]
 
 
 class NodeYCoordinateConstraint(NodeConstraint):
     """
-    Constraint the Y coordinate of a node between a lower and an upper bound.
+    Bound the Y coordinate of a node between a lower and an upper value.
     """
 
     def constraint(
@@ -33,14 +45,26 @@ class NodeYCoordinateConstraint(NodeConstraint):
         index: Int[Array, ""],
     ) -> Float[Array, ""]:
         """
-        Returns the Y coordinate of a node from an equilibrium state.
+        The Y coordinate of the node.
+
+        Parameters
+        ----------
+        eq_state :
+            The equilibrium state to read the coordinate from.
+        index :
+            The index of the node.
+
+        Returns
+        -------
+        constraint :
+            The node's Y coordinate.
         """
         return eq_state.xyz[index, 1]
 
 
 class NodeZCoordinateConstraint(NodeConstraint):
     """
-    Constraint the Z coordinate of a node between a lower and an upper bound.
+    Bound the Z coordinate of a node between a lower and an upper value.
     """
 
     def constraint(
@@ -49,6 +73,18 @@ class NodeZCoordinateConstraint(NodeConstraint):
         index: Int[Array, ""],
     ) -> Float[Array, ""]:
         """
-        Returns the Z coordinate of a node from an equilibrium state.
+        The Z coordinate of the node.
+
+        Parameters
+        ----------
+        eq_state :
+            The equilibrium state to read the coordinate from.
+        index :
+            The index of the node.
+
+        Returns
+        -------
+        constraint :
+            The node's Z coordinate.
         """
         return eq_state.xyz[index, 2]

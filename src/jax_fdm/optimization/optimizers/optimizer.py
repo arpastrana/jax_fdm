@@ -1,6 +1,4 @@
-"""
-A gradient-based optimizer.
-"""
+"""The base optimizer and the SciPy problem it assembles."""
 
 from collections.abc import Callable
 from dataclasses import dataclass
@@ -67,7 +65,12 @@ class OptProblem:
 
     def to_kwargs(self) -> dict[str, Any]:
         """
-        Return the problem as a keyword-argument dictionary for a scipy backend.
+        Expand the problem into keyword arguments for a SciPy backend.
+
+        Returns
+        -------
+        kwargs :
+            The problem fields as a keyword-argument dictionary.
         """
         return {f.name: getattr(self, f.name) for f in fields(self)}
 
@@ -81,7 +84,20 @@ LoadsStatic = tuple[Float[Array, "edges 3"] | float, Float[Array, "faces 3"] | f
 
 class Optimizer:
     """
-    Base class for all optimizers.
+    The base class for optimizers backed by ``scipy.optimize.minimize``.
+
+    Parameters
+    ----------
+    disp :
+        Whether the SciPy backend prints its own console output. Off by default
+        since jax_fdm prints its own progress.
+
+    Notes
+    -----
+    Subclasses set ``name`` to their SciPy method identity and override the
+    gradient, hessian, constraint, or minimization hooks as needed. :meth:`problem`
+    assembles the objective, its gradient, bounds, and goal collections into an
+    :class:`OptProblem`, which :meth:`solve` then minimizes.
     """
 
     name: str = ""
@@ -130,7 +146,24 @@ class Optimizer:
         params_opt: Float[Array, "parameters"],
     ) -> list[Any] | None:
         """
-        Returns the defined constraints in a format amenable to `scipy.minimize`.
+        Convert constraints into the form the SciPy backend expects.
+
+        Parameters
+        ----------
+        constraints :
+            The constraints to convert.
+        model :
+            The equilibrium model.
+        structure :
+            The structure the constraints are defined on.
+        params_opt :
+            The initial optimization parameters.
+
+        Returns
+        -------
+        constraints :
+            The converted constraints. The base optimizer supports none, so it warns
+            and returns None.
         """
         if constraints:
             print(
@@ -140,13 +173,34 @@ class Optimizer:
 
     def gradient(self, loss: Callable) -> Callable:
         """
-        Compute the gradient function of a loss function.
+        Build the jitted gradient of a loss function.
+
+        Parameters
+        ----------
+        loss :
+            The loss function to differentiate.
+
+        Returns
+        -------
+        gradient :
+            The jitted gradient with respect to the optimization parameters.
         """
         return jit(grad(loss, argnums=0))
 
     def hessian(self, loss: Callable) -> Callable | None:
         """
-        Compute the hessian function of a loss function.
+        Build the hessian of a loss function.
+
+        Parameters
+        ----------
+        loss :
+            The loss function to differentiate twice.
+
+        Returns
+        -------
+        hessian :
+            The hessian function, or None. The base optimizer provides none;
+            second-order optimizers override this.
         """
         pass
 
@@ -162,7 +216,28 @@ class Optimizer:
         structure: EquilibriumStructure,
     ) -> Float[Array, ""]:
         """
-        The wrapper loss.
+        Evaluate the loss from a flat optimization parameter vector.
+
+        Parameters
+        ----------
+        params_opt :
+            The flat optimization parameter vector.
+        loss :
+            The loss function to evaluate.
+        model :
+            The equilibrium model.
+        structure :
+            The structure that provides the connectivity.
+
+        Returns
+        -------
+        loss :
+            The scalar loss value.
+
+        Notes
+        -----
+        Expands the optimization vector into FDM parameters before calling the loss,
+        so the optimizer can work in the reduced parameter space.
         """
         params = self.parameters_fdm(params_opt)
 
@@ -179,7 +254,21 @@ class Optimizer:
         structure: EquilibriumStructure,
     ) -> None:
         """
-        Pre-process the goals in the loss function to accelerate computations.
+        Collect and bind the loss's goals to a structure ahead of the solve.
+
+        Parameters
+        ----------
+        loss :
+            The loss function whose error terms hold the goals.
+        model :
+            The equilibrium model.
+        structure :
+            The structure the goals are bound to.
+
+        Notes
+        -----
+        Goals are batched into collections and each collection is initialized once,
+        so the per-iteration objective avoids re-resolving goal indices.
         """
         for term in loss.terms_error:
             goal_collections = collect_goals(term.goals)
@@ -205,7 +294,40 @@ class Optimizer:
         jit_fn: bool = True,
     ) -> OptProblem:
         """
-        Set up an optimization problem.
+        Assemble an optimization problem from a model, loss, and parameters.
+
+        Parameters
+        ----------
+        model :
+            The equilibrium model.
+        structure :
+            The structure that provides the connectivity.
+        datastructure :
+            The network or mesh being optimized.
+        loss :
+            The loss function to minimize.
+        parameters :
+            The optimization parameters. If None, every edge force density is used.
+        constraints :
+            The constraints to enforce. If None, the problem is unconstrained.
+        maxiter :
+            The maximum number of optimizer iterations.
+        tol :
+            The convergence tolerance.
+        callback :
+            A function invoked once per iteration.
+        jit_fn :
+            Whether to just-in-time compile the objective and hessian.
+
+        Returns
+        -------
+        problem :
+            The assembled optimization problem.
+
+        Notes
+        -----
+        Warms up the compiled objective once and asserts the gradient is nan-free
+        before returning, so compilation cost and gradient bugs surface up front.
         """
         # optimization parameters
         if not parameters:
@@ -295,7 +417,23 @@ class Optimizer:
 
     def options(self, extra: dict[str, Any] | None = None) -> dict[str, Any]:
         """
-        Assemble a dictionary with method-specific optimization options.
+        Assemble the backend options dictionary.
+
+        Parameters
+        ----------
+        extra :
+            Extra options to merge in, such as ``maxiter``. None-valued entries are
+            skipped.
+
+        Returns
+        -------
+        options :
+            The options dictionary, always carrying the ``disp`` flag.
+
+        Raises
+        ------
+        ValueError
+            If ``extra`` is given but is not a dictionary.
         """
         options = {"disp": self.disp}
 
@@ -314,7 +452,22 @@ class Optimizer:
 
     def solve(self, opt_problem: OptProblem) -> Float[Array, "parameters"]:
         """
-        Solve an optimization problem by minimizing a loss function.
+        Minimize an assembled optimization problem.
+
+        Parameters
+        ----------
+        opt_problem :
+            The problem to minimize.
+
+        Returns
+        -------
+        params_opt :
+            The optimized parameter vector.
+
+        Notes
+        -----
+        Also stores the full SciPy result on ``self.result`` and prints the final
+        loss, gradient norm, and iteration counts.
         """
         # call callback with initial parameters
         if opt_problem.callback is not None:
@@ -341,7 +494,17 @@ class Optimizer:
 
     def _minimize(self, opt_problem: OptProblem) -> OptimizeResult:
         """
-        Scipy backend method to minimize a loss function.
+        Dispatch the problem to the SciPy minimizer.
+
+        Parameters
+        ----------
+        opt_problem :
+            The problem to minimize.
+
+        Returns
+        -------
+        result :
+            The raw SciPy optimization result.
         """
         return minimize(**opt_problem.to_kwargs())
 
@@ -362,7 +525,12 @@ class Optimizer:
 
     def parameters_value(self) -> Float[Array, "parameters"]:
         """
-        Return a flat array with the value of the optimization parameters.
+        Return the initial values of the optimization parameters.
+
+        Returns
+        -------
+        values :
+            The flat initial optimization parameter vector.
         """
         return self.pm.parameters_value
 
@@ -371,7 +539,18 @@ class Optimizer:
         params_opt: Float[Array, "parameters"],
     ) -> EquilibriumParametersState:
         """
-        Reconstruct the force density parameters from the optimization parameters.
+        Expand optimization parameters into a full FDM parameter state.
+
+        Parameters
+        ----------
+        params_opt :
+            The flat optimization parameter vector.
+
+        Returns
+        -------
+        params_state :
+            The force densities, fixed coordinates, and loads, with the static edge
+            and face loads restored.
         """
         params = self.pm.parameters_fdm(params_opt)
 

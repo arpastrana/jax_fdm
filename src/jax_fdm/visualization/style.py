@@ -96,11 +96,19 @@ def edge_colors(
 
     Parameters
     ----------
-    color : :class:`compas.colors.Color` | dict | str, optional
-        A single color to broadcast, a per-edge dict, or a semantic mode:
-        ``"fd"`` colors by absolute force density through a colormap, and
-        ``"force"`` colors tension red and compression blue.
-        Defaults to teal.
+    datastructure :
+        The network or mesh the edges belong to.
+    edges :
+        The edges to color.
+    color :
+        A single color to broadcast, a per-edge dict, or a semantic mode: ``"fd"``
+        colors by absolute force density through a colormap, and ``"force"`` colors
+        tension red and compression blue. If None, defaults to teal.
+
+    Returns
+    -------
+    colors :
+        A color for each edge.
     """
     if isinstance(color, dict):
         return color
@@ -139,10 +147,24 @@ def edge_widths(
 
     Parameters
     ----------
-    width : float | dict | tuple, optional
-        A single width to broadcast, a per-edge dict, or a ``(min, max)``
-        pair to remap the absolute edge forces into.
-        Defaults to the ``(min, max)`` remap with the default bounds.
+    datastructure :
+        The network or mesh the edges belong to.
+    edges :
+        The edges to size.
+    width :
+        A single width to broadcast, a per-edge dict, or a ``(min, max)`` pair to
+        remap the absolute edge forces into. If None, uses the default width
+        range, so the widths trace the force distribution.
+
+    Returns
+    -------
+    widths :
+        A width for each edge.
+
+    Raises
+    ------
+    ValueError
+        If the width specification is of an unsupported form.
     """
     if isinstance(width, dict):
         return width
@@ -190,13 +212,21 @@ def point_colors(
 
     Parameters
     ----------
-    is_support : callable
+    points :
+        The points to color.
+    is_support :
         The support predicate of the datastructure.
-    color : :class:`compas.colors.Color` | dict, optional
-        A single color to broadcast or a per-point dict.
-    default : :class:`compas.colors.Color`, optional
-        The fallback color of the free points when no `color` is given,
-        for backends whose canvas asks for something other than the grey.
+    color :
+        A single color to broadcast or a per-point dict. If None, free points take
+        the default and supports turn green.
+    default :
+        The fallback color of the free points when no ``color`` is given, for
+        backends whose canvas needs something other than the grey.
+
+    Returns
+    -------
+    colors :
+        A color for each point.
     """
     if isinstance(color, dict):
         return color
@@ -215,8 +245,16 @@ def point_sizes(points: list[int], size: PointSizeSpec = None) -> PointSizes:
 
     Parameters
     ----------
-    size : float | dict, optional
-        A single size to broadcast or a per-point dict.
+    points :
+        The points to size.
+    size :
+        A single size to broadcast or a per-point dict. If None, uses the default
+        point size.
+
+    Returns
+    -------
+    sizes :
+        A size for each point.
     """
     if isinstance(size, dict):
         return size
@@ -226,10 +264,18 @@ def point_sizes(points: list[int], size: PointSizeSpec = None) -> PointSizes:
 
 def reaction_color_default(edgecolor: EdgeColorSpec) -> Color:
     """
-    The default reaction color, given the edge color mode.
+    Pick the default reaction color for a given edge color mode.
 
-    When edges are colored by force, the reactions turn green so they read
-    apart from the red-blue tension-compression palette.
+    Parameters
+    ----------
+    edgecolor :
+        The edge color mode in effect.
+
+    Returns
+    -------
+    color :
+        Green when edges are colored by force, so reactions read apart from the
+        red-blue tension-compression palette; otherwise the default reaction color.
     """
     if edgecolor == "force":
         return Color.from_rgb255(0, 150, 10)
@@ -260,18 +306,22 @@ def load_arrows(
 
     Parameters
     ----------
-    origins : list of xyz coordinates
+    origins :
         The loaded points.
-    loads : list of vectors
+    loads :
         The load vector at every point, aligned with ``origins``.
-    clearances : list of float
-        The back-off distance at every point (the width of the thickest
-        connected edge), aligned with ``origins``.
+    clearances :
+        The back-off distance at every point (the width of the thickest connected
+        edge), aligned with ``origins``.
+    scale :
+        The factor scaling each load vector to a drawn arrow length.
+    tol :
+        The magnitude below which a load is treated as zero.
 
     Returns
     -------
-    (anchors, vectors)
-        Lists of xyz triplets, aligned with ``origins``.
+    arrows :
+        The anchor points and vectors of the arrows, each aligned with ``origins``.
     """
     anchors, vectors = [], []
 
@@ -313,24 +363,26 @@ def reaction_arrows(
 
     Parameters
     ----------
-    origins : list of xyz coordinates
+    origins :
         The supported points.
-    reactions : list of vectors
+    reactions :
         The reaction vector at every point, aligned with ``origins``.
-    forces : list of lists of float
-        The forces of the edges connected to every point, aligned with
-        ``origins``.
-    clearances : list of float, optional
-        The gap to keep between the arrow and its point (mirroring the
-        clearance of :func:`load_arrows`), aligned with ``origins``: the
-        arrow shifts along its drawn direction so its point-touching end
-        (the tail under tension, the tip under compression) stops that far
-        short of the point. Defaults to no gap.
+    forces :
+        The forces of the edges connected to every point, aligned with ``origins``.
+    scale :
+        The factor scaling each reaction vector to a drawn arrow length.
+    tol :
+        The magnitude below which a reaction is treated as zero.
+    clearances :
+        The gap to keep between the arrow and its point, mirroring the clearance of
+        :func:`load_arrows` and aligned with ``origins``: the arrow shifts along its
+        drawn direction so its point-touching end (the tail under tension, the tip
+        under compression) stops that far short of the point. If None, no gap.
 
     Returns
     -------
-    (anchors, vectors)
-        Lists of xyz triplets, aligned with ``origins``.
+    arrows :
+        The anchor points and vectors of the arrows, each aligned with ``origins``.
     """
     if clearances is None:
         clearances = [0.0] * len(origins)

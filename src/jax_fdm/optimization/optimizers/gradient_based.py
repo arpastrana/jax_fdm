@@ -1,6 +1,4 @@
-"""
-A collection of scipy-powered, gradient-based optimizers.
-"""
+"""SciPy-backed gradient-based optimizers."""
 
 from collections.abc import Callable
 from typing import Any
@@ -26,7 +24,20 @@ class SLSQP(ConstrainedOptimizer):
 
 class LBFGSB(Optimizer):
     """
-    The limited-memory Boyd-Fletcher-Floyd-Shannon-Byrd (LBFGSB) optimizer.
+    The limited-memory BFGS optimizer with box bounds (L-BFGS-B).
+
+    Parameters
+    ----------
+    disp :
+        Whether the SciPy backend prints its own console output.
+    maxfun :
+        The maximum number of function evaluations. If None, the backend default.
+    maxls :
+        The maximum number of line-search steps per iteration. If None, the
+        backend default.
+    maxcor :
+        The number of correction pairs approximating the hessian. If None, the
+        backend default.
     """
 
     name = "L-BFGS-B"
@@ -46,7 +57,18 @@ class LBFGSB(Optimizer):
 
     def options(self, extra: dict[str, Any] | None = None) -> dict[str, Any]:
         """
-        Assemble a dictionary with method-specific optimization options.
+        Assemble the backend options, adding the L-BFGS-B specific limits.
+
+        Parameters
+        ----------
+        extra :
+            Extra options to merge in. None-valued entries are skipped.
+
+        Returns
+        -------
+        options :
+            The options dictionary with ``maxfun``, ``maxls``, and ``maxcor`` added
+            and ``disp`` removed, as SciPy >= 1.16 no longer accepts it here.
         """
         if extra is None:
             extra = {}
@@ -66,15 +88,27 @@ class LBFGSB(Optimizer):
 
 class LBFGSBS(LBFGSB):
     """
-    The limited-memory Boyd-Fletcher-Floyd-Shannon-Byrd (LBFGSB) optimizer.
+    An L-BFGS-B variant that converts JAX gradients to NumPy for SciPy.
 
-    This version of LBFGSB ensures compatibility of JAX gradients with scipy.
-    However, it is slower than standard LBFGSB.
+    Notes
+    -----
+    Wrapping each gradient in a NumPy array sidesteps SciPy compatibility issues
+    with JAX arrays, at the cost of being slower than :class:`LBFGSB`.
     """
 
     def gradient(self, loss: Callable) -> Callable:
         """
-        Compute the gradient function of a loss function.
+        Build the gradient, returning NumPy arrays instead of JAX arrays.
+
+        Parameters
+        ----------
+        loss :
+            The loss function to differentiate.
+
+        Returns
+        -------
+        gradient :
+            The jitted gradient wrapped to return a NumPy array.
         """
         jit_gfunc = super().gradient(loss)
         return lambda x: np.array(jit_gfunc(x))

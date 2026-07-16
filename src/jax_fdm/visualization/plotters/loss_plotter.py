@@ -20,7 +20,16 @@ from jax_fdm.losses import Loss
 
 class LossPlotter:
     """
-    Plot a loss function.
+    Chart a loss and its component errors over an optimization history.
+
+    Parameters
+    ----------
+    loss :
+        The loss function whose terms are re-evaluated and plotted.
+    datastructure :
+        The network or mesh the history parameters belong to.
+    kwargs :
+        Extra keyword arguments forwarded to the matplotlib figure.
     """
 
     def __init__(
@@ -43,8 +52,33 @@ class LossPlotter:
         **eq_kwargs: Any,
     ) -> Float[Array, "iterations"]:
         """
-        Plot the loss function and its error components on a list of fdm
-        parameter states.
+        Plot the loss and its component errors over a parameter history.
+
+        Parameters
+        ----------
+        history :
+            The per-iteration parameter states to replay through the loss.
+        report_breakdown :
+            If True, plot each error and regularization term separately and print
+            its statistics.
+        error_names :
+            The subset of term names to break down. If None, every term is shown.
+        plot_legend :
+            Whether to draw the plot legend.
+        yscale :
+            The matplotlib y-axis scale, e.g. ``"log"`` or ``"linear"``.
+        eq_kwargs :
+            Extra equilibrium model options. Defaults to a single FDM step.
+
+        Returns
+        -------
+        losses :
+            The total loss at each iteration.
+
+        Notes
+        -----
+        Equilibrium is recomputed with a dense model vmapped over the history, since
+        the sparse model does not support vmap.
         """
         print("\nPlotting loss function...")
         start_time = perf_counter()
@@ -59,7 +93,8 @@ class LossPlotter:
         if not eq_kwargs:
             eq_kwargs = {"tmax": 1}
 
-        # Model is dense because it dense supports vmapping and sparse does not
+        # The model is dense because the dense model supports vmapping and the
+        # sparse one does not
         model = EquilibriumModel(**eq_kwargs)
 
         equilibrium_vmap = vmap(model, in_axes=(0, None))
@@ -119,7 +154,14 @@ class LossPlotter:
         error_name: str,
     ) -> None:
         """
-        Print error statistics
+        Print first, last, min, and max of an error series.
+
+        Parameters
+        ----------
+        errors :
+            The error value at each iteration.
+        error_name :
+            The label to print the statistics under.
         """
         stats = {
             "first": errors[0],

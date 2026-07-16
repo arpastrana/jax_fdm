@@ -5,7 +5,7 @@ from jax_fdm.equilibrium import EquilibriumStructure
 
 class EdgeConstraint(Constraint):
     """
-    Base class for all constraints that pertain to an edge of a network.
+    The base class for constraints defined on the edges of a network.
     """
 
     def index_from_model(
@@ -14,6 +14,18 @@ class EdgeConstraint(Constraint):
         structure: EquilibriumStructure,
     ) -> int | tuple[int, ...]:
         """
-        The index of the edge key in an equilibrium structure.
+        Resolve the constraint's edge key to an index in a structure.
+
+        Parameters
+        ----------
+        model :
+            The equilibrium model.
+        structure :
+            The structure whose edge ordering defines the index.
+
+        Returns
+        -------
+        index :
+            The index, or tuple of indices, of the constraint's edge(s).
         """
         return self._index_from_key(structure.edge_index)

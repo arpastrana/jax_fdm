@@ -9,15 +9,26 @@ from jax_fdm.goals.vertex import VertexNormalAngleGoal
 
 class VertexTangentAngleGoal(VertexNormalAngleGoal):
     """
-    Reach a target value for the angle formed by the vertex tangent and a reference
-    vector.
+    Drive the angle between a vertex tangent and a reference vector toward a target.
 
-    The tangent angle is calculated as 90 degrees minus the vertex normal
-    angle, so it is signed and spans [-pi / 2, pi / 2]: positive when the
-    vertex normal points within 90 degrees of the reference vector (the
-    surface rises toward it) and negative when the normal is folded away.
-    The sign follows the winding of the mesh faces, which must be unified;
-    see the notes of `VertexNormalAngleGoal`.
+    Parameters
+    ----------
+    key :
+        The key or keys of the vertex(es) the goal acts on.
+    vector :
+        The reference vector each vertex tangent's angle is measured against.
+    target :
+        The target angle, in radians.
+    weight :
+        The relative importance of the goal in the loss.
+
+    Notes
+    -----
+    The tangent angle is 90 degrees minus the vertex normal angle, so it is signed
+    and spans [-pi / 2, pi / 2]: positive when the vertex normal points within 90
+    degrees of the reference vector (the surface rises toward it) and negative when
+    the normal is folded away. The sign follows the winding of the mesh faces, which
+    must be unified; see the notes of :class:`VertexNormalAngleGoal`.
     """
 
     def __init__(
@@ -35,7 +46,20 @@ class VertexTangentAngleGoal(VertexNormalAngleGoal):
         index: Int[Array, ""],
     ) -> Float[Array, "1"]:
         """
-        Returns the angle between the vertex tangent and the reference vector.
+        The angle between the vertex tangent and the reference vector.
+
+        Parameters
+        ----------
+        eq_state :
+            The equilibrium state to read the vertex coordinates from.
+        index :
+            The index of the vertex.
+
+        Returns
+        -------
+        prediction :
+            The signed tangent angle, 90 degrees minus the vertex normal angle, in
+            radians.
         """
         angle_normal = super().prediction(eq_state, index)
 

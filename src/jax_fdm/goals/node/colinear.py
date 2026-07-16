@@ -31,7 +31,19 @@ class NodesColinearGoal(ScalarGoal, NodeGoal):
 
     def init(self, model: EquilibriumModel, structure: EquilibriumStructure) -> None:
         """
-        Initialize the goal with information from an equilibrium model.
+        Bind the goal to a structure, keeping the node indices as one collection.
+
+        Parameters
+        ----------
+        model :
+            The equilibrium model.
+        structure :
+            The structure whose node ordering defines the indices.
+
+        Notes
+        -----
+        The indices are kept two-dimensional so the whole ordered sequence is fed
+        to a single :meth:`prediction` call rather than vmapped per node.
         """
         self.index = np.atleast_2d(super().index_from_model(model, structure))
 
@@ -41,7 +53,19 @@ class NodesColinearGoal(ScalarGoal, NodeGoal):
         index: Int[Array, "points"],
     ) -> Float[Array, "1"]:
         """
-        Length-normalized colinearity energy of the ordered points.
+        The length-normalized colinearity energy of the ordered nodes.
+
+        Parameters
+        ----------
+        eq_state :
+            The equilibrium state to read the node coordinates from.
+        index :
+            The indices of the ordered nodes.
+
+        Returns
+        -------
+        prediction :
+            The colinearity energy, zero when the nodes are evenly spaced on a line.
         """
         P = eq_state.xyz[index, :]
 
@@ -66,7 +90,19 @@ class NodesCurvatureGoal(ScalarGoal, NodeGoal):
 
     def init(self, model: EquilibriumModel, structure: EquilibriumStructure) -> None:
         """
-        Initialize the goal with information from an equilibrium model.
+        Bind the goal to a structure, keeping the node indices as one collection.
+
+        Parameters
+        ----------
+        model :
+            The equilibrium model.
+        structure :
+            The structure whose node ordering defines the indices.
+
+        Notes
+        -----
+        The indices are kept two-dimensional so the whole ordered sequence is fed
+        to a single :meth:`prediction` call rather than vmapped per node.
         """
         self.index = np.atleast_2d(super().index_from_model(model, structure))
 
@@ -76,7 +112,19 @@ class NodesCurvatureGoal(ScalarGoal, NodeGoal):
         index: Int[Array, "points"],
     ) -> Float[Array, "1"]:
         """
-        Curvature energy of the ordered points.
+        The curvature energy of the ordered nodes.
+
+        Parameters
+        ----------
+        eq_state :
+            The equilibrium state to read the node coordinates from.
+        index :
+            The indices of the ordered nodes.
+
+        Returns
+        -------
+        prediction :
+            The curvature energy, the total turning angle along the sequence.
         """
         P = eq_state.xyz[index, :]
 

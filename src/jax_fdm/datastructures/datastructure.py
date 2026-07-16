@@ -1,6 +1,4 @@
-"""
-A force density datastructure.
-"""
+"""A force density datastructure."""
 
 from collections.abc import Iterator
 from collections.abc import Sequence
@@ -28,7 +26,19 @@ class FDDatastructure:
         load: list[float] | None = None,
     ) -> list[float] | None:
         """
-        Gets or sets a load on an edge.
+        Get or set the load vector on a single edge.
+
+        Parameters
+        ----------
+        key :
+            The edge to access.
+        load :
+            The load vector to set. If None, the current load is returned.
+
+        Returns
+        -------
+        load :
+            The edge's load vector.
         """
         return self.edge_attributes(key, names=("px", "py", "pz"), values=load)
 
@@ -38,19 +48,51 @@ class FDDatastructure:
         q: float | None = None,
     ) -> float | None:
         """
-        Gets or sets the force density on a single edge.
+        Get or set the force density on a single edge.
+
+        Parameters
+        ----------
+        key :
+            The edge to access.
+        q :
+            The force density to set. If None, the current value is returned.
+
+        Returns
+        -------
+        q :
+            The edge's force density.
         """
         return self.edge_attribute(key, name="q", value=q)
 
     def edge_force(self, key: tuple[int, int]) -> float:
         """
-        Gets the forces at a single edge the network.
+        Get the internal force in a single edge.
+
+        Parameters
+        ----------
+        key :
+            The edge to access.
+
+        Returns
+        -------
+        force :
+            The edge's internal force.
         """
         return self.edge_attribute(key, name="force")
 
     def edge_loadpath(self, key: tuple[int, int]) -> float:
         """
-        Gets the load path at a single edge the network.
+        Get the load path of a single edge.
+
+        Parameters
+        ----------
+        key :
+            The edge to access.
+
+        Returns
+        -------
+        loadpath :
+            The absolute product of the edge's force and length.
         """
         force = self.edge_force(key)
         length = self.edge_attribute(key, name="length")
@@ -62,7 +104,19 @@ class FDDatastructure:
         keys: Sequence[tuple[int, int]] | None = None,
     ) -> list[float] | None:
         """
-        Gets or sets the force densities on a list of edges.
+        Get or set the force densities on many edges.
+
+        Parameters
+        ----------
+        q :
+            The force densities to set. If None, the current values are returned.
+        keys :
+            The edges to access. If None, all edges are used.
+
+        Returns
+        -------
+        q :
+            The force density of each edge.
         """
         return self.edges_attribute(name="q", value=q, keys=keys)
 
@@ -71,7 +125,17 @@ class FDDatastructure:
         keys: Sequence[tuple[int, int]] | None = None,
     ) -> list[float]:
         """
-        Gets the forces on the edges of the network.
+        Get the internal forces of many edges.
+
+        Parameters
+        ----------
+        keys :
+            The edges to access. If None, all edges are used.
+
+        Returns
+        -------
+        forces :
+            The internal force of each edge.
         """
         return self.edges_attribute(keys=keys, name="force")
 
@@ -80,7 +144,17 @@ class FDDatastructure:
         keys: Sequence[tuple[int, int]] | None = None,
     ) -> list[float]:
         """
-        Gets the lengths on the edges of the network.
+        Get the lengths of many edges.
+
+        Parameters
+        ----------
+        keys :
+            The edges to access. If None, all edges are used.
+
+        Returns
+        -------
+        lengths :
+            The length of each edge.
         """
         return self.edges_attribute(keys=keys, name="length")
 
@@ -90,7 +164,19 @@ class FDDatastructure:
         keys: Sequence[tuple[int, int]] | None = None,
     ) -> list[list[float]] | None:
         """
-        Gets or sets a load to the edges of the datastructure.
+        Get or set the load vectors on many edges.
+
+        Parameters
+        ----------
+        load :
+            The load vector to set on each edge. If None, current loads are returned.
+        keys :
+            The edges to access. If None, all edges are used.
+
+        Returns
+        -------
+        loads :
+            The load vector of each edge.
         """
         return self.edges_attributes(names=("px", "py", "pz"), values=load, keys=keys)
 
@@ -99,7 +185,17 @@ class FDDatastructure:
         keys: Sequence[tuple[int, int]] | None = None,
     ) -> Iterator[float]:
         """
-        Gets the load path on the edges of the network.
+        Iterate over the load path of many edges.
+
+        Parameters
+        ----------
+        keys :
+            The edges to access. If None, all edges are used.
+
+        Yields
+        ------
+        loadpath :
+            The load path of each edge.
         """
         keys = keys or self.edges()
         for key in keys:
@@ -111,7 +207,12 @@ class FDDatastructure:
 
     def loadpath(self) -> float:
         """
-        Gets the total load path of the network.
+        Get the total load path summed over all edges.
+
+        Returns
+        -------
+        loadpath :
+            The sum of the per-edge load paths.
         """
         return sum(list(self.edges_loadpaths()))
 
@@ -121,7 +222,14 @@ class FDDatastructure:
         ndigits: int = 3,
     ) -> None:
         """
-        Print information aboud the equilibrium state of the network.
+        Print summary statistics of the datastructure's equilibrium state.
+
+        Parameters
+        ----------
+        other_stats :
+            Extra named value lists to summarize alongside the built-in ones.
+        ndigits :
+            The number of digits to round the printed statistics to.
         """
         edges_pos = []
         edges_neg = []

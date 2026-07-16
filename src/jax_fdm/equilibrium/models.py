@@ -43,35 +43,26 @@ class EquilibriumModel:
 
     Parameters
     ----------
-    tmax : `int`, optional
+    tmax :
         The maximum number of iterations to calculate an equilibrium state.
-        If `tmax=1`, the model is equivalent to doing one linear FDM step, and the rest
-        of the parameters of this model are ignored. The edge and face loads are
-        discarded too.
-        Defaults to `100`.
-    eta : `float`, optional
+        If ``tmax=1``, the model does one linear FDM step and the remaining
+        parameters are ignored; the edge and face loads are discarded too.
+    eta :
         The convergence tolerance for calculating an equilibrium state.
-        Defaults to `1e-6`.
-    is_load_local : `bool`, optional
-        If set to `True`, the face and edge loads are applied in their local
+    is_load_local :
+        If True, the face and edge loads are applied in their local
         coordinate system at every iteration (follower loads).
-        Defaults to `False`.
-    itersolve_fn : `Callable`, optional
+    itersolve_fn :
         The function that calculates an equilibrium state iteratively.
-        If `None`, the model defaults to forward fixed-point iteration.
-        Note that the solver must be consistent with the choice of residual function.
-        Defaults to `None`.
-    iterload_fn : `Callable`, optional
-        A load callback that is invoked before starting iterative equilibrium
-        computation.
-        Defaults to `None`.
-    implicit_diff : `bool`, optional
-        If set to `True`, it applies implicit differentiation to speed up
-        backpropagation.
-        Defaults to `True`.
-    verbose : `bool`, optional
-        Whether to print out calculation info to the terminal.
-        Defaults to `False`.
+        If None, defaults to forward fixed-point iteration. The solver must be
+        consistent with the choice of residual function.
+    iterload_fn :
+        A load callback invoked once before iterative equilibrium starts.
+        If None, the load state is left untouched.
+    implicit_diff :
+        If True, apply implicit differentiation to speed up backpropagation.
+    verbose :
+        Whether to print calculation info to the terminal.
     """
 
     def __init__(
@@ -104,7 +95,19 @@ class EquilibriumModel:
         connectivity: Float[Array, "edges nodes"],
     ) -> Float[Array, "edges 3"]:
         """
-        Calculate the unnormalized edge directions (nodal coordinate differences).
+        Calculate the unnormalized edge vectors as nodal coordinate differences.
+
+        Parameters
+        ----------
+        xyz :
+            The coordinates of the nodes.
+        connectivity :
+            The signed edge-node incidence matrix of the structure.
+
+        Returns
+        -------
+        vectors :
+            The edge vectors pointing from tail to head node.
         """
         return connectivity @ xyz
 
@@ -112,6 +115,16 @@ class EquilibriumModel:
     def edges_lengths(vectors: Float[Array, "edges 3"]) -> Float[Array, "edges 1"]:
         """
         Compute the length of the edges.
+
+        Parameters
+        ----------
+        vectors :
+            The edge vectors.
+
+        Returns
+        -------
+        lengths :
+            The Euclidean length of each edge.
         """
         return jnp.linalg.norm(vectors, axis=1, keepdims=True)
 
@@ -121,7 +134,19 @@ class EquilibriumModel:
         lengths: Float[Array, "edges 1"],
     ) -> Float[Array, "edges 1"]:
         """
-        Calculate the force in the edges.
+        Calculate the axial force in the edges.
+
+        Parameters
+        ----------
+        q :
+            The force densities of the edges.
+        lengths :
+            The lengths of the edges.
+
+        Returns
+        -------
+        forces :
+            The axial force in each edge, the product of force density and length.
         """
         return jnp.reshape(q, (-1, 1)) * lengths
 
@@ -138,6 +163,22 @@ class EquilibriumModel:
     ) -> Float[Array, "nodes 3"]:
         """
         Compute the residual forces on the nodes of the structure.
+
+        Parameters
+        ----------
+        q :
+            The force densities of the edges.
+        loads :
+            The loads applied to the nodes.
+        vectors :
+            The edge vectors.
+        connectivity :
+            The signed edge-node incidence matrix of the structure.
+
+        Returns
+        -------
+        residuals :
+            The residual force at each node, zero at nodes in equilibrium.
         """
         return loads - connectivity.T @ (q[:, None] * vectors)
 
@@ -148,7 +189,21 @@ class EquilibriumModel:
         structure: EquilibriumStructure,
     ) -> Float[Array, "nodes 3"]:
         """
-        Concatenate in order the position of the free and the fixed nodes.
+        Concatenate the free and fixed node positions back into node order.
+
+        Parameters
+        ----------
+        xyz_free :
+            The coordinates of the free nodes.
+        xyz_fixed :
+            The coordinates of the fixed (supported) nodes.
+        structure :
+            The structure whose free/fixed index map reorders the nodes.
+
+        Returns
+        -------
+        xyz :
+            The coordinates of all nodes, restored to the structure's node order.
         """
         indices = structure.indices_freefixed
 
@@ -162,7 +217,28 @@ class EquilibriumModel:
         structure: EquilibriumStructure,
     ) -> Float[Array, "nodes_free 3"]:
         """
-        Calculate the XYZ coordinates of the free nodes.
+        Calculate the coordinates of the free nodes by solving the FDM system.
+
+        Parameters
+        ----------
+        q :
+            The force densities of the edges.
+        xyz_fixed :
+            The coordinates of the fixed (supported) nodes.
+        loads :
+            The loads applied to the nodes.
+        structure :
+            The structure that provides the connectivity matrices.
+
+        Returns
+        -------
+        xyz_free :
+            The coordinates of the free nodes at equilibrium.
+
+        Notes
+        -----
+        Solves ``K @ xyz_free = P``, the linear FDM equilibrium system, with the
+        stiffness matrix ``K`` and the load matrix ``P``.
         """
         K = self.stiffness_matrix(q, structure)
         P = self.load_matrix(q, xyz_fixed, loads, structure)
@@ -178,6 +254,22 @@ class EquilibriumModel:
     ) -> Float[Array, "nodes_free 3"]:
         """
         Calculate static equilibrium on the nodes of a structure.
+
+        Parameters
+        ----------
+        q :
+            The force densities of the edges.
+        xyz_fixed :
+            The coordinates of the fixed (supported) nodes.
+        loads_nodes :
+            The loads applied to the nodes.
+        structure :
+            The structure that provides the connectivity matrices.
+
+        Returns
+        -------
+        xyz_free :
+            The coordinates of the free nodes at equilibrium.
         """
         return self.nodes_free_positions(q, xyz_fixed, loads_nodes, structure)
 
@@ -192,7 +284,28 @@ class EquilibriumModel:
         structure: EquilibriumStructure,
     ) -> Float[Array, "nodes 3"]:
         """
-        Calculate the loads applied to the nodes of the structure.
+        Calculate the total load applied to the nodes of the structure.
+
+        Parameters
+        ----------
+        xyz :
+            The coordinates of all nodes.
+        load_state :
+            The nodal, edge, and face loads to aggregate onto the nodes.
+        structure :
+            The structure that provides the connectivity used to distribute
+            edge and face loads to the nodes.
+
+        Returns
+        -------
+        loads :
+            The load at each node, including tributary edge and face loads.
+
+        Notes
+        -----
+        Edge and face loads are added only when present (non-scalar). A non-scalar
+        face load occurs only for meshes, so ``structure`` is a mesh structure in
+        that branch.
         """
         nodes_load, edges_load, faces_load = load_state
 
@@ -229,7 +342,24 @@ class EquilibriumModel:
         is_local: bool = False,
     ) -> Float[Array, "nodes 3"]:
         """
-        Calculate the tributary face loads aplied to the nodes of a structure.
+        Distribute face area loads to the nodes of a structure.
+
+        Parameters
+        ----------
+        xyz :
+            The coordinates of all nodes.
+        faces_load :
+            The area load on each face.
+        structure :
+            The mesh structure that maps faces to their nodes.
+        is_local :
+            If True, the face load is applied in the face's local coordinate
+            system (a follower load that tracks the deformed geometry).
+
+        Returns
+        -------
+        loads :
+            The tributary face load carried by each node.
         """
         return nodes_load_from_faces(xyz, faces_load, structure, is_local)
 
@@ -241,7 +371,24 @@ class EquilibriumModel:
         is_local: bool = False,
     ) -> Float[Array, "nodes 3"]:
         """
-        Calculate the tributary edge loads aplied to the nodes of a structure.
+        Distribute edge line loads to the nodes of a structure.
+
+        Parameters
+        ----------
+        xyz :
+            The coordinates of all nodes.
+        edges_load :
+            The line load on each edge.
+        structure :
+            The structure that maps edges to their nodes.
+        is_local :
+            If True, the edge load is applied in the edge's local coordinate
+            system (a follower load that tracks the deformed geometry).
+
+        Returns
+        -------
+        loads :
+            The tributary edge load carried by each node.
         """
         return nodes_load_from_edges(xyz, edges_load, structure, is_local)
 
@@ -256,6 +403,25 @@ class EquilibriumModel:
     ) -> EquilibriumState:
         """
         Compute an equilibrium state using the force density method (FDM).
+
+        Parameters
+        ----------
+        params :
+            The force densities, fixed node coordinates, and load state.
+        structure :
+            The structure that provides the connectivity matrices.
+
+        Returns
+        -------
+        eq_state :
+            The equilibrium state with node coordinates, residuals, edge lengths,
+            edge forces, node loads, and edge vectors.
+
+        Notes
+        -----
+        A single linear FDM step is taken first. When ``tmax > 1`` the solution is
+        refined iteratively to account for shape-dependent loads, optionally with
+        implicit differentiation for the backward pass.
         """
         q, xyz_fixed, load_state = params
         load_nodes = load_state.nodes
@@ -312,7 +478,23 @@ class EquilibriumModel:
         structure: EquilibriumStructure,
     ) -> Float[Array, "nodes_free 3"]:
         """
-        Calculate static equilibrium on a structure.
+        Calculate one linear force density step on a structure.
+
+        Parameters
+        ----------
+        q :
+            The force densities of the edges.
+        xyz_fixed :
+            The coordinates of the fixed (supported) nodes.
+        loads_nodes :
+            The loads applied to the nodes.
+        structure :
+            The structure that provides the connectivity matrices.
+
+        Returns
+        -------
+        xyz_free :
+            The coordinates of the free nodes at equilibrium.
         """
         return self.nodes_equilibrium(q, xyz_fixed, loads_nodes, structure)
 
@@ -330,7 +512,36 @@ class EquilibriumModel:
         verbose: bool = False,
     ) -> Float[Array, "nodes_free 3"]:
         """
-        Calculate static equilibrium on a structure iteratively.
+        Calculate static equilibrium iteratively via fixed-point iteration on xyz.
+
+        Parameters
+        ----------
+        q :
+            The force densities of the edges.
+        xyz_fixed :
+            The coordinates of the fixed (supported) nodes.
+        load_state :
+            The nodal, edge, and face loads.
+        structure :
+            The structure that provides the connectivity matrices.
+        xyz_free_init :
+            The initial guess for the free node coordinates. If None, it is seeded
+            with one linear FDM step.
+        tmax :
+            The maximum number of fixed-point iterations.
+        eta :
+            The convergence tolerance on the iterates.
+        solver :
+            The fixed-point solver. If None, the model's default solver is used.
+        implicit_diff :
+            If True, differentiate through the fixed point implicitly.
+        verbose :
+            Whether to print convergence info to the terminal.
+
+        Returns
+        -------
+        xyz_free :
+            The coordinates of the free nodes at the converged fixed point.
 
         Notes
         -----
@@ -350,12 +561,15 @@ class EquilibriumModel:
             """
             Parameters
             ----------
-            params: A tuple with parameters (K, R_fixed, xyz_fixed, load_state)
-            xyz_free: The 3D coordinates of the free vertices.
+            params :
+                A tuple with parameters (K, R_fixed, xyz_fixed, load_state).
+            xyz_free :
+                The 3D coordinates of the free vertices.
 
             Returns
             -------
-            xyz_free_updated: The updated 3D coordinates of the free vertices.
+            xyz_free_updated :
+                The updated 3D coordinates of the free vertices.
             """
             # Assemble load matrix
             P = loads_fn(params, xyz_free)
@@ -406,7 +620,37 @@ class EquilibriumModel:
         verbose: bool = False,
     ) -> Float[Array, "nodes_free 3"]:
         """
-        Calculate static equilibrium on a structure iteratively.
+        Calculate static equilibrium iteratively by driving nodal residuals to zero.
+
+        Parameters
+        ----------
+        q :
+            The force densities of the edges.
+        xyz_fixed :
+            The coordinates of the fixed (supported) nodes.
+        load_state :
+            The nodal, edge, and face loads.
+        structure :
+            The structure that provides the connectivity matrices.
+        xyz_free_init :
+            The initial guess for the free node coordinates. If None, it is seeded
+            with one linear FDM step.
+        tmax :
+            The maximum number of solver iterations.
+        eta :
+            The convergence tolerance on the residuals.
+        solver :
+            The least-squares or root-finding solver. If None, the model's default
+            solver is used.
+        implicit_diff :
+            If True, differentiate through the solution implicitly.
+        verbose :
+            Whether to print convergence info to the terminal.
+
+        Returns
+        -------
+        xyz_free :
+            The coordinates of the free nodes where the residuals vanish.
 
         Notes
         -----
@@ -465,7 +709,23 @@ class EquilibriumModel:
 
     def select_equilibrium_iterative_fn(self, solver: Callable) -> Callable:
         """
-        Pick the equilibrium function that is compatible with the input solver function.
+        Pick the iterative equilibrium function compatible with a solver.
+
+        Parameters
+        ----------
+        solver :
+            The iterative solver function to match.
+
+        Returns
+        -------
+        equilibrium_fn :
+            The fixed-point (xyz) function for fixed-point solvers, or the residual
+            function for least-squares and root-finding solvers.
+
+        Raises
+        ------
+        ValueError
+            If the solver does not belong to a supported family.
         """
         if is_solver_fixedpoint(solver):
             return self.equilibrium_iterative_xyz
@@ -487,7 +747,24 @@ class EquilibriumModel:
         structure: EquilibriumStructure,
     ) -> EquilibriumState:
         """
-        Assembles an equilibrium state object.
+        Assemble an equilibrium state from the equilibrated geometry.
+
+        Parameters
+        ----------
+        q :
+            The force densities of the edges.
+        xyz :
+            The coordinates of all nodes.
+        loads_nodes :
+            The loads applied to the nodes.
+        structure :
+            The structure that provides the connectivity matrix.
+
+        Returns
+        -------
+        eq_state :
+            The equilibrium state bundling node coordinates, residuals, edge
+            lengths, edge forces, node loads, and edge vectors.
         """
         connectivity = structure.connectivity
 
@@ -515,7 +792,19 @@ class EquilibriumModel:
         structure: EquilibriumStructure,
     ) -> Float[Array, "nodes_free nodes_free"]:
         """
-        The stiffness matrix of the structure.
+        Assemble the force density stiffness matrix of the free nodes.
+
+        Parameters
+        ----------
+        q :
+            The force densities of the edges.
+        structure :
+            The structure that provides the free-node connectivity matrix.
+
+        Returns
+        -------
+        stiffness :
+            The stiffness matrix ``Cf.T @ diag(q) @ Cf`` of the free nodes.
         """
         c_free = structure.connectivity_free
 
@@ -533,7 +822,23 @@ class EquilibriumModel:
         structure: EquilibriumStructure,
     ) -> Float[Array, "nodes_free 3"]:
         """
-        The load matrix of the structure.
+        Assemble the right-hand side load matrix of the FDM system.
+
+        Parameters
+        ----------
+        q :
+            The force densities of the edges.
+        xyz_fixed :
+            The coordinates of the fixed (supported) nodes.
+        load_nodes :
+            The loads applied to the nodes.
+        structure :
+            The structure that provides the connectivity matrices.
+
+        Returns
+        -------
+        load_matrix :
+            The free-node loads minus the fixed nodes' residual contribution.
         """
         R_fixed = self.residual_fixed_matrix(q, xyz_fixed, structure)
 
@@ -546,8 +851,26 @@ class EquilibriumModel:
         structure: EquilibriumStructure,
     ) -> Float[Array, "nodes_free 3"]:
         """
-        Calculate loads matrix of the free nodes of the system for shape-dependent
-        loads.
+        Assemble the free-node load matrix for shape-dependent loads.
+
+        Parameters
+        ----------
+        params :
+            The force densities, fixed node coordinates, and load state.
+        xyz_free :
+            The current coordinates of the free nodes.
+        structure :
+            The structure that provides the connectivity matrices.
+
+        Returns
+        -------
+        load_matrix :
+            The right-hand side load matrix evaluated at the current geometry.
+
+        Notes
+        -----
+        The full node coordinates are reassembled first so that edge and face
+        loads can be recomputed against the current shape.
         """
         # Unpack parameters
         q, xyz_fixed, load_state = params
@@ -573,8 +896,27 @@ class EquilibriumModel:
         structure: EquilibriumStructure,
     ) -> Float[Array, "nodes_free 3"]:
         """
-        Calculate loads matrix of the free nodes of the system for shape-dependent
-        loads.
+        Assemble the free-node load matrix reusing a precomputed fixed residual.
+
+        Parameters
+        ----------
+        params :
+            A tuple of the stiffness matrix, the precomputed fixed-node residual
+            matrix, the fixed node coordinates, and the load state.
+        xyz_free :
+            The current coordinates of the free nodes.
+        structure :
+            The structure that provides the connectivity matrices.
+
+        Returns
+        -------
+        load_matrix :
+            The right-hand side load matrix evaluated at the current geometry.
+
+        Notes
+        -----
+        This is the iteration hot path: the fixed-node residual is passed in rather
+        than recomputed each step, unlike :meth:`load_xyz_matrix`.
         """
         _, R_fixed, xyz_fixed, load_state = params
 
@@ -600,7 +942,22 @@ class EquilibriumModel:
         structure: EquilibriumStructure,
     ) -> Float[Array, "nodes_free 3"]:
         """
-        The load matrix with the contribution of the fixed nodes's residuals.
+        Compute the fixed nodes' residual contribution to the free-node loads.
+
+        Parameters
+        ----------
+        q :
+            The force densities of the edges.
+        xyz_fixed :
+            The coordinates of the fixed (supported) nodes.
+        structure :
+            The structure that provides the free and fixed connectivity matrices.
+
+        Returns
+        -------
+        residual :
+            The term ``Cf.T @ diag(q) @ Cb @ xyz_fixed`` subtracted from the loads
+            to form the right-hand side of the FDM system.
         """
         c_free = structure.connectivity_free
         c_fixed = structure.connectivity_fixed
@@ -614,7 +971,22 @@ class EquilibriumModel:
         structure: EquilibriumStructure,
     ) -> Float[Array, "nodes_free 3"]:
         """
-        The residuals of the free nodes of the structure.
+        Compute the residual forces at the free nodes for a given geometry.
+
+        Parameters
+        ----------
+        params :
+            The force densities, fixed node coordinates, and load state.
+        xyz_free :
+            The current coordinates of the free nodes.
+        structure :
+            The structure that provides the connectivity matrices.
+
+        Returns
+        -------
+        residuals :
+            The out-of-balance force ``K @ xyz_free - P`` at each free node, zero
+            at equilibrium.
         """
         # Unpack parameters
         q, xyz_fixed, load_state = params
@@ -638,7 +1010,13 @@ class EquilibriumModel:
 
 class EquilibriumModelSparse(EquilibriumModel):
     """
-    The equilibrium model. Sparse.
+    An FDM model that solves the equilibrium system with a sparse linear solver.
+
+    Notes
+    -----
+    Identical to :class:`EquilibriumModel` except the stiffness matrix is assembled
+    in sparse format and the linear system is solved with a sparse solver, which
+    scales to larger structures.
     """
 
     def __init__(self, *args, **kwargs):
@@ -651,7 +1029,26 @@ class EquilibriumModelSparse(EquilibriumModel):
         structure: EquilibriumStructureSparse,
     ) -> Float[CSC, "nodes_free nodes_free"]:
         """
-        Computes the LHS matrix in CSC format from a vector of force densities.
+        Assemble the force density stiffness matrix in sparse format.
+
+        Parameters
+        ----------
+        q :
+            The force densities of the edges.
+        structure :
+            The sparse structure that provides the sparse index array, diagonal
+            indices, and the node-edge incidence used for the diagonal.
+
+        Returns
+        -------
+        stiffness :
+            The stiffness matrix of the free nodes, stored in sparse format.
+
+        Notes
+        -----
+        The off-diagonal entries are the negated force densities gathered through
+        the precomputed index array; the diagonal holds the per-node sum of
+        incident force densities.
         """
         # shorthands
         index_array = structure.index_array

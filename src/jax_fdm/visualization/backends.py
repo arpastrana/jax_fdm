@@ -10,8 +10,8 @@ class _NullObject:
     """
     A null object that absorbs any interaction and returns itself.
 
-    Attribute access, calls, iteration, indexing and context management all
-    succeed and yield a null, so an arbitrarily deep expression such as
+    Attribute access, calls, iteration and indexing all succeed and yield a
+    null, so an arbitrarily deep expression such as
     ``viewer.view.camera.zoom(-35)`` or ``for artist in viewer.artists`` runs
     without error.
     """
@@ -39,19 +39,19 @@ def null_viewer(name: str) -> type:
     """
     Build an inert viewer class to use when its backend is not installed.
 
-    The returned class warns once on construction that the viewer does nothing,
+    The returned class warns on construction that the viewer does nothing,
     then behaves as a :class:`_NullObject`: every method call and attribute
     access is a silent no-op. A whole script that builds and drives a viewer
     therefore runs to completion, only warning that nothing was drawn.
 
     Parameters
     ----------
-    name : str
+    name :
         The import name of the missing backend package.
 
     Returns
     -------
-    type
+    null_viewer :
         A null viewer class that warns on construction and no-ops thereafter.
     """
 

@@ -14,7 +14,12 @@ from jax_fdm.goals.network import NetworkXYZLaplacianGoal
 
 class MeshXYZLaplacianGoal(NetworkXYZLaplacianGoal):
     """
-    A thin wrapper of NetworkXYZLaplacianGoal.
+    Minimize the Laplacian energy of a mesh's coordinates.
+
+    Notes
+    -----
+    A thin wrapper of :class:`NetworkXYZLaplacianGoal` that fixes the key to the
+    mesh sentinel.
     """
 
     def __init__(
@@ -56,7 +61,14 @@ class MeshXYZFaceLaplacianGoal(ScalarGoal, MeshGoal):
         structure: EquilibriumMeshStructure,
     ) -> None:
         """
-        Initialize the goal with information of a model and a structure.
+        Bind the goal to a mesh, caching its face-vertex connectivity.
+
+        Parameters
+        ----------
+        model :
+            The equilibrium model.
+        structure :
+            The mesh structure whose face-vertex connectivity is cached.
         """
         super().init(model, structure)
         self.connectivity_faces_vertices = structure.connectivity_faces_vertices
@@ -67,7 +79,20 @@ class MeshXYZFaceLaplacianGoal(ScalarGoal, MeshGoal):
         index: Int[Array, ""],
     ) -> Float[Array, "vertices"]:
         """
-        The current mesh Laplacian.
+        The per-vertex Laplacian energy against neighboring face centroids.
+
+        Parameters
+        ----------
+        eq_state :
+            The equilibrium state to read vertex coordinates from.
+        index :
+            The sentinel index, unused.
+
+        Returns
+        -------
+        laplacians :
+            The squared distance from each vertex to the mean of its incident face
+            centroids.
         """
 
         def vertex_laplacian(
@@ -108,7 +133,19 @@ class MeshXYZFaceLaplacianGoal(ScalarGoal, MeshGoal):
         index: Int[Array, ""],
     ) -> Float[Array, "1"]:
         """
-        The current mesh Laplacian.
+        The mean per-vertex Laplacian energy of the mesh.
+
+        Parameters
+        ----------
+        eq_state :
+            The equilibrium state to read vertex coordinates from.
+        index :
+            The sentinel index, unused.
+
+        Returns
+        -------
+        prediction :
+            The mean over vertices of the face-centroid Laplacian energy.
         """
         laplacians = self.laplacian_vertices(eq_state, index)
 

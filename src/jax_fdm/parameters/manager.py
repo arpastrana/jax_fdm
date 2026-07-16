@@ -32,14 +32,24 @@ from jax_fdm.parameters import split_parameters
 
 class ParameterManager:
     """
-    A parameter manager for optimization.
+    Order, bound, and split optimization parameters for the FDM optimizer.
 
     Parameters
     ----------
-    model : `jax_fdm.equilibrium.EquilibriumModel`
-        An equilibrium model.
-    parameters : `List[jax_fdm.parameters.OptimizationParameter]`
-        A list of optimization parameters.
+    model :
+        The equilibrium model.
+    parameters :
+        The optimization parameters to manage.
+    structure :
+        The structure the parameters are defined on.
+    network :
+        The network or mesh the parameters read their initial values from.
+
+    Notes
+    -----
+    On construction the manager precomputes the type-sorted parameter ordering, the
+    optimizable/frozen split, and the index maps between optimization space and the
+    flat model parameter vector, so later property access is static.
     """
 
     parameter_types: list[type[Parameter]] = [
@@ -427,7 +437,18 @@ class ParameterManager:
         Float[Array, "nodes 3"],
     ]:
         """
-        Convert optimization parameters into fdm parameters.
+        Expand optimization parameters into the FDM model parameters.
+
+        Parameters
+        ----------
+        params_opt :
+            The flat optimization parameter vector.
+
+        Returns
+        -------
+        params_fdm :
+            The force densities, fixed node coordinates, and node loads, merged with
+            the frozen parameters and reshaped for the model.
         """
         # unsort params opt
         params_opt = params_opt[self.indices_groups]
@@ -453,10 +474,18 @@ class ParameterManager:
         array: Float[Array, "parameters"],
     ) -> tuple[Int[np.ndarray, "parameters"], Bool[np.ndarray, "parameters"]]:
         """
-        Returns two boolean masks.
+        Build masks separating the optimizable parameters from the frozen ones.
 
-        One with ones denoting the optimizable parameters.
-        The second one denoting the frozen parameters.
+        Parameters
+        ----------
+        array :
+            The flat parameter array to shape the masks after.
+
+        Returns
+        -------
+        masks :
+            A mask flagging the optimizable parameters and its complement flagging
+            the frozen ones.
         """
         mask = np.zeros_like(array, dtype=np.int64)
         mask[self.indices_opt] = 1
@@ -468,8 +497,18 @@ class ParameterManager:
         array: Shaped[np.ndarray, "parameters"],
     ) -> Iterator[Int[np.ndarray, "parameters"]]:
         """
-        Returns an iterator over boolean masks for the force density, xyz fixed, and
-        loads parameters.
+        Yield a mask per FDM parameter block.
+
+        Parameters
+        ----------
+        array :
+            The flat parameter array to shape the masks after.
+
+        Yields
+        ------
+        mask :
+            A mask selecting, in turn, the force density, fixed coordinate, and load
+            entries.
         """
         for indices in (self.indices_fd, self.indices_xyzfixed, self.indices_loads):
             mask = np.zeros_like(array, dtype=np.int64)

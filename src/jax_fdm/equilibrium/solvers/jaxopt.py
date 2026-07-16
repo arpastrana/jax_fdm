@@ -16,19 +16,35 @@ def solver_jaxopt(
     solver_kwargs: dict[str, Any] | None = None,
 ) -> Float[Array, "..."]:
     """
-    Solve for a fixed point of a function f(a, x) using a jaxopt solver.
+    Find a fixed point of ``fn(a, x)`` with a JAXopt solver class.
 
     Parameters
     ----------
-    fn : The function to iterate upon.
-    a : The function parameters.
-    x_init: An initial guess for the values of the solution vector.
-    solver_config: The configuration options of the solver.
+    solver_cls :
+        The JAXopt solver class to instantiate.
+    fn :
+        The function to iterate upon.
+    a :
+        The function parameters.
+    x_init :
+        The initial guess for the solution vector.
+    solver_config :
+        The configuration options of the solver, read for ``tmax``, ``eta``,
+        ``verbose``, and ``implicit_diff``.
+    solver_kwargs :
+        Extra keyword arguments forwarded to the solver class. If None, no extras
+        are passed.
 
     Returns
     -------
-    x : The solution vector at a fixed point.
+    x_star :
+        The solution vector at the fixed point.
 
+    Notes
+    -----
+    When implicit differentiation is off the iteration is unrolled so reverse-mode
+    autodiff can flow through: JAXopt otherwise uses a ``lax.while_loop``, which is
+    not reverse-mode differentiable.
     """
     tmax = solver_config["tmax"]
     eta = solver_config["eta"]

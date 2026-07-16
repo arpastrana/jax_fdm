@@ -17,8 +17,21 @@ class SecondOrderOptimizer(Optimizer):
 
     def hessian(self, loss: Callable) -> Callable:
         """
-        Compute the hessian function of a loss function.
+        Build the hessian of a loss function by nested autodiff.
+
+        Parameters
+        ----------
+        loss :
+            The loss function to differentiate twice.
+
+        Returns
+        -------
+        hessian :
+            The hessian with respect to the optimization parameters.
+
+        Notes
+        -----
+        Composed as ``jacfwd(jacrev(...))``, which matches the speed of a dedicated
+        hessian, whereas ``jacrev(jacfwd(...))`` is about three times slower.
         """
-        # NOTE: jacrev(jacfwd) is x3 slower than hessian. Why?
-        # NOTE: Ah, but jacfwd(jacrev) is as fast as hessian
         return jacfwd(jacrev(loss, argnums=0))

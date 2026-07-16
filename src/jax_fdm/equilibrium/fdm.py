@@ -42,8 +42,23 @@ def _fdm(
     datastructure: FDNetwork | FDMesh,
 ) -> FDNetwork | FDMesh:
     """
-    Compute a datastructure in a state of static equilibrium using the force density
-    method.
+    Solve for static equilibrium and write the result into a datastructure copy.
+
+    Parameters
+    ----------
+    model :
+        The equilibrium model that computes the equilibrium state.
+    params :
+        The force densities, fixed node coordinates, and load state.
+    structure :
+        The structure that provides the connectivity matrices.
+    datastructure :
+        The network or mesh to update with the equilibrium state.
+
+    Returns
+    -------
+    datastructure :
+        A copy of the input datastructure updated with the equilibrium state.
     """
     # compute static equilibrium
     eq_state = model(params, structure)
@@ -64,8 +79,36 @@ def fdm(
     verbose: bool = False,
 ) -> FDNetwork | FDMesh:
     """
-    Compute a datastructure in a state of static equilibrium using the force density
-    method.
+    Compute a datastructure in static equilibrium with the force density method.
+
+    Parameters
+    ----------
+    datastructure :
+        The network or mesh to form-find.
+    sparse :
+        If True, assemble and solve the equilibrium system with a sparse solver.
+    is_load_local :
+        If True, apply edge and face loads in their local coordinate systems
+        (follower loads).
+    tmax :
+        The maximum number of iterations. With ``tmax=1`` a single linear FDM step
+        is taken and edge and face loads are ignored.
+    eta :
+        The convergence tolerance for the iterative solve.
+    itersolve_fn :
+        The iterative equilibrium solver. If None, forward fixed-point iteration
+        is used.
+    iterload_fn :
+        A load callback invoked once before iterative equilibrium starts.
+    implicit_diff :
+        If True, apply implicit differentiation for the backward pass.
+    verbose :
+        Whether to print calculation info to the terminal.
+
+    Returns
+    -------
+    datastructure :
+        A copy of the input datastructure in static equilibrium.
     """
     datastructure_validate(datastructure)
 
@@ -115,8 +158,61 @@ def constrained_fdm(
     jit: bool = True,
 ) -> FDNetwork | FDMesh:
     """
-    Generate a network in a constrained state of static equilibrium using the force
-    density method.
+    Form-find a datastructure in constrained static equilibrium via optimization.
+
+    Parameters
+    ----------
+    datastructure :
+        The network or mesh to form-find.
+    optimizer :
+        The optimizer that minimizes the loss over the design parameters.
+    loss :
+        The loss function assembled from goals to minimize.
+    parameters :
+        The optimization parameters. If None, the optimizer uses its defaults.
+    constraints :
+        The constraints to enforce during optimization. If None, the problem is
+        unconstrained.
+    maxiter :
+        The maximum number of optimization iterations.
+    tol :
+        The convergence tolerance of the optimizer.
+    tmax :
+        The maximum number of equilibrium iterations per optimization step. With
+        ``tmax=1`` a single linear FDM step is taken.
+    eta :
+        The convergence tolerance for the iterative equilibrium solve.
+    callback :
+        A function invoked once per optimization iteration.
+    sparse :
+        If True, assemble and solve the equilibrium system with a sparse solver.
+        Forced to False when constraints are given, which sparse does not support.
+    is_load_local :
+        If True, apply edge and face loads in their local coordinate systems
+        (follower loads).
+    itersolve_fn :
+        The iterative equilibrium solver. If None, forward fixed-point iteration
+        is used.
+    iterload_fn :
+        A load callback invoked once before iterative equilibrium starts.
+    implicit_diff :
+        If True, apply implicit differentiation for the backward pass.
+    nd :
+        Unused; kept for backward compatibility.
+    verbose :
+        Whether to print calculation info to the terminal.
+    jit :
+        If True, just-in-time compile the optimization problem.
+
+    Returns
+    -------
+    datastructure :
+        A copy of the input datastructure in constrained static equilibrium.
+
+    Notes
+    -----
+    Constraints are not yet supported for sparse inputs; passing constraints with
+    ``sparse=True`` switches the solve to dense and prints a warning.
     """
     datastructure_validate(datastructure)
 
@@ -176,7 +272,31 @@ def model_from_sparsity(
     verbose: bool = False,
 ) -> EquilibriumModel:
     """
-    Create an equilibrium model from a sparsity flag.
+    Instantiate a dense or sparse equilibrium model from a sparsity flag.
+
+    Parameters
+    ----------
+    sparse :
+        If True, instantiate the sparse model; otherwise the dense model.
+    tmax :
+        The maximum number of equilibrium iterations.
+    eta :
+        The convergence tolerance for the iterative solve.
+    is_load_local :
+        If True, apply edge and face loads in their local coordinate systems.
+    itersolve_fn :
+        The iterative equilibrium solver. If None, the model default is used.
+    iterload_fn :
+        A load callback invoked once before iterative equilibrium starts.
+    implicit_diff :
+        If True, apply implicit differentiation for the backward pass.
+    verbose :
+        Whether to print calculation info to the terminal.
+
+    Returns
+    -------
+    model :
+        The configured equilibrium model.
     """
     model: type[EquilibriumModel] = EquilibriumModel
     if sparse:
@@ -200,7 +320,24 @@ def structure_from_datastructure(
     sparse: bool,
 ) -> EquilibriumStructure:
     """
-    Create a structure from a force density datastructure.
+    Build the equilibrium structure matching a network or mesh.
+
+    Parameters
+    ----------
+    datastructure :
+        The network or mesh to derive connectivity from.
+    sparse :
+        If True, build the sparse structure variant.
+
+    Returns
+    -------
+    structure :
+        The structure that carries the connectivity matrices.
+
+    Raises
+    ------
+    ValueError
+        If the datastructure is neither a network nor a mesh.
     """
     if isinstance(datastructure, FDNetwork):
         structure_factory = structure_from_network
@@ -218,7 +355,19 @@ def structure_from_datastructure(
 
 def structure_from_network(network: FDNetwork, sparse: bool) -> EquilibriumStructure:
     """
-    Create a structure from a network.
+    Build the equilibrium structure of a network.
+
+    Parameters
+    ----------
+    network :
+        The network to derive connectivity from.
+    sparse :
+        If True, build the sparse structure variant.
+
+    Returns
+    -------
+    structure :
+        The structure that carries the network connectivity matrices.
     """
     structure: type[EquilibriumStructure] = EquilibriumStructure
     if sparse:
@@ -229,7 +378,19 @@ def structure_from_network(network: FDNetwork, sparse: bool) -> EquilibriumStruc
 
 def structure_from_mesh(mesh: FDMesh, sparse: bool) -> EquilibriumMeshStructure:
     """
-    Create a structure from a mesh.
+    Build the equilibrium structure of a mesh.
+
+    Parameters
+    ----------
+    mesh :
+        The mesh to derive connectivity from.
+    sparse :
+        If True, build the sparse structure variant.
+
+    Returns
+    -------
+    structure :
+        The mesh structure that carries connectivity and face topology.
     """
     structure: type[EquilibriumMeshStructure] = EquilibriumMeshStructure
     if sparse:
@@ -240,7 +401,18 @@ def structure_from_mesh(mesh: FDMesh, sparse: bool) -> EquilibriumMeshStructure:
 
 def datastructure_validate(datastructure: FDNetwork | FDMesh) -> None:
     """
-    Check that the network is healthy.
+    Assert that a datastructure is well-posed for form-finding.
+
+    Parameters
+    ----------
+    datastructure :
+        The network or mesh to validate.
+
+    Raises
+    ------
+    AssertionError
+        If the datastructure has no supports, no edges, any edge with zero force
+        density, or no nodes (network) or vertices (mesh).
     """
     assert datastructure.number_of_supports() > 0, (
         "The FD datastructure has no supports"
@@ -268,8 +440,23 @@ def datastructure_updated(
     use_loadsfromparams: bool = False,
 ) -> FDNetwork | FDMesh:
     """
-    Return a copy of a datastructure whose attributes are updated with an equilibrium
-    state.
+    Return a copy of a datastructure updated with an equilibrium state.
+
+    Parameters
+    ----------
+    datastructure :
+        The network or mesh to update.
+    eq_state :
+        The equilibrium state to write into the datastructure.
+    params :
+        The parameter state, used as the load source when requested.
+    use_loadsfromparams :
+        If True, take node loads from ``params`` instead of the equilibrium state.
+
+    Returns
+    -------
+    datastructure :
+        A copy of the input datastructure with updated node and edge attributes.
     """
     datastructure = datastructure.copy()
     datastructure_update(datastructure, eq_state, params, use_loadsfromparams)
@@ -284,7 +471,18 @@ def datastructure_update(
     use_loadsfromparams: bool = False,
 ) -> None:
     """
-    Update in-place the attributes of a datastructure with an equilibrium state.
+    Update the attributes of a datastructure in place with an equilibrium state.
+
+    Parameters
+    ----------
+    datastructure :
+        The network or mesh to update in place.
+    eq_state :
+        The equilibrium state to write into the datastructure.
+    params :
+        The parameter state, used as the load source when requested.
+    use_loadsfromparams :
+        If True, take node loads from ``params`` instead of the equilibrium state.
     """
     # unpack equilibrium state
     xyz = eq_state.xyz.tolist()
@@ -311,7 +509,14 @@ def datastructure_edges_update(
     eqstate_edges: tuple[ElementVectors, ElementVectors, ElementScalars],
 ) -> None:
     """
-    Update the edge attributes of a datastructure.
+    Write per-edge length, force, and force density onto a datastructure.
+
+    Parameters
+    ----------
+    datastructure :
+        The network or mesh whose edge attributes are updated in place.
+    eqstate_edges :
+        The per-edge lengths, forces, and force densities, in that order.
     """
     lengths, forces, forcedensities = eqstate_edges
 
@@ -326,7 +531,19 @@ def datastructure_nodes_update(
     eqstate_nodes: tuple[ElementVectors, ElementVectors, ElementVectors],
 ) -> None:
     """
-    Update the nodes or vertex attributes of a datastructure.
+    Write per-node coordinates, residuals, and loads onto a datastructure.
+
+    Parameters
+    ----------
+    datastructure :
+        The network or mesh whose node or vertex attributes are updated in place.
+    eqstate_nodes :
+        The per-node coordinates, residuals, and loads, in that order.
+
+    Raises
+    ------
+    ValueError
+        If the datastructure is neither a network nor a mesh.
     """
     xyz, residuals, loads = eqstate_nodes
 

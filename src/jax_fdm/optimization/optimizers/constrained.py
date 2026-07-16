@@ -1,6 +1,4 @@
-"""
-A gradient-based optimizer that deals with equality and inequality constraints.
-"""
+"""A gradient-based optimizer that handles equality and inequality constraints."""
 
 from functools import partial
 from typing import TYPE_CHECKING
@@ -41,10 +39,30 @@ class ConstrainedOptimizer(Optimizer):
         params_opt: Float[Array, "parameters"],
     ) -> list[Any] | None:
         """
-        Returns the defined constraints in a format amenable to `scipy.minimize`.
+        Convert constraints into SciPy ``NonlinearConstraint`` objects.
 
-        Subclasses may return a different container: `IPOPT` returns a list of
-        cyipopt constraint dictionaries rather than scipy `NonlinearConstraint`s.
+        Parameters
+        ----------
+        constraints :
+            The constraints to convert.
+        model :
+            The equilibrium model.
+        structure :
+            The structure the constraints are defined on.
+        params_opt :
+            The initial optimization parameters, used to warm up the jitted
+            constraint and its Jacobian.
+
+        Returns
+        -------
+        constraints :
+            The SciPy constraints, or None when there are none.
+
+        Notes
+        -----
+        Each constraint carries a jitted value function and a forward-mode Jacobian.
+        Subclasses may return a different container: ``IPOPT`` returns cyipopt
+        constraint dictionaries instead.
         """
         if not constraints:
             return
@@ -91,7 +109,23 @@ class ConstrainedOptimizer(Optimizer):
         structure: EquilibriumStructure,
     ) -> Float[Array, "constraints"]:
         """
-        A wrapper around a constraint callable object.
+        Evaluate a constraint from a flat optimization parameter vector.
+
+        Parameters
+        ----------
+        params_opt :
+            The flat optimization parameter vector.
+        constraint :
+            The constraint to evaluate.
+        model :
+            The equilibrium model.
+        structure :
+            The structure that provides the connectivity.
+
+        Returns
+        -------
+        values :
+            The constrained quantity for each element.
         """
         params: EquilibriumParametersState = self.parameters_fdm(params_opt)
 

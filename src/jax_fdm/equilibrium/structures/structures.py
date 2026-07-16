@@ -24,7 +24,13 @@ from jax_fdm.equilibrium.structures.meshes import MeshSparse
 
 class EquilibriumStructure(Graph):
     """
-    A structure.
+    A graph with supports and the connectivity matrices the FDM solve needs.
+
+    Notes
+    -----
+    Extends :class:`Graph` with a support mask and the free/fixed node partition,
+    precomputing the free and fixed connectivity submatrices and the index maps
+    that reorder nodes between the free-fixed and native orderings.
     """
 
     supports: Int[np.ndarray, "nodes"]
@@ -57,7 +63,17 @@ class EquilibriumStructure(Graph):
     @classmethod
     def from_network(cls, network: FDNetwork) -> "EquilibriumStructure":
         """
-        Create a structure from a force density network.
+        Build an equilibrium structure from a force density network.
+
+        Parameters
+        ----------
+        network :
+            The network to read nodes, edges, and supports from.
+
+        Returns
+        -------
+        structure :
+            The structure with the network's connectivity and support mask.
         """
         nodes = list(network.nodes())
         edges = list(network.edges())
@@ -88,7 +104,7 @@ class EquilibriumStructure(Graph):
     @property
     def num_free(self) -> Int[Array, ""]:
         """
-        The number of supports.
+        The number of free (unsupported) nodes.
         """
         return self.num_nodes - self.num_supports
 
@@ -115,19 +131,19 @@ class EquilibriumStructure(Graph):
 
     def _connectivity_free(self) -> Float[Array, "edges nodes_free"]:
         """
-        The connectivity matrix between edges and nodes.
+        The edge-node connectivity matrix restricted to the free nodes.
         """
         return self.connectivity[:, self.indices_free]
 
     def _connectivity_fixed(self) -> Float[Array, "edges nodes_fixed"]:
         """
-        The connectivity matrix between edges and nodes.
+        The edge-node connectivity matrix restricted to the fixed nodes.
         """
         return self.connectivity[:, self.indices_fixed]
 
     def _indices_free(self) -> Int[Array, "nodes_free"]:
         """
-        The indices of the unsupported nodes in the structure.
+        The indices of the free (unsupported) nodes in the structure.
         """
         # jnp.flatnonzero's size kwarg accepts a traced/static int; self.num_free
         # is a 0-d jax.Array consistent with the rest of this class's usage
@@ -137,7 +153,7 @@ class EquilibriumStructure(Graph):
 
     def _indices_fixed(self) -> Int[Array, "nodes_fixed"]:
         """
-        The indices of the unsupported nodes in the structure.
+        The indices of the fixed (supported) nodes in the structure.
         """
         # jnp.flatnonzero's size kwarg accepts a traced/static int;
         # self.num_supports is a 0-d jax.Array consistent with this class's usage
@@ -147,7 +163,12 @@ class EquilibriumStructure(Graph):
 
     def _indices_freefixed(self) -> Int[Array, "nodes"]:
         """
-        A list with the node keys of all the nodes sorted by their node index.
+        The position of each node within the concatenated free-then-fixed ordering.
+
+        Notes
+        -----
+        Inverts the free-then-fixed permutation: indexing a free-fixed-stacked
+        array by this map restores the structure's native node order.
         """
         # TODO: this method must be refactored to be more transparent.
         freefixed_indices = jnp.concatenate([self.indices_free, self.indices_fixed])
@@ -167,7 +188,13 @@ class EquilibriumStructure(Graph):
 
 class EquilibriumStructureSparse(EquilibriumStructure, GraphSparse):
     """
-    A sparse structure.
+    An equilibrium structure that precomputes sparse stiffness-assembly helpers.
+
+    Notes
+    -----
+    Precomputes an index array, the diagonal data positions, and a diagonal
+    selector matrix so the sparse model can assemble the stiffness matrix by
+    indexing rather than rebuilding its structure at every solve.
     """
 
     diag_indices: Int[Array, "nodes_free"]
@@ -199,13 +226,13 @@ class EquilibriumStructureSparse(EquilibriumStructure, GraphSparse):
 
     def _connectivity_free(self) -> Float[BCOO, "edges nodes_free"]:
         """
-        The connectivity matrix between edges and nodes.
+        The sparse edge-node connectivity matrix restricted to the free nodes.
         """
         return BCOO.from_scipy_sparse(self.connectivity_scipy[:, self.indices_free])
 
     def _connectivity_fixed(self) -> Float[BCOO, "edges nodes_fixed"]:
         """
-        The connectivity matrix between edges and nodes.
+        The sparse edge-node connectivity matrix restricted to the fixed nodes.
         """
         return BCOO.from_scipy_sparse(self.connectivity_scipy[:, self.indices_fixed])
 
@@ -214,12 +241,23 @@ class EquilibriumStructureSparse(EquilibriumStructure, GraphSparse):
         c_free_csc: csc_matrix,
     ) -> Int[CSC, "nodes_free nodes_free"]:
         """
-        Create an index array such that the off-diagonals can index into the
-        force density vector.
+        Build an index array mapping stiffness off-diagonals to force densities.
 
-        This array is used to create the off-diagonal entries of the lhs matrix.
+        Parameters
+        ----------
+        c_free_csc :
+            The free-node connectivity matrix as a scipy sparse array.
 
-        # NOTE: The input matrix must be a scipy sparse array!
+        Returns
+        -------
+        index_array :
+            A sparse integer array whose off-diagonal entries index into the force
+            density vector when assembling the stiffness matrix.
+
+        Notes
+        -----
+        The diagonal entries are set to zero so they index a valid location; the
+        sparse model overwrites them with the per-node force density sums.
         """
         fd_mod_c_free_csc = c_free_csc.copy()
         # csc_matrix.shape is annotated as tuple[int, ...] | None in scipy's
@@ -243,8 +281,18 @@ class EquilibriumStructureSparse(EquilibriumStructure, GraphSparse):
     @staticmethod
     def _get_sparse_diag_indices(csc: CSC) -> Int[Array, "nodes_free"]:
         """
-        Given a CSC matrix, get indices into `data` that access diagonal elements in
-        order.
+        Locate the diagonal entries within a sparse matrix's data array.
+
+        Parameters
+        ----------
+        csc :
+            The sparse matrix whose diagonal positions are sought.
+
+        Returns
+        -------
+        diag_indices :
+            The positions in the ``data`` array that hold the diagonal entries, in
+            row order.
         """
         all_indices = []
         for i in range(csc.shape[0]):
@@ -259,11 +307,24 @@ class EquilibriumStructureSparse(EquilibriumStructure, GraphSparse):
         c_free_csc: csc_matrix,
     ) -> Float[BCSR, "nodes_free edges"]:
         """
-        The diagonal of the lhs matrix is the sum of force densities for
-        each outgoing/incoming edge on the node.
+        Build the selector matrix that maps force densities to the diagonal.
 
-        We create the `diags` matrix such that when we multiply it with the
-        force density vector we get the diagonal.
+        Parameters
+        ----------
+        c_free_csc :
+            The free-node connectivity matrix as a scipy sparse array.
+
+        Returns
+        -------
+        diags :
+            A sparse matrix such that its product with the force density vector
+            yields the stiffness diagonal, the per-node sum of incident force
+            densities.
+
+        Notes
+        -----
+        Stored in sparse row format rather than column format so that Jacobians of
+        the product flow through.
         """
         diags_data = jnp.ones_like(c_free_csc.data)
 
@@ -285,7 +346,12 @@ class EquilibriumStructureSparse(EquilibriumStructure, GraphSparse):
 
 class EquilibriumMeshStructure(EquilibriumStructure, Mesh):
     """
-    An equilibrium mesh structure.
+    An equilibrium structure that also carries mesh face topology.
+
+    Notes
+    -----
+    Adds face connectivity to :class:`EquilibriumStructure`, so mesh vertices play
+    the role of nodes while faces enable tributary face-load distribution.
     """
 
     def __init__(
@@ -308,14 +374,34 @@ class EquilibriumMeshStructure(EquilibriumStructure, Mesh):
     @property
     def num_free(self) -> Int[Array, ""]:
         """
-        The number of supports.
+        The number of free (unsupported) vertices.
         """
         return self.num_vertices - self.num_supports
 
     @classmethod
     def from_mesh(cls, mesh: FDMesh) -> "EquilibriumMeshStructure":
         """
-        Create a structure from a force density mesh.
+        Build an equilibrium mesh structure from a force density mesh.
+
+        Parameters
+        ----------
+        mesh :
+            The mesh to read vertices, faces, edges, and supports from.
+
+        Returns
+        -------
+        structure :
+            The mesh structure with connectivity, support mask, and face topology.
+
+        Raises
+        ------
+        AssertionError
+            If any face has fewer than three vertices.
+
+        Notes
+        -----
+        Faces are padded with ``-1`` to a common length so they fit a rectangular
+        index array; the padding is masked out downstream.
         """
         vertices = list(mesh.vertices())
         edges = list(mesh.edges())
@@ -361,14 +447,14 @@ class EquilibriumMeshStructure(EquilibriumStructure, Mesh):
     @property
     def vertices_free(self) -> Int[np.ndarray, "vertices_free"]:
         """
-        The free vertices.
+        The free (unsupported) vertices.
         """
         return self.vertices[self.indices_free]
 
     @property
     def vertices_fixed(self) -> Int[np.ndarray, "vertices_fixed"]:
         """
-        The fixed vertices.
+        The fixed (supported) vertices.
         """
         return self.vertices[self.indices_fixed]
 
@@ -379,7 +465,12 @@ class EquilibriumMeshStructureSparse(
     MeshSparse,
 ):
     """
-    An equilibrium mesh structure.
+    A mesh equilibrium structure with sparse stiffness-assembly helpers.
+
+    Notes
+    -----
+    Combines the face topology of :class:`EquilibriumMeshStructure` with the sparse
+    assembly precomputation of :class:`EquilibriumStructureSparse`.
     """
 
     def __init__(
