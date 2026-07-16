@@ -1,22 +1,44 @@
+from collections.abc import Callable
 from functools import partial
+from typing import Any
 
 from jax import custom_vjp
 from jax import vjp
 from jaxopt.linear_solve import solve_normal_cg
+from jaxtyping import Array
+from jaxtyping import Float
+
+from jax_fdm.equilibrium.solvers.types import SolverIterParams
 
 # ==========================================================================
 # Custom VJP via implicit differentiation
 # ==========================================================================
 
+
 @partial(custom_vjp, nondiff_argnums=(0, 1, 2))
-def solver_nonlinear_implicit(solver, solver_config, fn, theta, x_init):
+def solver_nonlinear_implicit(
+    solver: Callable,
+    solver_config: dict[str, Any],
+    fn: Callable,
+    theta: SolverIterParams,
+    x_init: Float[Array, "nodes_free_flat"],
+) -> Float[Array, "nodes_free_flat"]:
     """
     Find a minimum of f(theta, x) in a least-squares sense using an iterative solver.
     """
     return solver(fn, theta, x_init, solver_config)
 
 
-def nonlinear_fwd(solver, solver_config, fn, theta, x_init):
+def nonlinear_fwd(
+    solver: Callable,
+    solver_config: dict[str, Any],
+    fn: Callable,
+    theta: SolverIterParams,
+    x_init: Float[Array, "nodes_free_flat"],
+) -> tuple[
+    Float[Array, "nodes_free_flat"],
+    tuple[SolverIterParams, Float[Array, "nodes_free_flat"]],
+]:
     """
     The forward pass of an iterative least squares solver.
 
@@ -35,10 +57,18 @@ def nonlinear_fwd(solver, solver_config, fn, theta, x_init):
     """
     x_star = solver_nonlinear_implicit(solver, solver_config, fn, theta, x_init)
 
-    return x_star, (theta, x_star)
+    # the custom_vjp wrapper's return type is opaque to pyright; x_star is a
+    # jax.Array at runtime
+    return x_star, (theta, x_star)  # pyright: ignore[reportReturnType]
 
 
-def nonlinear_bwd(solver, solver_config, fn, res, vec):
+def nonlinear_bwd(
+    solver: Callable,
+    solver_config: dict[str, Any],
+    fn: Callable,
+    res: tuple[SolverIterParams, Float[Array, "nodes_free_flat"]],
+    vec: Float[Array, "nodes_free_flat"],
+) -> tuple[SolverIterParams, None]:
     """
     The backward pass of an iterative least squares solver.
 

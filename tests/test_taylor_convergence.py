@@ -23,7 +23,7 @@ specific structure, so we exercise the same code paths on compact, generated
 geometry instead of the paper's heavy domes -- keeping the suite COMPAS-free and
 fixture-free. To obtain a scalar loss and its gradient over the flat parameter
 vector without running an optimization, we reuse the optimizer's own problem
-hook (``Optimizer.problem(...)["fun"]`` is ``jit(value_and_grad(loss))``), which
+hook (``Optimizer.problem(...).fun`` is ``jit(value_and_grad(loss))``), which
 is exactly how the paper's experiment scripts run their Taylor tests. Each test
 asserts both the paper's claim (slope -> 2) and that the analytical-adjoint
 gradient matches an unrolled automatic-differentiation gradient (implicit_diff
@@ -68,6 +68,7 @@ SLOPE_TOL = 0.1
 # Taylor remainder helpers (ported from the paper's experiment scripts)
 # ==============================================================================
 
+
 def _taylor_remainder(fun, x0, f0, g0, v, eps):
     """
     Second-order Taylor remainder |f(x0 + eps*v) - f0 - eps * g0^T v|.
@@ -95,7 +96,7 @@ def _mean_taylor_slope(fun, x0, key):
     slope is averaged over the pre-round-off head of each sweep.
     """
     f0, g0 = fun(x0)
-    eps = jnp.asarray([EPS0 * (0.5 ** i) for i in range(NUM_EPS)])
+    eps = jnp.asarray([EPS0 * (0.5**i) for i in range(NUM_EPS)])
 
     slopes = []
     for _ in range(NUM_DIRS):
@@ -103,7 +104,9 @@ def _mean_taylor_slope(fun, x0, key):
         v = jax.random.uniform(subkey, x0.shape)
         v = v / jnp.linalg.norm(v)
 
-        remainders = jnp.asarray([_taylor_remainder(fun, x0, f0, g0, v, e) for e in eps])
+        remainders = jnp.asarray(
+            [_taylor_remainder(fun, x0, f0, g0, v, e) for e in eps],
+        )
         slope = _convergence_slope(remainders[:-TAIL_DROP])
         slopes.append(jnp.mean(slope))
 
@@ -113,6 +116,7 @@ def _mean_taylor_slope(fun, x0, key):
 # ==============================================================================
 # Problem builders
 # ==============================================================================
+
 
 def _loss_and_grad(datastructure, parameters, tmax, is_load_local, implicit_diff):
     """
@@ -124,11 +128,13 @@ def _loss_and_grad(datastructure, parameters, tmax, is_load_local, implicit_diff
     adjoint, tmax>1 with follower loads is the URS adjoint, and implicit_diff
     toggles the analytical adjoint (True) against unrolled autodiff (False).
     """
-    model = model_from_sparsity(sparse=False,
-                                tmax=tmax,
-                                eta=1e-6,
-                                is_load_local=is_load_local,
-                                implicit_diff=implicit_diff)
+    model = model_from_sparsity(
+        sparse=False,
+        tmax=tmax,
+        eta=1e-6,
+        is_load_local=is_load_local,
+        implicit_diff=implicit_diff,
+    )
     structure = structure_from_datastructure(datastructure, sparse=False)
 
     goals = [EdgeLengthGoal(edge, target=1.0) for edge in datastructure.edges()]
@@ -136,16 +142,18 @@ def _loss_and_grad(datastructure, parameters, tmax, is_load_local, implicit_diff
 
     # Suppress the optimizer's warm-up prints to keep the test output clean.
     with contextlib.redirect_stdout(io.StringIO()):
-        problem = LBFGSB().problem(model,
-                                   structure,
-                                   datastructure,
-                                   loss,
-                                   parameters,
-                                   maxiter=1,
-                                   tol=1e-6,
-                                   jit_fn=True)
+        problem = LBFGSB().problem(
+            model,
+            structure,
+            datastructure,
+            loss,
+            parameters,
+            maxiter=1,
+            tol=1e-6,
+            jit_fn=True,
+        )
 
-    return problem["fun"], jnp.asarray(problem["x0"])
+    return problem.fun, jnp.asarray(problem.x0)
 
 
 def _linear_problem(num_vertices, implicit_diff):
@@ -167,11 +175,17 @@ def _linear_problem(num_vertices, implicit_diff):
     network.edges_forcedensities(-2.0, keys=network.edges())
     network.nodes_loads([0.0, -0.1, 0.0], keys=network.nodes())
 
-    parameters = [EdgeForceDensityParameter(edge, -50.0, -0.01)
-                  for edge in network.edges()]
+    parameters = [
+        EdgeForceDensityParameter(edge, -50.0, -0.01) for edge in network.edges()
+    ]
 
-    return _loss_and_grad(network, parameters,
-                          tmax=1, is_load_local=False, implicit_diff=implicit_diff)
+    return _loss_and_grad(
+        network,
+        parameters,
+        tmax=1,
+        is_load_local=False,
+        implicit_diff=implicit_diff,
+    )
 
 
 def _urs_problem(nx, implicit_diff):
@@ -187,21 +201,31 @@ def _urs_problem(nx, implicit_diff):
     mesh.edges_forcedensities(-2.0, keys=mesh.edges())
     mesh.faces_loads([0.0, 0.0, -0.1], keys=mesh.faces())
 
-    parameters = [EdgeForceDensityParameter(edge, -50.0, -0.01)
-                  for edge in mesh.edges()]
+    parameters = [
+        EdgeForceDensityParameter(edge, -50.0, -0.01) for edge in mesh.edges()
+    ]
 
-    return _loss_and_grad(mesh, parameters,
-                          tmax=50, is_load_local=True, implicit_diff=implicit_diff)
+    return _loss_and_grad(
+        mesh,
+        parameters,
+        tmax=50,
+        is_load_local=True,
+        implicit_diff=implicit_diff,
+    )
 
 
 # ==============================================================================
 # Tests: linear-solver adjoint (tmax=1)
 # ==============================================================================
 
-@pytest.mark.parametrize("num_vertices", [
-    101,
-    pytest.param(501, marks=pytest.mark.slow),
-])
+
+@pytest.mark.parametrize(
+    "num_vertices",
+    [
+        101,
+        pytest.param(501, marks=pytest.mark.slow),
+    ],
+)
 def test_linear_adjoint_second_order_convergence(num_vertices):
     """
     The linear-solver adjoint gradient passes the Taylor test (slope -> 2).
@@ -213,10 +237,13 @@ def test_linear_adjoint_second_order_convergence(num_vertices):
     assert slope == pytest.approx(2.0, abs=SLOPE_TOL)
 
 
-@pytest.mark.parametrize("num_vertices", [
-    101,
-    pytest.param(501, marks=pytest.mark.slow),
-])
+@pytest.mark.parametrize(
+    "num_vertices",
+    [
+        101,
+        pytest.param(501, marks=pytest.mark.slow),
+    ],
+)
 def test_linear_adjoint_matches_autodiff(num_vertices):
     """
     The analytical linear-solver adjoint gradient matches unrolled autodiff.
@@ -234,11 +261,15 @@ def test_linear_adjoint_matches_autodiff(num_vertices):
 # Tests: URS adjoint with follower loads (tmax>1, is_load_local=True)
 # ==============================================================================
 
+
 @pytest.mark.slow
-@pytest.mark.parametrize("nx", [
-    5,
-    pytest.param(21, marks=pytest.mark.slow),
-])
+@pytest.mark.parametrize(
+    "nx",
+    [
+        5,
+        pytest.param(21, marks=pytest.mark.slow),
+    ],
+)
 def test_urs_adjoint_second_order_convergence(nx):
     """
     The URS adjoint gradient under follower loads passes the Taylor test.
@@ -253,10 +284,13 @@ def test_urs_adjoint_second_order_convergence(nx):
 
 
 @pytest.mark.slow
-@pytest.mark.parametrize("nx", [
-    5,
-    pytest.param(21, marks=pytest.mark.slow),
-])
+@pytest.mark.parametrize(
+    "nx",
+    [
+        5,
+        pytest.param(21, marks=pytest.mark.slow),
+    ],
+)
 def test_urs_adjoint_matches_autodiff(nx):
     """
     The analytical URS adjoint gradient matches unrolled autodiff.
@@ -273,6 +307,7 @@ def test_urs_adjoint_matches_autodiff(nx):
 # ==============================================================================
 # Negative control: a wrong gradient must fail the Taylor test
 # ==============================================================================
+
 
 def test_corrupted_gradient_fails_convergence():
     """

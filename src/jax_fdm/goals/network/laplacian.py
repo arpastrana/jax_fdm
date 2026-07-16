@@ -1,5 +1,9 @@
 import jax.numpy as jnp
+from jaxtyping import Array
+from jaxtyping import Float
+from jaxtyping import Int
 
+from jax_fdm.equilibrium import EquilibriumState
 from jax_fdm.goals import ScalarGoal
 from jax_fdm.goals.network import NetworkGoal
 
@@ -35,13 +39,16 @@ class NetworkXYZLaplacianGoal(ScalarGoal, NetworkGoal):
     ravel matrix U into a single vector, and calculate the dot
     product of U in the raveled state.
     """
-    @staticmethod
-    def prediction(eq_state, index):
+
+    def prediction(
+        self,
+        eq_state: EquilibriumState,
+        index: Int[Array, ""],
+    ) -> Float[Array, "1"]:
         """
         The current load path of the network.
         """
         vectors = eq_state.vectors
-        laplacian = jnp.dot(jnp.ravel(vectors),
-                            jnp.reshape(vectors, (-1, 1)))
+        laplacian = jnp.dot(jnp.ravel(vectors), jnp.reshape(vectors, (-1, 1)))
 
         return jnp.atleast_1d(laplacian)

@@ -11,9 +11,11 @@ repos:
     rev: v0.15.20
     hooks:
       # Lint and auto-fix (imports, pycodestyle, pyflakes). Mirrors `ruff check`
-      # in CI. The repo intentionally does not run `ruff format`.
+      # in CI.
       - id: ruff
         args: [--fix]
+      # Format the code, including snippets inside docstrings.
+      - id: ruff-format
 
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v6.0.0

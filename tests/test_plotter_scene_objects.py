@@ -5,6 +5,7 @@ Dispatch through the compas scene registry, force-density edge styling on the
 matplotlib collections, load and reaction arrows as batched patch collections,
 and the clear-and-redraw cycle.
 """
+
 import matplotlib
 
 matplotlib.use("Agg")
@@ -33,6 +34,7 @@ from jax_fdm.visualization.style import COLOR_SUPPORT  # noqa: E402
 # ==========================================================================
 # Fixtures
 # ==========================================================================
+
 
 @pytest.fixture
 def network():
@@ -75,6 +77,7 @@ def plotter():
 # Dispatch
 # ==========================================================================
 
+
 def test_network_dispatches_to_fd_object(plotter, network):
     obj = plotter.add(network)
     assert type(obj) is FDNetworkPlotterObject
@@ -99,12 +102,18 @@ def test_plain_compas_types_dispatch_upstream(plotter):
 # Edge styling
 # ==========================================================================
 
+
 def edge_collection(obj):
     return next(o for o in obj._mpl_objects if isinstance(o, LineCollection))
 
 
 def test_edge_colors_by_force(plotter, network):
-    obj = plotter.add(network, edgecolor="force", show_reactions=False, show_loads=False)
+    obj = plotter.add(
+        network,
+        edgecolor="force",
+        show_reactions=False,
+        show_loads=False,
+    )
 
     colors = edge_collection(obj).get_colors()
     # the arch is fully compressive
@@ -133,12 +142,16 @@ def test_edge_width_dict_passes_through(plotter, network):
     widths = {e: 4.0 if e == edge else 1.0 for e in network.edges()}
     obj = plotter.add(network, edgewidth=widths)
 
-    assert sorted(set(float(w) for w in edge_collection(obj).get_linewidths())) == [1.0, 4.0]
+    assert sorted(set(float(w) for w in edge_collection(obj).get_linewidths())) == [
+        1.0,
+        4.0,
+    ]
 
 
 # ==========================================================================
 # Arrows
 # ==========================================================================
+
 
 def arrow_collections(obj):
     return [o for o in obj._mpl_objects if isinstance(o, PatchCollection)]
@@ -174,11 +187,14 @@ def test_reaction_color_defaults_green_under_force_coloring(plotter, network):
 # Supports
 # ==========================================================================
 
+
 def test_support_nodes_are_green(plotter, network):
     obj = plotter.add(network, show_nodes=True)
 
     for node in network.nodes():
-        expected = COLOR_SUPPORT if network.is_node_support(node) else obj.nodecolor[node]
+        expected = (
+            COLOR_SUPPORT if network.is_node_support(node) else obj.nodecolor[node]
+        )
         assert obj.nodecolor[node] == expected
     assert obj.nodecolor[0] == COLOR_SUPPORT
     assert obj.nodecolor[1] != COLOR_SUPPORT
@@ -187,6 +203,7 @@ def test_support_nodes_are_green(plotter, network):
 # ==========================================================================
 # Point colors
 # ==========================================================================
+
 
 def test_free_points_default_white(plotter, network):
     obj = plotter.add(network, show_nodes=True)
@@ -207,10 +224,13 @@ def test_point_colors_default_stays_grey_without_override():
 # Arrow clearance
 # ==========================================================================
 
+
 def load_tips(obj):
     anchors, vectors = obj._load_arrow_data()
-    return [tuple(a + v for a, v in zip(anchor, vector))
-            for anchor, vector in zip(anchors, vectors)]
+    return [
+        tuple(a + v for a, v in zip(anchor, vector))
+        for anchor, vector in zip(anchors, vectors)
+    ]
 
 
 def test_load_arrows_clear_the_node_markers(plotter, network):
@@ -259,13 +279,18 @@ def test_reaction_arrows_default_clearance_is_zero():
     anchors, vectors = reaction_arrows(origins, reactions, forces, scale=1.0, tol=1e-3)
 
     assert tuple(anchors[0]) == origins[0]  # tension: anchored at the point
-    assert tuple(anchors[1]) == (3.0, 0.0, 0.0)  # compression: shifted out by the scaled vector
+    assert tuple(anchors[1]) == (
+        3.0,
+        0.0,
+        0.0,
+    )  # compression: shifted out by the scaled vector
     assert [tuple(vector) for vector in vectors] == [(-1.0, 0.0, 0.0), (2.0, 0.0, 0.0)]
 
 
 # ==========================================================================
 # Redraw
 # ==========================================================================
+
 
 def test_redraw_replaces_artists(plotter, network):
     obj = plotter.add(network, show_nodes=True)
@@ -284,6 +309,7 @@ def test_redraw_replaces_artists(plotter, network):
 # Zoom extents
 # ==========================================================================
 
+
 def test_viewdata_covers_arrows(plotter, network):
     obj = plotter.add(network, reactionscale=10.0)
 
@@ -296,6 +322,7 @@ def test_viewdata_covers_arrows(plotter, network):
 # ==========================================================================
 # Mesh faces
 # ==========================================================================
+
 
 def test_mesh_draws_faces_by_default(plotter, mesh):
     obj = plotter.add(mesh, show_loads=False, show_reactions=False)

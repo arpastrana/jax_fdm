@@ -1,10 +1,16 @@
+from typing import Any
+from typing import Callable
+
 import compas_viewer.components.sidebar
 from compas_viewer import Viewer as CompasViewer
 from compas_viewer.config import Config
 from compas_viewer.config import RendererConfig
 from compas_viewer.config import WindowConfig
 
+from compas.datastructures import Datastructure
 from compas.datastructures import Graph
+from compas.geometry import Geometry
+from compas.scene import SceneObject
 from jax_fdm.datastructures import FDMesh
 from jax_fdm.datastructures import FDNetwork
 from jax_fdm.visualization.viewers.buffer_manager import FastBufferManager
@@ -25,7 +31,8 @@ class Viewer(CompasViewer):
     kwarg conveniences.
 
     For convenience it also accepts the ``width``, ``height`` and ``show_grid``
-    keyword arguments directly and folds them into a :class:`compas_viewer.config.Config`,
+    keyword arguments directly and folds them into a
+    :class:`compas_viewer.config.Config`,
     so the common window setup does not require building a config by hand.
     The defaults (1200x800, no grid) fit a typical laptop screen and keep the
     grid from cutting through structures that hang below ``z=0``.
@@ -43,11 +50,21 @@ class Viewer(CompasViewer):
 
     The window closes between shows while the camera carries over.
     """
-    def __init__(self, width=None, height=None, show_grid=None, config=None, **kwargs):
+
+    def __init__(
+        self,
+        width: int | None = None,
+        height: int | None = None,
+        show_grid: bool | None = None,
+        config: Config | None = None,
+        **kwargs: Any,
+    ) -> None:
         if config is None:
             window = WindowConfig(width=width or 1200, height=height or 800)
-            renderer = RendererConfig(show_grid=show_grid if show_grid is not None else False,
-                                      rendermode="lighted")
+            renderer = RendererConfig(
+                show_grid=show_grid if show_grid is not None else False,
+                rendermode="lighted",
+            )
             config = Config(window=window, renderer=renderer)
 
         # The sidebar constructs its object settings tab from the name in its
@@ -74,10 +91,12 @@ class Viewer(CompasViewer):
             width, height = window.width, window.height
             window.width = min(width, rect.width())
             window.height = min(height, rect.height())
-            print(f"WARNING: The window size {width}x{height} exceeds the available "
-                  f"screen space. Resizing the window to {window.width}x{window.height}")
+            print(
+                f"WARNING: The window size {width}x{height} exceeds the available "
+                f"screen space. Resizing the window to {window.width}x{window.height}",
+            )
 
-    def clear(self):
+    def clear(self) -> None:
         """
         Empty the scene for the next round of adds.
 
@@ -88,7 +107,7 @@ class Viewer(CompasViewer):
         self.scene.clear()
         self.scene.instance_colors.clear()
 
-    def show(self):
+    def show(self) -> None:
         """
         Show the viewer window and block until it is closed.
 
@@ -112,7 +131,11 @@ class Viewer(CompasViewer):
         finally:
             self.running = False
 
-    def on(self, interval, frames=None):
+    def on(
+        self,
+        interval: int,
+        frames: int | None = None,
+    ) -> Callable[[Callable[..., None]], Callable[..., None]]:
         """
         Decorate a frame callback for the animation loop.
 
@@ -123,14 +146,16 @@ class Viewer(CompasViewer):
         """
         if not self._warned_unfused_on:
             if any(isinstance(obj, FDObject) for obj in self.scene.objects):
-                print("Animating per-element scene objects updates every element buffer "
-                      "one by one, each frame; re-add with viewer.add(..., fuse=True) "
-                      "to animate on batched soups instead.")
+                print(
+                    "Animating per-element scene objects updates every element buffer "
+                    "one by one, each frame; re-add with viewer.add(..., fuse=True) "
+                    "to animate on batched soups instead.",
+                )
                 self._warned_unfused_on = True
 
         return super().on(interval, frames)
 
-    def add(self, data, **kwargs):
+    def add(self, data: Geometry | Datastructure, **kwargs: Any) -> SceneObject:
         """
         Add a data object to the viewer.
 
@@ -146,7 +171,8 @@ class Viewer(CompasViewer):
 
         Parameters
         ----------
-        data : :class:`compas.data.Data`
+        data : :class:`compas.geometry.Geometry` |
+            :class:`compas.datastructures.Datastructure`
             The object to visualize.
         **kwargs : dict, optional
             Additional visualization options.

@@ -1,12 +1,31 @@
 from functools import lru_cache
 
 import numpy as np
+from jaxtyping import Float
+from jaxtyping import Int
+from numpy.typing import ArrayLike
 
 from compas.geometry import Cylinder
 from compas.geometry import Sphere
 from jax_fdm.visualization.shapes import Arrow
 
-__all__ = ["cylinders_buffer", "arrows_buffer", "spheres_buffer", "soup_indices", "soup_colors_rgb"]
+Soup = tuple[Float[np.ndarray, "vertices 3"], Float[np.ndarray, "vertices 4"]]
+
+# A triangle soup (positions, rgba colors) paired with its flat vertex indices,
+# as read out for a viewer buffer.
+FacesData = tuple[
+    Float[np.ndarray, "vertices 3"],
+    Float[np.ndarray, "vertices 4"],
+    Int[np.ndarray, "vertices"],
+]
+
+__all__ = [
+    "cylinders_buffer",
+    "arrows_buffer",
+    "spheres_buffer",
+    "soup_indices",
+    "soup_colors_rgb",
+]
 
 
 # ==========================================================================
@@ -18,28 +37,45 @@ __all__ = ["cylinders_buffer", "arrows_buffer", "spheres_buffer", "soup_indices"
 # collection of elements becomes template * scale @ rotation + translation,
 # fully vectorized. Templates are cached per resolution.
 
+
 @lru_cache(maxsize=None)
-def cylinder_template(u=16):
+def cylinder_template(u: int = 16) -> Float[np.ndarray, "vertices 3"]:
     """
     The triangle soup of a unit cylinder (radius 1, height 1, centered at
     the origin, axis along z), as an array of shape (T * 3, 3).
     """
-    vertices, faces = Cylinder(radius=1.0, height=1.0).to_vertices_and_faces(u=u, triangulated=True)
-    return np.asarray(vertices, dtype=np.float64)[np.asarray(faces, dtype=np.int64).ravel()]
+    vertices, faces = Cylinder(radius=1.0, height=1.0).to_vertices_and_faces(
+        u=u,
+        triangulated=True,
+    )
+    return np.asarray(vertices, dtype=np.float64)[
+        np.asarray(faces, dtype=np.int64).ravel()
+    ]
 
 
 @lru_cache(maxsize=None)
-def sphere_template(u=16, v=16):
+def sphere_template(u: int = 16, v: int = 16) -> Float[np.ndarray, "vertices 3"]:
     """
     The triangle soup of a unit sphere centered at the origin,
     as an array of shape (T * 3, 3).
     """
-    vertices, faces = Sphere(radius=1.0).to_vertices_and_faces(u=u, v=v, triangulated=True)
-    return np.asarray(vertices, dtype=np.float64)[np.asarray(faces, dtype=np.int64).ravel()]
+    vertices, faces = Sphere(radius=1.0).to_vertices_and_faces(
+        u=u,
+        v=v,
+        triangulated=True,
+    )
+    return np.asarray(vertices, dtype=np.float64)[
+        np.asarray(faces, dtype=np.int64).ravel()
+    ]
 
 
 @lru_cache(maxsize=None)
-def arrow_template(u=8, head_portion=0.12, head_width=0.04, body_width=0.012):
+def arrow_template(
+    u: int = 8,
+    head_portion: float = 0.12,
+    head_width: float = 0.04,
+    body_width: float = 0.012,
+) -> Float[np.ndarray, "vertices 3"]:
     """
     The triangle soup of a unit arrow anchored at the origin and pointing
     along z, as an array of shape (T * 3, 3).
@@ -48,20 +84,27 @@ def arrow_template(u=8, head_portion=0.12, head_width=0.04, body_width=0.012):
     fractions of the length), so any arrow is this template under a uniform
     scale, a rotation and a translation.
     """
-    arrow = Arrow(position=[0.0, 0.0, 0.0],
-                  direction=[0.0, 0.0, 1.0],
-                  head_portion=head_portion,
-                  head_width=head_width,
-                  body_width=body_width)
+    arrow = Arrow(
+        position=[0.0, 0.0, 0.0],
+        direction=[0.0, 0.0, 1.0],
+        head_portion=head_portion,
+        head_width=head_width,
+        body_width=body_width,
+    )
     vertices, faces = arrow.to_vertices_and_faces(u=u, triangulated=True)
-    return np.asarray(vertices, dtype=np.float64)[np.asarray(faces, dtype=np.int64).ravel()]
+    return np.asarray(vertices, dtype=np.float64)[
+        np.asarray(faces, dtype=np.int64).ravel()
+    ]
 
 
 # ==========================================================================
 # Vectorized transforms
 # ==========================================================================
 
-def rotations_to(directions):
+
+def rotations_to(
+    directions: Float[np.ndarray, "elements 3"],
+) -> Float[np.ndarray, "elements 3 3"]:
     """
     Per-row rotation matrices mapping the z axis onto each direction.
 
@@ -90,7 +133,13 @@ def rotations_to(directions):
     return np.stack((x, y, z), axis=-1)
 
 
-def _soup(template, rotations, scales, translations, colors):
+def _soup(
+    template: Float[np.ndarray, "vertices 3"],
+    rotations: Float[np.ndarray, "elements 3 3"],
+    scales: Float[np.ndarray, "elements 3"],
+    translations: Float[np.ndarray, "elements 3"],
+    colors: ArrayLike,
+) -> Soup:
     """
     Transform a template per element and expand colors per soup vertex.
 
@@ -101,12 +150,16 @@ def _soup(template, rotations, scales, translations, colors):
     world = np.einsum("nij,ntj->nti", rotations, local) + translations[:, None, :]
 
     positions = world.reshape(-1, 3).astype(np.float32)
-    facecolors = np.repeat(np.asarray(colors, dtype=np.float32), template.shape[0], axis=0)
+    facecolors = np.repeat(
+        np.asarray(colors, dtype=np.float32),
+        template.shape[0],
+        axis=0,
+    )
 
     return positions, facecolors
 
 
-def _empty_buffer():
+def _empty_buffer() -> Soup:
     return np.empty((0, 3), dtype=np.float32), np.empty((0, 4), dtype=np.float32)
 
 
@@ -114,7 +167,8 @@ def _empty_buffer():
 # Soup views
 # ==========================================================================
 
-def soup_indices(soup, flipped=False):
+
+def soup_indices(soup: Soup, flipped: bool = False) -> Int[np.ndarray, "vertices"]:
     """
     The vertex indices of a soup, optionally with flipped winding.
 
@@ -134,7 +188,7 @@ def soup_indices(soup, flipped=False):
     return np.flip(indices) if flipped else indices
 
 
-def soup_colors_rgb(soup):
+def soup_colors_rgb(soup: Soup) -> Float[np.ndarray, "vertices 3"]:
     """
     The colors of a soup stripped to rgb, as a contiguous array.
 
@@ -158,7 +212,14 @@ def soup_colors_rgb(soup):
 # Buffer builders
 # ==========================================================================
 
-def cylinders_buffer(starts, ends, radii, colors, u=16):
+
+def cylinders_buffer(
+    starts: ArrayLike,
+    ends: ArrayLike,
+    radii: ArrayLike,
+    colors: ArrayLike,
+    u: int = 16,
+) -> Soup:
     """
     Batch cylinders spanning pairs of points into one triangle soup.
 
@@ -205,7 +266,16 @@ def cylinders_buffer(starts, ends, radii, colors, u=16):
     return _soup(cylinder_template(u), rotations, scales, midpoints, colors)
 
 
-def arrows_buffer(anchors, vectors, colors, head_portion=0.12, head_width=0.04, body_width=0.012, u=8, tol=1e-12):
+def arrows_buffer(
+    anchors: ArrayLike,
+    vectors: ArrayLike,
+    colors: ArrayLike,
+    head_portion: float = 0.12,
+    head_width: float = 0.04,
+    body_width: float = 0.012,
+    u: int = 8,
+    tol: float = 1e-12,
+) -> Soup:
     """
     Batch arrows anchored at points into one triangle soup.
 
@@ -250,7 +320,13 @@ def arrows_buffer(anchors, vectors, colors, head_portion=0.12, head_width=0.04, 
     return _soup(template, rotations, scales, anchors, colors)
 
 
-def spheres_buffer(centers, radii, colors, u=16, v=16):
+def spheres_buffer(
+    centers: ArrayLike,
+    radii: ArrayLike,
+    colors: ArrayLike,
+    u: int = 16,
+    v: int = 16,
+) -> Soup:
     """
     Batch spheres centered at points into one triangle soup.
 

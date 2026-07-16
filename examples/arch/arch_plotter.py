@@ -58,11 +58,13 @@ eq_network = fdm(network)
 
 plotter = Plotter(figsize=(8, 5))
 
-plotter.add(eq_network,
-            show_nodes=True,
-            edgewidth=(0.5, 5),
-            reactionscale=1.0,
-            loadscale=2.0)
+plotter.add(
+    eq_network,
+    show_nodes=True,
+    edgewidth=(0.5, 5),
+    reactionscale=1.0,
+    loadscale=2.0,
+)
 
 # show le crème
 plotter.zoom_extents()

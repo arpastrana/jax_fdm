@@ -52,17 +52,23 @@ def test_edge_angle_goal_optimizes(arch_network):
     and the prediction `(N,)` disagreed and `Goal.__call__` raised on the shape
     assertion. This drives the exact multi-edge path that regressed.
     """
-    goals = [EdgeAngleGoal(edge, vector=[0.0, 0.0, 1.0], target=TARGET_ANGLE)
-             for edge in arch_network.edges()]
+    goals = [
+        EdgeAngleGoal(edge, vector=[0.0, 0.0, 1.0], target=TARGET_ANGLE)
+        for edge in arch_network.edges()
+    ]
     loss = Loss(SquaredError(goals=goals))
-    parameters = [EdgeForceDensityParameter(edge, BOUND_LOW, BOUND_UP)
-                  for edge in arch_network.edges()]
+    parameters = [
+        EdgeForceDensityParameter(edge, BOUND_LOW, BOUND_UP)
+        for edge in arch_network.edges()
+    ]
 
-    optimized = constrained_fdm(arch_network,
-                                optimizer=LBFGSB(),
-                                loss=loss,
-                                parameters=parameters,
-                                maxiter=MAXITER)
+    optimized = constrained_fdm(
+        arch_network,
+        optimizer=LBFGSB(),
+        loss=loss,
+        parameters=parameters,
+        maxiter=MAXITER,
+    )
 
     # the solve is still in equilibrium at its free nodes
     residuals = jnp.array(optimized.nodes_residual(keys=optimized.nodes_free()))
@@ -74,17 +80,22 @@ def test_edge_angle_goal_prediction_shape(arch_network):
     An edge angle goal emits a goal state whose goal and prediction shapes match.
     """
     edges = list(arch_network.edges())
-    goals = [EdgeAngleGoal(edge, vector=[0.0, 0.0, 1.0], target=TARGET_ANGLE)
-             for edge in edges]
+    goals = [
+        EdgeAngleGoal(edge, vector=[0.0, 0.0, 1.0], target=TARGET_ANGLE)
+        for edge in edges
+    ]
     loss = Loss(SquaredError(goals=goals))
 
     # a single optimization step is enough to force the goal to be evaluated
-    constrained_fdm(arch_network,
-                    optimizer=LBFGSB(),
-                    loss=loss,
-                    parameters=[EdgeForceDensityParameter(edge, BOUND_LOW, BOUND_UP)
-                                for edge in edges],
-                    maxiter=1)
+    constrained_fdm(
+        arch_network,
+        optimizer=LBFGSB(),
+        loss=loss,
+        parameters=[
+            EdgeForceDensityParameter(edge, BOUND_LOW, BOUND_UP) for edge in edges
+        ],
+        maxiter=1,
+    )
 
 
 def test_edge_angle_goal_finite_at_exact_parallel(arch_network):
@@ -101,16 +112,20 @@ def test_edge_angle_goal_finite_at_exact_parallel(arch_network):
         arch_network.node_anchor(key=node)
 
     structure = EquilibriumStructure.from_network(arch_network)
-    model = model_from_sparsity(sparse=False,
-                                tmax=1,
-                                eta=1e-6,
-                                is_load_local=False,
-                                itersolve_fn=None,
-                                iterload_fn=None,
-                                implicit_diff=True,
-                                verbose=False)
-    parameters = EquilibriumParametersState.from_datastructure(arch_network,
-                                                               dtype=DTYPE_JAX)
+    model = model_from_sparsity(
+        sparse=False,
+        tmax=1,
+        eta=1e-6,
+        is_load_local=False,
+        itersolve_fn=None,
+        iterload_fn=None,
+        implicit_diff=True,
+        verbose=False,
+    )
+    parameters = EquilibriumParametersState.from_datastructure(
+        arch_network,
+        dtype=DTYPE_JAX,
+    )
     eqstate = model(parameters, structure)
 
     for edge in arch_network.edges():
@@ -125,6 +140,7 @@ def test_edge_angle_goal_finite_at_exact_parallel(arch_network):
 # ==============================================================================
 # Vertex angle goals (mesh-only)
 # ==============================================================================
+
 
 def _anchored_mesh(mesh):
     """
@@ -160,14 +176,16 @@ def _predictions_on_fixed_mesh(mesh, goal_cls, keys, vector, target=0.0):
         mesh.edge_forcedensity(edge, -1.0)
 
     structure = EquilibriumMeshStructure.from_mesh(mesh)
-    model = model_from_sparsity(sparse=False,
-                                tmax=1,
-                                eta=1e-6,
-                                is_load_local=False,
-                                itersolve_fn=None,
-                                iterload_fn=None,
-                                implicit_diff=True,
-                                verbose=False)
+    model = model_from_sparsity(
+        sparse=False,
+        tmax=1,
+        eta=1e-6,
+        is_load_local=False,
+        itersolve_fn=None,
+        iterload_fn=None,
+        implicit_diff=True,
+        verbose=False,
+    )
     parameters = EquilibriumParametersState.from_datastructure(mesh, dtype=DTYPE_JAX)
     eqstate = model(parameters, structure)
 
@@ -221,23 +239,27 @@ def _loss_grad_wrt_forcedensities(mesh, loss):
     gradient array.
     """
     structure = EquilibriumMeshStructure.from_mesh(mesh)
-    model = model_from_sparsity(sparse=False,
-                                tmax=1,
-                                eta=1e-6,
-                                is_load_local=False,
-                                itersolve_fn=None,
-                                iterload_fn=None,
-                                implicit_diff=True,
-                                verbose=False)
+    model = model_from_sparsity(
+        sparse=False,
+        tmax=1,
+        eta=1e-6,
+        is_load_local=False,
+        itersolve_fn=None,
+        iterload_fn=None,
+        implicit_diff=True,
+        verbose=False,
+    )
     parameters = EquilibriumParametersState.from_datastructure(mesh, dtype=DTYPE_JAX)
 
     # build the goal collections through the real optimizer code path
     LBFGSB().goals(loss, model, structure)
 
     def loss_of_forcedensities(q):
-        params = EquilibriumParametersState(q=q,
-                                            xyz_fixed=parameters.xyz_fixed,
-                                            loads=parameters.loads)
+        params = EquilibriumParametersState(
+            q=q,
+            xyz_fixed=parameters.xyz_fixed,
+            loads=parameters.loads,
+        )
         return loss(params, model, structure)
 
     return jax.grad(loss_of_forcedensities)(parameters.q)
@@ -246,6 +268,7 @@ def _loss_grad_wrt_forcedensities(mesh, loss):
 # ------------------------------------------------------------------------------
 # Correctness: the vertex normal is geometrically right, quads and triangles alike
 # ------------------------------------------------------------------------------
+
 
 @pytest.mark.parametrize("mesh_fixture", ["meshgrid_mesh", "ragged_mesh"])
 def test_vertex_normal_angle_flat_mesh(request, mesh_fixture):
@@ -260,8 +283,12 @@ def test_vertex_normal_angle_flat_mesh(request, mesh_fixture):
     mesh = request.getfixturevalue(mesh_fixture)
     interior = [v for v in mesh.vertices() if not mesh.is_vertex_on_boundary(v)]
 
-    predictions = _predictions_on_fixed_mesh(mesh, VertexNormalAngleGoal,
-                                              interior, vector=[0.0, 0.0, 1.0])
+    predictions = _predictions_on_fixed_mesh(
+        mesh,
+        VertexNormalAngleGoal,
+        interior,
+        vector=[0.0, 0.0, 1.0],
+    )
 
     assert jnp.allclose(predictions, 0.0, atol=1e-6)
 
@@ -275,8 +302,12 @@ def test_vertex_tangent_angle_flat_mesh(request, mesh_fixture):
     mesh = request.getfixturevalue(mesh_fixture)
     interior = [v for v in mesh.vertices() if not mesh.is_vertex_on_boundary(v)]
 
-    predictions = _predictions_on_fixed_mesh(mesh, VertexTangentAngleGoal,
-                                             interior, vector=[0.0, 0.0, 1.0])
+    predictions = _predictions_on_fixed_mesh(
+        mesh,
+        VertexTangentAngleGoal,
+        interior,
+        vector=[0.0, 0.0, 1.0],
+    )
 
     assert jnp.allclose(predictions, jnp.pi / 2, atol=1e-6)
 
@@ -296,8 +327,12 @@ def test_vertex_normal_angle_tilted_plane_at_triangle(ragged_mesh):
     triangulated = _triangulated_vertices(ragged_mesh)
     assert triangulated, "ragged_mesh must have interior vertices on triangles"
 
-    predictions = _predictions_on_fixed_mesh(ragged_mesh, VertexNormalAngleGoal,
-                                             triangulated, vector=[0.0, 0.0, 1.0])
+    predictions = _predictions_on_fixed_mesh(
+        ragged_mesh,
+        VertexNormalAngleGoal,
+        triangulated,
+        vector=[0.0, 0.0, 1.0],
+    )
 
     assert jnp.allclose(predictions, theta, atol=1e-6)
 
@@ -305,6 +340,7 @@ def test_vertex_normal_angle_tilted_plane_at_triangle(ragged_mesh):
 # ------------------------------------------------------------------------------
 # Winding-covariance: the signed angle follows the orientation of the normal
 # ------------------------------------------------------------------------------
+
 
 @pytest.mark.parametrize("goal_cls", [VertexNormalAngleGoal, VertexTangentAngleGoal])
 def test_vertex_angle_covariant_with_face_winding(meshgrid_mesh, goal_cls):
@@ -322,17 +358,28 @@ def test_vertex_angle_covariant_with_face_winding(meshgrid_mesh, goal_cls):
     branches coincide and the test would not discriminate).
     """
     _tilt_onto_plane(meshgrid_mesh, math.radians(30.0))
-    interior = [v for v in meshgrid_mesh.vertices()
-                if not meshgrid_mesh.is_vertex_on_boundary(v)]
+    interior = [
+        v
+        for v in meshgrid_mesh.vertices()
+        if not meshgrid_mesh.is_vertex_on_boundary(v)
+    ]
 
-    predictions = _predictions_on_fixed_mesh(meshgrid_mesh, goal_cls,
-                                             interior, vector=[0.0, 0.0, 1.0])
+    predictions = _predictions_on_fixed_mesh(
+        meshgrid_mesh,
+        goal_cls,
+        interior,
+        vector=[0.0, 0.0, 1.0],
+    )
 
     flipped = meshgrid_mesh.copy()
     for fkey in list(flipped.faces()):
         flipped.face_vertices(fkey).reverse()
-    predictions_flipped = _predictions_on_fixed_mesh(flipped, goal_cls,
-                                                     interior, vector=[0.0, 0.0, 1.0])
+    predictions_flipped = _predictions_on_fixed_mesh(
+        flipped,
+        goal_cls,
+        interior,
+        vector=[0.0, 0.0, 1.0],
+    )
 
     if goal_cls is VertexNormalAngleGoal:
         expected = jnp.pi - predictions
@@ -356,10 +403,17 @@ def test_vertex_normal_angle_obtuse_for_downward_normal(meshgrid_mesh):
     for fkey in list(meshgrid_mesh.faces()):
         meshgrid_mesh.face_vertices(fkey).reverse()
 
-    interior = [v for v in meshgrid_mesh.vertices()
-                if not meshgrid_mesh.is_vertex_on_boundary(v)]
-    predictions = _predictions_on_fixed_mesh(meshgrid_mesh, VertexNormalAngleGoal,
-                                             interior, vector=[0.0, 0.0, 1.0])
+    interior = [
+        v
+        for v in meshgrid_mesh.vertices()
+        if not meshgrid_mesh.is_vertex_on_boundary(v)
+    ]
+    predictions = _predictions_on_fixed_mesh(
+        meshgrid_mesh,
+        VertexNormalAngleGoal,
+        interior,
+        vector=[0.0, 0.0, 1.0],
+    )
 
     assert jnp.allclose(predictions, jnp.pi - theta, atol=1e-6)
 
@@ -377,17 +431,28 @@ def test_vertex_tangent_angle_signed_up_vs_down(meshgrid_mesh):
     """
     theta = math.radians(30.0)
     _tilt_onto_plane(meshgrid_mesh, theta)
-    interior = [v for v in meshgrid_mesh.vertices()
-                if not meshgrid_mesh.is_vertex_on_boundary(v)]
+    interior = [
+        v
+        for v in meshgrid_mesh.vertices()
+        if not meshgrid_mesh.is_vertex_on_boundary(v)
+    ]
 
-    predictions_up = _predictions_on_fixed_mesh(meshgrid_mesh, VertexTangentAngleGoal,
-                                                interior, vector=[0.0, 0.0, 1.0])
+    predictions_up = _predictions_on_fixed_mesh(
+        meshgrid_mesh,
+        VertexTangentAngleGoal,
+        interior,
+        vector=[0.0, 0.0, 1.0],
+    )
 
     flipped = meshgrid_mesh.copy()
     for fkey in list(flipped.faces()):
         flipped.face_vertices(fkey).reverse()
-    predictions_down = _predictions_on_fixed_mesh(flipped, VertexTangentAngleGoal,
-                                                  interior, vector=[0.0, 0.0, 1.0])
+    predictions_down = _predictions_on_fixed_mesh(
+        flipped,
+        VertexTangentAngleGoal,
+        interior,
+        vector=[0.0, 0.0, 1.0],
+    )
 
     assert jnp.allclose(predictions_up, jnp.pi / 2 - theta, atol=1e-6)
     assert jnp.allclose(predictions_down, -(jnp.pi / 2 - theta), atol=1e-6)
@@ -409,20 +474,29 @@ def test_vertex_tangent_angle_optimizes_toward_signed_target(meshgrid_mesh):
     mesh, free = _anchored_mesh(meshgrid_mesh)
     target = math.radians(15.0)
 
-    goals = [VertexTangentAngleGoal(vkey, vector=[0.0, 0.0, 1.0], target=target)
-             for vkey in free]
+    goals = [
+        VertexTangentAngleGoal(vkey, vector=[0.0, 0.0, 1.0], target=target)
+        for vkey in free
+    ]
     loss = Loss(SquaredError(goals=goals))
-    parameters = [EdgeForceDensityParameter(edge, BOUND_LOW, BOUND_UP)
-                  for edge in mesh.edges()]
+    parameters = [
+        EdgeForceDensityParameter(edge, BOUND_LOW, BOUND_UP) for edge in mesh.edges()
+    ]
 
-    optimized = constrained_fdm(mesh.copy(),
-                                optimizer=LBFGSB(),
-                                loss=loss,
-                                parameters=parameters,
-                                maxiter=MAXITER)
+    optimized = constrained_fdm(
+        mesh.copy(),
+        optimizer=LBFGSB(),
+        loss=loss,
+        parameters=parameters,
+        maxiter=MAXITER,
+    )
 
-    predictions = _predictions_on_fixed_mesh(optimized, VertexTangentAngleGoal,
-                                             free, vector=[0.0, 0.0, 1.0])
+    predictions = _predictions_on_fixed_mesh(
+        optimized,
+        VertexTangentAngleGoal,
+        free,
+        vector=[0.0, 0.0, 1.0],
+    )
 
     # near-flat start reads just under +pi / 2; every tangent must have moved
     # toward the target and stayed on the positive branch
@@ -436,6 +510,7 @@ def test_vertex_tangent_angle_optimizes_toward_signed_target(meshgrid_mesh):
 # nan-reliability and shape: optimization drives the padding path in the gradient
 # ------------------------------------------------------------------------------
 
+
 @pytest.mark.parametrize("goal_cls", [VertexNormalAngleGoal, VertexTangentAngleGoal])
 def test_vertex_angle_goal_optimizes(meshgrid_mesh, goal_cls):
     """
@@ -447,17 +522,21 @@ def test_vertex_angle_goal_optimizes(meshgrid_mesh, goal_cls):
     """
     mesh, free = _anchored_mesh(meshgrid_mesh)
 
-    goals = [goal_cls(vkey, vector=[0.0, 0.0, 1.0], target=TARGET_ANGLE)
-             for vkey in free]
+    goals = [
+        goal_cls(vkey, vector=[0.0, 0.0, 1.0], target=TARGET_ANGLE) for vkey in free
+    ]
     loss = Loss(SquaredError(goals=goals))
-    parameters = [EdgeForceDensityParameter(edge, BOUND_LOW, BOUND_UP)
-                  for edge in mesh.edges()]
+    parameters = [
+        EdgeForceDensityParameter(edge, BOUND_LOW, BOUND_UP) for edge in mesh.edges()
+    ]
 
-    optimized = constrained_fdm(mesh,
-                                optimizer=LBFGSB(),
-                                loss=loss,
-                                parameters=parameters,
-                                maxiter=MAXITER)
+    optimized = constrained_fdm(
+        mesh,
+        optimizer=LBFGSB(),
+        loss=loss,
+        parameters=parameters,
+        maxiter=MAXITER,
+    )
 
     # the solve is still in equilibrium at its free vertices
     residuals = jnp.array([optimized.vertex_residual(vkey) for vkey in free])
@@ -477,17 +556,21 @@ def test_vertex_angle_goal_ragged_optimizes_nan_free(ragged_mesh, goal_cls):
     """
     mesh, free = _anchored_mesh(ragged_mesh)
 
-    goals = [goal_cls(vkey, vector=[0.0, 0.0, 1.0], target=TARGET_ANGLE)
-             for vkey in free]
+    goals = [
+        goal_cls(vkey, vector=[0.0, 0.0, 1.0], target=TARGET_ANGLE) for vkey in free
+    ]
     loss = Loss(SquaredError(goals=goals))
-    parameters = [EdgeForceDensityParameter(edge, BOUND_LOW, BOUND_UP)
-                  for edge in mesh.edges()]
+    parameters = [
+        EdgeForceDensityParameter(edge, BOUND_LOW, BOUND_UP) for edge in mesh.edges()
+    ]
 
-    optimized = constrained_fdm(mesh,
-                                optimizer=LBFGSB(),
-                                loss=loss,
-                                parameters=parameters,
-                                maxiter=MAXITER)
+    optimized = constrained_fdm(
+        mesh,
+        optimizer=LBFGSB(),
+        loss=loss,
+        parameters=parameters,
+        maxiter=MAXITER,
+    )
 
     residuals = jnp.array([optimized.vertex_residual(vkey) for vkey in free])
     assert not jnp.any(jnp.isnan(residuals))
@@ -517,8 +600,10 @@ def test_vertex_normal_angle_loss_gradient_is_finite(request, mesh_fixture):
     for edge in mesh.edges():
         mesh.edge_forcedensity(edge, -1.0)
 
-    goals = [VertexNormalAngleGoal(vkey, vector=[0.0, 0.0, 1.0], target=TARGET_ANGLE)
-             for vkey in mesh.vertices()]
+    goals = [
+        VertexNormalAngleGoal(vkey, vector=[0.0, 0.0, 1.0], target=TARGET_ANGLE)
+        for vkey in mesh.vertices()
+    ]
     loss = Loss(MeanAbsoluteError(goals=goals))
 
     gradient = _loss_grad_wrt_forcedensities(mesh, loss)
@@ -537,14 +622,19 @@ def test_vertex_angle_goal_prediction_shape(ragged_mesh, goal_cls):
     """
     mesh, free = _anchored_mesh(ragged_mesh)
 
-    goals = [goal_cls(vkey, vector=[0.0, 0.0, 1.0], target=TARGET_ANGLE)
-             for vkey in free]
+    goals = [
+        goal_cls(vkey, vector=[0.0, 0.0, 1.0], target=TARGET_ANGLE) for vkey in free
+    ]
     loss = Loss(SquaredError(goals=goals))
 
     # a single optimization step is enough to force the goal to be evaluated
-    constrained_fdm(mesh,
-                    optimizer=LBFGSB(),
-                    loss=loss,
-                    parameters=[EdgeForceDensityParameter(edge, BOUND_LOW, BOUND_UP)
-                                for edge in mesh.edges()],
-                    maxiter=1)
+    constrained_fdm(
+        mesh,
+        optimizer=LBFGSB(),
+        loss=loss,
+        parameters=[
+            EdgeForceDensityParameter(edge, BOUND_LOW, BOUND_UP)
+            for edge in mesh.edges()
+        ],
+        maxiter=1,
+    )

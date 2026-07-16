@@ -1,3 +1,5 @@
+from typing import Any
+
 from compas_viewer.components import Treeform
 from compas_viewer.components.objectsetting import ObjectSetting
 
@@ -23,7 +25,7 @@ class FDObjectSetting(ObjectSetting):
     native settings widgets.
     """
 
-    def populate(self, obj):
+    def populate(self, obj: Any) -> None:
         if not isinstance(obj, FDObject):
             return super().populate(obj)
 
@@ -37,11 +39,13 @@ class FDObjectSetting(ObjectSetting):
 
         statusbar = getattr(self.viewer.ui, "statusbar", None)
         if statusbar is not None:
-            summary = " | ".join([title] + [f"{name}: {value}" for name, value in attributes.items()])
+            summary = " | ".join(
+                [title] + [f"{name}: {value}" for name, value in attributes.items()],
+            )
             statusbar.widget.showMessage(summary, 5000)
 
     @staticmethod
-    def _element_attributes(obj):
+    def _element_attributes(obj: Any) -> tuple[str, dict[str, str]]:
         """
         The title and attribute values of one force density element.
         """
@@ -54,7 +58,7 @@ class FDObjectSetting(ObjectSetting):
                 "key": f"{key}",
                 "q": f"{datastructure.edge_forcedensity(key):.4g}",
                 "force": f"{datastructure.edge_force(key):.4g}",
-                "length": f"{datastructure.edge_length(key):.4g}"
+                "length": f"{datastructure.edge_length(key):.4g}",
             }
             return "Edge", attrs
 
@@ -67,7 +71,7 @@ class FDObjectSetting(ObjectSetting):
                 "xyz": f"({x:.4g}, {y:.4g}, {z:.4g})",
                 "support": f"{parent.point_is_support(key)}",
                 "load": f"({px:.4g}, {py:.4g}, {pz:.4g})",
-                "reaction": f"({rx:.4g}, {ry:.4g}, {rz:.4g})"
+                "reaction": f"({rx:.4g}, {ry:.4g}, {rz:.4g})",
             }
             return parent.point_name, attrs
 
@@ -76,7 +80,7 @@ class FDObjectSetting(ObjectSetting):
             attrs = {
                 "key": f"{key}",
                 "vector": f"({x:.4g}, {y:.4g}, {z:.4g})",
-                "norm": f"{length_vector((x, y, z)):.4g}"
+                "norm": f"{length_vector((x, y, z)):.4g}",
             }
             return "Load", attrs
 
@@ -85,7 +89,7 @@ class FDObjectSetting(ObjectSetting):
             attrs = {
                 "key": f"{key}",
                 "vector": f"({x:.4g}, {y:.4g}, {z:.4g})",
-                "norm": f"{length_vector((x, y, z)):.4g}"
+                "norm": f"{length_vector((x, y, z)):.4g}",
             }
             return "Reaction", attrs
 

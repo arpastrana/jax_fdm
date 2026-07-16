@@ -1,4 +1,20 @@
-def solver_jaxopt(solver_cls, fn, a, x_init, solver_config, solver_kwargs=None):
+from collections.abc import Callable
+from typing import Any
+
+from jaxtyping import Array
+from jaxtyping import Float
+
+from jax_fdm.equilibrium.solvers.types import SolverIterParams
+
+
+def solver_jaxopt(
+    solver_cls: Callable,
+    fn: Callable,
+    a: SolverIterParams,
+    x_init: Float[Array, "..."],
+    solver_config: dict[str, Any],
+    solver_kwargs: dict[str, Any] | None = None,
+) -> Float[Array, "..."]:
     """
     Solve for a fixed point of a function f(a, x) using a jaxopt solver.
 
@@ -24,8 +40,8 @@ def solver_jaxopt(solver_cls, fn, a, x_init, solver_config, solver_kwargs=None):
 
     # NOTE: Unroll python loop if solver config disables implicit diff
     # This enables reverse-mode AD to calculate gradients when implicit differentiation
-    # is off because the solver uses lax.while_loop under the hood to not unroll iterations
-    # but this type of while loop is not reverse-mode differentiable.
+    # is off because the solver uses lax.while_loop under the hood to not unroll
+    # iterations but this type of while loop is not reverse-mode differentiable.
     unroll = False
     if not implicit_diff:
         unroll = True
@@ -42,7 +58,7 @@ def solver_jaxopt(solver_cls, fn, a, x_init, solver_config, solver_kwargs=None):
         unroll=unroll,
         jit=True,
         verbose=verbose,
-        **solver_kwargs
+        **solver_kwargs,
     )
 
     result = solver.run(x_init, a)

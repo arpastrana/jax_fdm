@@ -1,3 +1,4 @@
+from collections.abc import Callable
 from math import fabs
 
 from compas.colors import Color
@@ -7,6 +8,8 @@ from compas.geometry import length_vector
 from compas.geometry import normalize_vector
 from compas.geometry import scale_vector
 from compas.itertools import remap_values
+from jax_fdm.datastructures import FDMesh
+from jax_fdm.datastructures import FDNetwork
 
 __all__ = [
     "edge_colors",
@@ -16,7 +19,35 @@ __all__ = [
     "load_arrows",
     "reaction_arrows",
     "reaction_color_default",
+    "EdgeColors",
+    "EdgeWidths",
+    "PointColors",
+    "PointSizes",
+    "EdgeColorSpec",
+    "EdgeWidthSpec",
+    "PointColorSpec",
+    "PointSizeSpec",
 ]
+
+# ==========================================================================
+# Type aliases
+# ==========================================================================
+
+# Per-element style maps: an edge is keyed by its (u, v) node pair, a point (a
+# node or a vertex) by a single key. These are the shapes the style functions
+# return and the scene objects store.
+EdgeColors = dict[tuple[int, int], Color]
+EdgeWidths = dict[tuple[int, int], float]
+PointColors = dict[int, Color]
+PointSizes = dict[int, float]
+
+# User-facing style specs: a single value broadcast to every element, a
+# per-element map, a semantic string mode (e.g. "fd"/"force" for edges), an
+# edge-width (low, high) range, or None to fall back to the defaults.
+EdgeColorSpec = Color | EdgeColors | str | None
+EdgeWidthSpec = float | EdgeWidths | tuple[float, float] | None
+PointColorSpec = Color | PointColors | str | None
+PointSizeSpec = float | PointSizes | None
 
 
 # ==========================================================================
@@ -54,7 +85,12 @@ ARROW_BODYWIDTH = 0.012
 # Edge styling
 # ==========================================================================
 
-def edge_colors(datastructure, edges, color=None):
+
+def edge_colors(
+    datastructure: FDNetwork | FDMesh,
+    edges: list[tuple[int, int]],
+    color: EdgeColorSpec = None,
+) -> EdgeColors:
     """
     Map every edge to a color.
 
@@ -74,7 +110,8 @@ def edge_colors(datastructure, edges, color=None):
 
     if color == "fd":
         cmap = COLORMAP_FD
-        values = [fabs(datastructure.edge_forcedensity(edge)) for edge in edges]
+        # the getter-mode call (no q kwarg) always returns a float
+        values = [fabs(datastructure.edge_forcedensity(edge)) for edge in edges]  # pyright: ignore[reportArgumentType]
         try:
             ratios = remap_values(values)
         except ZeroDivisionError:
@@ -82,13 +119,21 @@ def edge_colors(datastructure, edges, color=None):
         return {edge: cmap(ratio) for edge, ratio in zip(edges, ratios)}
 
     if color == "force":
-        return {edge: COLOR_TENSION if datastructure.edge_force(edge) > 0.0 else COLOR_COMPRESSION
-                for edge in edges}
+        return {
+            edge: COLOR_TENSION
+            if datastructure.edge_force(edge) > 0.0
+            else COLOR_COMPRESSION
+            for edge in edges
+        }
 
     return {edge: COLOR_EDGE for edge in edges}
 
 
-def edge_widths(datastructure, edges, width=None):
+def edge_widths(
+    datastructure: FDNetwork | FDMesh,
+    edges: list[tuple[int, int]],
+    width: EdgeWidthSpec = None,
+) -> EdgeWidths:
     """
     Map every edge to a width.
 
@@ -133,7 +178,13 @@ def edge_widths(datastructure, edges, width=None):
 # Point styling
 # ==========================================================================
 
-def point_colors(points, is_support, color=None, default=None):
+
+def point_colors(
+    points: list[int],
+    is_support: Callable[[int], bool],
+    color: Color | PointColors | None = None,
+    default: Color | None = None,
+) -> PointColors:
     """
     Map every point to a color, defaulting supports to green.
 
@@ -158,7 +209,7 @@ def point_colors(points, is_support, color=None, default=None):
     return {point: COLOR_SUPPORT if is_support(point) else default for point in points}
 
 
-def point_sizes(points, size=None):
+def point_sizes(points: list[int], size: PointSizeSpec = None) -> PointSizes:
     """
     Map every point to a size.
 
@@ -173,7 +224,7 @@ def point_sizes(points, size=None):
     return {point: size if size is not None else POINT_SIZE for point in points}
 
 
-def reaction_color_default(edgecolor):
+def reaction_color_default(edgecolor: EdgeColorSpec) -> Color:
     """
     The default reaction color, given the edge color mode.
 
@@ -189,7 +240,14 @@ def reaction_color_default(edgecolor):
 # Arrows
 # ==========================================================================
 
-def load_arrows(origins, loads, clearances, scale, tol):
+
+def load_arrows(
+    origins: list[list[float]],
+    loads: list[list[float]],
+    clearances: list[float],
+    scale: float,
+    tol: float,
+) -> tuple[list[list[float]], list[list[float]]]:
     """
     Compute the anchor and vector of the load arrow at every point.
 
@@ -234,7 +292,14 @@ def load_arrows(origins, loads, clearances, scale, tol):
     return anchors, vectors
 
 
-def reaction_arrows(origins, reactions, forces, scale, tol, clearances=None):
+def reaction_arrows(
+    origins: list[list[float]],
+    reactions: list[list[float]],
+    forces: list[list[float]],
+    scale: float,
+    tol: float,
+    clearances: list[float] | None = None,
+) -> tuple[list[list[float]], list[list[float]]]:
     """
     Compute the anchor and vector of the reaction arrow at every point.
 
@@ -272,7 +337,12 @@ def reaction_arrows(origins, reactions, forces, scale, tol, clearances=None):
 
     anchors, vectors = [], []
 
-    for xyz, vector, edge_forces, clearance in zip(origins, reactions, forces, clearances):
+    for xyz, vector, edge_forces, clearance in zip(
+        origins,
+        reactions,
+        forces,
+        clearances,
+    ):
         if length_vector(vector) < tol or not edge_forces:
             anchors.append(xyz)
             vectors.append((0.0, 0.0, 0.0))
@@ -283,7 +353,10 @@ def reaction_arrows(origins, reactions, forces, scale, tol, clearances=None):
         if max(edge_forces, key=fabs) < 0.0:
             start = add_vectors(start, scale_vector(vector, scale))
             if clearance:
-                start = add_vectors(start, scale_vector(normalize_vector(drawn), -clearance))
+                start = add_vectors(
+                    start,
+                    scale_vector(normalize_vector(drawn), -clearance),
+                )
         elif clearance:
             start = add_vectors(start, scale_vector(normalize_vector(drawn), clearance))
 

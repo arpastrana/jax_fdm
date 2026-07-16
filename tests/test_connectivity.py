@@ -38,6 +38,7 @@ def _mesh_arrays(cmesh):
 # Graph
 # ==============================================================================
 
+
 def test_graph_dense_sparse_connectivity_agree():
     """
     The dense and sparse graphs build the same connectivity matrix.
@@ -56,6 +57,7 @@ def test_graph_dense_sparse_connectivity_agree():
 # Mesh
 # ==============================================================================
 
+
 def test_mesh_dense_sparse_connectivity_agree(meshgrid_mesh):
     """
     The dense and sparse meshes build the same connectivity and adjacency.
@@ -66,8 +68,10 @@ def test_mesh_dense_sparse_connectivity_agree(meshgrid_mesh):
     mesh_sparse = MeshSparse(vertices, faces, edges)
 
     assert jnp.allclose(_dense(mesh_sparse.connectivity), _dense(mesh.connectivity))
-    assert jnp.allclose(_dense(mesh_sparse.connectivity_edges_faces),
-                        _dense(mesh.connectivity_edges_faces))
+    assert jnp.allclose(
+        _dense(mesh_sparse.connectivity_edges_faces),
+        _dense(mesh.connectivity_edges_faces),
+    )
     assert jnp.allclose(_dense(mesh_sparse.adjacency), _dense(mesh.adjacency))
 
 
@@ -85,7 +89,9 @@ def test_mesh_connectivity_matches_compas(meshgrid_mesh):
     assert jnp.allclose(connectivity_compas, _dense(mesh.connectivity_edges_faces))
 
     vertex_index = meshgrid_mesh.vertex_index()
-    adjacency = [[vertex_index[nbr] for nbr in meshgrid_mesh.vertex_neighbors(vertex)]
-                 for vertex in meshgrid_mesh.vertices()]
+    adjacency = [
+        [vertex_index[nbr] for nbr in meshgrid_mesh.vertex_neighbors(vertex)]
+        for vertex in meshgrid_mesh.vertices()
+    ]
     adjacency_compas = adjacency_matrix_compas(adjacency, rtype="array")
     assert jnp.allclose(_dense(mesh.adjacency), adjacency_compas)

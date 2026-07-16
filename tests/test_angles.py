@@ -1,6 +1,7 @@
 """
 Unit tests for angle_vectors and angles_polygon.
 """
+
 from itertools import cycle
 
 import jax
@@ -17,7 +18,7 @@ from jax_fdm.geometry import cosines_angles_polygon
 
 # Analytical internal angles for regular n-gons: (n-2)*π/n radians
 TRIANGLE_ANGLE_RAD = jnp.pi / 3  # 60°
-SQUARE_ANGLE_RAD = jnp.pi / 2   # 90°
+SQUARE_ANGLE_RAD = jnp.pi / 2  # 90°
 PENTAGON_ANGLE_RAD = 3 * jnp.pi / 5  # 108°
 
 
@@ -65,12 +66,14 @@ def test_angles_polygon_square():
 def test_angles_polygon_rectangle():
     """Rectangle: all internal angles are 90° regardless of aspect ratio."""
     # 2x1 rectangle
-    rectangle = jnp.array([
-        [0.0, 0.0, 0.0],
-        [2.0, 0.0, 0.0],
-        [2.0, 1.0, 0.0],
-        [0.0, 1.0, 0.0],
-    ])
+    rectangle = jnp.array(
+        [
+            [0.0, 0.0, 0.0],
+            [2.0, 0.0, 0.0],
+            [2.0, 1.0, 0.0],
+            [0.0, 1.0, 0.0],
+        ],
+    )
     angles = angles_polygon(rectangle, deg=False)
     expected = jnp.full(4, SQUARE_ANGLE_RAD)
 
@@ -80,12 +83,14 @@ def test_angles_polygon_rectangle():
 def test_angles_polygon_irregular_quad():
     """angles_polygon and cosines_angles_polygon handle irregular quadrilaterals."""
     # Irregular quad (trapezoid-like): non-equal sides, non-90° angles
-    quad = jnp.array([
-        [0.0, 0.0, 0.0],
-        [3.0, 0.0, 0.0],
-        [2.5, 2.0, 0.0],
-        [0.5, 1.5, 0.0],
-    ])
+    quad = jnp.array(
+        [
+            [0.0, 0.0, 0.0],
+            [3.0, 0.0, 0.0],
+            [2.5, 2.0, 0.0],
+            [0.5, 1.5, 0.0],
+        ],
+    )
     angles = angles_polygon(quad, deg=False)
     cosines = cosines_angles_polygon(quad)
 
@@ -117,12 +122,14 @@ def test_angles_polygon_degrees():
 
 def test_angles_polygon_2d():
     """angles_polygon works with 2D polygons."""
-    square_2d = jnp.array([
-        [0.0, 0.0],
-        [1.0, 0.0],
-        [1.0, 1.0],
-        [0.0, 1.0],
-    ])
+    square_2d = jnp.array(
+        [
+            [0.0, 0.0],
+            [1.0, 0.0],
+            [1.0, 1.0],
+            [0.0, 1.0],
+        ],
+    )
     angles = angles_polygon(square_2d, deg=False)
     expected = jnp.full(4, SQUARE_ANGLE_RAD)
 
@@ -132,11 +139,13 @@ def test_angles_polygon_2d():
 def test_angles_polygon_batched():
     """angles_polygon works with batched polygons via vmap."""
     # Batch of pentagons with different radii (same vertex count)
-    pentagons = jnp.stack([
-        jnp.array(Polygon.from_sides_and_radius_xy(5, 1.0).points),
-        jnp.array(Polygon.from_sides_and_radius_xy(5, 2.0).points),
-        jnp.array(Polygon.from_sides_and_radius_xy(5, 0.5).points),
-    ])
+    pentagons = jnp.stack(
+        [
+            jnp.array(Polygon.from_sides_and_radius_xy(5, 1.0).points),
+            jnp.array(Polygon.from_sides_and_radius_xy(5, 2.0).points),
+            jnp.array(Polygon.from_sides_and_radius_xy(5, 0.5).points),
+        ],
+    )
     batched_angles = vmap(angles_polygon, in_axes=(0, None))(pentagons, False)
 
     # All should have 108° internal angles (scale invariant)
@@ -201,12 +210,14 @@ def test_cosines_angles_polygon_quad_padded_repeats():
 def test_angles_polygon_batched_uniform():
     """angles_polygon batched over multiple squares (same vertex count)."""
     # Create 4 unit squares at different positions
-    squares = jnp.array([
-        [[0.0, 0.0, 0.0], [1.0, 0.0, 0.0], [1.0, 1.0, 0.0], [0.0, 1.0, 0.0]],
-        [[1.0, 0.0, 0.0], [2.0, 0.0, 0.0], [2.0, 1.0, 0.0], [1.0, 1.0, 0.0]],
-        [[0.0, 1.0, 0.0], [1.0, 1.0, 0.0], [1.0, 2.0, 0.0], [0.0, 2.0, 0.0]],
-        [[2.0, 2.0, 0.0], [3.0, 2.0, 0.0], [3.0, 3.0, 0.0], [2.0, 3.0, 0.0]],
-    ])
+    squares = jnp.array(
+        [
+            [[0.0, 0.0, 0.0], [1.0, 0.0, 0.0], [1.0, 1.0, 0.0], [0.0, 1.0, 0.0]],
+            [[1.0, 0.0, 0.0], [2.0, 0.0, 0.0], [2.0, 1.0, 0.0], [1.0, 1.0, 0.0]],
+            [[0.0, 1.0, 0.0], [1.0, 1.0, 0.0], [1.0, 2.0, 0.0], [0.0, 2.0, 0.0]],
+            [[2.0, 2.0, 0.0], [3.0, 2.0, 0.0], [3.0, 3.0, 0.0], [2.0, 3.0, 0.0]],
+        ],
+    )
     batched_angles = vmap(angles_polygon, in_axes=(0, None))(squares, True)
     expected = jnp.full((4, 4), 90.0)
 
@@ -214,8 +225,8 @@ def test_angles_polygon_batched_uniform():
 
 
 # Analytical cos(internal angle) for regular n-gons
-TRIANGLE_COSINE = jnp.cos(TRIANGLE_ANGLE_RAD)   # cos(60°) = 0.5
-SQUARE_COSINE = jnp.cos(SQUARE_ANGLE_RAD)       # cos(90°) = 0
+TRIANGLE_COSINE = jnp.cos(TRIANGLE_ANGLE_RAD)  # cos(60°) = 0.5
+SQUARE_COSINE = jnp.cos(SQUARE_ANGLE_RAD)  # cos(90°) = 0
 PENTAGON_COSINE = jnp.cos(PENTAGON_ANGLE_RAD)  # cos(108°) ≈ -0.309
 
 
@@ -241,12 +252,14 @@ def test_cosines_angles_polygon_square():
 
 def test_cosines_angles_polygon_rectangle():
     """Rectangle: all cos(internal) = 0 regardless of aspect ratio."""
-    rectangle = jnp.array([
-        [0.0, 0.0, 0.0],
-        [2.0, 0.0, 0.0],
-        [2.0, 1.0, 0.0],
-        [0.0, 1.0, 0.0],
-    ])
+    rectangle = jnp.array(
+        [
+            [0.0, 0.0, 0.0],
+            [2.0, 0.0, 0.0],
+            [2.0, 1.0, 0.0],
+            [0.0, 1.0, 0.0],
+        ],
+    )
     cosines = cosines_angles_polygon(rectangle)
     expected = jnp.full(4, SQUARE_COSINE)
 
@@ -275,12 +288,14 @@ def test_cosines_angles_polygon_matches_angles_polygon():
 
 def test_cosines_angles_polygon_2d():
     """cosines_angles_polygon works with 2D polygons."""
-    square_2d = jnp.array([
-        [0.0, 0.0],
-        [1.0, 0.0],
-        [1.0, 1.0],
-        [0.0, 1.0],
-    ])
+    square_2d = jnp.array(
+        [
+            [0.0, 0.0],
+            [1.0, 0.0],
+            [1.0, 1.0],
+            [0.0, 1.0],
+        ],
+    )
     cosines = cosines_angles_polygon(square_2d)
     expected = jnp.full(4, SQUARE_COSINE)
 
@@ -289,10 +304,12 @@ def test_cosines_angles_polygon_2d():
 
 def test_cosines_angles_polygon_batched():
     """cosines_angles_polygon works with batched polygons via vmap."""
-    pentagons = jnp.stack([
-        jnp.array(Polygon.from_sides_and_radius_xy(5, 1.0).points),
-        jnp.array(Polygon.from_sides_and_radius_xy(5, 2.0).points),
-    ])
+    pentagons = jnp.stack(
+        [
+            jnp.array(Polygon.from_sides_and_radius_xy(5, 1.0).points),
+            jnp.array(Polygon.from_sides_and_radius_xy(5, 2.0).points),
+        ],
+    )
     batched_cosines = vmap(cosines_angles_polygon)(pentagons)
     expected = jnp.full((2, 5), PENTAGON_COSINE)
 

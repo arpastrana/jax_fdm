@@ -1,15 +1,23 @@
 """
 A collection of evolutionary optimizers.
 """
+
+from typing import Any
+
 from jax import vmap
+from jaxtyping import Array
+from jaxtyping import Float
+from scipy.optimize import OptimizeResult
 from scipy.optimize import differential_evolution
 from scipy.optimize import dual_annealing
 
 from jax_fdm.optimization.optimizers import GradientFreeOptimizer
+from jax_fdm.optimization.optimizers import OptProblem
 
 # ==========================================================================
 # Optimizers
 # ==========================================================================
+
 
 class DifferentialEvolution(GradientFreeOptimizer):
     """
@@ -17,46 +25,53 @@ class DifferentialEvolution(GradientFreeOptimizer):
 
     This algorithm has stochastic components, so mind the seed for reproducibility.
     """
-    def __init__(self, popsize=20, vectorized=False, num_workers=1, seed=43, display=False, **kwargs):
-        super().__init__(name="DifferentialEvolution", disp=display, **kwargs)
+
+    name = "DifferentialEvolution"
+
+    def __init__(
+        self,
+        popsize: int = 20,
+        vectorized: bool = False,
+        num_workers: int = 1,
+        seed: int = 43,
+        **kwargs: Any,
+    ):
+        super().__init__(**kwargs)
         self.popsize = popsize
         self.vectorized = vectorized
         self.num_workers = num_workers
         self.seed = seed
 
-    def _minimize(self, opt_problem):
+    def _minimize(self, opt_problem: OptProblem) -> OptimizeResult:
         """
         Scipy backend method to minimize a loss function.
         """
-        func = opt_problem["fun"]
+        func = opt_problem.fun
 
-        def func_vmap(x):
+        def func_vmap(
+            x: Float[Array, "parameters population"],
+        ) -> Float[Array, "population"]:
             result = vmap(func, in_axes=(1))(x)
             return result
 
-        _args = None
-        opt_problem["func"] = func
-        if self.vectorized:
-            opt_problem["func"] = func_vmap
-
-        opt_problem["vectorized"] = self.vectorized
-        opt_problem["polish"] = False
-        opt_problem["seed"] = self.seed
-
-        opt_problem["popsize"] = self.popsize
-        opt_problem["maxiter"] = opt_problem["options"]["maxiter"]
-        opt_problem["disp"] = opt_problem["options"]["disp"]
-        opt_problem["args"] = _args
-        opt_problem["updating"] = "deferred" if self.vectorized else "immediate"
-        opt_problem["workers"] = self.num_workers
-
-        del opt_problem["fun"]
-        del opt_problem["jac"]
-        del opt_problem["hess"]
-        del opt_problem["method"]
-        del opt_problem["options"]
-
-        return differential_evolution(**opt_problem)
+        # scipy 1.18's stub renamed `seed` to `rng`, but the installed runtime
+        # still accepts `seed`; the min supported scipy predates `rng`
+        return differential_evolution(
+            func=func_vmap if self.vectorized else func,
+            x0=opt_problem.x0,
+            tol=opt_problem.tol,
+            bounds=opt_problem.bounds,
+            callback=opt_problem.callback,
+            vectorized=self.vectorized,
+            polish=False,
+            seed=self.seed,  # pyright: ignore[reportCallIssue]
+            popsize=self.popsize,
+            maxiter=opt_problem.options["maxiter"],
+            disp=opt_problem.options["disp"],
+            args=None,
+            updating="deferred" if self.vectorized else "immediate",
+            workers=self.num_workers,
+        )
 
 
 class DualAnnealing(GradientFreeOptimizer):
@@ -65,31 +80,41 @@ class DualAnnealing(GradientFreeOptimizer):
 
     This algorithm has stochastic components, so mind the seed for reproducibility.
     """
-    def __init__(self, no_local_search=True, seed=42, display=False, **kwargs):
-        super().__init__(name="DualAnnealing", disp=display, **kwargs)
+
+    name = "DualAnnealing"
+
+    def __init__(
+        self,
+        no_local_search: bool = True,
+        seed: int = 42,
+        **kwargs: Any,
+    ):
+        super().__init__(**kwargs)
         self.no_local_search = no_local_search
         self.seed = seed
 
-    def _minimize(self, opt_problem):
+    def _minimize(self, opt_problem: OptProblem) -> OptimizeResult:
         """
         Scipy backend method to minimize a loss function.
         """
-        fun = opt_problem["fun"]
+        fun = opt_problem.fun
 
-        def func(x, *args, **kwargs):
+        def func(
+            x: Float[Array, "parameters"],
+            *args: Any,
+            **kwargs: Any,
+        ) -> Float[Array, ""]:
             return fun(x)
 
-        opt_problem["func"] = func
-        opt_problem["no_local_search"] = self.no_local_search
-        opt_problem["maxiter"] = opt_problem["options"]["maxiter"]
-        opt_problem["args"] = (None, )
-        opt_problem["seed"] = self.seed
-
-        del opt_problem["tol"]
-        del opt_problem["fun"]
-        del opt_problem["jac"]
-        del opt_problem["hess"]
-        del opt_problem["method"]
-        del opt_problem["options"]
-
-        return dual_annealing(**opt_problem)
+        # scipy 1.18's stub renamed `seed` to `rng`, but the installed runtime
+        # still accepts `seed`; the min supported scipy predates `rng`
+        return dual_annealing(
+            func=func,
+            x0=opt_problem.x0,
+            bounds=opt_problem.bounds,
+            callback=opt_problem.callback,
+            no_local_search=self.no_local_search,
+            maxiter=opt_problem.options["maxiter"],
+            args=(None,),
+            seed=self.seed,  # pyright: ignore[reportCallIssue]
+        )

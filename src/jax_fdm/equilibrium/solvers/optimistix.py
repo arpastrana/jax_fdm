@@ -1,12 +1,23 @@
-try:
-    from optimistix import ImplicitAdjoint
-    from optimistix import RecursiveCheckpointAdjoint
+from collections.abc import Callable
+from typing import Any
 
-except ImportError:
-    pass
+from jaxtyping import Array
+from jaxtyping import Float
+from optimistix import ImplicitAdjoint
+from optimistix import RecursiveCheckpointAdjoint
+
+from jax_fdm.equilibrium.solvers.types import SolverIterParams
 
 
-def solver_optimistix(solver_cls, routine_fn, fn, a, x_init, solver_config, solver_kwargs=None):
+def solver_optimistix(
+    solver_cls: Callable,
+    routine_fn: Callable,
+    fn: Callable,
+    a: SolverIterParams,
+    x_init: Float[Array, "..."],
+    solver_config: dict[str, Any],
+    solver_kwargs: dict[str, Any] | None = None,
+) -> Float[Array, "..."]:
     """
     Find a root of a function f(a, x) with optimistix.
 
@@ -57,7 +68,7 @@ def solver_optimistix(solver_cls, routine_fn, fn, a, x_init, solver_config, solv
         has_aux=False,
         max_steps=tmax,
         throw=False,
-        adjoint=adjoint
+        adjoint=adjoint,
     )
 
     return solution.value

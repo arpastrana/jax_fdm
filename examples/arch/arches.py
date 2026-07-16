@@ -1,4 +1,3 @@
-
 # compas
 from compas.colors import ColorMap
 from compas.geometry import Translation
@@ -81,21 +80,24 @@ constrained_networks = []
 vertical_comps = [0.1, 0.2, 0.4, 0.8, 1.6, 3.2]
 
 for vertical_comp in vertical_comps:
-
     goals = []
     goals.append(NodeResidualDirectionGoal(0, target=[-1.0, 0.0, -vertical_comp]))
-    goals.append(NodeResidualDirectionGoal(num_segments, target=[1.0, 0.0, -vertical_comp]))
+    goals.append(
+        NodeResidualDirectionGoal(num_segments, target=[1.0, 0.0, -vertical_comp]),
+    )
 
-# ==========================================================================
-# Optimization
-# ==========================================================================
+    # ==========================================================================
+    # Optimization
+    # ==========================================================================
 
-    constrained_network = constrained_fdm(network,
-                                          optimizer=SLSQP(),
-                                          parameters=parameters,
-                                          loss=Loss(SquaredError(goals)),
-                                          maxiter=200,
-                                          tol=1e-9)
+    constrained_network = constrained_fdm(
+        network,
+        optimizer=SLSQP(),
+        parameters=parameters,
+        loss=Loss(SquaredError(goals)),
+        maxiter=200,
+        tol=1e-9,
+    )
 
     constrained_networks.append(constrained_network)
 
@@ -113,7 +115,6 @@ cmap = ColorMap.from_mpl("viridis")
 # ==========================================================================
 
 for idx, c_network in enumerate(constrained_networks):
-
     # equilibrated arch
     color = cmap(1.0 - idx / len(constrained_networks))
 
@@ -123,10 +124,7 @@ for idx, c_network in enumerate(constrained_networks):
     # constrained arch
     c_network = c_network.transformed(T)
 
-    viewer.add(c_network,
-               edgewidth=(0.01, 0.15),
-               edgecolor=color,
-               reactionscale=0.5)
+    viewer.add(c_network, edgewidth=(0.01, 0.15), edgecolor=color, reactionscale=0.5)
 
 # show le crème
 viewer.show()

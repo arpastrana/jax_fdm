@@ -1,6 +1,12 @@
 import jax.numpy as jnp
 from jax import vmap
+from jaxtyping import Array
+from jaxtyping import Float
+from jaxtyping import Int
 
+from jax_fdm.equilibrium import EquilibriumModel
+from jax_fdm.equilibrium import EquilibriumState
+from jax_fdm.equilibrium import EquilibriumStructure
 from jax_fdm.goals import ScalarGoal
 from jax_fdm.goals.network import NetworkGoal
 
@@ -17,19 +23,24 @@ class NetworkSmoothGoal(ScalarGoal, NetworkGoal):
     The fairness energy is computed as the squared length of the
     vector between every node position and their neighbors' centroid.
     """
-    def __init__(self):
-        super().__init__()
-        self.adjacency = None
-        self.indices_free = None
 
-    def init(self, model, structure):
+    def __init__(self) -> None:
+        super().__init__()
+        # set in init() from the network structure, before any prediction runs
+        self.adjacency: Float[Array, "nodes nodes"]
+
+    def init(self, model: EquilibriumModel, structure: EquilibriumStructure) -> None:
         """
         Initialize the constraint with information from an equilibrium model.
         """
         super().init(model, structure)
         self.adjacency = structure.adjacency
 
-    def prediction(self, eq_state, index):
+    def prediction(
+        self,
+        eq_state: EquilibriumState,
+        index: Int[Array, ""],
+    ) -> Float[Array, "1"]:
         """
         The current fairness value of the node.
         """
@@ -43,7 +54,11 @@ class NetworkSmoothGoal(ScalarGoal, NetworkGoal):
         return jnp.atleast_1d(fairness)
 
 
-def node_nbrs_fairness_ngon(xyz_all, xyz_node, adjacency_node):
+def node_nbrs_fairness_ngon(
+    xyz_all: Float[Array, "nodes 3"],
+    xyz_node: Float[Array, "3"],
+    adjacency_node: Float[Array, "nodes"],
+) -> Float[Array, ""]:
     """
     Compute the fairness of an n-gon node neighborhood.
     """

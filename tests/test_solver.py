@@ -28,9 +28,11 @@ def test_arch_reactions_balance_loads(arch_network):
     loads = jnp.array(eq_network.nodes_loads(keys=eq_network.nodes_free()))
     reactions = jnp.array(eq_network.nodes_reactions())
 
-    assert jnp.allclose(jnp.abs(jnp.sum(reactions, axis=0)),
-                        jnp.abs(jnp.sum(loads, axis=0)),
-                        atol=1e-9)
+    assert jnp.allclose(
+        jnp.abs(jnp.sum(reactions, axis=0)),
+        jnp.abs(jnp.sum(loads, axis=0)),
+        atol=1e-9,
+    )
 
 
 def test_arch_profile_symmetric(arch_network):

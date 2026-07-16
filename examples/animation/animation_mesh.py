@@ -60,15 +60,16 @@ if modify_view:
     viewer.renderer.camera.rotation.z = 2 * pi / 3  # rotation around the z axis
 
 # draw mesh, fused into batched mesh "soups" for fast per-frame buffer updates
-mesh_obj = viewer.add(mesh,
-                      edgewidth=(0.05, 0.25),
-                      edgecolor="fd",
-                      show_vertices=False,
-                      vertexsize=0.5,
-                      show_reactions=True,
-                      show_loads=True,
-                      fuse=True
-                      )
+mesh_obj = viewer.add(
+    mesh,
+    edgewidth=(0.05, 0.25),
+    edgecolor="fd",
+    show_vertices=False,
+    vertexsize=0.5,
+    show_reactions=True,
+    show_loads=True,
+    fuse=True,
+)
 
 # warm start model
 params = recorder[0]
@@ -76,6 +77,7 @@ _ = model(params, structure)
 
 # create update function
 if animate:
+
     @viewer.on(interval=interval, frames=len(recorder))
     def wiggle(f):
 
@@ -91,6 +93,7 @@ if animate:
 
         if rotate_while_animate:
             viewer.renderer.camera.rotate(dx=1, dy=0)
+
 
 # show le crème
 viewer.show()

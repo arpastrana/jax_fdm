@@ -18,7 +18,12 @@ f_network = fdm(network)
 
 loss = Loss(PredictionError(goals=[NetworkLoadPathGoal()]))
 constraints = [EdgeLengthConstraint(edge, 0.75, 1.0) for edge in network.edges()]
-c_network = constrained_fdm(network, loss=loss, optimizer=SLSQP(), constraints=constraints)
+c_network = constrained_fdm(
+    network,
+    loss=loss,
+    optimizer=SLSQP(),
+    constraints=constraints,
+)
 
 viewer = Viewer(show_grid=True)
 viewer.add(c_network)

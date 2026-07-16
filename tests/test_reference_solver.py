@@ -34,10 +34,16 @@ def _reference_network(name):
             if row_num == 0:
                 continue
             node = int(row[0]) - 1
-            network.add_node(node,
-                             x=float(row[1]), y=float(row[2]), z=float(row[3]),
-                             is_support=(row[4] == "0"),
-                             u=float(row[5]), v=float(row[6]), w=float(row[7]))
+            network.add_node(
+                node,
+                x=float(row[1]),
+                y=float(row[2]),
+                z=float(row[3]),
+                is_support=(row[4] == "0"),
+                u=float(row[5]),
+                v=float(row[6]),
+                w=float(row[7]),
+            )
 
     with open(os.path.join(REFERENCE, f"{name}-edges.csv")) as f:
         for row_num, row in enumerate(csv.reader(f)):
@@ -69,7 +75,9 @@ def test_reference_in_equilibrium(name):
     residual = np.zeros((network.number_of_nodes(), 3))
     for u, v in network.edges():
         q = network.edge_forcedensity((u, v))
-        vector = np.array(network.node_coordinates(v)) - np.array(network.node_coordinates(u))
+        vector = np.array(network.node_coordinates(v)) - np.array(
+            network.node_coordinates(u),
+        )
         residual[u] += q * vector
         residual[v] -= q * vector
 
@@ -87,6 +95,8 @@ def test_fdm_reproduces_reference(name):
 
     reference = np.array([network.node_coordinates(node) for node in network.nodes()])
     eq_network = fdm(network, sparse=False)
-    solved = np.array([eq_network.node_coordinates(node) for node in eq_network.nodes()])
+    solved = np.array(
+        [eq_network.node_coordinates(node) for node in eq_network.nodes()],
+    )
 
     assert jnp.allclose(jnp.asarray(solved), jnp.asarray(reference), atol=1e-8)

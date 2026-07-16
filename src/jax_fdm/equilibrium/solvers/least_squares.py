@@ -1,22 +1,28 @@
+from collections.abc import Callable
+from typing import Any
+
 from jaxopt import GaussNewton
+from jaxtyping import Array
+from jaxtyping import Float
+from optimistix import Dogleg
+from optimistix import LevenbergMarquardt
+from optimistix import least_squares
 
 from jax_fdm.equilibrium.solvers.jaxopt import solver_jaxopt
 from jax_fdm.equilibrium.solvers.optimistix import solver_optimistix
-
-try:
-    from optimistix import Dogleg
-    from optimistix import LevenbergMarquardt
-    from optimistix import least_squares
-
-except ImportError:
-    pass
-
+from jax_fdm.equilibrium.solvers.types import SolverIterParams
 
 # ==========================================================================
 # JAXOPT solvers
 # ==========================================================================
 
-def solver_gauss_newton(fn, theta, x_init, solver_config):
+
+def solver_gauss_newton(
+    fn: Callable,
+    theta: SolverIterParams,
+    x_init: Float[Array, "nodes_free_flat"],
+    solver_config: dict[str, Any],
+) -> Float[Array, "nodes_free_flat"]:
     """
     Minimize the residual of function f(theta, x) = 0 using the Gauss Newton algorithm.
 
@@ -38,9 +44,16 @@ def solver_gauss_newton(fn, theta, x_init, solver_config):
 # Optimistix solvers
 # ==========================================================================
 
-def solver_levenberg_marquardt(fn, theta, x_init, solver_config):
+
+def solver_levenberg_marquardt(
+    fn: Callable,
+    theta: SolverIterParams,
+    x_init: Float[Array, "nodes_free_flat"],
+    solver_config: dict[str, Any],
+) -> Float[Array, "nodes_free_flat"]:
     """
-    Minimize the residual of function f(theta, x) = 0 using the Levenberg Marquardt algorithm.
+    Minimize the residual of function f(theta, x) = 0 using the Levenberg Marquardt
+    algorithm.
 
     Parameters
     ----------
@@ -67,14 +80,21 @@ def solver_levenberg_marquardt(fn, theta, x_init, solver_config):
         theta,
         x_init,
         solver_config,
-        solver_kwargs
+        solver_kwargs,
     )
 
     return solution
 
 
-def solver_dogleg(fn, theta, x_init, solver_config):
+def solver_dogleg(
+    fn: Callable,
+    theta: SolverIterParams,
+    x_init: Float[Array, "nodes_free_flat"],
+    solver_config: dict[str, Any],
+) -> Float[Array, "nodes_free_flat"]:
     """
+    Minimize the residual of function f(theta, x) = 0 using the Dogleg trust-region
+    algorithm.
     """
     solver_kwargs = {}
 
@@ -85,7 +105,7 @@ def solver_dogleg(fn, theta, x_init, solver_config):
         theta,
         x_init,
         solver_config,
-        solver_kwargs
+        solver_kwargs,
     )
 
     return solution
@@ -95,7 +115,8 @@ def solver_dogleg(fn, theta, x_init, solver_config):
 # Helper functions
 # ==========================================================================
 
-def is_solver_leastsquares(solver_fn):
+
+def is_solver_leastsquares(solver_fn: Callable) -> bool:
     """
     Test if a solver function is a least squares solver.
 
@@ -107,10 +128,6 @@ def is_solver_leastsquares(solver_fn):
     -------
     `True` if the solver is a least squares solver. Otherwise, `False`.
     """
-    solver_fns = {
-        solver_gauss_newton,
-        solver_levenberg_marquardt,
-        solver_dogleg
-    }
+    solver_fns = {solver_gauss_newton, solver_levenberg_marquardt, solver_dogleg}
 
     return solver_fn in solver_fns

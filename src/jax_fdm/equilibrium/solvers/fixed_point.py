@@ -1,4 +1,6 @@
+from collections.abc import Callable
 from functools import partial
+from typing import Any
 
 import jax
 import jax.numpy as jnp
@@ -11,12 +13,15 @@ from jax.lax import custom_linear_solve
 from jax.scipy.sparse.linalg import bicgstab
 from jaxopt import AndersonAcceleration
 from jaxopt import FixedPointIteration
+from jaxtyping import Array
+from jaxtyping import Float
 from lineax import CG
 from lineax import FunctionLinearOperator
 from lineax import Normal
 from lineax import linear_solve
 
 from jax_fdm.equilibrium.solvers.jaxopt import solver_jaxopt
+from jax_fdm.equilibrium.solvers.types import SolverIterParams
 from jax_fdm.equilibrium.sparse import splu_cpu as splu
 from jax_fdm.equilibrium.sparse import splu_solve_cpu as splu_solve
 
@@ -24,7 +29,13 @@ from jax_fdm.equilibrium.sparse import splu_solve_cpu as splu_solve
 # Iterative solvers - JAXOPT
 # ==========================================================================
 
-def solver_anderson(f, a, x_init, solver_config):
+
+def solver_anderson(
+    f: Callable,
+    a: SolverIterParams,
+    x_init: Float[Array, "nodes_free 3"],
+    solver_config: dict[str, Any],
+) -> Float[Array, "nodes_free 3"]:
     """
     Find a fixed point of a function f(a, x) using Anderson acceleration.
 
@@ -41,10 +52,22 @@ def solver_anderson(f, a, x_init, solver_config):
     """
     solver_kwargs = {"history_size": 5, "ridge": 1e-6}
 
-    return solver_jaxopt(AndersonAcceleration, f, a, x_init, solver_config, solver_kwargs)
+    return solver_jaxopt(
+        AndersonAcceleration,
+        f,
+        a,
+        x_init,
+        solver_config,
+        solver_kwargs,
+    )
 
 
-def solver_fixedpoint(f, a, x_init, solver_config):
+def solver_fixedpoint(
+    f: Callable,
+    a: SolverIterParams,
+    x_init: Float[Array, "nodes_free 3"],
+    solver_config: dict[str, Any],
+) -> Float[Array, "nodes_free 3"]:
     """
     Find a fixed point of a function f(a, x) using Anderson acceleration.
 
@@ -62,7 +85,7 @@ def solver_fixedpoint(f, a, x_init, solver_config):
     return solver_jaxopt(FixedPointIteration, f, a, x_init, solver_config)
 
 
-def is_solver_fixedpoint(solver_fn):
+def is_solver_fixedpoint(solver_fn: Callable) -> bool:
     """
     Test if a solver function is a fixed point solver.
 
@@ -87,7 +110,13 @@ def is_solver_fixedpoint(solver_fn):
 # Homecooked solvers
 # ==========================================================================
 
-def solver_forward(f, a, x_init, solver_config):
+
+def solver_forward(
+    f: Callable,
+    a: Any,
+    x_init: Float[Array, "..."],
+    solver_config: dict[str, Any],
+) -> Float[Array, "..."]:
     """
     Solve for a fixed point of a function f(a, x) using forward iteration.
 
@@ -122,11 +151,13 @@ def solver_forward(f, a, x_init, solver_config):
 
     init_val = (x_init, f(a, x_init))
 
-    _, x_star = while_loop(cond_fun,
-                           body_fun,
-                           init_val,
-                           max_steps=tmax,
-                           kind="checkpointed")
+    _, x_star = while_loop(
+        cond_fun,
+        body_fun,
+        init_val,
+        max_steps=tmax,
+        kind="checkpointed",
+    )
 
     return x_star
 
@@ -135,15 +166,31 @@ def solver_forward(f, a, x_init, solver_config):
 # Fixed point solver wrapper for implicit differentiation
 # ==========================================================================
 
+
 @partial(custom_vjp, nondiff_argnums=(0, 1, 2))
-def solver_fixedpoint_implicit(solver, solver_config, f, a, x_init):
+def solver_fixedpoint_implicit(
+    solver: Callable,
+    solver_config: dict[str, Any],
+    f: Callable,
+    a: SolverIterParams,
+    x_init: Float[Array, "nodes_free 3"],
+) -> Float[Array, "nodes_free 3"]:
     """
     Solve for a fixed point of a function f(a, x) using an iterative solver.
     """
     return solver(f, a, x_init, solver_config)
 
 
-def fixed_point_fwd(solver, solver_config, f, a, x_init):
+def fixed_point_fwd(
+    solver: Callable,
+    solver_config: dict[str, Any],
+    f: Callable,
+    a: SolverIterParams,
+    x_init: Float[Array, "nodes_free 3"],
+) -> tuple[
+    Float[Array, "nodes_free 3"],
+    tuple[SolverIterParams, Float[Array, "nodes_free 3"]],
+]:
     """
     The forward pass of an iterative fixed point solver.
 
@@ -162,14 +209,23 @@ def fixed_point_fwd(solver, solver_config, f, a, x_init):
     """
     x_star = solver_fixedpoint_implicit(solver, solver_config, f, a, x_init)
 
-    return x_star, (a, x_star)
+    # the custom_vjp wrapper's return type is opaque to pyright; x_star is a
+    # jax.Array at runtime
+    return x_star, (a, x_star)  # pyright: ignore[reportReturnType]
 
 
 # ==========================================================================
 # Backward rule - Materialize Jacobian
 # ==========================================================================
 
-def fixed_point_bwd_materialize(solver, solver_config, f, res, vec):
+
+def fixed_point_bwd_materialize(
+    solver: Callable,
+    solver_config: dict[str, Any],
+    f: Callable,
+    res: tuple[SolverIterParams, Float[Array, "nodes_free 3"]],
+    vec: Float[Array, "nodes_free 3"],
+) -> tuple[SolverIterParams, None]:
     """
     The backward pass of a fixed point solver materializing the Jacobian.
 
@@ -224,7 +280,14 @@ def fixed_point_bwd_materialize(solver, solver_config, f, res, vec):
 # Backward rule - Fixed point iteration
 # ==========================================================================
 
-def fixed_point_bwd_fixedpoint(solver, solver_config, f, res, vec):
+
+def fixed_point_bwd_fixedpoint(
+    solver: Callable,
+    solver_config: dict[str, Any],
+    f: Callable,
+    res: tuple[SolverIterParams, Float[Array, "nodes_free 3"]],
+    vec: Float[Array, "nodes_free 3"],
+) -> tuple[SolverIterParams, None]:
     """
     The backward pass of an iterative fixed point solver.
 
@@ -267,7 +330,7 @@ def fixed_point_bwd_fixedpoint(solver, solver_config, f, res, vec):
         rev_iter,  # The function to find a fixed-point of
         vec,  # The parameters of rev_iter
         vec,  # The initial guess of the solution vector
-        solver_config  # The configuration of the solver
+        solver_config,  # The configuration of the solver
     )
 
     # Calculate the vector Jacobian function v * df / da at a, closed around x*
@@ -283,7 +346,14 @@ def fixed_point_bwd_fixedpoint(solver, solver_config, f, res, vec):
 # Backward rule - Adjoint method
 # ==========================================================================
 
-def fixed_point_bwd_adjoint_general(solver, solver_config, f, res, vec):
+
+def fixed_point_bwd_adjoint_general(
+    solver: Callable,
+    solver_config: dict[str, Any],
+    f: Callable,
+    res: tuple[SolverIterParams, Float[Array, "nodes_free 3"]],
+    vec: Float[Array, "nodes_free 3"],
+) -> tuple[SolverIterParams, None]:
     """
     The backward pass of a fixed point solver with the adjoint method.
 
@@ -329,7 +399,13 @@ def fixed_point_bwd_adjoint_general(solver, solver_config, f, res, vec):
     return a_bar[0], None
 
 
-def fixed_point_bwd_adjoint(solver, solver_config, f, res, vec):
+def fixed_point_bwd_adjoint(
+    solver: Callable,
+    solver_config: dict[str, Any],
+    f: Callable,
+    res: tuple[SolverIterParams, Float[Array, "nodes_free 3"]],
+    vec: Float[Array, "nodes_free 3"],
+) -> tuple[SolverIterParams, None]:
     """
     The backward pass of an iterative fixed point solver with a pseudo-adjoint method.
 
@@ -359,8 +435,9 @@ def fixed_point_bwd_adjoint(solver, solver_config, f, res, vec):
     # The matrix is symmetric, so no need to transpose it
     K = theta[0]
 
-    # Default linear solver is dense
-    def linearsolve_fn(b):
+    # Default linear solver is dense; intentionally shadowed by the sparse
+    # branch below when K is a JAXSparse
+    def linearsolve_fn(b):  # pyright: ignore[reportRedeclaration]
         """
         Closure function around a dense linear solver.
         """
@@ -368,13 +445,19 @@ def fixed_point_bwd_adjoint(solver, solver_config, f, res, vec):
 
     # If the stiffness matrix is sparse, use a sparse linear solver
     if isinstance(K, JAXSparse):
-        K_id = splu(K)  # Session ID of the cached sparse LU factorization
+        # K is the stiffness matrix theta[0]; when sparse it is always the CSC
+        # built by EquilibriumModelSparse.stiffness_matrix, but isinstance only
+        # narrows the opaque theta[0] to JAXSparse. K_id caches the sparse LU
+        # factorization.
+        K_id = splu(K)  # pyright: ignore[reportArgumentType]
 
         def linearsolve_fn(b):  # noqa: F811
             """
-            Reuse a pre-computed LU decomposition of the stiffness matrix to solve a linear system.
+            Reuse a pre-computed LU decomposition of the stiffness matrix to solve a
+            linear system.
             Also linearize it to get its transpose, which is required by lineax.
             """
+
             def matvec_fn(_x):
                 return K @ _x
 
@@ -394,8 +477,10 @@ def fixed_point_bwd_adjoint(solver, solver_config, f, res, vec):
     # Solve adjoint function iteratively
     input_structure = jax.ShapeDtypeStruct(vec.shape, vec.dtype)
     A_op = FunctionLinearOperator(A_fn, input_structure)
-    solver = Normal(CG(rtol=1e-6, atol=1e-6))
-    solution = linear_solve(A_op, vec, solver, throw=False)
+    # reuses the `solver` param name for the lineax adjoint solver; unrelated to
+    # the nondiff solver arg, and a lineax AbstractLinearSolver from here on
+    solver = Normal(CG(rtol=1e-6, atol=1e-6))  # pyright: ignore[reportAssignmentType]
+    solution = linear_solve(A_op, vec, solver, throw=False)  # pyright: ignore[reportArgumentType]
     w = solution.value
 
     # Calculate the vector Jacobian function v * df / dtheta, evaluated at at x*

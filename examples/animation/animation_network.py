@@ -82,5 +82,6 @@ if animate:
         if rotate_while_animate:
             viewer.renderer.camera.rotate(dx=1, dy=0)
 
+
 # show le crème
 viewer.show()

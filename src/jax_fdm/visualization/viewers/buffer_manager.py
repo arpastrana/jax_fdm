@@ -1,10 +1,16 @@
+from typing import Any
+
 import numpy as np
 from compas_viewer.gl import update_vertex_buffer
 from compas_viewer.scene.buffermanager import BufferManager
+from jaxtyping import Float
 
 from compas.colors import Color
 
 __all__ = ["FastBufferManager"]
+
+# A per-vertex color is either a COMPAS Color or an rgba float tuple.
+ColorLike = Color | tuple[float, float, float, float]
 
 
 class FastBufferManager(BufferManager):
@@ -21,7 +27,7 @@ class FastBufferManager(BufferManager):
 
     data_types = ("_points_data", "_lines_data", "_frontfaces_data", "_backfaces_data")
 
-    def update_object_data(self, obj):
+    def update_object_data(self, obj: Any) -> None:
         """
         Update the position and color buffers for a single object.
         """
@@ -38,10 +44,14 @@ class FastBufferManager(BufferManager):
 
             # Elements are not updated: topology is fixed at add time.
             positions, colors, _ = data
-            self._write_buffers(data_type, index, *self._pack_vertex_arrays(positions, colors))
+            self._write_buffers(
+                data_type,
+                index,
+                *self._pack_vertex_arrays(positions, colors),
+            )
 
     @staticmethod
-    def _refresh_data(obj, data_type):
+    def _refresh_data(obj: Any, data_type: str) -> Any:
         """
         Re-read one data category from the object and store it back on it.
 
@@ -56,27 +66,36 @@ class FastBufferManager(BufferManager):
         return data
 
     @staticmethod
-    def _pack_vertex_arrays(positions, colors):
+    def _pack_vertex_arrays(
+        positions: list[list[float]] | np.ndarray,
+        colors: list[ColorLike] | np.ndarray,
+    ) -> tuple[Float[np.ndarray, "positions"], Float[np.ndarray, "colors"]]:
         """
         Pack positions and colors into the flat float32 arrays the GL buffers expect.
 
         Colors are normalized to one per vertex, padding with the last color
         or truncating as needed.
         """
+        colors = list(colors)
         if len(colors) > len(positions):
             colors = colors[: len(positions)]
         elif len(colors) < len(positions):
             colors = colors + [colors[-1]] * (len(positions) - len(colors))
 
-        if len(colors) > 0 and isinstance(colors[0], Color):
-            colors = [color.rgba for color in colors]
+        rgba = [color.rgba if isinstance(color, Color) else color for color in colors]
 
         pos_array = np.array(positions, dtype=np.float32).flatten()
-        col_array = np.array(colors, dtype=np.float32).flatten()
+        col_array = np.array(rgba, dtype=np.float32).flatten()
 
         return pos_array, col_array
 
-    def _write_buffers(self, data_type, index, pos_array, col_array):
+    def _write_buffers(
+        self,
+        data_type: str,
+        index: int,
+        pos_array: Float[np.ndarray, "positions"],
+        col_array: Float[np.ndarray, "colors"],
+    ) -> None:
         """
         Write the packed arrays into the combined buffers at the object's slice.
         """
@@ -85,7 +104,15 @@ class FastBufferManager(BufferManager):
         start_idx = int(matches[0]) if len(matches) else 0
 
         pos_byte_offset = start_idx * 3 * 4  # 3 floats per vertex * 4 bytes per float
-        update_vertex_buffer(pos_array, self.buffer_ids[data_type]["positions"], offset=pos_byte_offset)
+        update_vertex_buffer(
+            pos_array,
+            self.buffer_ids[data_type]["positions"],
+            offset=pos_byte_offset,
+        )
 
         col_byte_offset = start_idx * 4 * 4  # 4 floats per color * 4 bytes per float
-        update_vertex_buffer(col_array, self.buffer_ids[data_type]["colors"], offset=col_byte_offset)
+        update_vertex_buffer(
+            col_array,
+            self.buffer_ids[data_type]["colors"],
+            offset=col_byte_offset,
+        )

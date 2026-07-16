@@ -20,4 +20,4 @@ if has_backend("compas_plotter"):
 else:
     Plotter = null_viewer("compas_plotter")
 
-__all__ = [name for name in dir() if not name.startswith('_')]
+__all__ = [name for name in dir() if not name.startswith("_")]

@@ -1,33 +1,46 @@
-import jax
 import jax.numpy as jnp
 import numpy as np
 from jax.experimental.sparse import BCOO
+from jaxtyping import Array
+from jaxtyping import Float
+from jaxtyping import Int
 from scipy.sparse import coo_matrix
+from scipy.sparse import spmatrix
 
+from compas.datastructures import Mesh as CompasMesh
+from jax_fdm import DTYPE_INT_JAX
 from jax_fdm import DTYPE_INT_NP
 from jax_fdm.equilibrium.structures.graphs import Graph
 from jax_fdm.equilibrium.structures.graphs import GraphSparse
 from jax_fdm.equilibrium.structures.graphs import build_matrix
-from jax_fdm.equilibrium.structures.mixins import MeshIndexingMixins
 
 # ==========================================================================
 # Mesh
 # ==========================================================================
 
-class Mesh(Graph, MeshIndexingMixins):
+
+class Mesh(Graph):
     """
     A mesh.
     """
+
     # The faces array can have rows of different lengths. How to handle it?
     # Using a tuple instead of an array?
-    vertices: np.ndarray
-    faces: np.ndarray
-    faces_indexed: jax.Array
-    connectivity_faces_vertices: jax.Array
-    connectivity_edges_faces: jax.Array
-    face_keys: np.ndarray
+    vertices: Int[np.ndarray, "vertices"]
+    faces: Int[np.ndarray, "faces vertices"]
+    faces_indexed: Int[Array, "faces vertices"]
+    connectivity_faces_vertices: Float[Array, "faces vertices"]
+    connectivity_edges_faces: Float[Array, "edges faces"]
+    face_keys: Int[np.ndarray, "faces"]
 
-    def __init__(self, vertices, faces, edges=None, face_keys=None, **kwargs):
+    def __init__(
+        self,
+        vertices: Int[np.ndarray, "vertices"],
+        faces: Int[np.ndarray, "faces vertices"],
+        edges: Int[np.ndarray, "edges 2"] | None = None,
+        face_keys: Int[np.ndarray, "faces"] | None = None,
+        **kwargs,
+    ):
 
         if edges is None:
             edges = self._edges_from_faces(faces)
@@ -48,20 +61,56 @@ class Mesh(Graph, MeshIndexingMixins):
         self.connectivity_edges_faces = self._connectivity_edges_faces_matrix()
 
     @property
-    def num_vertices(self):
+    def num_vertices(self) -> int:
         """
         The number of vertices.
         """
         return self.vertices.size
 
     @property
-    def num_faces(self):
+    def num_faces(self) -> int:
         """
         The number of faces.
         """
         return self.faces.shape[0]
 
-    def _connectivity_edges_faces_matrix(self):
+    @property
+    def vertex_index(self) -> dict[int, int]:
+        """
+        A dictionary between vertex keys and their enumeration indices.
+        """
+        return {int(vkey): index for index, vkey in enumerate(self.vertices)}
+
+    @property
+    def face_index(self) -> dict[int, int]:
+        """
+        A dictionary between face keys and their enumeration indices.
+        """
+        return {int(fkey): index for index, fkey in enumerate(self.face_keys)}
+
+    def _faces_indexed(self) -> Int[Array, "faces vertices"]:
+        """
+        An array of the faces pointing to the indices of the node keys.
+        """
+        vertex_index = self.vertex_index
+
+        findexed = []
+        for face in self.faces:
+            face_indices = []
+
+            for vertex in face:
+                u = int(vertex)
+                if u >= 0:
+                    index = vertex_index[u]
+                else:
+                    index = u
+                face_indices.append(index)
+
+            findexed.append(tuple(face_indices))
+
+        return jnp.asarray(findexed, dtype=DTYPE_INT_JAX)
+
+    def _connectivity_edges_faces_matrix(self) -> Float[Array, "edges faces"]:
         """
         The connectivity matrix between edges and faces of a mesh.
 
@@ -71,17 +120,16 @@ class Mesh(Graph, MeshIndexingMixins):
         C = np.zeros((self.num_edges, self.num_faces))
 
         for eindex, findex in enumerate(self._edges_faces()):
-            C[eindex, findex] = 1.
+            C[eindex, findex] = 1.0
 
         return jnp.asarray(C)
 
-    def _edges_faces(self):
+    def _edges_faces(self) -> tuple[tuple[int, ...], ...]:
         """
         The connectivity matrix of the edges and the faces of a mesh.
         """
         edges_faces = []
         for u, v in self.edges:
-
             edge = (int(u), int(v))
             findices = []
 
@@ -100,14 +148,20 @@ class Mesh(Graph, MeshIndexingMixins):
             # assert len(findices) <= 2
 
             if len(findices) > 2:
-                print(f"Warning: Edge {edge} is non-manifold, it's shared by ({len(findices)}) faces. This might lead to unexpected behavior in e.g. in area load calculations.")
+                print(
+                    f"Warning: Edge {edge} is non-manifold, it's shared by "
+                    f"({len(findices)}) faces. This might lead to unexpected "
+                    f"behavior in e.g. in area load calculations.",
+                )
 
             edges_faces.append(tuple(findices))
 
         return tuple(edges_faces)
 
     @staticmethod
-    def _edges_from_faces(faces):
+    def _edges_from_faces(
+        faces: Int[np.ndarray, "faces vertices"],
+    ) -> Int[np.ndarray, "edges 2"]:
         """
         The the edges of the mesh.
 
@@ -135,7 +189,7 @@ class Mesh(Graph, MeshIndexingMixins):
 
         return np.asarray(edges, dtype=DTYPE_INT_NP)
 
-    def _connectivity_faces_matrix(self):
+    def _connectivity_faces_matrix(self) -> Float[Array, "faces vertices"]:
         """
         The connectivity matrix between faces and nodes.
         """
@@ -147,6 +201,7 @@ class Mesh(Graph, MeshIndexingMixins):
 # ==========================================================================
 # Mesh sparse
 # ==========================================================================
+
 
 class MeshSparse(Mesh, GraphSparse):
     """
@@ -163,7 +218,8 @@ class MeshSparse(Mesh, GraphSparse):
 
     Which presumably arises upon calling bcoo._bcoo_dot_general_transpose.
     """
-    def _connectivity_faces_matrix(self):
+
+    def _connectivity_faces_matrix(self) -> Float[Array, "faces vertices"]:
         """
         The connectivity matrix between faces and nodes in sparse format.
         """
@@ -171,14 +227,14 @@ class MeshSparse(Mesh, GraphSparse):
 
         return BCOO.from_scipy_sparse(F).todense()
 
-    def _connectivity_edges_faces_matrix(self):
+    def _connectivity_edges_faces_matrix(self) -> Float[Array, "edges faces"]:
         """
         The connectivity matrix between edges and faces of a mesh in sparse format.
         """
         C = np.zeros((self.num_edges, self.num_faces))
 
         for eindex, findex in enumerate(self._edges_faces()):
-            C[eindex, findex] = 1.
+            C[eindex, findex] = 1.0
 
         return jnp.asarray(C)
 
@@ -187,7 +243,8 @@ class MeshSparse(Mesh, GraphSparse):
 # Helper functions
 # ==========================================================================
 
-def mesh_edges_faces(mesh):
+
+def mesh_edges_faces(mesh: CompasMesh) -> list[tuple[int, ...]]:
     """
     The connectivity matrix of the edges and the faces of a mesh.
     """
@@ -195,10 +252,8 @@ def mesh_edges_faces(mesh):
 
     edges_faces = []
     for u, v in mesh.edges():
-
         findices = []
         for fkey in mesh.edge_faces((u, v)):
-
             if fkey is None:
                 continue
 
@@ -212,7 +267,7 @@ def mesh_edges_faces(mesh):
     return edges_faces
 
 
-def mesh_connectivity_edges_faces(mesh):
+def mesh_connectivity_edges_faces(mesh: CompasMesh) -> Float[np.ndarray, "edges faces"]:
     """
     The connectivity matrix between edges and faces of a mesh.
     """
@@ -224,12 +279,16 @@ def mesh_connectivity_edges_faces(mesh):
     edges_faces = mesh_edges_faces(mesh)
 
     for eindex, findex in enumerate(edges_faces):
-        connectivity[eindex, findex] = 1.
+        connectivity[eindex, findex] = 1.0
 
     return connectivity
 
 
-def face_matrix(face_vertices, rtype="array", normalize=True):
+def face_matrix(
+    face_vertices: Int[Array, "faces vertices"],
+    rtype: str = "array",
+    normalize: bool = True,
+) -> Float[np.ndarray, "faces vertices"] | list | spmatrix:
     """
     Creates a face-vertex adjacency matrix that skips -1 vertex entries.
 
@@ -247,11 +306,21 @@ def face_matrix(face_vertices, rtype="array", normalize=True):
         face_vertices_clean.append(face_clean)
 
     if normalize:
-        f = np.array([(i, j, 1.0 / len(vertices))
-                      for i, vertices in enumerate(face_vertices_clean) for j in vertices])
+        f = np.array(
+            [
+                (i, j, 1.0 / len(vertices))
+                for i, vertices in enumerate(face_vertices_clean)
+                for j in vertices
+            ],
+        )
     else:
-        f = np.array([(i, j, 1.0)
-                      for i, vertices in enumerate(face_vertices_clean) for j in vertices])
+        f = np.array(
+            [
+                (i, j, 1.0)
+                for i, vertices in enumerate(face_vertices_clean)
+                for j in vertices
+            ],
+        )
 
     F = coo_matrix((f[:, 2], (f[:, 0].astype(int), f[:, 1].astype(int))))
 

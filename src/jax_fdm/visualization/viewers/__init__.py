@@ -17,4 +17,4 @@ if has_backend("compas_viewer"):
 else:
     Viewer = null_viewer("compas_viewer")
 
-__all__ = [name for name in dir() if not name.startswith('_')]
+__all__ = [name for name in dir() if not name.startswith("_")]

@@ -1,4 +1,5 @@
 from math import hypot
+from typing import Any
 
 from compas_plotter.scene import GraphObject
 from compas_plotter.scene import MeshObject
@@ -17,6 +18,10 @@ from jax_fdm.visualization.style import LOAD_SCALE
 from jax_fdm.visualization.style import LOAD_TOL
 from jax_fdm.visualization.style import REACTION_SCALE
 from jax_fdm.visualization.style import REACTION_TOL
+from jax_fdm.visualization.style import EdgeColorSpec
+from jax_fdm.visualization.style import EdgeWidthSpec
+from jax_fdm.visualization.style import PointColorSpec
+from jax_fdm.visualization.style import PointSizeSpec
 from jax_fdm.visualization.style import edge_colors
 from jax_fdm.visualization.style import edge_widths
 from jax_fdm.visualization.style import load_arrows
@@ -24,10 +29,12 @@ from jax_fdm.visualization.style import point_colors
 from jax_fdm.visualization.style import reaction_arrows
 from jax_fdm.visualization.style import reaction_color_default
 
-__all__ = ["FDPlotterObject",
-           "FDNetworkPlotterObject",
-           "FDMeshPlotterObject",
-           "register_plotter_scene_objects"]
+__all__ = [
+    "FDPlotterObject",
+    "FDNetworkPlotterObject",
+    "FDMeshPlotterObject",
+    "register_plotter_scene_objects",
+]
 
 
 # 2D display defaults. Matplotlib linewidths live in points, not world units,
@@ -70,35 +77,46 @@ class FDPlotterObject(PlotterSceneObject):
 
     # The upstream attribute names of the point color setting and the point
     # display flag, resolved by the subclasses to their vocabulary.
-    point_color_attr = None
-    point_show_attr = None
+    point_color_attr: str | None = None
+    point_show_attr: str | None = None
 
-    def __init__(self,
-                 item=None,
-                 points=None,
-                 edges=None,
-                 pointcolor=None,
-                 edgecolor=None,
-                 edgewidth=None,
-                 loadcolor=None,
-                 loadscale=None,
-                 loadtol=None,
-                 reactioncolor=None,
-                 reactionscale=None,
-                 reactiontol=None,
-                 show_points=False,
-                 show_edges=True,
-                 show_loads=True,
-                 show_reactions=True,
-                 show_supports=True,
-                 **kwargs):
+    def __init__(
+        self,
+        item: FDNetwork | FDMesh | None = None,
+        points: list[int] | None = None,
+        edges: list[tuple[int, int]] | None = None,
+        pointcolor: PointColorSpec = None,
+        edgecolor: EdgeColorSpec = None,
+        edgewidth: EdgeWidthSpec = None,
+        loadcolor: Color | None = None,
+        loadscale: float | None = None,
+        loadtol: float | None = None,
+        reactioncolor: Color | None = None,
+        reactionscale: float | None = None,
+        reactiontol: float | None = None,
+        show_points: bool = False,
+        show_edges: bool = True,
+        show_loads: bool = True,
+        show_reactions: bool = True,
+        show_supports: bool = True,
+        **kwargs: Any,
+    ) -> None:
         kwargs.pop("sceneobject_type", None)
         super().__init__(item=item, **kwargs)
 
-        self.datastructure = item
+        # The scene registry always dispatches a real datastructure to this
+        # constructor; the Optional in the signature only matches the base
+        # class default.
+        self.datastructure: FDNetwork | FDMesh = item
 
-        self.points = list(points) if points is not None else list(self.point_keys())
-        self.edges = list(edges) if edges is not None else list(item.edges())
+        self.points: list[int] = (
+            list(points) if points is not None else list(self.point_keys())
+        )
+        # item is always populated before draw(); edges() with data=False always
+        # yields plain (u, v) keys.
+        self.edges: list[tuple[int, int]] = (
+            list(edges) if edges is not None else list(item.edges())  # pyright: ignore[reportOptionalMemberAccess, reportArgumentType, reportAttributeAccessIssue]
+        )
 
         # The point-edge adjacency is cached once at construction, so drawing
         # never re-derives it from the datastructure (Mesh.vertex_edges scans
@@ -121,32 +139,33 @@ class FDPlotterObject(PlotterSceneObject):
         self.show_loads = show_loads if show_loads is not None else True
         self.show_reactions = show_reactions if show_reactions is not None else True
 
-        setattr(self, self.point_show_attr, bool(show_points))
+        # subclasses always set point_show_attr to a str before instantiation
+        setattr(self, self.point_show_attr, bool(show_points))  # pyright: ignore[reportArgumentType]
         self.show_edges = show_edges if show_edges is not None else True
 
     # ==========================================================================
     # Point vocabulary
     # ==========================================================================
 
-    def point_keys(self):
+    def point_keys(self) -> list[int]:
         raise NotImplementedError
 
-    def point_coordinates(self, key):
+    def point_coordinates(self, key: int) -> list[float]:
         raise NotImplementedError
 
-    def point_load(self, key):
+    def point_load(self, key: int) -> list[float]:
         raise NotImplementedError
 
-    def point_reaction(self, key):
+    def point_reaction(self, key: int) -> list[float]:
         raise NotImplementedError
 
-    def point_edges(self, key):
+    def point_edges(self, key: int) -> list[tuple[int, int]]:
         raise NotImplementedError
 
-    def point_is_support(self, key):
+    def point_is_support(self, key: int) -> bool:
         raise NotImplementedError
 
-    def point_marker_radius(self):
+    def point_marker_radius(self) -> float:
         """
         The radius of the point markers in data units, for the arrow clearance.
 
@@ -158,7 +177,7 @@ class FDPlotterObject(PlotterSceneObject):
     # Style
     # ==========================================================================
 
-    def resolve_style(self):
+    def resolve_style(self) -> None:
         """
         Derive the per-element styling from the current datastructure state.
 
@@ -168,22 +187,34 @@ class FDPlotterObject(PlotterSceneObject):
         """
         datastructure = self.datastructure
 
-        width = self.edgewidth_spec if self.edgewidth_spec is not None else EDGE_WIDTH_2D
+        width = (
+            self.edgewidth_spec if self.edgewidth_spec is not None else EDGE_WIDTH_2D
+        )
         self.edge_width = edge_widths(datastructure, self.edges, width)
         self.edgecolor = edge_colors(datastructure, self.edges, self.edgecolor_spec)
 
         # Free points default to white on the plotter, matching the white
         # markers of the compas_plotter canvas rather than the grey of the
         # shaded 3D backends.
-        is_support = self.point_is_support if self.show_supports else (lambda key: False)
-        colors = point_colors(self.points, is_support, self.pointcolor_spec, default=Color.white())
-        setattr(self, self.point_color_attr, colors)
+        is_support = (
+            self.point_is_support if self.show_supports else (lambda key: False)
+        )
+        # point_colors treats a str spec as an unrecognized dict/Color and falls
+        # back to the default.
+        colors = point_colors(
+            self.points,
+            is_support,
+            self.pointcolor_spec,  # pyright: ignore[reportArgumentType]
+            default=Color.white(),
+        )
+        # subclasses always set point_color_attr to a str before instantiation
+        setattr(self, self.point_color_attr, colors)  # pyright: ignore[reportArgumentType]
 
     # ==========================================================================
     # Draw
     # ==========================================================================
 
-    def draw(self):
+    def draw(self) -> list[Any]:
         """
         Draw the datastructure and its load and reaction arrows.
         """
@@ -201,7 +232,7 @@ class FDPlotterObject(PlotterSceneObject):
 
         return self._mpl_objects
 
-    def viewdata(self):
+    def viewdata(self) -> list[list[float]]:
         """
         The 2D extents of the points and the arrows, for the plotter zoom.
         """
@@ -220,7 +251,7 @@ class FDPlotterObject(PlotterSceneObject):
 
         return data
 
-    def _draw_edges(self, point_xyz):
+    def _draw_edges(self, point_xyz: dict[int, list[float]]) -> None:
         """
         Draw the edges with their force density styling.
 
@@ -235,11 +266,21 @@ class FDPlotterObject(PlotterSceneObject):
             colors.append(to_rgb(self.edgecolor[edge]))
             widths.append(self.edge_width[edge])
 
-        collection = LineCollection(lines, linewidths=widths, colors=colors, zorder=self.zorder + 10)
+        collection = LineCollection(
+            lines,
+            linewidths=widths,
+            colors=colors,
+            zorder=self.zorder + 10,
+        )
         self.axes.add_collection(collection)
         self._mpl_objects.append(collection)
 
-    def _draw_arrows(self, anchors, vectors, color):
+    def _draw_arrows(
+        self,
+        anchors: list[list[float]],
+        vectors: list[list[float]],
+        color: Color,
+    ) -> None:
         """
         Batch one arrow category into a single matplotlib collection.
         """
@@ -250,23 +291,32 @@ class FDPlotterObject(PlotterSceneObject):
             if not length:
                 continue
 
-            patches.append(FancyArrow(anchor[0],
-                                      anchor[1],
-                                      dx,
-                                      dy,
-                                      width=ARROW_BODYWIDTH_2D * length,
-                                      head_length=ARROW_HEADPORTION_2D * length,
-                                      head_width=ARROW_HEADWIDTH_2D * length,
-                                      length_includes_head=True,
-                                      lw=0.0))
+            patches.append(
+                FancyArrow(
+                    anchor[0],
+                    anchor[1],
+                    dx,
+                    dy,
+                    width=ARROW_BODYWIDTH_2D * length,
+                    head_length=ARROW_HEADPORTION_2D * length,
+                    head_width=ARROW_HEADWIDTH_2D * length,
+                    length_includes_head=True,
+                    lw=0.0,
+                ),
+            )
         if not patches:
             return
 
-        collection = PatchCollection(patches, facecolor=to_rgb(color), edgecolor="none", zorder=5000)
+        collection = PatchCollection(
+            patches,
+            facecolor=to_rgb(color),
+            edgecolor="none",
+            zorder=5000,
+        )
         self.axes.add_collection(collection)
         self._mpl_objects.append(collection)
 
-    def _load_arrow_data(self):
+    def _load_arrow_data(self) -> tuple[list[list[float]], list[list[float]]]:
         """
         The anchor and vector of the load arrow at every point.
 
@@ -278,7 +328,7 @@ class FDPlotterObject(PlotterSceneObject):
 
         return load_arrows(origins, loads, clearances, self.load_scale, self.load_tol)
 
-    def _reaction_arrow_data(self):
+    def _reaction_arrow_data(self) -> tuple[list[list[float]], list[list[float]]]:
         """
         The anchor and vector of the reaction arrow at every connected point.
 
@@ -287,12 +337,20 @@ class FDPlotterObject(PlotterSceneObject):
         points = [point for point in self.points if self.adjacency[point]]
         origins = [self.point_coordinates(point) for point in points]
         reactions = [self.point_reaction(point) for point in points]
-        forces = [[self.datastructure.edge_force(edge) for edge in self.adjacency[point]]
-                  for point in points]
+        forces = [
+            [self.datastructure.edge_force(edge) for edge in self.adjacency[point]]
+            for point in points
+        ]
         clearances = [self.point_marker_radius()] * len(origins)
 
-        return reaction_arrows(origins, reactions, forces, self.reaction_scale, self.reaction_tol,
-                               clearances=clearances)
+        return reaction_arrows(
+            origins,
+            reactions,
+            forces,
+            self.reaction_scale,
+            self.reaction_tol,
+            clearances=clearances,
+        )
 
 
 class FDNetworkPlotterObject(FDPlotterObject, GraphObject):
@@ -306,7 +364,19 @@ class FDNetworkPlotterObject(FDPlotterObject, GraphObject):
     point_color_attr = "nodecolor"
     point_show_attr = "show_nodes"
 
-    def __init__(self, item=None, nodecolor=None, nodesize=None, show_nodes=None, **kwargs):
+    # Narrows the base class's FDNetwork | FDMesh attribute to the type this
+    # subclass actually holds, so the network-vocabulary accessors below
+    # type-check against the right datastructure.
+    datastructure: FDNetwork
+
+    def __init__(
+        self,
+        item: FDNetwork | None = None,
+        nodecolor: PointColorSpec = None,
+        nodesize: PointSizeSpec = None,
+        show_nodes: bool | None = None,
+        **kwargs: Any,
+    ) -> None:
         # Map the node vocabulary onto the neutral point parameters of the
         # base, dropping injected None defaults so they never clobber the
         # node keywords. The marker size stays in the upstream vocabulary:
@@ -319,30 +389,34 @@ class FDNetworkPlotterObject(FDPlotterObject, GraphObject):
         if size is not None:
             kwargs["nodesize"] = size
 
-        super().__init__(item=item,
-                         pointcolor=nodecolor if nodecolor is not None else pointcolor,
-                         show_points=show_nodes if show_nodes is not None else show_points,
-                         **kwargs)
+        super().__init__(
+            item=item,
+            pointcolor=nodecolor if nodecolor is not None else pointcolor,
+            show_points=show_nodes if show_nodes is not None else show_points,
+            **kwargs,
+        )
 
-    def point_keys(self):
-        return self.datastructure.nodes()
+    def point_keys(self) -> list[int]:
+        # the data=False getter always yields plain node keys
+        return self.datastructure.nodes()  # pyright: ignore[reportReturnType]
 
-    def point_coordinates(self, key):
+    def point_coordinates(self, key: int) -> list[float]:
         return self.datastructure.node_coordinates(key)
 
-    def point_load(self, key):
-        return self.datastructure.node_load(key)
+    def point_load(self, key: int) -> list[float]:
+        # the getter-mode call always returns a list
+        return self.datastructure.node_load(key)  # pyright: ignore[reportReturnType]
 
-    def point_reaction(self, key):
+    def point_reaction(self, key: int) -> list[float]:
         return self.datastructure.node_reaction(key)
 
-    def point_edges(self, key):
+    def point_edges(self, key: int) -> list[tuple[int, int]]:
         return self.datastructure.node_edges(key)
 
-    def point_is_support(self, key):
+    def point_is_support(self, key: int) -> bool:
         return self.datastructure.is_node_support(key)
 
-    def point_marker_radius(self):
+    def point_marker_radius(self) -> float:
         if not self.show_nodes:
             return 0.0
         return self._node_radius()
@@ -362,7 +436,19 @@ class FDMeshPlotterObject(FDPlotterObject, MeshObject):
     point_color_attr = "vertexcolor"
     point_show_attr = "show_vertices"
 
-    def __init__(self, item=None, vertexcolor=None, vertexsize=None, show_vertices=None, **kwargs):
+    # Narrows the base class's FDNetwork | FDMesh attribute to the type this
+    # subclass actually holds, so the vertex-vocabulary accessors below
+    # type-check against the right datastructure.
+    datastructure: FDMesh
+
+    def __init__(
+        self,
+        item: FDMesh | None = None,
+        vertexcolor: PointColorSpec = None,
+        vertexsize: PointSizeSpec = None,
+        show_vertices: bool | None = None,
+        **kwargs: Any,
+    ) -> None:
         # Map the vertex vocabulary onto the neutral point parameters of the
         # base, dropping injected None defaults so they never clobber the
         # vertex keywords. The marker size stays in the upstream vocabulary:
@@ -375,30 +461,35 @@ class FDMeshPlotterObject(FDPlotterObject, MeshObject):
         if size is not None:
             kwargs["vertexsize"] = size
 
-        super().__init__(item=item,
-                         pointcolor=vertexcolor if vertexcolor is not None else pointcolor,
-                         show_points=show_vertices if show_vertices is not None else show_points,
-                         **kwargs)
+        super().__init__(
+            item=item,
+            pointcolor=vertexcolor if vertexcolor is not None else pointcolor,
+            show_points=show_vertices if show_vertices is not None else show_points,
+            **kwargs,
+        )
 
-    def point_keys(self):
-        return self.datastructure.vertices()
+    def point_keys(self) -> list[int]:
+        # the data=False getter always yields plain vertex keys
+        return self.datastructure.vertices()  # pyright: ignore[reportReturnType]
 
-    def point_coordinates(self, key):
-        return self.datastructure.vertex_coordinates(key)
+    def point_coordinates(self, key: int) -> list[float]:
+        # the getter-mode call always returns a list
+        return self.datastructure.vertex_coordinates(key)  # pyright: ignore[reportReturnType]
 
-    def point_load(self, key):
-        return self.datastructure.vertex_load(key)
+    def point_load(self, key: int) -> list[float]:
+        # the getter-mode call always returns a list
+        return self.datastructure.vertex_load(key)  # pyright: ignore[reportReturnType]
 
-    def point_reaction(self, key):
+    def point_reaction(self, key: int) -> list[float]:
         return self.datastructure.vertex_reaction(key)
 
-    def point_edges(self, key):
+    def point_edges(self, key: int) -> list[tuple[int, int]]:
         return self.datastructure.vertex_edges(key)
 
-    def point_is_support(self, key):
+    def point_is_support(self, key: int) -> bool:
         return self.datastructure.is_vertex_support(key)
 
-    def point_marker_radius(self):
+    def point_marker_radius(self) -> float:
         # Mirrors the radius of the vertex circles drawn by the
         # compas_plotter mesh scene object.
         if not self.show_vertices:
@@ -406,7 +497,7 @@ class FDMeshPlotterObject(FDPlotterObject, MeshObject):
         return self.vertexsize / self.plotter.dpi
 
 
-def register_plotter_scene_objects():
+def register_plotter_scene_objects() -> None:
     """
     Register the force density scene objects to the Plotter context.
     """

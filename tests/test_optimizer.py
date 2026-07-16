@@ -25,14 +25,17 @@ def _optimize(network):
     """
     goals = [EdgeLengthGoal(edge, target=TARGET_LENGTH) for edge in network.edges()]
     loss = Loss(SquaredError(goals=goals))
-    parameters = [EdgeForceDensityParameter(edge, BOUND_LOW, BOUND_UP)
-                  for edge in network.edges()]
+    parameters = [
+        EdgeForceDensityParameter(edge, BOUND_LOW, BOUND_UP) for edge in network.edges()
+    ]
 
-    return constrained_fdm(network,
-                           optimizer=SLSQP(),
-                           loss=loss,
-                           parameters=parameters,
-                           maxiter=MAXITER)
+    return constrained_fdm(
+        network,
+        optimizer=SLSQP(),
+        loss=loss,
+        parameters=parameters,
+        maxiter=MAXITER,
+    )
 
 
 def test_optimizer_reduces_length_error(arch_network):
@@ -54,8 +57,9 @@ def test_optimizer_respects_bounds(arch_network):
     """
     optimized = _optimize(arch_network)
 
-    forcedensities = jnp.array([optimized.edge_forcedensity(edge)
-                                for edge in optimized.edges()])
+    forcedensities = jnp.array(
+        [optimized.edge_forcedensity(edge) for edge in optimized.edges()],
+    )
 
     assert jnp.all(forcedensities >= BOUND_LOW)
     assert jnp.all(forcedensities <= BOUND_UP)
@@ -78,7 +82,6 @@ def test_optimizer_forcedensities_baseline(arch_network):
     """
     optimized = _optimize(arch_network)
 
-    forcedensities = [optimized.edge_forcedensity(edge)
-                      for edge in optimized.edges()]
+    forcedensities = [optimized.edge_forcedensity(edge) for edge in optimized.edges()]
 
     assert_baseline("arch_forcedensities", forcedensities)

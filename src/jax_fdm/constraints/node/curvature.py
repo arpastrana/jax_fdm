@@ -1,27 +1,46 @@
 import jax.numpy as jnp
 import numpy as np
+from jaxtyping import Array
+from jaxtyping import Float
+from jaxtyping import Int
 
 from jax_fdm.constraints.node import NodeConstraint
+from jax_fdm.equilibrium import EquilibriumModel
+from jax_fdm.equilibrium import EquilibriumState
+from jax_fdm.equilibrium import EquilibriumStructure
 from jax_fdm.geometry import curvature_point_polygon
 
 
 class NodeCurvatureConstraint(NodeConstraint):
     """
-    Constraints the (discrete) curvature of a node based on its surrounding polygon of neighboring nodes.
+    Constraints the (discrete) curvature of a node based on a polygon of
+    neighboring nodes.
     """
-    def __init__(self, key, polygon, bound_low, bound_up):
-        super().__init__(key, bound_low, bound_up)
-        self.polygon = polygon
-        self.index_polygon = None
 
-    def init(self, model, structure):
+    def __init__(
+        self,
+        key: int | list[int],
+        polygon: Int[Array, "nodes neighbors"],
+        bound_low: float | Float[Array, "..."] | None,
+        bound_up: float | Float[Array, "..."] | None,
+    ) -> None:
+        super().__init__(key, bound_low, bound_up)
+        self.polygon = jnp.asarray(polygon)
+        # set in init() from the equilibrium structure, before any constraint runs
+        self.index_polygon: Int[Array, "nodes neighbors"]
+
+    def init(self, model: EquilibriumModel, structure: EquilibriumStructure) -> None:
         """
         Initialize the constraint with information from an equilibrium model.
         """
         super().init(model, structure)
         self.index_polygon = self.polygon_indices(model, structure)
 
-    def polygon_indices(self, model, structure):
+    def polygon_indices(
+        self,
+        model: EquilibriumModel,
+        structure: EquilibriumStructure,
+    ) -> Int[Array, "nodes neighbors"]:
         """
         Obtains the indices of the polygon from a model.
         """
@@ -33,12 +52,17 @@ class NodeCurvatureConstraint(NodeConstraint):
 
         return jnp.array(index_polygon, dtype=jnp.int64)
 
-    def constraint(self, eqstate, index):
+    def constraint(
+        self,
+        eq_state: EquilibriumState,
+        index: Int[Array, ""],
+    ) -> Float[Array, ""]:
         """
-        Returns the curvature at a node based on the xyz coordinates of its one-hop neighborhood.
+        Returns the curvature at a node based on the xyz coordinates of its
+        one-hop neighborhood.
         """
-        point = eqstate.xyz[index, :]
+        point = eq_state.xyz[index, :]
         index_polygon = self.index_polygon[index, :]
-        polygon = eqstate.xyz[index_polygon, :]
+        polygon = eq_state.xyz[index_polygon, :]
 
         return curvature_point_polygon(point, polygon)

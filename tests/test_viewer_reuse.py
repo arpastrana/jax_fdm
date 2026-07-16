@@ -7,6 +7,7 @@ return so between-show adds stay lightweight. The GL rebuild branch of
 ``show()`` needs a real display and is exercised by the sequential example
 scripts instead.
 """
+
 import os
 
 os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")

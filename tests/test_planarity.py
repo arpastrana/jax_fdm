@@ -26,7 +26,9 @@ def test_planarity_polygons():
                 planarity = planarity_triangle(xyz)
             else:
                 planarity = planarity_polygon(xyz)
-            assert jnp.allclose(planarity, 0.0), f"Planarity of {sides}-gon: {planarity:.2f}"
+            assert jnp.allclose(planarity, 0.0), (
+                f"Planarity of {sides}-gon: {planarity:.2f}"
+            )
 
 
 def test_planarity_mesh_tri():

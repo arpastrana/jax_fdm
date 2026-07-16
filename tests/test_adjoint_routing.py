@@ -53,30 +53,35 @@ def _value_and_grad_fn(tmax, implicit_diff, sparse):
     mesh.edges_forcedensities(-2.0, keys=mesh.edges())
     mesh.faces_loads([0.0, 0.0, -0.1], keys=mesh.faces())
 
-    parameters = [EdgeForceDensityParameter(edge, -50.0, -0.01)
-                  for edge in mesh.edges()]
+    parameters = [
+        EdgeForceDensityParameter(edge, -50.0, -0.01) for edge in mesh.edges()
+    ]
 
-    model = model_from_sparsity(sparse=sparse,
-                                tmax=tmax,
-                                eta=1e-6,
-                                is_load_local=True,
-                                implicit_diff=implicit_diff)
+    model = model_from_sparsity(
+        sparse=sparse,
+        tmax=tmax,
+        eta=1e-6,
+        is_load_local=True,
+        implicit_diff=implicit_diff,
+    )
     structure = structure_from_datastructure(mesh, sparse=sparse)
 
     goals = [EdgeLengthGoal(edge, target=1.0) for edge in mesh.edges()]
     loss = Loss(SquaredError(goals=goals))
 
     with contextlib.redirect_stdout(io.StringIO()):
-        problem = LBFGSB().problem(model,
-                                   structure,
-                                   mesh,
-                                   loss,
-                                   parameters,
-                                   maxiter=1,
-                                   tol=1e-6,
-                                   jit_fn=False)
+        problem = LBFGSB().problem(
+            model,
+            structure,
+            mesh,
+            loss,
+            parameters,
+            maxiter=1,
+            tol=1e-6,
+            jit_fn=False,
+        )
 
-    return problem["fun"], jnp.asarray(problem["x0"])
+    return problem.fun, jnp.asarray(problem.x0)
 
 
 def _routing(tmax, implicit_diff, sparse):
@@ -89,12 +94,18 @@ def _routing(tmax, implicit_diff, sparse):
     fires only when the implicit adjoint backward pass runs. Both must be patched
     before the problem builds, since the backward rule traces on the first call.
     """
-    with mock.patch.object(models_module,
-                           "solver_fixedpoint_implicit",
-                           wraps=models_module.solver_fixedpoint_implicit) as spy_forward, \
-         mock.patch.object(fixed_point_module,
-                           "linear_solve",
-                           wraps=fixed_point_module.linear_solve) as spy_adjoint:
+    with (
+        mock.patch.object(
+            models_module,
+            "solver_fixedpoint_implicit",
+            wraps=models_module.solver_fixedpoint_implicit,
+        ) as spy_forward,
+        mock.patch.object(
+            fixed_point_module,
+            "linear_solve",
+            wraps=fixed_point_module.linear_solve,
+        ) as spy_adjoint,
+    ):
         fun, x0 = _value_and_grad_fn(tmax, implicit_diff, sparse)
         fun(x0)
 
@@ -125,7 +136,11 @@ def test_unrolled_path_skips_adjoint_linear_solve():
     """
     tmax > 1 without implicit_diff unrolls autodiff, bypassing the adjoint solve.
     """
-    entered_iterative, ran_adjoint = _routing(tmax=50, implicit_diff=False, sparse=False)
+    entered_iterative, ran_adjoint = _routing(
+        tmax=50,
+        implicit_diff=False,
+        sparse=False,
+    )
 
     assert not entered_iterative
     assert not ran_adjoint

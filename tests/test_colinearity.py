@@ -50,7 +50,9 @@ def test_colinearity_invariant_to_uneven_spacing():
     points_uneven = jnp.array([[0.0, 0.0], [3.0, 0.0], [3.0, 1.0]])
     energy_uniform = colinearity_points(points_uniform)
     energy_uneven = colinearity_points(points_uneven)
-    assert jnp.allclose(energy_uniform, energy_uneven), f"{energy_uniform} vs {energy_uneven}"
+    assert jnp.allclose(energy_uniform, energy_uneven), (
+        f"{energy_uniform} vs {energy_uneven}"
+    )
 
 
 def test_colinearity_invariant_to_uneven_spacing_zigzag():
@@ -62,7 +64,9 @@ def test_colinearity_invariant_to_uneven_spacing_zigzag():
     points_uneven = jnp.array([[0.0, 0.0], [2.0, 0.0], [2.0, 1.0], [0.0, 1.0]])
     energy_uniform = colinearity_points(points_uniform)
     energy_uneven = colinearity_points(points_uneven)
-    assert jnp.allclose(energy_uniform, energy_uneven), f"{energy_uniform} vs {energy_uneven}"
+    assert jnp.allclose(energy_uniform, energy_uneven), (
+        f"{energy_uniform} vs {energy_uneven}"
+    )
 
 
 def test_colinearity_invariant_to_problem_size():
@@ -74,4 +78,6 @@ def test_colinearity_invariant_to_problem_size():
     points_5 = jnp.array([[0.0, 0.0], [0.5, 0.0], [1.0, 0.0], [1.0, 0.5], [1.0, 1.0]])
     energy_3 = colinearity_points(points_3)
     energy_5 = colinearity_points(points_5)
-    assert energy_5 <= energy_3, f"Subdividing should not increase energy: {energy_5} vs {energy_3}"
+    assert energy_5 <= energy_3, (
+        f"Subdividing should not increase energy: {energy_5} vs {energy_3}"
+    )

@@ -1,46 +1,73 @@
 """
 A collection of scipy-powered, gradient-free optimizers.
 """
+
+from collections.abc import Callable
 from time import perf_counter
+from typing import TYPE_CHECKING
 
 from jax import jit
+from jaxtyping import Array
+from jaxtyping import Float
 
+from jax_fdm.datastructures import FDMesh
+from jax_fdm.datastructures import FDNetwork
+from jax_fdm.equilibrium import EquilibriumModel
+from jax_fdm.equilibrium import EquilibriumStructure
 from jax_fdm.equilibrium import LoadState
+from jax_fdm.losses import Loss
 from jax_fdm.optimization.optimizers import Optimizer
+from jax_fdm.optimization.optimizers import OptProblem
 from jax_fdm.parameters import EdgeForceDensityParameter
+from jax_fdm.parameters import Parameter
 from jax_fdm.parameters import ParameterManager
+
+if TYPE_CHECKING:
+    # Annotation-only import: pulling jax_fdm.constraints at runtime would form a
+    # cycle (constraints -> equilibrium -> optimization).
+    from jax_fdm.constraints import Constraint
 
 # ==========================================================================
 # Optimizers
 # ==========================================================================
 
+
 class GradientFreeOptimizer(Optimizer):
     """
     An optimizer based on evolutionary principles.
     """
-    def problem(self,
-                model,
-                structure,
-                network,
-                loss,
-                parameters=None,
-                constraints=None,
-                maxiter=100,
-                tol=1e-6,
-                callback=None,
-                jit_fn=True):
+
+    def problem(
+        self,
+        model: EquilibriumModel,
+        structure: EquilibriumStructure,
+        datastructure: FDNetwork | FDMesh,
+        loss: Loss,
+        parameters: list[Parameter] | None = None,
+        constraints: list["Constraint"] | None = None,
+        maxiter: int = 100,
+        tol: float = 1e-6,
+        callback: Callable | None = None,
+        jit_fn: bool = True,
+    ) -> OptProblem:
         """
         Set up an optimization problem.
         """
-        # TODO: Merge this method with that of the upstream Optimizer() to avoid function duplication
+        # TODO: Merge this method with that of the upstream Optimizer() to avoid
+        # function duplication
         if not parameters:
-            parameters = [EdgeForceDensityParameter(edge) for edge in network.edges()]
+            parameters = [
+                EdgeForceDensityParameter(edge) for edge in datastructure.edges()
+            ]
 
-        self.pm = ParameterManager(model, parameters, structure, network)
+        self.pm = ParameterManager(model, parameters, structure, datastructure)
         x = self.parameters_value()
 
         # message
-        print(f"\n***Constrained form finding***\nParameters: {len(x)} \tGoals: {loss.number_of_goals()}")
+        print(
+            f"\n***Constrained form finding***\n"
+            f"Parameters: {len(x)} \tGoals: {loss.number_of_goals()}",
+        )
 
         # parameter bounds
         bounds = self.parameters_bounds()
@@ -50,14 +77,17 @@ class GradientFreeOptimizer(Optimizer):
 
         # build goal collections
         self.goals(loss, model, structure)
-        print(f"\tGoal collections: {loss.number_of_collections()}\n\tRegularizers: {loss.number_of_regularizers()}")
+        print(
+            f"\tGoal collections: {loss.number_of_collections()}\n"
+            f"\tRegularizers: {loss.number_of_regularizers()}",
+        )
 
         # load matters
-        loads = LoadState.from_datastructure(network)
+        loads = LoadState.from_datastructure(datastructure)
         self.loads_static = loads.edges, loads.faces
 
         # closure over static parameters
-        def loss_fn(x):
+        def loss_fn(x: Float[Array, "parameters"]) -> Float[Array, ""]:
             return self.loss(x, loss, model, structure)
 
         if jit_fn:
@@ -72,20 +102,19 @@ class GradientFreeOptimizer(Optimizer):
         # optimization options
         options = self.options(extra={"maxiter": maxiter})
 
-        opt_kwargs = {"fun": loss_fn,
-                      "jac": False,
-                      "hess": None,
-                      "method": self.name,
-                      "x0": x,
-                      "tol": tol,
-                      "bounds": bounds,
-                      "callback": callback,
-                      "options": options
-                      }
+        return OptProblem(
+            fun=loss_fn,
+            jac=False,
+            hess=None,
+            method=self.name,
+            x0=x,
+            tol=tol,
+            bounds=bounds,
+            callback=callback,
+            options=options,
+        )
 
-        return opt_kwargs
-
-    def solve(self, opt_problem):
+    def solve(self, opt_problem: OptProblem) -> Float[Array, "parameters"]:
         """
         Solve an optimization problem by minimizing a loss function.
         """
@@ -94,14 +123,13 @@ class GradientFreeOptimizer(Optimizer):
         res_q = self._minimize(opt_problem)
         end_time = perf_counter()
 
-        loss_fn = opt_problem.get("func")
-        if not loss_fn:
-            loss_fn = opt_problem["fun"]
-
-        loss_val = loss_fn(res_q.x)
+        loss_val = opt_problem.fun(res_q.x)
 
         print(f"Message: {res_q.message}")
-        print(f"Final loss in {res_q.nit} iterations: {loss_val:.4} and {res_q.nfev} function evaluations")
+        print(
+            f"Final loss in {res_q.nit} iterations: {loss_val:.4} and "
+            f"{res_q.nfev} function evaluations",
+        )
         print(f"Optimization elapsed time: {end_time - start_time} seconds")
 
         return res_q.x
@@ -111,13 +139,13 @@ class Powell(GradientFreeOptimizer):
     """
     The modified Powell algorithm for gradient-free optimization with box constraints.
     """
-    def __init__(self, **kwargs):
-        super().__init__(name="Powell", disp=0, **kwargs)
+
+    name = "Powell"
 
 
 class NelderMead(GradientFreeOptimizer):
     """
     The Nelder-Mead gradient-free optimizer with box constraints.
     """
-    def __init__(self, **kwargs):
-        super().__init__(name="Nelder-Mead", disp=0, **kwargs)
+
+    name = "Nelder-Mead"

@@ -1,3 +1,5 @@
+from jax_fdm.equilibrium import EquilibriumModel
+from jax_fdm.equilibrium import EquilibriumStructure
 from jax_fdm.goals import Goal
 
 
@@ -5,14 +7,13 @@ class NodeGoal(Goal):
     """
     Base class for all goals that pertain to the node of a network.
     """
-    def __init__(self, key, target, weight=1.0):
-        super().__init__(key=key, target=target, weight=weight)
 
-    def index_from_model(self, model, structure):
+    def index_from_model(
+        self,
+        model: EquilibriumModel,
+        structure: EquilibriumStructure,
+    ) -> int | tuple[int, ...]:
         """
-        The index of the edge in a structure.
+        The index of the node in a structure.
         """
-        try:
-            return structure.node_index[self.key]
-        except TypeError:
-            return tuple([structure.node_index[k] for k in self.key])
+        return self._index_from_key(structure.node_index)

@@ -1,19 +1,28 @@
-try:
-    from lineax import SVD
-    from optimistix import Newton
-    from optimistix import root_find
+from collections.abc import Callable
+from typing import Any
 
-except ImportError:
-    pass
+from jaxtyping import Array
+from jaxtyping import Float
+from lineax import SVD
+from optimistix import Newton
+from optimistix import root_find
 
 from jax_fdm.equilibrium.solvers import solver_optimistix
+from jax_fdm.equilibrium.solvers.types import SolverIterParams
 
 # ==========================================================================
 # Optimistix solvers
 # ==========================================================================
 
-def solver_newton(fn, theta, x_init, solver_config):
+
+def solver_newton(
+    fn: Callable,
+    theta: SolverIterParams,
+    x_init: Float[Array, "nodes_free_flat"],
+    solver_config: dict[str, Any],
+) -> Float[Array, "nodes_free_flat"]:
     """
+    Find a root of function f(theta, x) = 0 using Newton's method.
     """
     solver_config["verbose"] = False
     solver_kwargs = {"linear_solver": SVD()}
@@ -25,7 +34,7 @@ def solver_newton(fn, theta, x_init, solver_config):
         theta,
         x_init,
         solver_config,
-        solver_kwargs
+        solver_kwargs,
     )
 
     return solution
@@ -35,7 +44,8 @@ def solver_newton(fn, theta, x_init, solver_config):
 # Helper functions
 # ==========================================================================
 
-def is_solver_root_finding(solver):
+
+def is_solver_root_finding(solver: Callable) -> bool:
     """
     Tests if a solver function is a root finding solver.
 

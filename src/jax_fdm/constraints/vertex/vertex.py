@@ -1,15 +1,19 @@
 from jax_fdm.constraints import Constraint
+from jax_fdm.equilibrium import EquilibriumMeshStructure
+from jax_fdm.equilibrium import EquilibriumModel
 
 
 class VertexConstraint(Constraint):
     """
     Base class for all constraints that pertain to a vertex in a mesh.
     """
-    def index_from_model(self, model, structure):
+
+    def index_from_model(
+        self,
+        model: EquilibriumModel,
+        structure: EquilibriumMeshStructure,
+    ) -> int | tuple[int, ...]:
         """
-        The index of the node in a structure.
+        The index of the vertex in a structure.
         """
-        try:
-            return structure.vertex_index[self.key]
-        except TypeError:
-            return tuple([structure.vertex_index[k] for k in self.key])
+        return self._index_from_key(structure.vertex_index)

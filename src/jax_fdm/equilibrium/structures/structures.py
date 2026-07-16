@@ -1,13 +1,17 @@
-import jax
 import jax.numpy as jnp
 import numpy as np
 from jax.experimental.sparse import BCOO
 from jax.experimental.sparse import BCSR
 from jax.experimental.sparse import CSC
+from jaxtyping import Array
+from jaxtyping import Float
+from jaxtyping import Int
 from scipy.sparse import csc_matrix
 
 from jax_fdm import DTYPE_INT_JAX
 from jax_fdm import DTYPE_INT_NP
+from jax_fdm.datastructures import FDMesh
+from jax_fdm.datastructures import FDNetwork
 from jax_fdm.equilibrium.structures.graphs import Graph
 from jax_fdm.equilibrium.structures.graphs import GraphSparse
 from jax_fdm.equilibrium.structures.meshes import Mesh
@@ -17,20 +21,28 @@ from jax_fdm.equilibrium.structures.meshes import MeshSparse
 # Structure
 # ==========================================================================
 
+
 class EquilibriumStructure(Graph):
     """
     A structure.
     """
-    supports: np.ndarray
 
-    connectivity_free: jax.Array
-    connectivity_fixed: jax.Array
+    supports: Int[np.ndarray, "nodes"]
 
-    indices_free: jax.Array
-    indices_fixed: jax.Array
-    indices_freefixed: jax.Array
+    connectivity_free: Float[Array, "edges nodes_free"]
+    connectivity_fixed: Float[Array, "edges nodes_fixed"]
 
-    def __init__(self, nodes, edges, supports, **kwargs):
+    indices_free: Int[Array, "nodes_free"]
+    indices_fixed: Int[Array, "nodes_fixed"]
+    indices_freefixed: Int[Array, "nodes"]
+
+    def __init__(
+        self,
+        nodes: Int[np.ndarray, "nodes"],
+        edges: Int[np.ndarray, "edges 2"],
+        supports: Int[np.ndarray, "nodes"],
+        **kwargs,
+    ):
         super().__init__(nodes=nodes, edges=edges, **kwargs)
 
         self.supports = supports
@@ -43,7 +55,7 @@ class EquilibriumStructure(Graph):
         self.connectivity_fixed = self._connectivity_fixed()
 
     @classmethod
-    def from_network(cls, network):
+    def from_network(cls, network: FDNetwork) -> "EquilibriumStructure":
         """
         Create a structure from a force density network.
         """
@@ -53,7 +65,10 @@ class EquilibriumStructure(Graph):
         supports = []
         for node in nodes:
             flag = 0.0
-            if network.is_node_support(node):
+            # network.nodes() overload resolution picks the (key, attrs) tuple
+            # form since data defaults to False in the untyped COMPAS stub; node
+            # is always a bare int key here
+            if network.is_node_support(node):  # pyright: ignore[reportArgumentType]
                 flag = 1.0
             supports.append(flag)
 
@@ -64,75 +79,78 @@ class EquilibriumStructure(Graph):
         return cls(nodes, edges, supports)
 
     @property
-    def num_supports(self):
+    def num_supports(self) -> Int[Array, ""]:
         """
         The number of supports.
         """
         return jnp.count_nonzero(self.supports)
 
     @property
-    def num_free(self):
+    def num_free(self) -> Int[Array, ""]:
         """
         The number of supports.
         """
         return self.num_nodes - self.num_supports
 
     @property
-    def support_index(self):
+    def support_index(self) -> dict[int, int]:
         """
         A mapping from support keys to indices.
         """
         return {int(key): index for index, key in enumerate(self.nodes_fixed)}
 
     @property
-    def nodes_free(self):
+    def nodes_free(self) -> Int[np.ndarray, "nodes_free"]:
         """
         The free nodes.
         """
         return self.nodes[self.indices_free]
 
     @property
-    def nodes_fixed(self):
+    def nodes_fixed(self) -> Int[np.ndarray, "nodes_fixed"]:
         """
         The fixed nodes.
         """
         return self.nodes[self.indices_fixed]
 
-    def _connectivity_free(self):
+    def _connectivity_free(self) -> Float[Array, "edges nodes_free"]:
         """
         The connectivity matrix between edges and nodes.
         """
         return self.connectivity[:, self.indices_free]
 
-    def _connectivity_fixed(self):
+    def _connectivity_fixed(self) -> Float[Array, "edges nodes_fixed"]:
         """
         The connectivity matrix between edges and nodes.
         """
         return self.connectivity[:, self.indices_fixed]
 
-    def _indices_free(self):
+    def _indices_free(self) -> Int[Array, "nodes_free"]:
         """
         The indices of the unsupported nodes in the structure.
         """
-        indices = jnp.flatnonzero(self.supports == 0, size=self.num_free)
+        # jnp.flatnonzero's size kwarg accepts a traced/static int; self.num_free
+        # is a 0-d jax.Array consistent with the rest of this class's usage
+        indices = jnp.flatnonzero(self.supports == 0, size=self.num_free)  # pyright: ignore[reportArgumentType]
 
         return indices
 
-    def _indices_fixed(self):
+    def _indices_fixed(self) -> Int[Array, "nodes_fixed"]:
         """
         The indices of the unsupported nodes in the structure.
         """
-        indices = jnp.flatnonzero(self.supports, size=self.num_supports)
+        # jnp.flatnonzero's size kwarg accepts a traced/static int;
+        # self.num_supports is a 0-d jax.Array consistent with this class's usage
+        indices = jnp.flatnonzero(self.supports, size=self.num_supports)  # pyright: ignore[reportArgumentType]
 
         return indices
 
-    def _indices_freefixed(self):
+    def _indices_freefixed(self) -> Int[Array, "nodes"]:
         """
         A list with the node keys of all the nodes sorted by their node index.
         """
         # TODO: this method must be refactored to be more transparent.
-        freefixed_indices = jnp.concatenate([self.indices_free,
-                                             self.indices_fixed])
+        freefixed_indices = jnp.concatenate([self.indices_free, self.indices_fixed])
 
         indices = {node.item(): index for index, node in enumerate(freefixed_indices)}
         sorted_indices = []
@@ -146,19 +164,24 @@ class EquilibriumStructure(Graph):
 # Sparse structure
 # ==========================================================================
 
+
 class EquilibriumStructureSparse(EquilibriumStructure, GraphSparse):
     """
     A sparse structure.
     """
-    diag_indices: jax.Array
-    index_array: jax.Array
-    diags: jax.Array
 
-    def __init__(self, nodes, edges, supports, **kwargs):
-        super().__init__(nodes=nodes,
-                         edges=edges,
-                         supports=supports,
-                         **kwargs)
+    diag_indices: Int[Array, "nodes_free"]
+    index_array: Int[CSC, "nodes_free nodes_free"]
+    diags: Float[BCSR, "nodes_free edges"]
+
+    def __init__(
+        self,
+        nodes: Int[np.ndarray, "nodes"],
+        edges: Int[np.ndarray, "edges 2"],
+        supports: Int[np.ndarray, "nodes"],
+        **kwargs,
+    ):
+        super().__init__(nodes=nodes, edges=edges, supports=supports, **kwargs)
 
         # Do some precomputation to be able to construct
         # the lhs matrix through indexing
@@ -174,20 +197,22 @@ class EquilibriumStructureSparse(EquilibriumStructure, GraphSparse):
         # Prepare the array D st when D.T @ q we get the diagonal elements of matrix
         self.diags = self._get_sparse_diag_data(c_free_csc)
 
-    def _connectivity_free(self):
+    def _connectivity_free(self) -> Float[BCOO, "edges nodes_free"]:
         """
         The connectivity matrix between edges and nodes.
         """
         return BCOO.from_scipy_sparse(self.connectivity_scipy[:, self.indices_free])
 
-    def _connectivity_fixed(self):
+    def _connectivity_fixed(self) -> Float[BCOO, "edges nodes_fixed"]:
         """
         The connectivity matrix between edges and nodes.
         """
         return BCOO.from_scipy_sparse(self.connectivity_scipy[:, self.indices_fixed])
 
     @staticmethod
-    def _get_sparse_index_array(c_free_csc):
+    def _get_sparse_index_array(
+        c_free_csc: csc_matrix,
+    ) -> Int[CSC, "nodes_free nodes_free"]:
         """
         Create an index array such that the off-diagonals can index into the
         force density vector.
@@ -197,8 +222,12 @@ class EquilibriumStructureSparse(EquilibriumStructure, GraphSparse):
         # NOTE: The input matrix must be a scipy sparse array!
         """
         fd_mod_c_free_csc = c_free_csc.copy()
-        fd_mod_c_free_csc.data *= np.take(np.arange(c_free_csc.shape[0]) + 1,
-                                          c_free_csc.indices)
+        # csc_matrix.shape is annotated as tuple[int, ...] | None in scipy's
+        # bundled stubs, but is always populated at runtime
+        fd_mod_c_free_csc.data *= np.take(
+            np.arange(c_free_csc.shape[0]) + 1,  # pyright: ignore[reportOptionalSubscript]
+            c_free_csc.indices,
+        )
         index_array = -(c_free_csc.T @ fd_mod_c_free_csc)
 
         # The diagonal entries should be set to 0 so that it indexes
@@ -206,24 +235,29 @@ class EquilibriumStructureSparse(EquilibriumStructure, GraphSparse):
         index_array.setdiag(0)
         index_array = index_array.astype(int)
 
-        return CSC((index_array.data, index_array.indices, index_array.indptr),
-                   shape=index_array.shape)
+        return CSC(
+            (index_array.data, index_array.indices, index_array.indptr),
+            shape=index_array.shape,
+        )
 
     @staticmethod
-    def _get_sparse_diag_indices(csc):
+    def _get_sparse_diag_indices(csc: CSC) -> Int[Array, "nodes_free"]:
         """
-        Given a CSC matrix, get indices into `data` that access diagonal elements in order.
+        Given a CSC matrix, get indices into `data` that access diagonal elements in
+        order.
         """
         all_indices = []
         for i in range(csc.shape[0]):
-            index_range = csc.indices[csc.indptr[i]:csc.indptr[i + 1]]
+            index_range = csc.indices[csc.indptr[i] : csc.indptr[i + 1]]
             ind_loc = jnp.where(index_range == i)[0]
             all_indices.append(ind_loc + csc.indptr[i])
 
         return jnp.concatenate(all_indices)
 
     @staticmethod
-    def _get_sparse_diag_data(c_free_csc):
+    def _get_sparse_diag_data(
+        c_free_csc: csc_matrix,
+    ) -> Float[BCSR, "nodes_free edges"]:
         """
         The diagonal of the lhs matrix is the sum of force densities for
         each outgoing/incoming edge on the node.
@@ -248,27 +282,38 @@ class EquilibriumStructureSparse(EquilibriumStructure, GraphSparse):
 # Mesh structures
 # ==========================================================================
 
+
 class EquilibriumMeshStructure(EquilibriumStructure, Mesh):
     """
     An equilibrium mesh structure.
     """
-    def __init__(self, vertices, faces, edges, supports, **kwargs):
-        super().__init__(nodes=vertices,
-                         edges=edges,
-                         supports=supports,
-                         vertices=vertices,
-                         faces=faces,
-                         **kwargs)
+
+    def __init__(
+        self,
+        vertices: Int[np.ndarray, "vertices"],
+        faces: Int[np.ndarray, "faces vertices"],
+        edges: Int[np.ndarray, "edges 2"],
+        supports: Int[np.ndarray, "vertices"],
+        **kwargs,
+    ):
+        super().__init__(
+            nodes=vertices,
+            edges=edges,
+            supports=supports,
+            vertices=vertices,
+            faces=faces,
+            **kwargs,
+        )
 
     @property
-    def num_free(self):
+    def num_free(self) -> Int[Array, ""]:
         """
         The number of supports.
         """
         return self.num_vertices - self.num_supports
 
     @classmethod
-    def from_mesh(cls, mesh):
+    def from_mesh(cls, mesh: FDMesh) -> "EquilibriumMeshStructure":
         """
         Create a structure from a force density mesh.
         """
@@ -278,7 +323,10 @@ class EquilibriumMeshStructure(EquilibriumStructure, Mesh):
         supports = []
         for vertex in vertices:
             flag = 0.0
-            if mesh.is_vertex_support(vertex):
+            # mesh.vertices() overload resolution picks the (key, attrs) tuple
+            # form since data defaults to False in the untyped COMPAS stub;
+            # vertex is always a bare int key here
+            if mesh.is_vertex_support(vertex):  # pyright: ignore[reportArgumentType]
                 flag = 1.0
             supports.append(flag)
 
@@ -304,34 +352,48 @@ class EquilibriumMeshStructure(EquilibriumStructure, Mesh):
         return cls(vertices, faces, edges=edges, supports=supports, face_keys=face_keys)
 
     @property
-    def support_index(self):
+    def support_index(self) -> dict[int, int]:
         """
         A mapping from support vertices keys to indices.
         """
         return {int(key): index for index, key in enumerate(self.vertices_fixed)}
 
     @property
-    def vertices_free(self):
+    def vertices_free(self) -> Int[np.ndarray, "vertices_free"]:
         """
         The free vertices.
         """
         return self.vertices[self.indices_free]
 
     @property
-    def vertices_fixed(self):
+    def vertices_fixed(self) -> Int[np.ndarray, "vertices_fixed"]:
         """
         The fixed vertices.
         """
         return self.vertices[self.indices_fixed]
 
 
-class EquilibriumMeshStructureSparse(EquilibriumMeshStructure, EquilibriumStructureSparse, MeshSparse):
+class EquilibriumMeshStructureSparse(
+    EquilibriumMeshStructure,
+    EquilibriumStructureSparse,
+    MeshSparse,
+):
     """
     An equilibrium mesh structure.
     """
-    def __init__(self, vertices, faces, edges, supports, **kwargs):
-        super().__init__(vertices=vertices,
-                         faces=faces,
-                         edges=edges,
-                         supports=supports,
-                         **kwargs)
+
+    def __init__(
+        self,
+        vertices: Int[np.ndarray, "vertices"],
+        faces: Int[np.ndarray, "faces vertices"],
+        edges: Int[np.ndarray, "edges 2"],
+        supports: Int[np.ndarray, "vertices"],
+        **kwargs,
+    ):
+        super().__init__(
+            vertices=vertices,
+            faces=faces,
+            edges=edges,
+            supports=supports,
+            **kwargs,
+        )
