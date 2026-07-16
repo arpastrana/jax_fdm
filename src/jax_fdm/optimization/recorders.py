@@ -16,7 +16,21 @@ from jax_fdm.optimization.optimizers import Optimizer
 
 
 class OptimizationRecorder(Data):
-    """A recorder that stores data during the optimization process."""
+    """
+    A COMPAS data object that logs the parameters visited during optimization.
+
+    Parameters
+    ----------
+    optimizer :
+        The optimizer whose iterates are recorded. If given, each iterate is
+        expanded into FDM parameters before storing; if None, raw iterates are
+        stored as a flat list.
+
+    Notes
+    -----
+    As a COMPAS ``Data`` subclass the history serializes to and from JSON, so an
+    optimization run can be saved and replayed.
+    """
 
     def __init__(self, optimizer: Optimizer | None = None):
         super().__init__()
@@ -40,6 +54,18 @@ class OptimizationRecorder(Data):
         *args: Any,
         **kwargs: Any,
     ) -> None:
+        """
+        Record one optimizer iterate; suitable as an optimizer callback.
+
+        Parameters
+        ----------
+        xk :
+            The current flat optimization parameter vector.
+        args :
+            Extra positional callback arguments, ignored.
+        kwargs :
+            Extra keyword callback arguments, ignored.
+        """
         parameters: Float[Array, "parameters"] | EquilibriumParametersState = xk
         if self.optimizer:
             parameters = self.optimizer.parameters_fdm(xk)
@@ -62,6 +88,17 @@ class OptimizationRecorder(Data):
         return len(self.history.q)
 
     def record(self, parameters: Any) -> None:
+        """
+        Append one set of parameters to the history.
+
+        Parameters
+        ----------
+        parameters :
+            The parameters to store. With an optimizer, a parameter state whose
+            leaves are appended into the history's matching leaves; without one, a
+            single value appended to the flat history list.
+        """
+
         def append_file(data: Any, file: Any) -> None:
             file.append(data)
 
