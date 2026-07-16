@@ -7,7 +7,6 @@ import jax
 import jax.numpy as jnp
 import numpy as np
 from jax.experimental.sparse import CSC
-from jax.experimental.sparse import JAXSparse
 from jax.experimental.sparse.linalg import spsolve as spsolve_jax
 from jaxtyping import Array
 from jaxtyping import Float
@@ -20,7 +19,7 @@ from scipy.sparse.linalg import spsolve as spsolve_scipy
 # Sparse linear solver on GPU
 # ==========================================================================
 
-def spsolve_gpu_ravel(A: JAXSparse, b: Float[Array, "nodes 3"]) -> Float[Array, "nodes 3"]:
+def spsolve_gpu_ravel(A: Float[CSC, "nodes nodes"], b: Float[Array, "nodes 3"]) -> Float[Array, "nodes 3"]:
     """
     A wrapper around cuda sparse linear solver that is GPU friendly.
 
@@ -47,7 +46,7 @@ def spsolve_gpu_ravel(A: JAXSparse, b: Float[Array, "nodes 3"]) -> Float[Array, 
     return jnp.reshape(X, (3, -1)).T
 
 
-def spsolve_gpu_stack(A: JAXSparse, b: Float[Array, "nodes 3"]) -> Float[Array, "nodes 3"]:
+def spsolve_gpu_stack(A: Float[CSC, "nodes nodes"], b: Float[Array, "nodes 3"]) -> Float[Array, "nodes 3"]:
     """
     A wrapper around cuda sparse linear solver that is GPU friendly.
 
@@ -83,7 +82,7 @@ spsolve_gpu = spsolve_gpu_ravel
 # Sparse linear solver on CPU
 # ==========================================================================
 
-def spsolve_cpu(A: JAXSparse, b: Float[Array, "nodes 3"]) -> Float[Array, "nodes 3"]:
+def spsolve_cpu(A: Float[CSC, "nodes nodes"], b: Float[Array, "nodes 3"]) -> Float[Array, "nodes 3"]:
     """
     A wrapper around scipy sparse linear solver that acts as a JAX pure callback.
     """
@@ -128,7 +127,7 @@ spsolve = register_sparse_solver(solvers)
 # ==========================================================================
 
 @jax.custom_vjp
-def sparse_solve(A: JAXSparse, b: Float[Array, "nodes 3"]) -> Float[Array, "nodes 3"]:
+def sparse_solve(A: Float[CSC, "nodes nodes"], b: Float[Array, "nodes 3"]) -> Float[Array, "nodes 3"]:
     """
     The sparse linear solver.
     """
@@ -139,7 +138,7 @@ def sparse_solve(A: JAXSparse, b: Float[Array, "nodes 3"]) -> Float[Array, "node
 # Forward and backward passes
 # ==========================================================================
 
-def sparse_solve_fwd(A: JAXSparse, b: Float[Array, "nodes 3"]) -> tuple[Float[Array, "nodes 3"], tuple]:
+def sparse_solve_fwd(A: Float[CSC, "nodes nodes"], b: Float[Array, "nodes 3"]) -> tuple[Float[Array, "nodes 3"], tuple]:
     """
     Forward pass of the sparse linear solver.
 
@@ -178,7 +177,7 @@ def sparse_solve_bwd(res: tuple, g: Float[Array, "nodes 3"]) -> tuple:
 # Sparse matrix helpers
 # ==========================================================================
 
-def blockdiag_matrix_sparse(A: JAXSparse, num: int = 2, format: type = CSC) -> JAXSparse:
+def blockdiag_matrix_sparse(A: Float[CSC, "nodes nodes"], num: int = 2, format: type = CSC) -> Float[CSC, "rows cols"]:
     """
     Build a block diagonal sparse matrix in the input format by repeating
     a square sparse matrix a prescribed number of times.
@@ -238,7 +237,7 @@ def splu_clear() -> None:
     _SPLU_CACHE['factorization'] = None
 
 
-def splu_cpu(A: JAXSparse, session_id: int | None = None) -> Int[Array, ""]:
+def splu_cpu(A: Float[CSC, "nodes nodes"], session_id: int | None = None) -> Int[Array, ""]:
     """
     A wrapper around scipy sparse LU factorization that acts as a JAX pure callback.
 

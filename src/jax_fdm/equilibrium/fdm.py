@@ -209,10 +209,10 @@ def datastructure_validate(datastructure: FDNetwork | FDMesh) -> None:
     num_no_fd = np.sum(np.logical_not(has_fd).astype(float))
     assert np.all(has_fd), f"The FD datastructure has {int(num_no_fd)} edges with zero force density"
 
-    try:
+    if isinstance(datastructure, FDNetwork):
         assert datastructure.number_of_nodes() > 0, "The FD datastructure has no nodes"
-    except AttributeError:
-        assert datastructure.number_of_vertices() > 0, "The FD datastructure has no nodes"
+    elif isinstance(datastructure, FDMesh):
+        assert datastructure.number_of_vertices() > 0, "The FD datastructure has no vertices"
 
 
 def datastructure_updated(

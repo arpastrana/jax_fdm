@@ -1,7 +1,7 @@
 from collections.abc import Callable
 
+import jax
 import jax.numpy as jnp
-from equinox import is_array
 from jax.debug import print as jax_print
 from jax.experimental.sparse import CSC
 from jaxtyping import Array
@@ -19,6 +19,7 @@ from jax_fdm.equilibrium.sparse import sparse_solve as spsolve
 from jax_fdm.equilibrium.states import EquilibriumParametersState
 from jax_fdm.equilibrium.states import EquilibriumState
 from jax_fdm.equilibrium.states import LoadState
+from jax_fdm.equilibrium.structures import EquilibriumMeshStructure
 from jax_fdm.equilibrium.structures import EquilibriumStructure
 from jax_fdm.equilibrium.structures import EquilibriumStructureSparse
 
@@ -173,14 +174,14 @@ class EquilibriumModel:
         """
         nodes_load, edges_load, faces_load = load_state
 
-        if is_array(edges_load):
+        if isinstance(edges_load, jax.Array):
             if edges_load.size > 1:
-                edges_load_ = self.edges_load(xyz, edges_load, structure, self.is_load_local)  # pyright: ignore[reportArgumentType]  # is_array() is a plain bool-returning check, not a TypeGuard, so pyright cannot narrow LoadState.edges from Array | float to Array here
+                edges_load_ = self.edges_load(xyz, edges_load, structure, self.is_load_local)
                 nodes_load = nodes_load + edges_load_
 
-        if is_array(faces_load):
+        if isinstance(faces_load, jax.Array):
             if faces_load.size > 1:
-                faces_load_ = self.faces_load(xyz, faces_load, structure, self.is_load_local)  # pyright: ignore[reportArgumentType]  # is_array() is a plain bool-returning check, not a TypeGuard, so pyright cannot narrow LoadState.faces from Array | float to Array here
+                faces_load_ = self.faces_load(xyz, faces_load, structure, self.is_load_local)  # pyright: ignore[reportArgumentType]  # a non-scalar faces_load only occurs for meshes (LoadState.from_datastructure sets faces=0.0 for networks), so structure is always an EquilibriumMeshStructure inside this branch
                 nodes_load = nodes_load + faces_load_
 
         return nodes_load
@@ -189,7 +190,7 @@ class EquilibriumModel:
     def faces_load(
         xyz: Float[Array, "nodes 3"],
         faces_load: Float[Array, "faces 3"],
-        structure: EquilibriumStructure,
+        structure: EquilibriumMeshStructure,
         is_local: bool = False,
     ) -> Float[Array, "nodes 3"]:
         """
@@ -447,7 +448,7 @@ class EquilibriumModel:
     # ----------------------------------------------------------------------
 
     @staticmethod
-    def stiffness_matrix(q: Float[Array, "edges"], structure: EquilibriumStructure) -> Array:
+    def stiffness_matrix(q: Float[Array, "edges"], structure: EquilibriumStructure) -> Float[Array, "nodes_free nodes_free"]:
         """
         The stiffness matrix of the structure.
         """
@@ -571,7 +572,7 @@ class EquilibriumModelSparse(EquilibriumModel):
         self.linearsolve_fn = spsolve
 
     @staticmethod
-    def stiffness_matrix(q: Float[Array, "edges"], structure: EquilibriumStructureSparse) -> CSC:
+    def stiffness_matrix(q: Float[Array, "edges"], structure: EquilibriumStructureSparse) -> Float[CSC, "nodes_free nodes_free"]:
         """
         Computes the LHS matrix in CSC format from a vector of force densities.
         """

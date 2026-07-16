@@ -3,22 +3,23 @@ import jax.numpy as jnp
 import numpy as np
 from jax.experimental.sparse import BCOO
 from jaxtyping import Array
+from jaxtyping import Float
 from jaxtyping import Int
 from scipy.sparse import coo_matrix
 from scipy.sparse import spmatrix
 
 from compas.datastructures import Mesh as CompasMesh
+from jax_fdm import DTYPE_INT_JAX
 from jax_fdm import DTYPE_INT_NP
 from jax_fdm.equilibrium.structures.graphs import Graph
 from jax_fdm.equilibrium.structures.graphs import GraphSparse
 from jax_fdm.equilibrium.structures.graphs import build_matrix
-from jax_fdm.equilibrium.structures.mixins import MeshIndexingMixins
 
 # ==========================================================================
 # Mesh
 # ==========================================================================
 
-class Mesh(Graph, MeshIndexingMixins):
+class Mesh(Graph):
     """
     A mesh.
     """
@@ -72,7 +73,43 @@ class Mesh(Graph, MeshIndexingMixins):
         """
         return self.faces.shape[0]
 
-    def _connectivity_edges_faces_matrix(self) -> Array:
+    @property
+    def vertex_index(self) -> dict[int, int]:
+        """
+        A dictionary between vertex keys and their enumeration indices.
+        """
+        return {int(vkey): index for index, vkey in enumerate(self.vertices)}
+
+    @property
+    def face_index(self) -> dict[int, int]:
+        """
+        A dictionary between face keys and their enumeration indices.
+        """
+        return {int(fkey): index for index, fkey in enumerate(self.face_keys)}
+
+    def _faces_indexed(self) -> Int[Array, "faces vertices"]:
+        """
+        An array of the faces pointing to the indices of the node keys.
+        """
+        vertex_index = self.vertex_index
+
+        findexed = []
+        for face in self.faces:
+            face_indices = []
+
+            for vertex in face:
+                u = int(vertex)
+                if u >= 0:
+                    index = vertex_index[u]
+                else:
+                    index = u
+                face_indices.append(index)
+
+            findexed.append(tuple(face_indices))
+
+        return jnp.asarray(findexed, dtype=DTYPE_INT_JAX)
+
+    def _connectivity_edges_faces_matrix(self) -> Float[Array, "edges faces"]:
         """
         The connectivity matrix between edges and faces of a mesh.
 
@@ -146,7 +183,7 @@ class Mesh(Graph, MeshIndexingMixins):
 
         return np.asarray(edges, dtype=DTYPE_INT_NP)
 
-    def _connectivity_faces_matrix(self) -> Array:
+    def _connectivity_faces_matrix(self) -> Float[Array, "faces vertices"]:
         """
         The connectivity matrix between faces and nodes.
         """
@@ -174,7 +211,7 @@ class MeshSparse(Mesh, GraphSparse):
 
     Which presumably arises upon calling bcoo._bcoo_dot_general_transpose.
     """
-    def _connectivity_faces_matrix(self) -> Array:
+    def _connectivity_faces_matrix(self) -> Float[Array, "faces vertices"]:
         """
         The connectivity matrix between faces and nodes in sparse format.
         """
@@ -182,7 +219,7 @@ class MeshSparse(Mesh, GraphSparse):
 
         return BCOO.from_scipy_sparse(F).todense()
 
-    def _connectivity_edges_faces_matrix(self) -> Array:
+    def _connectivity_edges_faces_matrix(self) -> Float[Array, "edges faces"]:
         """
         The connectivity matrix between edges and faces of a mesh in sparse format.
         """

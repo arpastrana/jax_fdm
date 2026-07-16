@@ -3,6 +3,7 @@ from jax import vmap
 from jaxtyping import Array
 from jaxtyping import Float
 
+from jax_fdm.equilibrium.structures import EquilibriumMeshStructure
 from jax_fdm.equilibrium.structures import EquilibriumStructure
 from jax_fdm.geometry import area_triangle
 from jax_fdm.geometry import length_vector
@@ -18,7 +19,7 @@ from jax_fdm.geometry import polygon_lcs
 def nodes_load_from_faces(
     xyz: Float[Array, "nodes 3"],
     faces_load: Float[Array, "faces 3"],
-    structure: EquilibriumStructure,
+    structure: EquilibriumMeshStructure,
     is_local: bool = False,
 ) -> Float[Array, "nodes 3"]:
     """
@@ -90,7 +91,7 @@ def face_load_lcs(
 def edges_tributary_faces_load(
     xyz: Float[Array, "nodes 3"],
     faces_load: Float[Array, "faces 3"],
-    structure: EquilibriumStructure,
+    structure: EquilibriumMeshStructure,
 ) -> Float[Array, "edges 3"]:
     """
     Calculate the face area load taken by every edge in a datastructure.

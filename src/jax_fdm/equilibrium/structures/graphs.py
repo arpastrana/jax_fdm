@@ -4,20 +4,21 @@ import jax.numpy as jnp
 import numpy as np
 from jax.experimental.sparse import BCOO
 from jaxtyping import Array
+from jaxtyping import Float
 from jaxtyping import Int
 from scipy.sparse import coo_matrix
 from scipy.sparse import csc_matrix
 from scipy.sparse import spmatrix
 
+from jax_fdm import DTYPE_INT_JAX
 from jax_fdm import DTYPE_JAX
 from jax_fdm import DTYPE_NP
-from jax_fdm.equilibrium.structures.mixins import IndexingMixins
 
 # ==========================================================================
 # Graph
 # ==========================================================================
 
-class Graph(eqx.Module, IndexingMixins):
+class Graph(eqx.Module):
     """
     A graph.
     """
@@ -51,7 +52,34 @@ class Graph(eqx.Module, IndexingMixins):
         """
         return self.edges.shape[0]
 
-    def _connectivity_matrix(self) -> Array:
+    @property
+    def node_index(self) -> dict[int, int]:
+        """
+        A dictionary between node keys and their enumeration indices.
+        """
+        return {int(node): index for index, node in enumerate(self.nodes)}
+
+    @property
+    def edge_index(self) -> dict[tuple[int, int], int]:
+        """
+        A dictionary between edge keys and their enumeration indices.
+        """
+        return {(int(u), int(v)): index for index, (u, v) in enumerate(self.edges)}
+
+    def _edges_indexed(self) -> Int[Array, "edges 2"]:
+        """
+        An iterable with the edges pointing to the indices of the node keys.
+        """
+        node_index = self.node_index
+
+        edges_indexed = []
+        for u, v in self.edges:
+            edge = node_index[int(u)], node_index[int(v)]
+            edges_indexed.append(edge)
+
+        return jnp.asarray(edges_indexed, dtype=DTYPE_INT_JAX)
+
+    def _connectivity_matrix(self) -> Float[Array, "edges nodes"]:
         """
         The connectivity matrix between edges and nodes.
         """
@@ -59,7 +87,7 @@ class Graph(eqx.Module, IndexingMixins):
 
         return jnp.asarray(connectivity_matrix(edges_indexed, "array"), dtype=DTYPE_JAX)
 
-    def _adjacency_matrix(self) -> Array:
+    def _adjacency_matrix(self) -> Float[Array, "nodes nodes"]:
         """
         The adjacency matrix between nodes and nodes.
         """
@@ -76,7 +104,7 @@ class GraphSparse(Graph):
     """
     A sparse graph.
     """
-    def _connectivity_matrix(self) -> Array:
+    def _connectivity_matrix(self) -> Float[Array, "edges nodes"]:
         """
         The connectivity matrix between edges and nodes in JAX format.
 
@@ -124,7 +152,7 @@ class GraphSparse(Graph):
 
         return connectivity_matrix(edges_indexed, "csc")  # pyright: ignore[reportReturnType]  # rtype="csc" always yields a csc_matrix; connectivity_matrix's return type is a broader union across all rtype literals
 
-    def _adjacency_matrix(self) -> Array:
+    def _adjacency_matrix(self) -> Float[Array, "nodes nodes"]:
         """
         The adjacency matrix between nodes and nodes.
         """

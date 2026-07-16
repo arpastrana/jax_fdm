@@ -5,6 +5,7 @@ from jax.experimental.sparse import BCOO
 from jax.experimental.sparse import BCSR
 from jax.experimental.sparse import CSC
 from jaxtyping import Array
+from jaxtyping import Float
 from jaxtyping import Int
 from scipy.sparse import csc_matrix
 
@@ -30,9 +31,9 @@ class EquilibriumStructure(Graph):
     connectivity_free: jax.Array
     connectivity_fixed: jax.Array
 
-    indices_free: jax.Array
-    indices_fixed: jax.Array
-    indices_freefixed: jax.Array
+    indices_free: Int[Array, "nodes_free"]
+    indices_fixed: Int[Array, "nodes_fixed"]
+    indices_freefixed: Int[Array, "nodes"]
 
     def __init__(
         self,
@@ -74,14 +75,14 @@ class EquilibriumStructure(Graph):
         return cls(nodes, edges, supports)
 
     @property
-    def num_supports(self) -> Array:
+    def num_supports(self) -> Int[Array, ""]:
         """
         The number of supports.
         """
         return jnp.count_nonzero(self.supports)
 
     @property
-    def num_free(self) -> Array:
+    def num_free(self) -> Int[Array, ""]:
         """
         The number of supports.
         """
@@ -108,19 +109,19 @@ class EquilibriumStructure(Graph):
         """
         return self.nodes[self.indices_fixed]
 
-    def _connectivity_free(self) -> Array:
+    def _connectivity_free(self) -> Float[Array, "edges nodes_free"]:
         """
         The connectivity matrix between edges and nodes.
         """
         return self.connectivity[:, self.indices_free]
 
-    def _connectivity_fixed(self) -> Array:
+    def _connectivity_fixed(self) -> Float[Array, "edges nodes_fixed"]:
         """
         The connectivity matrix between edges and nodes.
         """
         return self.connectivity[:, self.indices_fixed]
 
-    def _indices_free(self) -> Array:
+    def _indices_free(self) -> Int[Array, "nodes_free"]:
         """
         The indices of the unsupported nodes in the structure.
         """
@@ -128,7 +129,7 @@ class EquilibriumStructure(Graph):
 
         return indices
 
-    def _indices_fixed(self) -> Array:
+    def _indices_fixed(self) -> Int[Array, "nodes_fixed"]:
         """
         The indices of the unsupported nodes in the structure.
         """
@@ -136,7 +137,7 @@ class EquilibriumStructure(Graph):
 
         return indices
 
-    def _indices_freefixed(self) -> Array:
+    def _indices_freefixed(self) -> Int[Array, "nodes"]:
         """
         A list with the node keys of all the nodes sorted by their node index.
         """
@@ -160,9 +161,9 @@ class EquilibriumStructureSparse(EquilibriumStructure, GraphSparse):
     """
     A sparse structure.
     """
-    diag_indices: jax.Array
-    index_array: jax.Array
-    diags: jax.Array
+    diag_indices: Int[Array, "nodes_free"]
+    index_array: Int[CSC, "nodes_free nodes_free"]
+    diags: Float[BCSR, "nodes_free edges"]
 
     def __init__(
         self,
@@ -190,20 +191,20 @@ class EquilibriumStructureSparse(EquilibriumStructure, GraphSparse):
         # Prepare the array D st when D.T @ q we get the diagonal elements of matrix
         self.diags = self._get_sparse_diag_data(c_free_csc)
 
-    def _connectivity_free(self) -> BCOO:
+    def _connectivity_free(self) -> Float[BCOO, "edges nodes_free"]:
         """
         The connectivity matrix between edges and nodes.
         """
         return BCOO.from_scipy_sparse(self.connectivity_scipy[:, self.indices_free])
 
-    def _connectivity_fixed(self) -> BCOO:
+    def _connectivity_fixed(self) -> Float[BCOO, "edges nodes_fixed"]:
         """
         The connectivity matrix between edges and nodes.
         """
         return BCOO.from_scipy_sparse(self.connectivity_scipy[:, self.indices_fixed])
 
     @staticmethod
-    def _get_sparse_index_array(c_free_csc: csc_matrix) -> CSC:
+    def _get_sparse_index_array(c_free_csc: csc_matrix) -> Int[CSC, "nodes_free nodes_free"]:
         """
         Create an index array such that the off-diagonals can index into the
         force density vector.
@@ -226,7 +227,7 @@ class EquilibriumStructureSparse(EquilibriumStructure, GraphSparse):
                    shape=index_array.shape)
 
     @staticmethod
-    def _get_sparse_diag_indices(csc: CSC) -> Array:
+    def _get_sparse_diag_indices(csc: CSC) -> Int[Array, "nodes_free"]:
         """
         Given a CSC matrix, get indices into `data` that access diagonal elements in order.
         """
@@ -239,7 +240,7 @@ class EquilibriumStructureSparse(EquilibriumStructure, GraphSparse):
         return jnp.concatenate(all_indices)
 
     @staticmethod
-    def _get_sparse_diag_data(c_free_csc: csc_matrix) -> BCSR:
+    def _get_sparse_diag_data(c_free_csc: csc_matrix) -> Float[BCSR, "nodes_free edges"]:
         """
         The diagonal of the lhs matrix is the sum of force densities for
         each outgoing/incoming edge on the node.
@@ -284,7 +285,7 @@ class EquilibriumMeshStructure(EquilibriumStructure, Mesh):
                          **kwargs)
 
     @property
-    def num_free(self) -> Array:
+    def num_free(self) -> Int[Array, ""]:
         """
         The number of supports.
         """

@@ -405,7 +405,7 @@ def fixed_point_bwd_adjoint(
 
     # If the stiffness matrix is sparse, use a sparse linear solver
     if isinstance(K, JAXSparse):
-        K_id = splu(K)  # Session ID of the cached sparse LU factorization
+        K_id = splu(K)  # pyright: ignore[reportArgumentType]  # K is the stiffness matrix theta[0]; when sparse it is always the CSC built by EquilibriumModelSparse.stiffness_matrix, but isinstance only narrows the opaque theta[0] to JAXSparse  # Session ID of the cached sparse LU factorization
 
         def linearsolve_fn(b):  # noqa: F811
             """
