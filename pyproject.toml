@@ -60,6 +60,7 @@ ipopt = ["cyipopt"]
 dev = [
     "ruff",
     "pytest >=3.2",
+    "pytest-xdist",
     "bump-my-version",
     "build",
     "twine",
@@ -147,7 +148,21 @@ replace = "[{new_version}] {now:%Y-%m-%d}"
 testpaths = ["tests", "src/jax_fdm"]
 norecursedirs = ["migrations"]
 python_files = ["test_*.py", "*_test.py", "tests.py"]
-addopts = ["-ra", "--strict-markers", "--doctest-modules", "--tb=short"]
+# -n auto fans the suite across all cores (pytest-xdist); pass -n0 to serialize
+# for debugging a single test. --dist loadfile pins each test file to one worker
+# so its tests report consecutively, and -v prints the full test id per line
+# (bare dots are unreadable once workers interleave). % and [gwN] tag included.
+addopts = [
+    "-ra",
+    "--strict-markers",
+    "--doctest-modules",
+    "--tb=short",
+    "-v",
+    "-n",
+    "auto",
+    "--dist",
+    "loadfile",
+]
 markers = [
     # Deletable scaffolding; run the COMPAS-free suite with -m "not compas_xcheck".
     "compas_xcheck: cross-check a result against COMPAS",

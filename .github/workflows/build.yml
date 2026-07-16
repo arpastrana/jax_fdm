@@ -50,5 +50,24 @@ jobs:
       - name: Lint with ruff
         run: ruff check .
 
+      # The suite recompiles the same jitted equilibrium models every run, so
+      # the runtime is XLA-compilation-bound. Persist the compiled kernels
+      # across CI runs; the key includes the jax version so a jax bump (which
+      # changes the emitted HLO) starts a fresh cache. The absolute dir goes
+      # through GITHUB_ENV so actions/cache and JAX resolve the same path
+      # (GitHub does not expand ~ inside an env: block, and JAX reads it raw).
+      - name: Resolve jit cache location
+        id: jax
+        shell: bash
+        run: |
+          echo "version=$(python -c 'import jax; print(jax.__version__)')" >> "$GITHUB_OUTPUT"
+          echo "JAX_COMPILATION_CACHE_DIR=$RUNNER_TEMP/jax_fdm_jit_cache" >> "$GITHUB_ENV"
+
+      - name: Cache compiled XLA kernels
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.JAX_COMPILATION_CACHE_DIR }}
+          key: jax-jit-${{ matrix.os }}-py${{ matrix.python-version }}-jax${{ steps.jax.outputs.version }}
+
       - name: Run tests
         run: pytest

@@ -131,7 +131,8 @@ def gradient_descent(
             # Then compute gradient with approx_fprime (this will call fun multiple
             # times)
             def fun_wrapped(z):
-                nfev += 1  # noqa: F823, F841  # pyright: ignore[reportUnboundVariable]
+                nonlocal nfev
+                nfev += 1
                 return fun(z, *args)
 
             g_val = approx_fprime(x_arr, fun_wrapped, epsilon=fd_step)
