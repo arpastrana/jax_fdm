@@ -8,6 +8,12 @@ on:
     branches:
       - main
 
+# Cancel a PR's in-flight run when new commits are pushed to it. Never cancel a
+# main push (post-merge build), so it always runs to completion.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 jobs:
   build-package:
     if: "!contains(github.event.pull_request.labels.*.name, 'docs-only')"

@@ -6,6 +6,12 @@ on:
       - main
       - master
 
+# Cancel a PR's in-flight checks when new commits are pushed to it. This
+# workflow is pull_request-only, so cancelling is always safe.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   build:
     name: Check Actions

@@ -10,6 +10,12 @@ on:
     branches:
       - main
 
+# Cancel a PR's in-flight docs build when new commits are pushed to it. Never
+# cancel a main/tag push, so the mike deploy always runs to completion.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 env:
   JAX_PLATFORMS: cpu
 
