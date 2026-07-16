@@ -1063,7 +1063,7 @@ Without it, the plotter degrades to a null object that warns on use.</p>
 
 
 <a href="#jax_fdm.visualization.plotters.plotter.Plotter" class="headerlink" title="Permanent link">¤</a></h2>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">Plotter</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">Plotter</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="typing.Any" href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a></span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="typing.Any" href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a></span><span class="p">)</span>
 </code></pre></div>
 
     <div class="doc doc-contents first">
@@ -1111,7 +1111,7 @@ Without it, the plotter degrades to a null object that warns on use.</p>
 
 
 <a href="#jax_fdm.visualization.plotters.loss_plotter.LossPlotter" class="headerlink" title="Permanent link">¤</a></h2>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">LossPlotter</span><span class="p">(</span><span class="n">loss</span><span class="p">,</span> <span class="n">datastructure</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">LossPlotter</span><span class="p">(</span><span class="n">loss</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="            Loss (jax_fdm.losses.Loss)" href="../jax_fdm.losses/#jax_fdm.losses.Loss">Loss</a></span><span class="p">,</span> <span class="n">datastructure</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="            FDNetwork (jax_fdm.datastructures.FDNetwork)" href="../jax_fdm.datastructures/#jax_fdm.datastructures.FDNetwork">FDNetwork</a></span> <span class="o">|</span> <span class="n"><a class="autorefs autorefs-internal" title="            FDMesh (jax_fdm.datastructures.FDMesh)" href="../jax_fdm.datastructures/#jax_fdm.datastructures.FDMesh">FDMesh</a></span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="typing.Any" href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a></span><span class="p">)</span>
 </code></pre></div>
 
     <div class="doc doc-contents first">
@@ -1149,12 +1149,13 @@ Without it, the plotter degrades to a null object that warns on use.</p>
 
 
 <a href="#jax_fdm.visualization.plotters.loss_plotter.LossPlotter.plot" class="headerlink" title="Permanent link">¤</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">plot</span><span class="p">(</span><span class="n">history</span><span class="p">,</span> <span class="n">report_breakdown</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">error_names</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">plot_legend</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">yscale</span><span class="o">=</span><span class="s1">&#39;log&#39;</span><span class="p">,</span> <span class="o">**</span><span class="n">eq_kwargs</span><span class="p">)</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">plot</span><span class="p">(</span><span class="n">history</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="            EquilibriumParametersState (jax_fdm.equilibrium.EquilibriumParametersState)" href="../jax_fdm.equilibrium/#jax_fdm.equilibrium.states.EquilibriumParametersState">EquilibriumParametersState</a></span> <span class="o">|</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#list">list</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" title="typing.Any" href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a></span><span class="p">],</span> <span class="n">report_breakdown</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">error_names</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="collections.abc.Iterable" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterable">Iterable</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">plot_legend</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">yscale</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></span> <span class="o">=</span> <span class="s1">&#39;log&#39;</span><span class="p">,</span> <span class="o">**</span><span class="n">eq_kwargs</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="typing.Any" href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a></span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><span title="jaxtyping.Float">Float</span></span><span class="p">[</span><span class="n"><span title="jaxtyping.Array">Array</span></span><span class="p">,</span> <span class="n"><span title="iterations">iterations</span></span><span class="p">]</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
 
-        <p>Plot the loss function and its error components on a list of fdm parameter states.</p>
+        <p>Plot the loss function and its error components on a list of fdm
+parameter states.</p>
 
 
     </div>
@@ -1169,7 +1170,7 @@ Without it, the plotter degrades to a null object that warns on use.</p>
 
 
 <a href="#jax_fdm.visualization.plotters.loss_plotter.LossPlotter.show" class="headerlink" title="Permanent link">¤</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">show</span><span class="p">()</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">show</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kc">None</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -1193,7 +1194,7 @@ Without it, the plotter degrades to a null object that warns on use.</p>
   </span>
 
 <a href="#jax_fdm.visualization.plotters.loss_plotter.LossPlotter.print_error_stats" class="headerlink" title="Permanent link">¤</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">print_error_stats</span><span class="p">(</span><span class="n">errors</span><span class="p">,</span> <span class="n">error_name</span><span class="p">)</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">print_error_stats</span><span class="p">(</span><span class="n">errors</span><span class="p">:</span> <span class="n"><span title="jaxtyping.Float">Float</span></span><span class="p">[</span><span class="n"><span title="jaxtyping.Array">Array</span></span><span class="p">,</span> <span class="n"><span title="iterations">iterations</span></span><span class="p">],</span> <span class="n">error_name</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">

@@ -1142,6 +1142,28 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#jax_fdm.equilibrium.structures.graphs.Graph.node_index" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;node_index
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#jax_fdm.equilibrium.structures.graphs.Graph.edge_index" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;edge_index
+      
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -2407,6 +2429,28 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#jax_fdm.equilibrium.structures.graphs.Graph.node_index" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;node_index
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#jax_fdm.equilibrium.structures.graphs.Graph.edge_index" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;edge_index
+      
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -2654,12 +2698,13 @@ a loss function, subject to constraints.</p>
 
 
 <a href="#jax_fdm.equilibrium.fdm.fdm" class="headerlink" title="Permanent link">¤</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">fdm</span><span class="p">(</span><span class="n">datastructure</span><span class="p">,</span> <span class="n">sparse</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">is_load_local</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">tmax</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">eta</span><span class="o">=</span><span class="mf">1e-06</span><span class="p">,</span> <span class="n">itersolve_fn</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">iterload_fn</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">implicit_diff</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">fdm</span><span class="p">(</span><span class="n">datastructure</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="            FDNetwork (jax_fdm.datastructures.FDNetwork)" href="../jax_fdm.datastructures/#jax_fdm.datastructures.FDNetwork">FDNetwork</a></span> <span class="o">|</span> <span class="n"><a class="autorefs autorefs-internal" title="            FDMesh (jax_fdm.datastructures.FDMesh)" href="../jax_fdm.datastructures/#jax_fdm.datastructures.FDMesh">FDMesh</a></span><span class="p">,</span> <span class="n">sparse</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">is_load_local</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">tmax</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a></span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="n">eta</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a></span> <span class="o">=</span> <span class="mf">1e-06</span><span class="p">,</span> <span class="n">itersolve_fn</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="collections.abc.Callable" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable">Callable</a></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">iterload_fn</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="collections.abc.Callable" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable">Callable</a></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">implicit_diff</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">verbose</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-internal" title="            FDNetwork (jax_fdm.datastructures.FDNetwork)" href="../jax_fdm.datastructures/#jax_fdm.datastructures.FDNetwork">FDNetwork</a></span> <span class="o">|</span> <span class="n"><a class="autorefs autorefs-internal" title="            FDMesh (jax_fdm.datastructures.FDMesh)" href="../jax_fdm.datastructures/#jax_fdm.datastructures.FDMesh">FDMesh</a></span>
 </code></pre></div>
 
     <div class="doc doc-contents first">
 
-        <p>Compute a datastructure in a state of static equilibrium using the force density method.</p>
+        <p>Compute a datastructure in a state of static equilibrium using the force density
+method.</p>
 
 
     </div>
@@ -2674,12 +2719,13 @@ a loss function, subject to constraints.</p>
 
 
 <a href="#jax_fdm.equilibrium.fdm.constrained_fdm" class="headerlink" title="Permanent link">¤</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">constrained_fdm</span><span class="p">(</span><span class="n">datastructure</span><span class="p">,</span> <span class="n">optimizer</span><span class="p">,</span> <span class="n">loss</span><span class="p">,</span> <span class="n">parameters</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">constraints</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">maxiter</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="mf">1e-06</span><span class="p">,</span> <span class="n">tmax</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">eta</span><span class="o">=</span><span class="mf">1e-06</span><span class="p">,</span> <span class="n">callback</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">sparse</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">is_load_local</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">itersolve_fn</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">iterload_fn</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">implicit_diff</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">nd</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">jit</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">constrained_fdm</span><span class="p">(</span><span class="n">datastructure</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="            FDNetwork (jax_fdm.datastructures.FDNetwork)" href="../jax_fdm.datastructures/#jax_fdm.datastructures.FDNetwork">FDNetwork</a></span> <span class="o">|</span> <span class="n"><a class="autorefs autorefs-internal" title="            FDMesh (jax_fdm.datastructures.FDMesh)" href="../jax_fdm.datastructures/#jax_fdm.datastructures.FDMesh">FDMesh</a></span><span class="p">,</span> <span class="n">optimizer</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="            Optimizer (jax_fdm.optimization.Optimizer)" href="../jax_fdm.optimization/#jax_fdm.optimization.optimizers.optimizer.Optimizer">Optimizer</a></span><span class="p">,</span> <span class="n">loss</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="            Loss (jax_fdm.losses.Loss)" href="../jax_fdm.losses/#jax_fdm.losses.Loss">Loss</a></span><span class="p">,</span> <span class="n">parameters</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#list">list</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-internal" title="            Parameter (jax_fdm.parameters.Parameter)" href="../jax_fdm.parameters/#jax_fdm.parameters.Parameter">Parameter</a></span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">constraints</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#list">list</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-internal" title="            Constraint (jax_fdm.constraints.Constraint)" href="../jax_fdm.constraints/#jax_fdm.constraints.Constraint">Constraint</a></span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">maxiter</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a></span> <span class="o">=</span> <span class="mi">100</span><span class="p">,</span> <span class="n">tol</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a></span> <span class="o">=</span> <span class="mf">1e-06</span><span class="p">,</span> <span class="n">tmax</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a></span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="n">eta</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a></span> <span class="o">=</span> <span class="mf">1e-06</span><span class="p">,</span> <span class="n">callback</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="collections.abc.Callable" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable">Callable</a></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">sparse</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">is_load_local</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">itersolve_fn</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="collections.abc.Callable" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable">Callable</a></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">iterload_fn</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="collections.abc.Callable" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable">Callable</a></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">implicit_diff</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">nd</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">verbose</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">jit</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-internal" title="            FDNetwork (jax_fdm.datastructures.FDNetwork)" href="../jax_fdm.datastructures/#jax_fdm.datastructures.FDNetwork">FDNetwork</a></span> <span class="o">|</span> <span class="n"><a class="autorefs autorefs-internal" title="            FDMesh (jax_fdm.datastructures.FDMesh)" href="../jax_fdm.datastructures/#jax_fdm.datastructures.FDMesh">FDMesh</a></span>
 </code></pre></div>
 
     <div class="doc doc-contents first">
 
-        <p>Generate a network in a constrained state of static equilibrium using the force density method.</p>
+        <p>Generate a network in a constrained state of static equilibrium using the force
+density method.</p>
 
 
     </div>
@@ -2697,7 +2743,7 @@ a loss function, subject to constraints.</p>
 
 
 <a href="#jax_fdm.equilibrium.models.EquilibriumModel" class="headerlink" title="Permanent link">¤</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">EquilibriumModel</span><span class="p">(</span><span class="n">tmax</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">eta</span><span class="o">=</span><span class="mf">1e-06</span><span class="p">,</span> <span class="n">is_load_local</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">itersolve_fn</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">iterload_fn</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">implicit_diff</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">EquilibriumModel</span><span class="p">(</span><span class="n">tmax</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a></span> <span class="o">=</span> <span class="mi">100</span><span class="p">,</span> <span class="n">eta</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a></span> <span class="o">=</span> <span class="mf">1e-06</span><span class="p">,</span> <span class="n">is_load_local</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">itersolve_fn</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="collections.abc.Callable" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable">Callable</a></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">iterload_fn</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="collections.abc.Callable" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable">Callable</a></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">implicit_diff</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">verbose</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span>
 </code></pre></div>
 
     <div class="doc doc-contents first">
@@ -2728,8 +2774,9 @@ a loss function, subject to constraints.</p>
             <td>
               <div class="doc-md-description">
                 <p>The maximum number of iterations to calculate an equilibrium state.
-If <code>tmax=1</code>, the model is equivalent to doing one linear FDM step, and the rest of the
-parameters of this model are ignored. The edge and face loads are discarded too.
+If <code>tmax=1</code>, the model is equivalent to doing one linear FDM step, and the rest
+of the parameters of this model are ignored. The edge and face loads are
+discarded too.
 Defaults to <code>100</code>.</p>
               </div>
             </td>
@@ -2800,7 +2847,8 @@ Defaults to <code>None</code>.</p>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>A load callback that is invoked before starting iterative equilibrium computation.
+                <p>A load callback that is invoked before starting iterative equilibrium
+computation.
 Defaults to <code>None</code>.</p>
               </div>
             </td>
@@ -2817,7 +2865,8 @@ Defaults to <code>None</code>.</p>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>If set to <code>True</code>, it applies implicit differentiation to speed up backpropagation.
+                <p>If set to <code>True</code>, it applies implicit differentiation to speed up
+backpropagation.
 Defaults to <code>True</code>.</p>
               </div>
             </td>
@@ -2878,7 +2927,7 @@ Defaults to <code>False</code>.</p>
   </span>
 
 <a href="#jax_fdm.equilibrium.models.EquilibriumModel.edges_vectors" class="headerlink" title="Permanent link">¤</a></h4>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">edges_vectors</span><span class="p">(</span><span class="n">xyz</span><span class="p">,</span> <span class="n">connectivity</span><span class="p">)</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">edges_vectors</span><span class="p">(</span><span class="n">xyz</span><span class="p">:</span> <span class="n"><span title="jaxtyping.Float">Float</span></span><span class="p">[</span><span class="n"><span title="jaxtyping.Array">Array</span></span><span class="p">,</span> <span class="s1">&#39;nodes 3&#39;</span><span class="p">],</span> <span class="n">connectivity</span><span class="p">:</span> <span class="n"><span title="jaxtyping.Float">Float</span></span><span class="p">[</span><span class="n"><span title="jaxtyping.Array">Array</span></span><span class="p">,</span> <span class="s1">&#39;edges nodes&#39;</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n"><span title="jaxtyping.Float">Float</span></span><span class="p">[</span><span class="n"><span title="jaxtyping.Array">Array</span></span><span class="p">,</span> <span class="s1">&#39;edges 3&#39;</span><span class="p">]</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -2902,7 +2951,7 @@ Defaults to <code>False</code>.</p>
   </span>
 
 <a href="#jax_fdm.equilibrium.models.EquilibriumModel.edges_lengths" class="headerlink" title="Permanent link">¤</a></h4>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">edges_lengths</span><span class="p">(</span><span class="n">vectors</span><span class="p">)</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">edges_lengths</span><span class="p">(</span><span class="n">vectors</span><span class="p">:</span> <span class="n"><span title="jaxtyping.Float">Float</span></span><span class="p">[</span><span class="n"><span title="jaxtyping.Array">Array</span></span><span class="p">,</span> <span class="s1">&#39;edges 3&#39;</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n"><span title="jaxtyping.Float">Float</span></span><span class="p">[</span><span class="n"><span title="jaxtyping.Array">Array</span></span><span class="p">,</span> <span class="s1">&#39;edges 1&#39;</span><span class="p">]</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -2926,7 +2975,7 @@ Defaults to <code>False</code>.</p>
   </span>
 
 <a href="#jax_fdm.equilibrium.models.EquilibriumModel.edges_forces" class="headerlink" title="Permanent link">¤</a></h4>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">edges_forces</span><span class="p">(</span><span class="n">q</span><span class="p">,</span> <span class="n">lengths</span><span class="p">)</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">edges_forces</span><span class="p">(</span><span class="n">q</span><span class="p">:</span> <span class="n"><span title="jaxtyping.Float">Float</span></span><span class="p">[</span><span class="n"><span title="jaxtyping.Array">Array</span></span><span class="p">,</span> <span class="n"><span title="edges">edges</span></span><span class="p">],</span> <span class="n">lengths</span><span class="p">:</span> <span class="n"><span title="jaxtyping.Float">Float</span></span><span class="p">[</span><span class="n"><span title="jaxtyping.Array">Array</span></span><span class="p">,</span> <span class="s1">&#39;edges 1&#39;</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n"><span title="jaxtyping.Float">Float</span></span><span class="p">[</span><span class="n"><span title="jaxtyping.Array">Array</span></span><span class="p">,</span> <span class="s1">&#39;edges 1&#39;</span><span class="p">]</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -2950,7 +2999,7 @@ Defaults to <code>False</code>.</p>
   </span>
 
 <a href="#jax_fdm.equilibrium.models.EquilibriumModel.nodes_residuals" class="headerlink" title="Permanent link">¤</a></h4>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">nodes_residuals</span><span class="p">(</span><span class="n">q</span><span class="p">,</span> <span class="n">loads</span><span class="p">,</span> <span class="n">vectors</span><span class="p">,</span> <span class="n">connectivity</span><span class="p">)</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">nodes_residuals</span><span class="p">(</span><span class="n">q</span><span class="p">:</span> <span class="n"><span title="jaxtyping.Float">Float</span></span><span class="p">[</span><span class="n"><span title="jaxtyping.Array">Array</span></span><span class="p">,</span> <span class="n"><span title="edges">edges</span></span><span class="p">],</span> <span class="n">loads</span><span class="p">:</span> <span class="n"><span title="jaxtyping.Float">Float</span></span><span class="p">[</span><span class="n"><span title="jaxtyping.Array">Array</span></span><span class="p">,</span> <span class="s1">&#39;nodes 3&#39;</span><span class="p">],</span> <span class="n">vectors</span><span class="p">:</span> <span class="n"><span title="jaxtyping.Float">Float</span></span><span class="p">[</span><span class="n"><span title="jaxtyping.Array">Array</span></span><span class="p">,</span> <span class="s1">&#39;edges 3&#39;</span><span class="p">],</span> <span class="n">connectivity</span><span class="p">:</span> <span class="n"><span title="jaxtyping.Float">Float</span></span><span class="p">[</span><span class="n"><span title="jaxtyping.Array">Array</span></span><span class="p">,</span> <span class="s1">&#39;edges nodes&#39;</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n"><span title="jaxtyping.Float">Float</span></span><span class="p">[</span><span class="n"><span title="jaxtyping.Array">Array</span></span><span class="p">,</span> <span class="s1">&#39;nodes 3&#39;</span><span class="p">]</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -2974,7 +3023,7 @@ Defaults to <code>False</code>.</p>
   </span>
 
 <a href="#jax_fdm.equilibrium.models.EquilibriumModel.nodes_positions" class="headerlink" title="Permanent link">¤</a></h4>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">nodes_positions</span><span class="p">(</span><span class="n">xyz_free</span><span class="p">,</span> <span class="n">xyz_fixed</span><span class="p">,</span> <span class="n">structure</span><span class="p">)</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">nodes_positions</span><span class="p">(</span><span class="n">xyz_free</span><span class="p">:</span> <span class="n"><span title="jaxtyping.Float">Float</span></span><span class="p">[</span><span class="n"><span title="jaxtyping.Array">Array</span></span><span class="p">,</span> <span class="s1">&#39;nodes_free 3&#39;</span><span class="p">],</span> <span class="n">xyz_fixed</span><span class="p">:</span> <span class="n"><span title="jaxtyping.Float">Float</span></span><span class="p">[</span><span class="n"><span title="jaxtyping.Array">Array</span></span><span class="p">,</span> <span class="s1">&#39;nodes_fixed 3&#39;</span><span class="p">],</span> <span class="n">structure</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="            EquilibriumStructure (jax_fdm.equilibrium.structures.EquilibriumStructure)" href="#jax_fdm.equilibrium.structures.structures.EquilibriumStructure">EquilibriumStructure</a></span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><span title="jaxtyping.Float">Float</span></span><span class="p">[</span><span class="n"><span title="jaxtyping.Array">Array</span></span><span class="p">,</span> <span class="s1">&#39;nodes 3&#39;</span><span class="p">]</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -2994,7 +3043,7 @@ Defaults to <code>False</code>.</p>
 
 
 <a href="#jax_fdm.equilibrium.models.EquilibriumModel.nodes_free_positions" class="headerlink" title="Permanent link">¤</a></h4>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">nodes_free_positions</span><span class="p">(</span><span class="n">q</span><span class="p">,</span> <span class="n">xyz_fixed</span><span class="p">,</span> <span class="n">loads</span><span class="p">,</span> <span class="n">structure</span><span class="p">)</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">nodes_free_positions</span><span class="p">(</span><span class="n">q</span><span class="p">:</span> <span class="n"><span title="jaxtyping.Float">Float</span></span><span class="p">[</span><span class="n"><span title="jaxtyping.Array">Array</span></span><span class="p">,</span> <span class="n"><span title="edges">edges</span></span><span class="p">],</span> <span class="n">xyz_fixed</span><span class="p">:</span> <span class="n"><span title="jaxtyping.Float">Float</span></span><span class="p">[</span><span class="n"><span title="jaxtyping.Array">Array</span></span><span class="p">,</span> <span class="s1">&#39;nodes_fixed 3&#39;</span><span class="p">],</span> <span class="n">loads</span><span class="p">:</span> <span class="n"><span title="jaxtyping.Float">Float</span></span><span class="p">[</span><span class="n"><span title="jaxtyping.Array">Array</span></span><span class="p">,</span> <span class="s1">&#39;nodes 3&#39;</span><span class="p">],</span> <span class="n">structure</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="            EquilibriumStructure (jax_fdm.equilibrium.structures.EquilibriumStructure)" href="#jax_fdm.equilibrium.structures.structures.EquilibriumStructure">EquilibriumStructure</a></span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><span title="jaxtyping.Float">Float</span></span><span class="p">[</span><span class="n"><span title="jaxtyping.Array">Array</span></span><span class="p">,</span> <span class="s1">&#39;nodes_free 3&#39;</span><span class="p">]</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -3014,7 +3063,7 @@ Defaults to <code>False</code>.</p>
 
 
 <a href="#jax_fdm.equilibrium.models.EquilibriumModel.nodes_equilibrium" class="headerlink" title="Permanent link">¤</a></h4>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">nodes_equilibrium</span><span class="p">(</span><span class="n">q</span><span class="p">,</span> <span class="n">xyz_fixed</span><span class="p">,</span> <span class="n">loads_nodes</span><span class="p">,</span> <span class="n">structure</span><span class="p">)</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">nodes_equilibrium</span><span class="p">(</span><span class="n">q</span><span class="p">:</span> <span class="n"><span title="jaxtyping.Float">Float</span></span><span class="p">[</span><span class="n"><span title="jaxtyping.Array">Array</span></span><span class="p">,</span> <span class="n"><span title="edges">edges</span></span><span class="p">],</span> <span class="n">xyz_fixed</span><span class="p">:</span> <span class="n"><span title="jaxtyping.Float">Float</span></span><span class="p">[</span><span class="n"><span title="jaxtyping.Array">Array</span></span><span class="p">,</span> <span class="s1">&#39;nodes_fixed 3&#39;</span><span class="p">],</span> <span class="n">loads_nodes</span><span class="p">:</span> <span class="n"><span title="jaxtyping.Float">Float</span></span><span class="p">[</span><span class="n"><span title="jaxtyping.Array">Array</span></span><span class="p">,</span> <span class="s1">&#39;nodes 3&#39;</span><span class="p">],</span> <span class="n">structure</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="            EquilibriumStructure (jax_fdm.equilibrium.structures.EquilibriumStructure)" href="#jax_fdm.equilibrium.structures.structures.EquilibriumStructure">EquilibriumStructure</a></span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><span title="jaxtyping.Float">Float</span></span><span class="p">[</span><span class="n"><span title="jaxtyping.Array">Array</span></span><span class="p">,</span> <span class="s1">&#39;nodes_free 3&#39;</span><span class="p">]</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -3034,7 +3083,7 @@ Defaults to <code>False</code>.</p>
 
 
 <a href="#jax_fdm.equilibrium.models.EquilibriumModel.nodes_load" class="headerlink" title="Permanent link">¤</a></h4>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">nodes_load</span><span class="p">(</span><span class="n">xyz</span><span class="p">,</span> <span class="n">load_state</span><span class="p">,</span> <span class="n">structure</span><span class="p">)</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">nodes_load</span><span class="p">(</span><span class="n">xyz</span><span class="p">:</span> <span class="n"><span title="jaxtyping.Float">Float</span></span><span class="p">[</span><span class="n"><span title="jaxtyping.Array">Array</span></span><span class="p">,</span> <span class="s1">&#39;nodes 3&#39;</span><span class="p">],</span> <span class="n">load_state</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="            LoadState (jax_fdm.equilibrium.states.LoadState)" href="#jax_fdm.equilibrium.states.LoadState">LoadState</a></span><span class="p">,</span> <span class="n">structure</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="            EquilibriumStructure (jax_fdm.equilibrium.structures.EquilibriumStructure)" href="#jax_fdm.equilibrium.structures.structures.EquilibriumStructure">EquilibriumStructure</a></span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><span title="jaxtyping.Float">Float</span></span><span class="p">[</span><span class="n"><span title="jaxtyping.Array">Array</span></span><span class="p">,</span> <span class="s1">&#39;nodes 3&#39;</span><span class="p">]</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -3058,7 +3107,7 @@ Defaults to <code>False</code>.</p>
   </span>
 
 <a href="#jax_fdm.equilibrium.models.EquilibriumModel.faces_load" class="headerlink" title="Permanent link">¤</a></h4>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">faces_load</span><span class="p">(</span><span class="n">xyz</span><span class="p">,</span> <span class="n">faces_load</span><span class="p">,</span> <span class="n">structure</span><span class="p">,</span> <span class="n">is_local</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">faces_load</span><span class="p">(</span><span class="n">xyz</span><span class="p">:</span> <span class="n"><span title="jaxtyping.Float">Float</span></span><span class="p">[</span><span class="n"><span title="jaxtyping.Array">Array</span></span><span class="p">,</span> <span class="s1">&#39;nodes 3&#39;</span><span class="p">],</span> <span class="n">faces_load</span><span class="p">:</span> <span class="n"><span title="jaxtyping.Float">Float</span></span><span class="p">[</span><span class="n"><span title="jaxtyping.Array">Array</span></span><span class="p">,</span> <span class="s1">&#39;faces 3&#39;</span><span class="p">],</span> <span class="n">structure</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="            EquilibriumMeshStructure (jax_fdm.equilibrium.structures.EquilibriumMeshStructure)" href="#jax_fdm.equilibrium.structures.structures.EquilibriumMeshStructure">EquilibriumMeshStructure</a></span><span class="p">,</span> <span class="n">is_local</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><span title="jaxtyping.Float">Float</span></span><span class="p">[</span><span class="n"><span title="jaxtyping.Array">Array</span></span><span class="p">,</span> <span class="s1">&#39;nodes 3&#39;</span><span class="p">]</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -3082,7 +3131,7 @@ Defaults to <code>False</code>.</p>
   </span>
 
 <a href="#jax_fdm.equilibrium.models.EquilibriumModel.edges_load" class="headerlink" title="Permanent link">¤</a></h4>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">edges_load</span><span class="p">(</span><span class="n">xyz</span><span class="p">,</span> <span class="n">edges_load</span><span class="p">,</span> <span class="n">structure</span><span class="p">,</span> <span class="n">is_local</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">edges_load</span><span class="p">(</span><span class="n">xyz</span><span class="p">:</span> <span class="n"><span title="jaxtyping.Float">Float</span></span><span class="p">[</span><span class="n"><span title="jaxtyping.Array">Array</span></span><span class="p">,</span> <span class="s1">&#39;nodes 3&#39;</span><span class="p">],</span> <span class="n">edges_load</span><span class="p">:</span> <span class="n"><span title="jaxtyping.Float">Float</span></span><span class="p">[</span><span class="n"><span title="jaxtyping.Array">Array</span></span><span class="p">,</span> <span class="s1">&#39;edges 3&#39;</span><span class="p">],</span> <span class="n">structure</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="            EquilibriumStructure (jax_fdm.equilibrium.structures.EquilibriumStructure)" href="#jax_fdm.equilibrium.structures.structures.EquilibriumStructure">EquilibriumStructure</a></span><span class="p">,</span> <span class="n">is_local</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><span title="jaxtyping.Float">Float</span></span><span class="p">[</span><span class="n"><span title="jaxtyping.Array">Array</span></span><span class="p">,</span> <span class="s1">&#39;nodes 3&#39;</span><span class="p">]</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -3102,7 +3151,7 @@ Defaults to <code>False</code>.</p>
 
 
 <a href="#jax_fdm.equilibrium.models.EquilibriumModel.__call__" class="headerlink" title="Permanent link">¤</a></h4>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">__call__</span><span class="p">(</span><span class="n">params</span><span class="p">,</span> <span class="n">structure</span><span class="p">)</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">__call__</span><span class="p">(</span><span class="n">params</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="            EquilibriumParametersState (jax_fdm.equilibrium.states.EquilibriumParametersState)" href="#jax_fdm.equilibrium.states.EquilibriumParametersState">EquilibriumParametersState</a></span><span class="p">,</span> <span class="n">structure</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="            EquilibriumStructure (jax_fdm.equilibrium.structures.EquilibriumStructure)" href="#jax_fdm.equilibrium.structures.structures.EquilibriumStructure">EquilibriumStructure</a></span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-internal" title="            EquilibriumState (jax_fdm.equilibrium.states.EquilibriumState)" href="#jax_fdm.equilibrium.states.EquilibriumState">EquilibriumState</a></span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -3122,7 +3171,7 @@ Defaults to <code>False</code>.</p>
 
 
 <a href="#jax_fdm.equilibrium.models.EquilibriumModel.equilibrium" class="headerlink" title="Permanent link">¤</a></h4>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">equilibrium</span><span class="p">(</span><span class="n">q</span><span class="p">,</span> <span class="n">xyz_fixed</span><span class="p">,</span> <span class="n">loads_nodes</span><span class="p">,</span> <span class="n">structure</span><span class="p">)</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">equilibrium</span><span class="p">(</span><span class="n">q</span><span class="p">:</span> <span class="n"><span title="jaxtyping.Float">Float</span></span><span class="p">[</span><span class="n"><span title="jaxtyping.Array">Array</span></span><span class="p">,</span> <span class="n"><span title="edges">edges</span></span><span class="p">],</span> <span class="n">xyz_fixed</span><span class="p">:</span> <span class="n"><span title="jaxtyping.Float">Float</span></span><span class="p">[</span><span class="n"><span title="jaxtyping.Array">Array</span></span><span class="p">,</span> <span class="s1">&#39;nodes_fixed 3&#39;</span><span class="p">],</span> <span class="n">loads_nodes</span><span class="p">:</span> <span class="n"><span title="jaxtyping.Float">Float</span></span><span class="p">[</span><span class="n"><span title="jaxtyping.Array">Array</span></span><span class="p">,</span> <span class="s1">&#39;nodes 3&#39;</span><span class="p">],</span> <span class="n">structure</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="            EquilibriumStructure (jax_fdm.equilibrium.structures.EquilibriumStructure)" href="#jax_fdm.equilibrium.structures.structures.EquilibriumStructure">EquilibriumStructure</a></span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><span title="jaxtyping.Float">Float</span></span><span class="p">[</span><span class="n"><span title="jaxtyping.Array">Array</span></span><span class="p">,</span> <span class="s1">&#39;nodes_free 3&#39;</span><span class="p">]</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -3142,7 +3191,7 @@ Defaults to <code>False</code>.</p>
 
 
 <a href="#jax_fdm.equilibrium.models.EquilibriumModel.equilibrium_iterative_xyz" class="headerlink" title="Permanent link">¤</a></h4>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">equilibrium_iterative_xyz</span><span class="p">(</span><span class="n">q</span><span class="p">,</span> <span class="n">xyz_fixed</span><span class="p">,</span> <span class="n">load_state</span><span class="p">,</span> <span class="n">structure</span><span class="p">,</span> <span class="n">xyz_free_init</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">tmax</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">eta</span><span class="o">=</span><span class="mf">1e-06</span><span class="p">,</span> <span class="n">solver</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">implicit_diff</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">equilibrium_iterative_xyz</span><span class="p">(</span><span class="n">q</span><span class="p">:</span> <span class="n"><span title="jaxtyping.Float">Float</span></span><span class="p">[</span><span class="n"><span title="jaxtyping.Array">Array</span></span><span class="p">,</span> <span class="n"><span title="edges">edges</span></span><span class="p">],</span> <span class="n">xyz_fixed</span><span class="p">:</span> <span class="n"><span title="jaxtyping.Float">Float</span></span><span class="p">[</span><span class="n"><span title="jaxtyping.Array">Array</span></span><span class="p">,</span> <span class="s1">&#39;nodes_fixed 3&#39;</span><span class="p">],</span> <span class="n">load_state</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="            LoadState (jax_fdm.equilibrium.states.LoadState)" href="#jax_fdm.equilibrium.states.LoadState">LoadState</a></span><span class="p">,</span> <span class="n">structure</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="            EquilibriumStructure (jax_fdm.equilibrium.structures.EquilibriumStructure)" href="#jax_fdm.equilibrium.structures.structures.EquilibriumStructure">EquilibriumStructure</a></span><span class="p">,</span> <span class="n">xyz_free_init</span><span class="p">:</span> <span class="n"><span title="jaxtyping.Float">Float</span></span><span class="p">[</span><span class="n"><span title="jaxtyping.Array">Array</span></span><span class="p">,</span> <span class="s1">&#39;nodes_free 3&#39;</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">tmax</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a></span> <span class="o">=</span> <span class="mi">100</span><span class="p">,</span> <span class="n">eta</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a></span> <span class="o">=</span> <span class="mf">1e-06</span><span class="p">,</span> <span class="n">solver</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="collections.abc.Callable" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable">Callable</a></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">implicit_diff</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">verbose</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><span title="jaxtyping.Float">Float</span></span><span class="p">[</span><span class="n"><span title="jaxtyping.Array">Array</span></span><span class="p">,</span> <span class="s1">&#39;nodes_free 3&#39;</span><span class="p">]</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -3153,7 +3202,8 @@ Defaults to <code>False</code>.</p>
 <details class="note" open>
   <summary>Notes</summary>
   <p>This function only supports reverse mode auto-differentiation.
-To support forward-mode, we should define a custom jvp using implicit differentiation.</p>
+To support forward-mode, we should define a custom jvp using implicit
+differentiation.</p>
 </details>
 
     </div>
@@ -3168,7 +3218,7 @@ To support forward-mode, we should define a custom jvp using implicit differenti
 
 
 <a href="#jax_fdm.equilibrium.models.EquilibriumModel.equilibrium_iterative_residual" class="headerlink" title="Permanent link">¤</a></h4>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">equilibrium_iterative_residual</span><span class="p">(</span><span class="n">q</span><span class="p">,</span> <span class="n">xyz_fixed</span><span class="p">,</span> <span class="n">load_state</span><span class="p">,</span> <span class="n">structure</span><span class="p">,</span> <span class="n">xyz_free_init</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">tmax</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">eta</span><span class="o">=</span><span class="mf">1e-06</span><span class="p">,</span> <span class="n">solver</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">implicit_diff</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">equilibrium_iterative_residual</span><span class="p">(</span><span class="n">q</span><span class="p">:</span> <span class="n"><span title="jaxtyping.Float">Float</span></span><span class="p">[</span><span class="n"><span title="jaxtyping.Array">Array</span></span><span class="p">,</span> <span class="n"><span title="edges">edges</span></span><span class="p">],</span> <span class="n">xyz_fixed</span><span class="p">:</span> <span class="n"><span title="jaxtyping.Float">Float</span></span><span class="p">[</span><span class="n"><span title="jaxtyping.Array">Array</span></span><span class="p">,</span> <span class="s1">&#39;nodes_fixed 3&#39;</span><span class="p">],</span> <span class="n">load_state</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="            LoadState (jax_fdm.equilibrium.states.LoadState)" href="#jax_fdm.equilibrium.states.LoadState">LoadState</a></span><span class="p">,</span> <span class="n">structure</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="            EquilibriumStructure (jax_fdm.equilibrium.structures.EquilibriumStructure)" href="#jax_fdm.equilibrium.structures.structures.EquilibriumStructure">EquilibriumStructure</a></span><span class="p">,</span> <span class="n">xyz_free_init</span><span class="p">:</span> <span class="n"><span title="jaxtyping.Float">Float</span></span><span class="p">[</span><span class="n"><span title="jaxtyping.Array">Array</span></span><span class="p">,</span> <span class="s1">&#39;nodes_free 3&#39;</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">tmax</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a></span> <span class="o">=</span> <span class="mi">100</span><span class="p">,</span> <span class="n">eta</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a></span> <span class="o">=</span> <span class="mf">1e-06</span><span class="p">,</span> <span class="n">solver</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="collections.abc.Callable" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable">Callable</a></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">implicit_diff</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">verbose</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><span title="jaxtyping.Float">Float</span></span><span class="p">[</span><span class="n"><span title="jaxtyping.Array">Array</span></span><span class="p">,</span> <span class="s1">&#39;nodes_free 3&#39;</span><span class="p">]</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -3179,7 +3229,8 @@ To support forward-mode, we should define a custom jvp using implicit differenti
 <details class="note" open>
   <summary>Notes</summary>
   <p>This function only supports reverse mode auto-differentiation.
-To support forward-mode, we should define a custom jvp using implicit differentiation.</p>
+To support forward-mode, we should define a custom jvp using implicit
+differentiation.</p>
 </details>
 
     </div>
@@ -3194,7 +3245,7 @@ To support forward-mode, we should define a custom jvp using implicit differenti
 
 
 <a href="#jax_fdm.equilibrium.models.EquilibriumModel.select_equilibrium_iterative_fn" class="headerlink" title="Permanent link">¤</a></h4>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">select_equilibrium_iterative_fn</span><span class="p">(</span><span class="n">solver</span><span class="p">)</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">select_equilibrium_iterative_fn</span><span class="p">(</span><span class="n">solver</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="collections.abc.Callable" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable">Callable</a></span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-external" title="collections.abc.Callable" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable">Callable</a></span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -3214,7 +3265,7 @@ To support forward-mode, we should define a custom jvp using implicit differenti
 
 
 <a href="#jax_fdm.equilibrium.models.EquilibriumModel.equilibrium_state" class="headerlink" title="Permanent link">¤</a></h4>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">equilibrium_state</span><span class="p">(</span><span class="n">q</span><span class="p">,</span> <span class="n">xyz</span><span class="p">,</span> <span class="n">loads_nodes</span><span class="p">,</span> <span class="n">structure</span><span class="p">)</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">equilibrium_state</span><span class="p">(</span><span class="n">q</span><span class="p">:</span> <span class="n"><span title="jaxtyping.Float">Float</span></span><span class="p">[</span><span class="n"><span title="jaxtyping.Array">Array</span></span><span class="p">,</span> <span class="n"><span title="edges">edges</span></span><span class="p">],</span> <span class="n">xyz</span><span class="p">:</span> <span class="n"><span title="jaxtyping.Float">Float</span></span><span class="p">[</span><span class="n"><span title="jaxtyping.Array">Array</span></span><span class="p">,</span> <span class="s1">&#39;nodes 3&#39;</span><span class="p">],</span> <span class="n">loads_nodes</span><span class="p">:</span> <span class="n"><span title="jaxtyping.Float">Float</span></span><span class="p">[</span><span class="n"><span title="jaxtyping.Array">Array</span></span><span class="p">,</span> <span class="s1">&#39;nodes 3&#39;</span><span class="p">],</span> <span class="n">structure</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="            EquilibriumStructure (jax_fdm.equilibrium.structures.EquilibriumStructure)" href="#jax_fdm.equilibrium.structures.structures.EquilibriumStructure">EquilibriumStructure</a></span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-internal" title="            EquilibriumState (jax_fdm.equilibrium.states.EquilibriumState)" href="#jax_fdm.equilibrium.states.EquilibriumState">EquilibriumState</a></span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -3238,7 +3289,7 @@ To support forward-mode, we should define a custom jvp using implicit differenti
   </span>
 
 <a href="#jax_fdm.equilibrium.models.EquilibriumModel.stiffness_matrix" class="headerlink" title="Permanent link">¤</a></h4>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">stiffness_matrix</span><span class="p">(</span><span class="n">q</span><span class="p">,</span> <span class="n">structure</span><span class="p">)</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">stiffness_matrix</span><span class="p">(</span><span class="n">q</span><span class="p">:</span> <span class="n"><span title="jaxtyping.Float">Float</span></span><span class="p">[</span><span class="n"><span title="jaxtyping.Array">Array</span></span><span class="p">,</span> <span class="n"><span title="edges">edges</span></span><span class="p">],</span> <span class="n">structure</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="            EquilibriumStructure (jax_fdm.equilibrium.structures.EquilibriumStructure)" href="#jax_fdm.equilibrium.structures.structures.EquilibriumStructure">EquilibriumStructure</a></span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><span title="jaxtyping.Float">Float</span></span><span class="p">[</span><span class="n"><span title="jaxtyping.Array">Array</span></span><span class="p">,</span> <span class="s1">&#39;nodes_free nodes_free&#39;</span><span class="p">]</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -3258,7 +3309,7 @@ To support forward-mode, we should define a custom jvp using implicit differenti
 
 
 <a href="#jax_fdm.equilibrium.models.EquilibriumModel.load_matrix" class="headerlink" title="Permanent link">¤</a></h4>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">load_matrix</span><span class="p">(</span><span class="n">q</span><span class="p">,</span> <span class="n">xyz_fixed</span><span class="p">,</span> <span class="n">load_nodes</span><span class="p">,</span> <span class="n">structure</span><span class="p">)</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">load_matrix</span><span class="p">(</span><span class="n">q</span><span class="p">:</span> <span class="n"><span title="jaxtyping.Float">Float</span></span><span class="p">[</span><span class="n"><span title="jaxtyping.Array">Array</span></span><span class="p">,</span> <span class="n"><span title="edges">edges</span></span><span class="p">],</span> <span class="n">xyz_fixed</span><span class="p">:</span> <span class="n"><span title="jaxtyping.Float">Float</span></span><span class="p">[</span><span class="n"><span title="jaxtyping.Array">Array</span></span><span class="p">,</span> <span class="s1">&#39;nodes_fixed 3&#39;</span><span class="p">],</span> <span class="n">load_nodes</span><span class="p">:</span> <span class="n"><span title="jaxtyping.Float">Float</span></span><span class="p">[</span><span class="n"><span title="jaxtyping.Array">Array</span></span><span class="p">,</span> <span class="s1">&#39;nodes 3&#39;</span><span class="p">],</span> <span class="n">structure</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="            EquilibriumStructure (jax_fdm.equilibrium.structures.EquilibriumStructure)" href="#jax_fdm.equilibrium.structures.structures.EquilibriumStructure">EquilibriumStructure</a></span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><span title="jaxtyping.Float">Float</span></span><span class="p">[</span><span class="n"><span title="jaxtyping.Array">Array</span></span><span class="p">,</span> <span class="s1">&#39;nodes_free 3&#39;</span><span class="p">]</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -3278,12 +3329,13 @@ To support forward-mode, we should define a custom jvp using implicit differenti
 
 
 <a href="#jax_fdm.equilibrium.models.EquilibriumModel.load_xyz_matrix" class="headerlink" title="Permanent link">¤</a></h4>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">load_xyz_matrix</span><span class="p">(</span><span class="n">params</span><span class="p">,</span> <span class="n">xyz_free</span><span class="p">,</span> <span class="n">structure</span><span class="p">)</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">load_xyz_matrix</span><span class="p">(</span><span class="n">params</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="            EquilibriumParametersState (jax_fdm.equilibrium.states.EquilibriumParametersState)" href="#jax_fdm.equilibrium.states.EquilibriumParametersState">EquilibriumParametersState</a></span><span class="p">,</span> <span class="n">xyz_free</span><span class="p">:</span> <span class="n"><span title="jaxtyping.Float">Float</span></span><span class="p">[</span><span class="n"><span title="jaxtyping.Array">Array</span></span><span class="p">,</span> <span class="s1">&#39;nodes_free 3&#39;</span><span class="p">],</span> <span class="n">structure</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="            EquilibriumStructure (jax_fdm.equilibrium.structures.EquilibriumStructure)" href="#jax_fdm.equilibrium.structures.structures.EquilibriumStructure">EquilibriumStructure</a></span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><span title="jaxtyping.Float">Float</span></span><span class="p">[</span><span class="n"><span title="jaxtyping.Array">Array</span></span><span class="p">,</span> <span class="s1">&#39;nodes_free 3&#39;</span><span class="p">]</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
 
-        <p>Calculate loads matrix of the free nodes of the system for shape-dependent loads.</p>
+        <p>Calculate loads matrix of the free nodes of the system for shape-dependent
+loads.</p>
 
 
     </div>
@@ -3298,12 +3350,13 @@ To support forward-mode, we should define a custom jvp using implicit differenti
 
 
 <a href="#jax_fdm.equilibrium.models.EquilibriumModel.load_xyz_matrix_from_r_fixed" class="headerlink" title="Permanent link">¤</a></h4>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">load_xyz_matrix_from_r_fixed</span><span class="p">(</span><span class="n">params</span><span class="p">,</span> <span class="n">xyz_free</span><span class="p">,</span> <span class="n">structure</span><span class="p">)</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">load_xyz_matrix_from_r_fixed</span><span class="p">(</span><span class="n">params</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#tuple">tuple</a></span><span class="p">[</span><span class="n"><span title="jax_fdm.equilibrium.models.StiffnessMatrix">StiffnessMatrix</span></span><span class="p">,</span> <span class="n"><span title="jaxtyping.Float">Float</span></span><span class="p">[</span><span class="n"><span title="jaxtyping.Array">Array</span></span><span class="p">,</span> <span class="s1">&#39;nodes_free 3&#39;</span><span class="p">],</span> <span class="n"><span title="jaxtyping.Float">Float</span></span><span class="p">[</span><span class="n"><span title="jaxtyping.Array">Array</span></span><span class="p">,</span> <span class="s1">&#39;nodes_fixed 3&#39;</span><span class="p">],</span> <span class="n"><a class="autorefs autorefs-internal" title="            LoadState (jax_fdm.equilibrium.states.LoadState)" href="#jax_fdm.equilibrium.states.LoadState">LoadState</a></span><span class="p">],</span> <span class="n">xyz_free</span><span class="p">:</span> <span class="n"><span title="jaxtyping.Float">Float</span></span><span class="p">[</span><span class="n"><span title="jaxtyping.Array">Array</span></span><span class="p">,</span> <span class="s1">&#39;nodes_free 3&#39;</span><span class="p">],</span> <span class="n">structure</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="            EquilibriumStructure (jax_fdm.equilibrium.structures.EquilibriumStructure)" href="#jax_fdm.equilibrium.structures.structures.EquilibriumStructure">EquilibriumStructure</a></span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><span title="jaxtyping.Float">Float</span></span><span class="p">[</span><span class="n"><span title="jaxtyping.Array">Array</span></span><span class="p">,</span> <span class="s1">&#39;nodes_free 3&#39;</span><span class="p">]</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
 
-        <p>Calculate loads matrix of the free nodes of the system for shape-dependent loads.</p>
+        <p>Calculate loads matrix of the free nodes of the system for shape-dependent
+loads.</p>
 
 
     </div>
@@ -3322,7 +3375,7 @@ To support forward-mode, we should define a custom jvp using implicit differenti
   </span>
 
 <a href="#jax_fdm.equilibrium.models.EquilibriumModel.residual_fixed_matrix" class="headerlink" title="Permanent link">¤</a></h4>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">residual_fixed_matrix</span><span class="p">(</span><span class="n">q</span><span class="p">,</span> <span class="n">xyz_fixed</span><span class="p">,</span> <span class="n">structure</span><span class="p">)</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">residual_fixed_matrix</span><span class="p">(</span><span class="n">q</span><span class="p">:</span> <span class="n"><span title="jaxtyping.Float">Float</span></span><span class="p">[</span><span class="n"><span title="jaxtyping.Array">Array</span></span><span class="p">,</span> <span class="n"><span title="edges">edges</span></span><span class="p">],</span> <span class="n">xyz_fixed</span><span class="p">:</span> <span class="n"><span title="jaxtyping.Float">Float</span></span><span class="p">[</span><span class="n"><span title="jaxtyping.Array">Array</span></span><span class="p">,</span> <span class="s1">&#39;nodes_fixed 3&#39;</span><span class="p">],</span> <span class="n">structure</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="            EquilibriumStructure (jax_fdm.equilibrium.structures.EquilibriumStructure)" href="#jax_fdm.equilibrium.structures.structures.EquilibriumStructure">EquilibriumStructure</a></span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><span title="jaxtyping.Float">Float</span></span><span class="p">[</span><span class="n"><span title="jaxtyping.Array">Array</span></span><span class="p">,</span> <span class="s1">&#39;nodes_free 3&#39;</span><span class="p">]</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -3342,7 +3395,7 @@ To support forward-mode, we should define a custom jvp using implicit differenti
 
 
 <a href="#jax_fdm.equilibrium.models.EquilibriumModel.residual_free_matrix" class="headerlink" title="Permanent link">¤</a></h4>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">residual_free_matrix</span><span class="p">(</span><span class="n">params</span><span class="p">,</span> <span class="n">xyz_free</span><span class="p">,</span> <span class="n">structure</span><span class="p">)</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">residual_free_matrix</span><span class="p">(</span><span class="n">params</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="            EquilibriumParametersState (jax_fdm.equilibrium.states.EquilibriumParametersState)" href="#jax_fdm.equilibrium.states.EquilibriumParametersState">EquilibriumParametersState</a></span><span class="p">,</span> <span class="n">xyz_free</span><span class="p">:</span> <span class="n"><span title="jaxtyping.Float">Float</span></span><span class="p">[</span><span class="n"><span title="jaxtyping.Array">Array</span></span><span class="p">,</span> <span class="s1">&#39;nodes_free 3&#39;</span><span class="p">],</span> <span class="n">structure</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="            EquilibriumStructure (jax_fdm.equilibrium.structures.EquilibriumStructure)" href="#jax_fdm.equilibrium.structures.structures.EquilibriumStructure">EquilibriumStructure</a></span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><span title="jaxtyping.Float">Float</span></span><span class="p">[</span><span class="n"><span title="jaxtyping.Array">Array</span></span><span class="p">,</span> <span class="s1">&#39;nodes_free 3&#39;</span><span class="p">]</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -3413,7 +3466,7 @@ To support forward-mode, we should define a custom jvp using implicit differenti
   </span>
 
 <a href="#jax_fdm.equilibrium.models.EquilibriumModelSparse.stiffness_matrix" class="headerlink" title="Permanent link">¤</a></h4>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">stiffness_matrix</span><span class="p">(</span><span class="n">q</span><span class="p">,</span> <span class="n">structure</span><span class="p">)</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">stiffness_matrix</span><span class="p">(</span><span class="n">q</span><span class="p">:</span> <span class="n"><span title="jaxtyping.Float">Float</span></span><span class="p">[</span><span class="n"><span title="jaxtyping.Array">Array</span></span><span class="p">,</span> <span class="n"><span title="edges">edges</span></span><span class="p">],</span> <span class="n">structure</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="            EquilibriumStructureSparse (jax_fdm.equilibrium.structures.EquilibriumStructureSparse)" href="#jax_fdm.equilibrium.structures.structures.EquilibriumStructureSparse">EquilibriumStructureSparse</a></span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><span title="jaxtyping.Float">Float</span></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" title="jax.experimental.sparse.CSC" href="https://docs.jax.dev/en/latest/_autosummary/jax.experimental.sparse.CSC.html#jax.experimental.sparse.CSC">CSC</a></span><span class="p">,</span> <span class="s1">&#39;nodes_free nodes_free&#39;</span><span class="p">]</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -3527,7 +3580,7 @@ To support forward-mode, we should define a custom jvp using implicit differenti
   </span>
 
 <a href="#jax_fdm.equilibrium.states.LoadState.from_datastructure" class="headerlink" title="Permanent link">¤</a></h4>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">from_datastructure</span><span class="p">(</span><span class="n">datastructure</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">from_datastructure</span><span class="p">(</span><span class="n">datastructure</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="            FDNetwork (jax_fdm.datastructures.FDNetwork)" href="../jax_fdm.datastructures/#jax_fdm.datastructures.FDNetwork">FDNetwork</a></span> <span class="o">|</span> <span class="n"><a class="autorefs autorefs-internal" title="            FDMesh (jax_fdm.datastructures.FDMesh)" href="../jax_fdm.datastructures/#jax_fdm.datastructures.FDMesh">FDMesh</a></span><span class="p">,</span> <span class="n">dtype</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="jax.typing.DTypeLike" href="https://docs.jax.dev/en/latest/_autosummary/jax.typing.DTypeLike.html#jax.typing.DTypeLike">DTypeLike</a></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-internal" title="            LoadState (jax_fdm.equilibrium.states.LoadState)" href="#jax_fdm.equilibrium.states.LoadState">LoadState</a></span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -3595,7 +3648,7 @@ To support forward-mode, we should define a custom jvp using implicit differenti
   </span>
 
 <a href="#jax_fdm.equilibrium.states.EquilibriumParametersState.from_datastructure" class="headerlink" title="Permanent link">¤</a></h4>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">from_datastructure</span><span class="p">(</span><span class="n">datastructure</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">from_datastructure</span><span class="p">(</span><span class="n">datastructure</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="            FDNetwork (jax_fdm.datastructures.FDNetwork)" href="../jax_fdm.datastructures/#jax_fdm.datastructures.FDNetwork">FDNetwork</a></span> <span class="o">|</span> <span class="n"><a class="autorefs autorefs-internal" title="            FDMesh (jax_fdm.datastructures.FDMesh)" href="../jax_fdm.datastructures/#jax_fdm.datastructures.FDMesh">FDMesh</a></span><span class="p">,</span> <span class="n">dtype</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="jax.typing.DTypeLike" href="https://docs.jax.dev/en/latest/_autosummary/jax.typing.DTypeLike.html#jax.typing.DTypeLike">DTypeLike</a></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-internal" title="            EquilibriumParametersState (jax_fdm.equilibrium.states.EquilibriumParametersState)" href="#jax_fdm.equilibrium.states.EquilibriumParametersState">EquilibriumParametersState</a></span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -3628,7 +3681,7 @@ equilibrium model can run shape updates as pure array operations.</p>
 
 
 <a href="#jax_fdm.equilibrium.structures.structures.EquilibriumStructure" class="headerlink" title="Permanent link">¤</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">EquilibriumStructure</span><span class="p">(</span><span class="n">nodes</span><span class="p">,</span> <span class="n">edges</span><span class="p">,</span> <span class="n">supports</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">EquilibriumStructure</span><span class="p">(</span><span class="n">nodes</span><span class="p">:</span> <span class="n"><span title="jaxtyping.Int">Int</span></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" title="numpy.ndarray" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray">ndarray</a></span><span class="p">,</span> <span class="n"><span title="jax_fdm.equilibrium.structures.structures.EquilibriumStructure(nodes)">nodes</span></span><span class="p">],</span> <span class="n">edges</span><span class="p">:</span> <span class="n"><span title="jaxtyping.Int">Int</span></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" title="numpy.ndarray" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray">ndarray</a></span><span class="p">,</span> <span class="s1">&#39;edges 2&#39;</span><span class="p">],</span> <span class="n">supports</span><span class="p">:</span> <span class="n"><span title="jaxtyping.Int">Int</span></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" title="numpy.ndarray" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray">ndarray</a></span><span class="p">,</span> <span class="n"><span title="jax_fdm.equilibrium.structures.structures.EquilibriumStructure(nodes)">nodes</span></span><span class="p">],</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 </code></pre></div>
 
     <div class="doc doc-contents first">
@@ -3668,7 +3721,7 @@ equilibrium model can run shape updates as pure array operations.</p>
   </span>
 
 <a href="#jax_fdm.equilibrium.structures.structures.EquilibriumStructure.num_supports" class="headerlink" title="Permanent link">¤</a></h4>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">num_supports</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">num_supports</span><span class="p">:</span> <span class="n"><span title="jaxtyping.Int">Int</span></span><span class="p">[</span><span class="n"><span title="jaxtyping.Array">Array</span></span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">]</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -3692,7 +3745,7 @@ equilibrium model can run shape updates as pure array operations.</p>
   </span>
 
 <a href="#jax_fdm.equilibrium.structures.structures.EquilibriumStructure.num_free" class="headerlink" title="Permanent link">¤</a></h4>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">num_free</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">num_free</span><span class="p">:</span> <span class="n"><span title="jaxtyping.Int">Int</span></span><span class="p">[</span><span class="n"><span title="jaxtyping.Array">Array</span></span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">]</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -3716,7 +3769,7 @@ equilibrium model can run shape updates as pure array operations.</p>
   </span>
 
 <a href="#jax_fdm.equilibrium.structures.structures.EquilibriumStructure.support_index" class="headerlink" title="Permanent link">¤</a></h4>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">support_index</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">support_index</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#dict">dict</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a></span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a></span><span class="p">]</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -3740,7 +3793,12 @@ equilibrium model can run shape updates as pure array operations.</p>
   </span>
 
 <a href="#jax_fdm.equilibrium.structures.structures.EquilibriumStructure.nodes_free" class="headerlink" title="Permanent link">¤</a></h4>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">nodes_free</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">nodes_free</span><span class="p">:</span> <span class="n"><span title="jaxtyping.Int">Int</span></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" title="numpy.ndarray" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray">ndarray</a></span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-internal" title="            nodes_free
+
+
+  
+      property
+   (jax_fdm.equilibrium.structures.structures.EquilibriumStructure.nodes_free)" href="#jax_fdm.equilibrium.structures.structures.EquilibriumStructure.nodes_free">nodes_free</a></span><span class="p">]</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -3764,7 +3822,12 @@ equilibrium model can run shape updates as pure array operations.</p>
   </span>
 
 <a href="#jax_fdm.equilibrium.structures.structures.EquilibriumStructure.nodes_fixed" class="headerlink" title="Permanent link">¤</a></h4>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">nodes_fixed</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">nodes_fixed</span><span class="p">:</span> <span class="n"><span title="jaxtyping.Int">Int</span></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" title="numpy.ndarray" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray">ndarray</a></span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-internal" title="            nodes_fixed
+
+
+  
+      property
+   (jax_fdm.equilibrium.structures.structures.EquilibriumStructure.nodes_fixed)" href="#jax_fdm.equilibrium.structures.structures.EquilibriumStructure.nodes_fixed">nodes_fixed</a></span><span class="p">]</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -3790,7 +3853,7 @@ equilibrium model can run shape updates as pure array operations.</p>
   </span>
 
 <a href="#jax_fdm.equilibrium.structures.structures.EquilibriumStructure.from_network" class="headerlink" title="Permanent link">¤</a></h4>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">from_network</span><span class="p">(</span><span class="n">network</span><span class="p">)</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">from_network</span><span class="p">(</span><span class="n">network</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="            FDNetwork (jax_fdm.datastructures.FDNetwork)" href="../jax_fdm.datastructures/#jax_fdm.datastructures.FDNetwork">FDNetwork</a></span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-internal" title="            EquilibriumStructure (jax_fdm.equilibrium.structures.structures.EquilibriumStructure)" href="#jax_fdm.equilibrium.structures.structures.EquilibriumStructure">EquilibriumStructure</a></span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -3819,7 +3882,7 @@ equilibrium model can run shape updates as pure array operations.</p>
 
 
 <a href="#jax_fdm.equilibrium.structures.structures.EquilibriumStructureSparse" class="headerlink" title="Permanent link">¤</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">EquilibriumStructureSparse</span><span class="p">(</span><span class="n">nodes</span><span class="p">,</span> <span class="n">edges</span><span class="p">,</span> <span class="n">supports</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">EquilibriumStructureSparse</span><span class="p">(</span><span class="n">nodes</span><span class="p">:</span> <span class="n"><span title="jaxtyping.Int">Int</span></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" title="numpy.ndarray" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray">ndarray</a></span><span class="p">,</span> <span class="n"><span title="jax_fdm.equilibrium.structures.structures.EquilibriumStructureSparse(nodes)">nodes</span></span><span class="p">],</span> <span class="n">edges</span><span class="p">:</span> <span class="n"><span title="jaxtyping.Int">Int</span></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" title="numpy.ndarray" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray">ndarray</a></span><span class="p">,</span> <span class="s1">&#39;edges 2&#39;</span><span class="p">],</span> <span class="n">supports</span><span class="p">:</span> <span class="n"><span title="jaxtyping.Int">Int</span></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" title="numpy.ndarray" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray">ndarray</a></span><span class="p">,</span> <span class="n"><span title="jax_fdm.equilibrium.structures.structures.EquilibriumStructureSparse(nodes)">nodes</span></span><span class="p">],</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 </code></pre></div>
 
     <div class="doc doc-contents first">
@@ -3866,7 +3929,7 @@ equilibrium model can run shape updates as pure array operations.</p>
 
 
 <a href="#jax_fdm.equilibrium.structures.structures.EquilibriumMeshStructure" class="headerlink" title="Permanent link">¤</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">EquilibriumMeshStructure</span><span class="p">(</span><span class="n">vertices</span><span class="p">,</span> <span class="n">faces</span><span class="p">,</span> <span class="n">edges</span><span class="p">,</span> <span class="n">supports</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">EquilibriumMeshStructure</span><span class="p">(</span><span class="n">vertices</span><span class="p">:</span> <span class="n"><span title="jaxtyping.Int">Int</span></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" title="numpy.ndarray" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray">ndarray</a></span><span class="p">,</span> <span class="n"><span title="jax_fdm.equilibrium.structures.structures.EquilibriumMeshStructure(vertices)">vertices</span></span><span class="p">],</span> <span class="n">faces</span><span class="p">:</span> <span class="n"><span title="jaxtyping.Int">Int</span></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" title="numpy.ndarray" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray">ndarray</a></span><span class="p">,</span> <span class="s1">&#39;faces vertices&#39;</span><span class="p">],</span> <span class="n">edges</span><span class="p">:</span> <span class="n"><span title="jaxtyping.Int">Int</span></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" title="numpy.ndarray" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray">ndarray</a></span><span class="p">,</span> <span class="s1">&#39;edges 2&#39;</span><span class="p">],</span> <span class="n">supports</span><span class="p">:</span> <span class="n"><span title="jaxtyping.Int">Int</span></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" title="numpy.ndarray" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray">ndarray</a></span><span class="p">,</span> <span class="n"><span title="jax_fdm.equilibrium.structures.structures.EquilibriumMeshStructure(vertices)">vertices</span></span><span class="p">],</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 </code></pre></div>
 
     <div class="doc doc-contents first">
@@ -3906,7 +3969,7 @@ equilibrium model can run shape updates as pure array operations.</p>
   </span>
 
 <a href="#jax_fdm.equilibrium.structures.structures.EquilibriumMeshStructure.num_free" class="headerlink" title="Permanent link">¤</a></h4>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">num_free</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">num_free</span><span class="p">:</span> <span class="n"><span title="jaxtyping.Int">Int</span></span><span class="p">[</span><span class="n"><span title="jaxtyping.Array">Array</span></span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">]</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -3930,7 +3993,7 @@ equilibrium model can run shape updates as pure array operations.</p>
   </span>
 
 <a href="#jax_fdm.equilibrium.structures.structures.EquilibriumMeshStructure.support_index" class="headerlink" title="Permanent link">¤</a></h4>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">support_index</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">support_index</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#dict">dict</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a></span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a></span><span class="p">]</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -3954,7 +4017,12 @@ equilibrium model can run shape updates as pure array operations.</p>
   </span>
 
 <a href="#jax_fdm.equilibrium.structures.structures.EquilibriumMeshStructure.vertices_free" class="headerlink" title="Permanent link">¤</a></h4>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">vertices_free</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">vertices_free</span><span class="p">:</span> <span class="n"><span title="jaxtyping.Int">Int</span></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" title="numpy.ndarray" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray">ndarray</a></span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-internal" title="            vertices_free
+
+
+  
+      property
+   (jax_fdm.equilibrium.structures.structures.EquilibriumMeshStructure.vertices_free)" href="#jax_fdm.equilibrium.structures.structures.EquilibriumMeshStructure.vertices_free">vertices_free</a></span><span class="p">]</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -3978,7 +4046,12 @@ equilibrium model can run shape updates as pure array operations.</p>
   </span>
 
 <a href="#jax_fdm.equilibrium.structures.structures.EquilibriumMeshStructure.vertices_fixed" class="headerlink" title="Permanent link">¤</a></h4>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">vertices_fixed</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">vertices_fixed</span><span class="p">:</span> <span class="n"><span title="jaxtyping.Int">Int</span></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" title="numpy.ndarray" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray">ndarray</a></span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-internal" title="            vertices_fixed
+
+
+  
+      property
+   (jax_fdm.equilibrium.structures.structures.EquilibriumMeshStructure.vertices_fixed)" href="#jax_fdm.equilibrium.structures.structures.EquilibriumMeshStructure.vertices_fixed">vertices_fixed</a></span><span class="p">]</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -4004,7 +4077,7 @@ equilibrium model can run shape updates as pure array operations.</p>
   </span>
 
 <a href="#jax_fdm.equilibrium.structures.structures.EquilibriumMeshStructure.from_mesh" class="headerlink" title="Permanent link">¤</a></h4>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">from_mesh</span><span class="p">(</span><span class="n">mesh</span><span class="p">)</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">from_mesh</span><span class="p">(</span><span class="n">mesh</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="            FDMesh (jax_fdm.datastructures.FDMesh)" href="../jax_fdm.datastructures/#jax_fdm.datastructures.FDMesh">FDMesh</a></span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-internal" title="            EquilibriumMeshStructure (jax_fdm.equilibrium.structures.structures.EquilibriumMeshStructure)" href="#jax_fdm.equilibrium.structures.structures.EquilibriumMeshStructure">EquilibriumMeshStructure</a></span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -4033,7 +4106,7 @@ equilibrium model can run shape updates as pure array operations.</p>
 
 
 <a href="#jax_fdm.equilibrium.structures.structures.EquilibriumMeshStructureSparse" class="headerlink" title="Permanent link">¤</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">EquilibriumMeshStructureSparse</span><span class="p">(</span><span class="n">vertices</span><span class="p">,</span> <span class="n">faces</span><span class="p">,</span> <span class="n">edges</span><span class="p">,</span> <span class="n">supports</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">EquilibriumMeshStructureSparse</span><span class="p">(</span><span class="n">vertices</span><span class="p">:</span> <span class="n"><span title="jaxtyping.Int">Int</span></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" title="numpy.ndarray" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray">ndarray</a></span><span class="p">,</span> <span class="n"><span title="jax_fdm.equilibrium.structures.structures.EquilibriumMeshStructureSparse(vertices)">vertices</span></span><span class="p">],</span> <span class="n">faces</span><span class="p">:</span> <span class="n"><span title="jaxtyping.Int">Int</span></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" title="numpy.ndarray" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray">ndarray</a></span><span class="p">,</span> <span class="s1">&#39;faces vertices&#39;</span><span class="p">],</span> <span class="n">edges</span><span class="p">:</span> <span class="n"><span title="jaxtyping.Int">Int</span></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" title="numpy.ndarray" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray">ndarray</a></span><span class="p">,</span> <span class="s1">&#39;edges 2&#39;</span><span class="p">],</span> <span class="n">supports</span><span class="p">:</span> <span class="n"><span title="jaxtyping.Int">Int</span></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" title="numpy.ndarray" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray">ndarray</a></span><span class="p">,</span> <span class="n"><span title="jax_fdm.equilibrium.structures.structures.EquilibriumMeshStructureSparse(vertices)">vertices</span></span><span class="p">],</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 </code></pre></div>
 
     <div class="doc doc-contents first">
@@ -4080,7 +4153,7 @@ equilibrium model can run shape updates as pure array operations.</p>
 
 
 <a href="#jax_fdm.equilibrium.structures.graphs.Graph" class="headerlink" title="Permanent link">¤</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">Graph</span><span class="p">(</span><span class="n">nodes</span><span class="p">,</span> <span class="n">edges</span><span class="p">)</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">Graph</span><span class="p">(</span><span class="n">nodes</span><span class="p">:</span> <span class="n"><span title="jaxtyping.Int">Int</span></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" title="numpy.ndarray" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray">ndarray</a></span><span class="p">,</span> <span class="n"><span title="jax_fdm.equilibrium.structures.graphs.Graph(nodes)">nodes</span></span><span class="p">],</span> <span class="n">edges</span><span class="p">:</span> <span class="n"><span title="jaxtyping.Int">Int</span></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" title="numpy.ndarray" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray">ndarray</a></span><span class="p">,</span> <span class="s1">&#39;edges 2&#39;</span><span class="p">])</span>
 </code></pre></div>
 
     <div class="doc doc-contents first">
@@ -4120,7 +4193,7 @@ equilibrium model can run shape updates as pure array operations.</p>
   </span>
 
 <a href="#jax_fdm.equilibrium.structures.graphs.Graph.num_nodes" class="headerlink" title="Permanent link">¤</a></h4>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">num_nodes</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">num_nodes</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a></span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -4144,12 +4217,60 @@ equilibrium model can run shape updates as pure array operations.</p>
   </span>
 
 <a href="#jax_fdm.equilibrium.structures.graphs.Graph.num_edges" class="headerlink" title="Permanent link">¤</a></h4>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">num_edges</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">num_edges</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a></span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
 
         <p>The number of edges.</p>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h4 id="jax_fdm.equilibrium.structures.graphs.Graph.node_index" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code>            <span class="doc doc-object-name doc-attribute-name">node_index</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-property"><code>property</code></small>
+  </span>
+
+<a href="#jax_fdm.equilibrium.structures.graphs.Graph.node_index" class="headerlink" title="Permanent link">¤</a></h4>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">node_index</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#dict">dict</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a></span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a></span><span class="p">]</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>A dictionary between node keys and their enumeration indices.</p>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h4 id="jax_fdm.equilibrium.structures.graphs.Graph.edge_index" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code>            <span class="doc doc-object-name doc-attribute-name">edge_index</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-property"><code>property</code></small>
+  </span>
+
+<a href="#jax_fdm.equilibrium.structures.graphs.Graph.edge_index" class="headerlink" title="Permanent link">¤</a></h4>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">edge_index</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#dict">dict</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#tuple">tuple</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a></span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a></span><span class="p">],</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a></span><span class="p">]</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>A dictionary between edge keys and their enumeration indices.</p>
 
     </div>
 
@@ -4175,7 +4296,7 @@ equilibrium model can run shape updates as pure array operations.</p>
 
 
 <a href="#jax_fdm.equilibrium.structures.graphs.GraphSparse" class="headerlink" title="Permanent link">¤</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">GraphSparse</span><span class="p">(</span><span class="n">nodes</span><span class="p">,</span> <span class="n">edges</span><span class="p">)</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">GraphSparse</span><span class="p">(</span><span class="n">nodes</span><span class="p">:</span> <span class="n"><span title="jaxtyping.Int">Int</span></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" title="numpy.ndarray" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray">ndarray</a></span><span class="p">,</span> <span class="n"><span title="jax_fdm.equilibrium.structures.graphs.Graph(nodes)">nodes</span></span><span class="p">],</span> <span class="n">edges</span><span class="p">:</span> <span class="n"><span title="jaxtyping.Int">Int</span></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" title="numpy.ndarray" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray">ndarray</a></span><span class="p">,</span> <span class="s1">&#39;edges 2&#39;</span><span class="p">])</span>
 </code></pre></div>
 
     <div class="doc doc-contents first">
@@ -4215,7 +4336,7 @@ equilibrium model can run shape updates as pure array operations.</p>
   </span>
 
 <a href="#jax_fdm.equilibrium.structures.graphs.GraphSparse.connectivity_scipy" class="headerlink" title="Permanent link">¤</a></h4>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">connectivity_scipy</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">connectivity_scipy</span><span class="p">:</span> <span class="n"><span title="scipy.sparse.csc_matrix">csc_matrix</span></span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -4249,7 +4370,7 @@ equilibrium model can run shape updates as pure array operations.</p>
 
 
 <a href="#jax_fdm.equilibrium.solvers.fixed_point.solver_forward" class="headerlink" title="Permanent link">¤</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">solver_forward</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">x_init</span><span class="p">,</span> <span class="n">solver_config</span><span class="p">)</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">solver_forward</span><span class="p">(</span><span class="n">f</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="collections.abc.Callable" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable">Callable</a></span><span class="p">,</span> <span class="n">a</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="typing.Any" href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a></span><span class="p">,</span> <span class="n">x_init</span><span class="p">:</span> <span class="n"><span title="jaxtyping.Float">Float</span></span><span class="p">[</span><span class="n"><span title="jaxtyping.Array">Array</span></span><span class="p">,</span> <span class="o">...</span><span class="p">],</span> <span class="n">solver_config</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#dict">dict</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-external" title="typing.Any" href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a></span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n"><span title="jaxtyping.Float">Float</span></span><span class="p">[</span><span class="n"><span title="jaxtyping.Array">Array</span></span><span class="p">,</span> <span class="o">...</span><span class="p">]</span>
 </code></pre></div>
 
     <div class="doc doc-contents first">
@@ -4305,6 +4426,7 @@ equilibrium model can run shape updates as pure array operations.</p>
                 <code>x_init</code>
             </td>
             <td>
+                  <code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, ...]</code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -4320,6 +4442,7 @@ equilibrium model can run shape updates as pure array operations.</p>
                 <code>solver_config</code>
             </td>
             <td>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#dict">dict</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a>, <a class="autorefs autorefs-external" title="typing.Any" href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a>]</code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -4369,7 +4492,7 @@ equilibrium model can run shape updates as pure array operations.</p>
 
 
 <a href="#jax_fdm.equilibrium.solvers.fixed_point.solver_fixedpoint" class="headerlink" title="Permanent link">¤</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">solver_fixedpoint</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">x_init</span><span class="p">,</span> <span class="n">solver_config</span><span class="p">)</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">solver_fixedpoint</span><span class="p">(</span><span class="n">f</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="collections.abc.Callable" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable">Callable</a></span><span class="p">,</span> <span class="n">a</span><span class="p">:</span> <span class="n"><span title="jax_fdm.equilibrium.solvers.types.SolverIterParams">SolverIterParams</span></span><span class="p">,</span> <span class="n">x_init</span><span class="p">:</span> <span class="n"><span title="jaxtyping.Float">Float</span></span><span class="p">[</span><span class="n"><span title="jaxtyping.Array">Array</span></span><span class="p">,</span> <span class="s1">&#39;nodes_free 3&#39;</span><span class="p">],</span> <span class="n">solver_config</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#dict">dict</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-external" title="typing.Any" href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a></span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n"><span title="jaxtyping.Float">Float</span></span><span class="p">[</span><span class="n"><span title="jaxtyping.Array">Array</span></span><span class="p">,</span> <span class="s1">&#39;nodes_free 3&#39;</span><span class="p">]</span>
 </code></pre></div>
 
     <div class="doc doc-contents first">
@@ -4425,6 +4548,7 @@ equilibrium model can run shape updates as pure array operations.</p>
                 <code>x_init</code>
             </td>
             <td>
+                  <code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, &#39;nodes_free 3&#39;]</code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -4440,6 +4564,7 @@ equilibrium model can run shape updates as pure array operations.</p>
                 <code>solver_config</code>
             </td>
             <td>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#dict">dict</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a>, <a class="autorefs autorefs-external" title="typing.Any" href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a>]</code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -4489,7 +4614,7 @@ equilibrium model can run shape updates as pure array operations.</p>
 
 
 <a href="#jax_fdm.equilibrium.solvers.fixed_point.solver_anderson" class="headerlink" title="Permanent link">¤</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">solver_anderson</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">x_init</span><span class="p">,</span> <span class="n">solver_config</span><span class="p">)</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">solver_anderson</span><span class="p">(</span><span class="n">f</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="collections.abc.Callable" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable">Callable</a></span><span class="p">,</span> <span class="n">a</span><span class="p">:</span> <span class="n"><span title="jax_fdm.equilibrium.solvers.types.SolverIterParams">SolverIterParams</span></span><span class="p">,</span> <span class="n">x_init</span><span class="p">:</span> <span class="n"><span title="jaxtyping.Float">Float</span></span><span class="p">[</span><span class="n"><span title="jaxtyping.Array">Array</span></span><span class="p">,</span> <span class="s1">&#39;nodes_free 3&#39;</span><span class="p">],</span> <span class="n">solver_config</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#dict">dict</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-external" title="typing.Any" href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a></span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n"><span title="jaxtyping.Float">Float</span></span><span class="p">[</span><span class="n"><span title="jaxtyping.Array">Array</span></span><span class="p">,</span> <span class="s1">&#39;nodes_free 3&#39;</span><span class="p">]</span>
 </code></pre></div>
 
     <div class="doc doc-contents first">
@@ -4545,6 +4670,7 @@ equilibrium model can run shape updates as pure array operations.</p>
                 <code>x_init</code>
             </td>
             <td>
+                  <code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, &#39;nodes_free 3&#39;]</code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -4560,6 +4686,7 @@ equilibrium model can run shape updates as pure array operations.</p>
                 <code>solver_config</code>
             </td>
             <td>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#dict">dict</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a>, <a class="autorefs autorefs-external" title="typing.Any" href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a>]</code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -4609,10 +4736,12 @@ equilibrium model can run shape updates as pure array operations.</p>
 
 
 <a href="#jax_fdm.equilibrium.solvers.root_finding.solver_newton" class="headerlink" title="Permanent link">¤</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">solver_newton</span><span class="p">(</span><span class="n">fn</span><span class="p">,</span> <span class="n">theta</span><span class="p">,</span> <span class="n">x_init</span><span class="p">,</span> <span class="n">solver_config</span><span class="p">)</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">solver_newton</span><span class="p">(</span><span class="n">fn</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="collections.abc.Callable" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable">Callable</a></span><span class="p">,</span> <span class="n">theta</span><span class="p">:</span> <span class="n"><span title="jax_fdm.equilibrium.solvers.types.SolverIterParams">SolverIterParams</span></span><span class="p">,</span> <span class="n">x_init</span><span class="p">:</span> <span class="n"><span title="jaxtyping.Float">Float</span></span><span class="p">[</span><span class="n"><span title="jaxtyping.Array">Array</span></span><span class="p">,</span> <span class="n"><span title="nodes_free_flat">nodes_free_flat</span></span><span class="p">],</span> <span class="n">solver_config</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#dict">dict</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-external" title="typing.Any" href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a></span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n"><span title="jaxtyping.Float">Float</span></span><span class="p">[</span><span class="n"><span title="jaxtyping.Array">Array</span></span><span class="p">,</span> <span class="n"><span title="nodes_free_flat">nodes_free_flat</span></span><span class="p">]</span>
 </code></pre></div>
 
     <div class="doc doc-contents first">
+
+        <p>Find a root of function f(theta, x) = 0 using Newton's method.</p>
 
 
     </div>
@@ -4627,7 +4756,7 @@ equilibrium model can run shape updates as pure array operations.</p>
 
 
 <a href="#jax_fdm.equilibrium.solvers.least_squares.solver_gauss_newton" class="headerlink" title="Permanent link">¤</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">solver_gauss_newton</span><span class="p">(</span><span class="n">fn</span><span class="p">,</span> <span class="n">theta</span><span class="p">,</span> <span class="n">x_init</span><span class="p">,</span> <span class="n">solver_config</span><span class="p">)</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">solver_gauss_newton</span><span class="p">(</span><span class="n">fn</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="collections.abc.Callable" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable">Callable</a></span><span class="p">,</span> <span class="n">theta</span><span class="p">:</span> <span class="n"><span title="jax_fdm.equilibrium.solvers.types.SolverIterParams">SolverIterParams</span></span><span class="p">,</span> <span class="n">x_init</span><span class="p">:</span> <span class="n"><span title="jaxtyping.Float">Float</span></span><span class="p">[</span><span class="n"><span title="jaxtyping.Array">Array</span></span><span class="p">,</span> <span class="n"><span title="nodes_free_flat">nodes_free_flat</span></span><span class="p">],</span> <span class="n">solver_config</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#dict">dict</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-external" title="typing.Any" href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a></span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n"><span title="jaxtyping.Float">Float</span></span><span class="p">[</span><span class="n"><span title="jaxtyping.Array">Array</span></span><span class="p">,</span> <span class="n"><span title="nodes_free_flat">nodes_free_flat</span></span><span class="p">]</span>
 </code></pre></div>
 
     <div class="doc doc-contents first">
@@ -4749,12 +4878,13 @@ equilibrium model can run shape updates as pure array operations.</p>
 
 
 <a href="#jax_fdm.equilibrium.solvers.least_squares.solver_levenberg_marquardt" class="headerlink" title="Permanent link">¤</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">solver_levenberg_marquardt</span><span class="p">(</span><span class="n">fn</span><span class="p">,</span> <span class="n">theta</span><span class="p">,</span> <span class="n">x_init</span><span class="p">,</span> <span class="n">solver_config</span><span class="p">)</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">solver_levenberg_marquardt</span><span class="p">(</span><span class="n">fn</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="collections.abc.Callable" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable">Callable</a></span><span class="p">,</span> <span class="n">theta</span><span class="p">:</span> <span class="n"><span title="jax_fdm.equilibrium.solvers.types.SolverIterParams">SolverIterParams</span></span><span class="p">,</span> <span class="n">x_init</span><span class="p">:</span> <span class="n"><span title="jaxtyping.Float">Float</span></span><span class="p">[</span><span class="n"><span title="jaxtyping.Array">Array</span></span><span class="p">,</span> <span class="n"><span title="nodes_free_flat">nodes_free_flat</span></span><span class="p">],</span> <span class="n">solver_config</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#dict">dict</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-external" title="typing.Any" href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a></span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n"><span title="jaxtyping.Float">Float</span></span><span class="p">[</span><span class="n"><span title="jaxtyping.Array">Array</span></span><span class="p">,</span> <span class="n"><span title="nodes_free_flat">nodes_free_flat</span></span><span class="p">]</span>
 </code></pre></div>
 
     <div class="doc doc-contents first">
 
-        <p>Minimize the residual of function f(theta, x) = 0 using the Levenberg Marquardt algorithm.</p>
+        <p>Minimize the residual of function f(theta, x) = 0 using the Levenberg Marquardt
+algorithm.</p>
 
 
 <p><span class="doc-section-title">Parameters:</span></p>
@@ -4877,10 +5007,13 @@ equilibrium model can run shape updates as pure array operations.</p>
 
 
 <a href="#jax_fdm.equilibrium.solvers.least_squares.solver_dogleg" class="headerlink" title="Permanent link">¤</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">solver_dogleg</span><span class="p">(</span><span class="n">fn</span><span class="p">,</span> <span class="n">theta</span><span class="p">,</span> <span class="n">x_init</span><span class="p">,</span> <span class="n">solver_config</span><span class="p">)</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">solver_dogleg</span><span class="p">(</span><span class="n">fn</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="collections.abc.Callable" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable">Callable</a></span><span class="p">,</span> <span class="n">theta</span><span class="p">:</span> <span class="n"><span title="jax_fdm.equilibrium.solvers.types.SolverIterParams">SolverIterParams</span></span><span class="p">,</span> <span class="n">x_init</span><span class="p">:</span> <span class="n"><span title="jaxtyping.Float">Float</span></span><span class="p">[</span><span class="n"><span title="jaxtyping.Array">Array</span></span><span class="p">,</span> <span class="n"><span title="nodes_free_flat">nodes_free_flat</span></span><span class="p">],</span> <span class="n">solver_config</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#dict">dict</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-external" title="typing.Any" href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a></span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n"><span title="jaxtyping.Float">Float</span></span><span class="p">[</span><span class="n"><span title="jaxtyping.Array">Array</span></span><span class="p">,</span> <span class="n"><span title="nodes_free_flat">nodes_free_flat</span></span><span class="p">]</span>
 </code></pre></div>
 
     <div class="doc doc-contents first">
+
+        <p>Minimize the residual of function f(theta, x) = 0 using the Dogleg trust-region
+algorithm.</p>
 
 
     </div>
@@ -4900,7 +5033,7 @@ solver iterations.</p>
 
 
 <a href="#jax_fdm.equilibrium.solvers.fixed_point.solver_fixedpoint_implicit" class="headerlink" title="Permanent link">¤</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">solver_fixedpoint_implicit</span><span class="p">(</span><span class="n">solver</span><span class="p">,</span> <span class="n">solver_config</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">x_init</span><span class="p">)</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">solver_fixedpoint_implicit</span><span class="p">(</span><span class="n">solver</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="collections.abc.Callable" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable">Callable</a></span><span class="p">,</span> <span class="n">solver_config</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#dict">dict</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-external" title="typing.Any" href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a></span><span class="p">],</span> <span class="n">f</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="collections.abc.Callable" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable">Callable</a></span><span class="p">,</span> <span class="n">a</span><span class="p">:</span> <span class="n"><span title="jax_fdm.equilibrium.solvers.types.SolverIterParams">SolverIterParams</span></span><span class="p">,</span> <span class="n">x_init</span><span class="p">:</span> <span class="n"><span title="jaxtyping.Float">Float</span></span><span class="p">[</span><span class="n"><span title="jaxtyping.Array">Array</span></span><span class="p">,</span> <span class="s1">&#39;nodes_free 3&#39;</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n"><span title="jaxtyping.Float">Float</span></span><span class="p">[</span><span class="n"><span title="jaxtyping.Array">Array</span></span><span class="p">,</span> <span class="s1">&#39;nodes_free 3&#39;</span><span class="p">]</span>
 </code></pre></div>
 
     <div class="doc doc-contents first">
@@ -4920,7 +5053,7 @@ solver iterations.</p>
 
 
 <a href="#jax_fdm.equilibrium.solvers.nonlinear.solver_nonlinear_implicit" class="headerlink" title="Permanent link">¤</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">solver_nonlinear_implicit</span><span class="p">(</span><span class="n">solver</span><span class="p">,</span> <span class="n">solver_config</span><span class="p">,</span> <span class="n">fn</span><span class="p">,</span> <span class="n">theta</span><span class="p">,</span> <span class="n">x_init</span><span class="p">)</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">solver_nonlinear_implicit</span><span class="p">(</span><span class="n">solver</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="collections.abc.Callable" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable">Callable</a></span><span class="p">,</span> <span class="n">solver_config</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#dict">dict</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-external" title="typing.Any" href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a></span><span class="p">],</span> <span class="n">fn</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="collections.abc.Callable" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable">Callable</a></span><span class="p">,</span> <span class="n">theta</span><span class="p">:</span> <span class="n"><span title="jax_fdm.equilibrium.solvers.types.SolverIterParams">SolverIterParams</span></span><span class="p">,</span> <span class="n">x_init</span><span class="p">:</span> <span class="n"><span title="jaxtyping.Float">Float</span></span><span class="p">[</span><span class="n"><span title="jaxtyping.Array">Array</span></span><span class="p">,</span> <span class="n"><span title="nodes_free_flat">nodes_free_flat</span></span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n"><span title="jaxtyping.Float">Float</span></span><span class="p">[</span><span class="n"><span title="jaxtyping.Array">Array</span></span><span class="p">,</span> <span class="n"><span title="nodes_free_flat">nodes_free_flat</span></span><span class="p">]</span>
 </code></pre></div>
 
     <div class="doc doc-contents first">
@@ -4942,7 +5075,7 @@ solver iterations.</p>
 
 
 <a href="#jax_fdm.equilibrium.sparse.sparse_solve" class="headerlink" title="Permanent link">¤</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">sparse_solve</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">sparse_solve</span><span class="p">(</span><span class="n">A</span><span class="p">:</span> <span class="n"><span title="jax_fdm.equilibrium.sparse.SystemMatrixLHS">SystemMatrixLHS</span></span><span class="p">,</span> <span class="n">b</span><span class="p">:</span> <span class="n"><span title="jax_fdm.equilibrium.sparse.SystemMatrixRHS">SystemMatrixRHS</span></span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><span title="jax_fdm.equilibrium.sparse.SystemSolution">SystemSolution</span></span>
 </code></pre></div>
 
     <div class="doc doc-contents first">
@@ -4962,7 +5095,7 @@ solver iterations.</p>
 
 
 <a href="#jax_fdm.equilibrium.sparse.register_sparse_solver" class="headerlink" title="Permanent link">¤</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">register_sparse_solver</span><span class="p">(</span><span class="n">solvers</span><span class="p">)</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">register_sparse_solver</span><span class="p">(</span><span class="n">solvers</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#dict">dict</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-external" title="collections.abc.Callable" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable">Callable</a></span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-external" title="collections.abc.Callable" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable">Callable</a></span>
 </code></pre></div>
 
     <div class="doc doc-contents first">

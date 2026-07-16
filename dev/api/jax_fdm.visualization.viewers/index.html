@@ -1060,7 +1060,7 @@ extra. Without them, the viewer degrades to a null object that warns on use.</p>
 
 
 <a href="#jax_fdm.visualization.viewers.viewer.Viewer" class="headerlink" title="Permanent link">¤</a></h2>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">Viewer</span><span class="p">(</span><span class="n">width</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">height</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">show_grid</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">config</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">Viewer</span><span class="p">(</span><span class="n">width</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">height</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">show_grid</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">config</span><span class="p">:</span> <span class="n"><span title="compas_viewer.config.Config">Config</span></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="typing.Any" href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a></span><span class="p">)</span>
 </code></pre></div>
 
     <div class="doc doc-contents first">
@@ -1074,7 +1074,8 @@ datastructures render through their registered scene objects, so <code>add</code
 only provides the terser <code>viewer.add(obj)</code> interface and a couple of
 kwarg conveniences.</p>
 <p>For convenience it also accepts the <code>width</code>, <code>height</code> and <code>show_grid</code>
-keyword arguments directly and folds them into a :class:<code>compas_viewer.config.Config</code>,
+keyword arguments directly and folds them into a
+:class:<code>compas_viewer.config.Config</code>,
 so the common window setup does not require building a config by hand.
 The defaults (1200x800, no grid) fit a typical laptop screen and keep the
 grid from cutting through structures that hang below <code>z=0</code>.</p>
@@ -1119,7 +1120,7 @@ for step in steps:
 
 
 <a href="#jax_fdm.visualization.viewers.viewer.Viewer.clear" class="headerlink" title="Permanent link">¤</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">clear</span><span class="p">()</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">clear</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kc">None</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -1142,7 +1143,7 @@ the parent scene never prunes.</p>
 
 
 <a href="#jax_fdm.visualization.viewers.viewer.Viewer.show" class="headerlink" title="Permanent link">¤</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">show</span><span class="p">()</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">show</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kc">None</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -1166,7 +1167,7 @@ buffer and sidebar rebuild).</p>
 
 
 <a href="#jax_fdm.visualization.viewers.viewer.Viewer.on" class="headerlink" title="Permanent link">¤</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">on</span><span class="p">(</span><span class="n">interval</span><span class="p">,</span> <span class="n">frames</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">on</span><span class="p">(</span><span class="n">interval</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a></span><span class="p">,</span> <span class="n">frames</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-external" title="typing.Callable" href="https://docs.python.org/3/library/typing.html#typing.Callable">Callable</a></span><span class="p">[[</span><span class="n"><a class="autorefs autorefs-external" title="typing.Callable" href="https://docs.python.org/3/library/typing.html#typing.Callable">Callable</a></span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="kc">None</span><span class="p">]],</span> <span class="n"><a class="autorefs autorefs-external" title="typing.Callable" href="https://docs.python.org/3/library/typing.html#typing.Callable">Callable</a></span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="kc">None</span><span class="p">]]</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -1190,7 +1191,7 @@ the datastructure with <code>fuse=True</code> to animate on batched soups.</p>
 
 
 <a href="#jax_fdm.visualization.viewers.viewer.Viewer.add" class="headerlink" title="Permanent link">¤</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">add</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">add</span><span class="p">(</span><span class="n">data</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="compas.geometry.Geometry" href="https://compas.dev/compas/latest/api/generated/compas.geometry.Geometry.html#compas.geometry.Geometry">Geometry</a></span> <span class="o">|</span> <span class="n"><span title="compas.datastructures.Datastructure">Datastructure</span></span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="typing.Any" href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a></span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-external" title="compas.scene.SceneObject" href="https://compas.dev/compas/latest/api/generated/compas.scene.SceneObject.html#compas.scene.SceneObject">SceneObject</a></span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -1222,11 +1223,12 @@ or <code>viewer.add(network.copy(cls=Network))</code>.</p>
                 <code>data</code>
             </td>
             <td>
-                  <code>:class:`compas.data.Data`</code>
+                  <code>:class:`compas.geometry.Geometry` |</code>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>The object to visualize.</p>
+                <p>:class:<code>compas.datastructures.Datastructure</code>
+The object to visualize.</p>
               </div>
             </td>
             <td>

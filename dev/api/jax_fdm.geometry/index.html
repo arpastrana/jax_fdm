@@ -1808,7 +1808,7 @@ an equilibrium state.</p>
 
 
 <a href="#jax_fdm.geometry.length_vector" class="headerlink" title="Permanent link">¤</a></h4>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">length_vector</span><span class="p">(</span><span class="n">u</span><span class="p">)</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">length_vector</span><span class="p">(</span><span class="n">u</span><span class="p">:</span> <span class="n"><span title="jaxtyping.Float">Float</span></span><span class="p">[</span><span class="n"><span title="jaxtyping.Array">Array</span></span><span class="p">,</span> <span class="mi">3</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n"><span title="jaxtyping.Float">Float</span></span><span class="p">[</span><span class="n"><span title="jaxtyping.Array">Array</span></span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -1828,7 +1828,7 @@ an equilibrium state.</p>
 
 
 <a href="#jax_fdm.geometry.length_vector_sqrd" class="headerlink" title="Permanent link">¤</a></h4>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">length_vector_sqrd</span><span class="p">(</span><span class="n">u</span><span class="p">)</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">length_vector_sqrd</span><span class="p">(</span><span class="n">u</span><span class="p">:</span> <span class="n"><span title="jaxtyping.Float">Float</span></span><span class="p">[</span><span class="n"><span title="jaxtyping.Array">Array</span></span><span class="p">,</span> <span class="mi">3</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n"><span title="jaxtyping.Float">Float</span></span><span class="p">[</span><span class="n"><span title="jaxtyping.Array">Array</span></span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -1848,7 +1848,7 @@ an equilibrium state.</p>
 
 
 <a href="#jax_fdm.geometry.normalize_vector" class="headerlink" title="Permanent link">¤</a></h4>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">normalize_vector</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">safe_nan</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">normalize_vector</span><span class="p">(</span><span class="n">u</span><span class="p">:</span> <span class="n"><span title="jaxtyping.Float">Float</span></span><span class="p">[</span><span class="n"><span title="jaxtyping.Array">Array</span></span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="n">safe_nan</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><span title="jaxtyping.Float">Float</span></span><span class="p">[</span><span class="n"><span title="jaxtyping.Array">Array</span></span><span class="p">,</span> <span class="mi">3</span><span class="p">]</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -1875,7 +1875,7 @@ or if all its elements are nan.</p>
 
 
 <a href="#jax_fdm.geometry.vector_unitized" class="headerlink" title="Permanent link">¤</a></h4>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">vector_unitized</span><span class="p">(</span><span class="n">u</span><span class="p">)</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">vector_unitized</span><span class="p">(</span><span class="n">u</span><span class="p">:</span> <span class="n"><span title="jaxtyping.Float">Float</span></span><span class="p">[</span><span class="n"><span title="jaxtyping.Array">Array</span></span><span class="p">,</span> <span class="mi">3</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n"><span title="jaxtyping.Float">Float</span></span><span class="p">[</span><span class="n"><span title="jaxtyping.Array">Array</span></span><span class="p">,</span> <span class="mi">3</span><span class="p">]</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -1895,7 +1895,7 @@ or if all its elements are nan.</p>
 
 
 <a href="#jax_fdm.geometry.subtract_vectors" class="headerlink" title="Permanent link">¤</a></h4>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">subtract_vectors</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">subtract_vectors</span><span class="p">(</span><span class="n">u</span><span class="p">:</span> <span class="n"><span title="jaxtyping.Float">Float</span></span><span class="p">[</span><span class="n"><span title="jaxtyping.Array">Array</span></span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="n">v</span><span class="p">:</span> <span class="n"><span title="jaxtyping.Float">Float</span></span><span class="p">[</span><span class="n"><span title="jaxtyping.Array">Array</span></span><span class="p">,</span> <span class="mi">3</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n"><span title="jaxtyping.Float">Float</span></span><span class="p">[</span><span class="n"><span title="jaxtyping.Array">Array</span></span><span class="p">,</span> <span class="mi">3</span><span class="p">]</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -1915,7 +1915,7 @@ or if all its elements are nan.</p>
 
 
 <a href="#jax_fdm.geometry.vector_projection" class="headerlink" title="Permanent link">¤</a></h4>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">vector_projection</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">vector_projection</span><span class="p">(</span><span class="n">u</span><span class="p">:</span> <span class="n"><span title="jaxtyping.Float">Float</span></span><span class="p">[</span><span class="n"><span title="jaxtyping.Array">Array</span></span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="n">v</span><span class="p">:</span> <span class="n"><span title="jaxtyping.Float">Float</span></span><span class="p">[</span><span class="n"><span title="jaxtyping.Array">Array</span></span><span class="p">,</span> <span class="mi">3</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n"><span title="jaxtyping.Float">Float</span></span><span class="p">[</span><span class="n"><span title="jaxtyping.Array">Array</span></span><span class="p">,</span> <span class="mi">3</span><span class="p">]</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -1935,7 +1935,7 @@ or if all its elements are nan.</p>
 
 
 <a href="#jax_fdm.geometry.cosine_vectors" class="headerlink" title="Permanent link">¤</a></h4>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">cosine_vectors</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">cosine_vectors</span><span class="p">(</span><span class="n">u</span><span class="p">:</span> <span class="n"><span title="jaxtyping.Float">Float</span></span><span class="p">[</span><span class="n"><span title="jaxtyping.Array">Array</span></span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="n">v</span><span class="p">:</span> <span class="n"><span title="jaxtyping.Float">Float</span></span><span class="p">[</span><span class="n"><span title="jaxtyping.Array">Array</span></span><span class="p">,</span> <span class="mi">3</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n"><span title="jaxtyping.Float">Float</span></span><span class="p">[</span><span class="n"><span title="jaxtyping.Array">Array</span></span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">]</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -1955,7 +1955,7 @@ or if all its elements are nan.</p>
 
 
 <a href="#jax_fdm.geometry.angle_vectors" class="headerlink" title="Permanent link">¤</a></h4>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">angle_vectors</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">deg</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">angle_vectors</span><span class="p">(</span><span class="n">u</span><span class="p">:</span> <span class="n"><span title="jaxtyping.Float">Float</span></span><span class="p">[</span><span class="n"><span title="jaxtyping.Array">Array</span></span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="n">v</span><span class="p">:</span> <span class="n"><span title="jaxtyping.Float">Float</span></span><span class="p">[</span><span class="n"><span title="jaxtyping.Array">Array</span></span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="n">deg</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><span title="jaxtyping.Float">Float</span></span><span class="p">[</span><span class="n"><span title="jaxtyping.Array">Array</span></span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">]</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -1978,7 +1978,7 @@ the cosine of two parallel vectors can overshoot 1 by a few ulps.</p>
 
 
 <a href="#jax_fdm.geometry.line_vector" class="headerlink" title="Permanent link">¤</a></h4>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">line_vector</span><span class="p">(</span><span class="n">line</span><span class="p">,</span> <span class="n">normalized</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">line_vector</span><span class="p">(</span><span class="n">line</span><span class="p">:</span> <span class="n"><span title="jaxtyping.Float">Float</span></span><span class="p">[</span><span class="n"><span title="jaxtyping.Array">Array</span></span><span class="p">,</span> <span class="s1">&#39;2 3&#39;</span><span class="p">],</span> <span class="n">normalized</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><span title="jaxtyping.Float">Float</span></span><span class="p">[</span><span class="n"><span title="jaxtyping.Array">Array</span></span><span class="p">,</span> <span class="mi">3</span><span class="p">]</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -2040,7 +2040,7 @@ the cosine of two parallel vectors can overshoot 1 by a few ulps.</p>
 
 
 <a href="#jax_fdm.geometry.distance_point_point_sqrd" class="headerlink" title="Permanent link">¤</a></h4>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">distance_point_point_sqrd</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">distance_point_point_sqrd</span><span class="p">(</span><span class="n">u</span><span class="p">:</span> <span class="n"><span title="jaxtyping.Float">Float</span></span><span class="p">[</span><span class="n"><span title="jaxtyping.Array">Array</span></span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="n">v</span><span class="p">:</span> <span class="n"><span title="jaxtyping.Float">Float</span></span><span class="p">[</span><span class="n"><span title="jaxtyping.Array">Array</span></span><span class="p">,</span> <span class="mi">3</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n"><span title="jaxtyping.Float">Float</span></span><span class="p">[</span><span class="n"><span title="jaxtyping.Array">Array</span></span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">]</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -2060,7 +2060,7 @@ the cosine of two parallel vectors can overshoot 1 by a few ulps.</p>
 
 
 <a href="#jax_fdm.geometry.closest_point_on_line" class="headerlink" title="Permanent link">¤</a></h4>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">closest_point_on_line</span><span class="p">(</span><span class="n">point</span><span class="p">,</span> <span class="n">line</span><span class="p">)</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">closest_point_on_line</span><span class="p">(</span><span class="n">point</span><span class="p">:</span> <span class="n"><span title="jaxtyping.Float">Float</span></span><span class="p">[</span><span class="n"><span title="jaxtyping.Array">Array</span></span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="n">line</span><span class="p">:</span> <span class="n"><span title="jaxtyping.Float">Float</span></span><span class="p">[</span><span class="n"><span title="jaxtyping.Array">Array</span></span><span class="p">,</span> <span class="s1">&#39;2 3&#39;</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n"><span title="jaxtyping.Float">Float</span></span><span class="p">[</span><span class="n"><span title="jaxtyping.Array">Array</span></span><span class="p">,</span> <span class="mi">3</span><span class="p">]</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -2080,7 +2080,7 @@ the cosine of two parallel vectors can overshoot 1 by a few ulps.</p>
 
 
 <a href="#jax_fdm.geometry.closest_point_on_segment" class="headerlink" title="Permanent link">¤</a></h4>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">closest_point_on_segment</span><span class="p">(</span><span class="n">point</span><span class="p">,</span> <span class="n">segment</span><span class="p">)</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">closest_point_on_segment</span><span class="p">(</span><span class="n">point</span><span class="p">:</span> <span class="n"><span title="jaxtyping.Float">Float</span></span><span class="p">[</span><span class="n"><span title="jaxtyping.Array">Array</span></span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="n">segment</span><span class="p">:</span> <span class="n"><span title="jaxtyping.Float">Float</span></span><span class="p">[</span><span class="n"><span title="jaxtyping.Array">Array</span></span><span class="p">,</span> <span class="s1">&#39;2 3&#39;</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n"><span title="jaxtyping.Float">Float</span></span><span class="p">[</span><span class="n"><span title="jaxtyping.Array">Array</span></span><span class="p">,</span> <span class="mi">3</span><span class="p">]</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -2100,7 +2100,7 @@ the cosine of two parallel vectors can overshoot 1 by a few ulps.</p>
 
 
 <a href="#jax_fdm.geometry.closest_point_on_plane" class="headerlink" title="Permanent link">¤</a></h4>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">closest_point_on_plane</span><span class="p">(</span><span class="n">point</span><span class="p">,</span> <span class="n">plane</span><span class="p">)</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">closest_point_on_plane</span><span class="p">(</span><span class="n">point</span><span class="p">:</span> <span class="n"><span title="jaxtyping.Float">Float</span></span><span class="p">[</span><span class="n"><span title="jaxtyping.Array">Array</span></span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="n">plane</span><span class="p">:</span> <span class="n"><span title="jaxtyping.Float">Float</span></span><span class="p">[</span><span class="n"><span title="jaxtyping.Array">Array</span></span><span class="p">,</span> <span class="s1">&#39;2 3&#39;</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n"><span title="jaxtyping.Float">Float</span></span><span class="p">[</span><span class="n"><span title="jaxtyping.Array">Array</span></span><span class="p">,</span> <span class="mi">3</span><span class="p">]</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -2120,7 +2120,7 @@ the cosine of two parallel vectors can overshoot 1 by a few ulps.</p>
 
 
 <a href="#jax_fdm.geometry.colinearity_points" class="headerlink" title="Permanent link">¤</a></h4>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">colinearity_points</span><span class="p">(</span><span class="n">points</span><span class="p">)</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">colinearity_points</span><span class="p">(</span><span class="n">points</span><span class="p">:</span> <span class="n"><span title="jaxtyping.Float">Float</span></span><span class="p">[</span><span class="n"><span title="jaxtyping.Array">Array</span></span><span class="p">,</span> <span class="s1">&#39;points 3&#39;</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n"><span title="jaxtyping.Float">Float</span></span><span class="p">[</span><span class="n"><span title="jaxtyping.Array">Array</span></span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">]</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -2206,7 +2206,7 @@ problem size.</p>
 
 
 <a href="#jax_fdm.geometry.curvature_points" class="headerlink" title="Permanent link">¤</a></h4>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">curvature_points</span><span class="p">(</span><span class="n">points</span><span class="p">)</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">curvature_points</span><span class="p">(</span><span class="n">points</span><span class="p">:</span> <span class="n"><span title="jaxtyping.Float">Float</span></span><span class="p">[</span><span class="n"><span title="jaxtyping.Array">Array</span></span><span class="p">,</span> <span class="s1">&#39;points 3&#39;</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n"><span title="jaxtyping.Float">Float</span></span><span class="p">[</span><span class="n"><span title="jaxtyping.Array">Array</span></span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">]</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -2289,7 +2289,7 @@ not on edge lengths, so it is scale-invariant.</p>
 
 
 <a href="#jax_fdm.geometry.curvature_point_polygon" class="headerlink" title="Permanent link">¤</a></h4>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">curvature_point_polygon</span><span class="p">(</span><span class="n">point</span><span class="p">,</span> <span class="n">polygon</span><span class="p">)</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">curvature_point_polygon</span><span class="p">(</span><span class="n">point</span><span class="p">:</span> <span class="n"><span title="jaxtyping.Float">Float</span></span><span class="p">[</span><span class="n"><span title="jaxtyping.Array">Array</span></span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="n">polygon</span><span class="p">:</span> <span class="n"><span title="jaxtyping.Float">Float</span></span><span class="p">[</span><span class="n"><span title="jaxtyping.Array">Array</span></span><span class="p">,</span> <span class="s1">&#39;points 3&#39;</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n"><span title="jaxtyping.Float">Float</span></span><span class="p">[</span><span class="n"><span title="jaxtyping.Array">Array</span></span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">]</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -2359,7 +2359,7 @@ the outward vectors from the node. Polygon is a numpy array (# points, 3).</p>
 
 
 <a href="#jax_fdm.geometry.area_polygon" class="headerlink" title="Permanent link">¤</a></h4>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">area_polygon</span><span class="p">(</span><span class="n">polygon</span><span class="p">)</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">area_polygon</span><span class="p">(</span><span class="n">polygon</span><span class="p">:</span> <span class="n"><span title="jaxtyping.Float">Float</span></span><span class="p">[</span><span class="n"><span title="jaxtyping.Array">Array</span></span><span class="p">,</span> <span class="s1">&#39;points 3&#39;</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n"><span title="jaxtyping.Float">Float</span></span><span class="p">[</span><span class="n"><span title="jaxtyping.Array">Array</span></span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">]</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -2381,7 +2381,7 @@ defined by at least 3 points.</p>
 
 
 <a href="#jax_fdm.geometry.area_triangle" class="headerlink" title="Permanent link">¤</a></h4>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">area_triangle</span><span class="p">(</span><span class="n">triangle</span><span class="p">)</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">area_triangle</span><span class="p">(</span><span class="n">triangle</span><span class="p">:</span> <span class="n"><span title="jaxtyping.Float">Float</span></span><span class="p">[</span><span class="n"><span title="jaxtyping.Array">Array</span></span><span class="p">,</span> <span class="s1">&#39;3 3&#39;</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n"><span title="jaxtyping.Float">Float</span></span><span class="p">[</span><span class="n"><span title="jaxtyping.Array">Array</span></span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">]</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -2406,7 +2406,7 @@ defined by at least 3 points.</p>
 
 
 <a href="#jax_fdm.geometry.normal_polygon" class="headerlink" title="Permanent link">¤</a></h4>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">normal_polygon</span><span class="p">(</span><span class="n">polygon</span><span class="p">,</span> <span class="n">unitized</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">normal_polygon</span><span class="p">(</span><span class="n">polygon</span><span class="p">:</span> <span class="n"><span title="jaxtyping.Float">Float</span></span><span class="p">[</span><span class="n"><span title="jaxtyping.Array">Array</span></span><span class="p">,</span> <span class="s1">&#39;points 3&#39;</span><span class="p">],</span> <span class="n">unitized</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><span title="jaxtyping.Float">Float</span></span><span class="p">[</span><span class="n"><span title="jaxtyping.Array">Array</span></span><span class="p">,</span> <span class="mi">3</span><span class="p">]</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -2433,7 +2433,7 @@ loses information when cross-multiplying valid entries with nan values.</p>
 
 
 <a href="#jax_fdm.geometry.normal_triangle" class="headerlink" title="Permanent link">¤</a></h4>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">normal_triangle</span><span class="p">(</span><span class="n">triangle</span><span class="p">,</span> <span class="n">unitize</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">normal_triangle</span><span class="p">(</span><span class="n">triangle</span><span class="p">:</span> <span class="n"><span title="jaxtyping.Float">Float</span></span><span class="p">[</span><span class="n"><span title="jaxtyping.Array">Array</span></span><span class="p">,</span> <span class="s1">&#39;3 3&#39;</span><span class="p">],</span> <span class="n">unitize</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><span title="jaxtyping.Float">Float</span></span><span class="p">[</span><span class="n"><span title="jaxtyping.Array">Array</span></span><span class="p">,</span> <span class="mi">3</span><span class="p">]</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -2458,7 +2458,7 @@ loses information when cross-multiplying valid entries with nan values.</p>
 
 
 <a href="#jax_fdm.geometry.angles_polygon" class="headerlink" title="Permanent link">¤</a></h4>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">angles_polygon</span><span class="p">(</span><span class="n">polygon</span><span class="p">,</span> <span class="n">deg</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">angles_polygon</span><span class="p">(</span><span class="n">polygon</span><span class="p">:</span> <span class="n"><span title="jaxtyping.Float">Float</span></span><span class="p">[</span><span class="n"><span title="jaxtyping.Array">Array</span></span><span class="p">,</span> <span class="s1">&#39;points 3&#39;</span><span class="p">],</span> <span class="n">deg</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><span title="jaxtyping.Float">Float</span></span><span class="p">[</span><span class="n"><span title="jaxtyping.Array">Array</span></span><span class="p">,</span> <span class="n"><span title="points">points</span></span><span class="p">]</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -2548,7 +2548,7 @@ loses information when cross-multiplying valid entries with nan values.</p>
 
 
 <a href="#jax_fdm.geometry.cosines_angles_polygon" class="headerlink" title="Permanent link">¤</a></h4>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">cosines_angles_polygon</span><span class="p">(</span><span class="n">polygon</span><span class="p">)</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">cosines_angles_polygon</span><span class="p">(</span><span class="n">polygon</span><span class="p">:</span> <span class="n"><span title="jaxtyping.Float">Float</span></span><span class="p">[</span><span class="n"><span title="jaxtyping.Array">Array</span></span><span class="p">,</span> <span class="s1">&#39;points 3&#39;</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n"><span title="jaxtyping.Float">Float</span></span><span class="p">[</span><span class="n"><span title="jaxtyping.Array">Array</span></span><span class="p">,</span> <span class="n"><span title="points">points</span></span><span class="p">]</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -2622,7 +2622,7 @@ loses information when cross-multiplying valid entries with nan values.</p>
 
 
 <a href="#jax_fdm.geometry.planarity_polygon" class="headerlink" title="Permanent link">¤</a></h4>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">planarity_polygon</span><span class="p">(</span><span class="n">polygon</span><span class="p">)</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">planarity_polygon</span><span class="p">(</span><span class="n">polygon</span><span class="p">:</span> <span class="n"><span title="jaxtyping.Float">Float</span></span><span class="p">[</span><span class="n"><span title="jaxtyping.Array">Array</span></span><span class="p">,</span> <span class="s1">&#39;points 3&#39;</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n"><span title="jaxtyping.Float">Float</span></span><span class="p">[</span><span class="n"><span title="jaxtyping.Array">Array</span></span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">]</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -2648,7 +2648,7 @@ between the polygon's unitized normal vector and its unitized edge vectors.</p>
 
 
 <a href="#jax_fdm.geometry.planarity_triangle" class="headerlink" title="Permanent link">¤</a></h4>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">planarity_triangle</span><span class="p">(</span><span class="n">triangle</span><span class="p">)</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">planarity_triangle</span><span class="p">(</span><span class="n">triangle</span><span class="p">:</span> <span class="n"><span title="jaxtyping.Float">Float</span></span><span class="p">[</span><span class="n"><span title="jaxtyping.Array">Array</span></span><span class="p">,</span> <span class="s1">&#39;3 3&#39;</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n"><span title="jaxtyping.Float">Float</span></span><span class="p">[</span><span class="n"><span title="jaxtyping.Array">Array</span></span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">]</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -2715,7 +2715,7 @@ between the polygon's unitized normal vector and its unitized edge vectors.</p>
 
 
 <a href="#jax_fdm.geometry.line_lcs" class="headerlink" title="Permanent link">¤</a></h4>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">line_lcs</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">line_lcs</span><span class="p">(</span><span class="n">line</span><span class="p">:</span> <span class="n"><span title="jaxtyping.Float">Float</span></span><span class="p">[</span><span class="n"><span title="jaxtyping.Array">Array</span></span><span class="p">,</span> <span class="s1">&#39;2 3&#39;</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n"><span title="jaxtyping.Float">Float</span></span><span class="p">[</span><span class="n"><span title="jaxtyping.Array">Array</span></span><span class="p">,</span> <span class="s1">&#39;3 3&#39;</span><span class="p">]</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -2747,7 +2747,7 @@ The orthonormal basis is constructed using the following convention:</p>
 
 
 <a href="#jax_fdm.geometry.polygon_lcs" class="headerlink" title="Permanent link">¤</a></h4>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">polygon_lcs</span><span class="p">(</span><span class="n">polygon</span><span class="p">)</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">polygon_lcs</span><span class="p">(</span><span class="n">polygon</span><span class="p">:</span> <span class="n"><span title="jaxtyping.Float">Float</span></span><span class="p">[</span><span class="n"><span title="jaxtyping.Array">Array</span></span><span class="p">,</span> <span class="s1">&#39;points 3&#39;</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n"><span title="jaxtyping.Float">Float</span></span><span class="p">[</span><span class="n"><span title="jaxtyping.Array">Array</span></span><span class="p">,</span> <span class="s1">&#39;3 3&#39;</span><span class="p">]</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
