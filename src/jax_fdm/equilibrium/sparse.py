@@ -16,10 +16,22 @@ from scipy.sparse.linalg import splu as splu_scipy
 from scipy.sparse.linalg import spsolve as spsolve_scipy
 
 # ==========================================================================
+# Type aliases for the general linear system A x = b
+# ==========================================================================
+
+# The left-hand side matrix A, right-hand side b (one column per rhs), and
+# solution x. The three axes are the general linear-solver axes: `equations`
+# (rows of A and b), `unknowns` (columns of A and rows of x), and `rhs` (the
+# number of right-hand sides solved at once, e.g. the three xyz coordinates).
+SystemMatrixLHS = Float[CSC, "equations unknowns"]
+SystemMatrixRHS = Float[Array, "equations rhs"]
+SystemSolution = Float[Array, "unknowns rhs"]
+
+# ==========================================================================
 # Sparse linear solver on GPU
 # ==========================================================================
 
-def spsolve_gpu_ravel(A: Float[CSC, "nodes nodes"], b: Float[Array, "nodes 3"]) -> Float[Array, "nodes 3"]:
+def spsolve_gpu_ravel(A: SystemMatrixLHS, b: SystemMatrixRHS) -> SystemSolution:
     """
     A wrapper around cuda sparse linear solver that is GPU friendly.
 
@@ -46,7 +58,7 @@ def spsolve_gpu_ravel(A: Float[CSC, "nodes nodes"], b: Float[Array, "nodes 3"]) 
     return jnp.reshape(X, (3, -1)).T
 
 
-def spsolve_gpu_stack(A: Float[CSC, "nodes nodes"], b: Float[Array, "nodes 3"]) -> Float[Array, "nodes 3"]:
+def spsolve_gpu_stack(A: SystemMatrixLHS, b: SystemMatrixRHS) -> SystemSolution:
     """
     A wrapper around cuda sparse linear solver that is GPU friendly.
 
@@ -82,7 +94,7 @@ spsolve_gpu = spsolve_gpu_ravel
 # Sparse linear solver on CPU
 # ==========================================================================
 
-def spsolve_cpu(A: Float[CSC, "nodes nodes"], b: Float[Array, "nodes 3"]) -> Float[Array, "nodes 3"]:
+def spsolve_cpu(A: SystemMatrixLHS, b: SystemMatrixRHS) -> SystemSolution:
     """
     A wrapper around scipy sparse linear solver that acts as a JAX pure callback.
     """
@@ -103,7 +115,7 @@ def spsolve_cpu(A: Float[CSC, "nodes nodes"], b: Float[Array, "nodes 3"]) -> Flo
 # Register sparse linear solvers
 # ==========================================================================
 
-def register_sparse_solver(solvers: dict) -> Callable:
+def register_sparse_solver(solvers: dict[str, Callable]) -> Callable:
     """
     Register the sparse solver used by the FDM model based on JAX default backend.
     """
@@ -127,7 +139,7 @@ spsolve = register_sparse_solver(solvers)
 # ==========================================================================
 
 @jax.custom_vjp
-def sparse_solve(A: Float[CSC, "nodes nodes"], b: Float[Array, "nodes 3"]) -> Float[Array, "nodes 3"]:
+def sparse_solve(A: SystemMatrixLHS, b: SystemMatrixRHS) -> SystemSolution:
     """
     The sparse linear solver.
     """
@@ -138,7 +150,12 @@ def sparse_solve(A: Float[CSC, "nodes nodes"], b: Float[Array, "nodes 3"]) -> Fl
 # Forward and backward passes
 # ==========================================================================
 
-def sparse_solve_fwd(A: Float[CSC, "nodes nodes"], b: Float[Array, "nodes 3"]) -> tuple[Float[Array, "nodes 3"], tuple]:
+# Auxiliary data saved by the forward pass for the backward pass: the
+# solution, the left-hand side matrix, and the right-hand side, in that order.
+SparseSolveResidual = tuple[SystemSolution, SystemMatrixLHS, SystemMatrixRHS]
+
+
+def sparse_solve_fwd(A: SystemMatrixLHS, b: SystemMatrixRHS) -> tuple[SystemSolution, SparseSolveResidual]:
     """
     Forward pass of the sparse linear solver.
 
@@ -149,7 +166,7 @@ def sparse_solve_fwd(A: Float[CSC, "nodes nodes"], b: Float[Array, "nodes 3"]) -
     return xk, (xk, A, b)
 
 
-def sparse_solve_bwd(res: tuple, g: Float[Array, "nodes 3"]) -> tuple:
+def sparse_solve_bwd(res: SparseSolveResidual, g: SystemMatrixRHS) -> tuple[SystemMatrixLHS, SystemMatrixRHS]:
     """
     Backward pass of the sparse linear solver.
     """
@@ -177,7 +194,7 @@ def sparse_solve_bwd(res: tuple, g: Float[Array, "nodes 3"]) -> tuple:
 # Sparse matrix helpers
 # ==========================================================================
 
-def blockdiag_matrix_sparse(A: Float[CSC, "nodes nodes"], num: int = 2, format: type = CSC) -> Float[CSC, "rows cols"]:
+def blockdiag_matrix_sparse(A: SystemMatrixLHS, num: int = 2, format: type[CSC] = CSC) -> Float[CSC, "equations_blocks unknowns_blocks"]:
     """
     Build a block diagonal sparse matrix in the input format by repeating
     a square sparse matrix a prescribed number of times.
@@ -237,7 +254,7 @@ def splu_clear() -> None:
     _SPLU_CACHE['factorization'] = None
 
 
-def splu_cpu(A: Float[CSC, "nodes nodes"], session_id: int | None = None) -> Int[Array, ""]:
+def splu_cpu(A: SystemMatrixLHS, session_id: int | None = None) -> Int[Array, ""]:
     """
     A wrapper around scipy sparse LU factorization that acts as a JAX pure callback.
 
@@ -295,7 +312,7 @@ def splu_cpu(A: Float[CSC, "nodes nodes"], session_id: int | None = None) -> Int
     return sid
 
 
-def splu_solve_cpu(session_id: Int[Array, ""], b: Float[Array, "nodes 3"]) -> Float[Array, "nodes 3"]:
+def splu_solve_cpu(session_id: Int[Array, ""], b: SystemMatrixRHS) -> SystemSolution:
     """
     A wrapper around scipy sparse LU solve that acts as a JAX pure callback.
 

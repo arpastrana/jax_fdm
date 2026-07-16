@@ -24,6 +24,13 @@ from jax_fdm.equilibrium.structures import EquilibriumStructure
 from jax_fdm.equilibrium.structures import EquilibriumStructureSparse
 
 # ==========================================================================
+# Type aliases
+# ==========================================================================
+
+# The stiffness matrix K, dense on the base model and CSC on the sparse model.
+StiffnessMatrix = Float[Array, "nodes_free nodes_free"] | Float[CSC, "nodes_free nodes_free"]
+
+# ==========================================================================
 # Equilibrium model
 # ==========================================================================
 
@@ -497,7 +504,7 @@ class EquilibriumModel:
 
     def load_xyz_matrix_from_r_fixed(
         self,
-        params: tuple[Array, Float[Array, "nodes_free 3"], Float[Array, "nodes_fixed 3"], LoadState],
+        params: tuple[StiffnessMatrix, Float[Array, "nodes_free 3"], Float[Array, "nodes_fixed 3"], LoadState],
         xyz_free: Float[Array, "nodes_free 3"],
         structure: EquilibriumStructure,
     ) -> Float[Array, "nodes_free 3"]:

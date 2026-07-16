@@ -1,4 +1,5 @@
 from collections.abc import Callable
+from typing import TYPE_CHECKING
 
 import numpy as np
 
@@ -16,6 +17,18 @@ from jax_fdm.equilibrium import EquilibriumStructureSparse
 from jax_fdm.losses import Loss
 from jax_fdm.optimization import Optimizer
 from jax_fdm.parameters import Parameter
+
+if TYPE_CHECKING:
+    from jax_fdm.constraints import Constraint
+
+# ==========================================================================
+# Type aliases
+# ==========================================================================
+
+# Per-element equilibrium state columns, as returned by Array.tolist(): a
+# scalar value per element (e.g. force densities) or an xyz triple per element.
+ElementScalars = list[float]
+ElementVectors = list[list[float]]
 
 # ==========================================================================
 # Form-finding
@@ -76,7 +89,7 @@ def constrained_fdm(datastructure: FDNetwork | FDMesh,
                     optimizer: Optimizer,
                     loss: Loss,
                     parameters: list[Parameter] | None = None,
-                    constraints: list | None = None,
+                    constraints: list["Constraint"] | None = None,
                     maxiter: int = 100,
                     tol: float = 1e-6,
                     tmax: int = 1,
@@ -263,7 +276,7 @@ def datastructure_update(
 
 def datastructure_edges_update(
     datastructure: FDNetwork | FDMesh,
-    eqstate_edges: tuple[list, list, list],
+    eqstate_edges: tuple[ElementVectors, ElementVectors, ElementScalars],
 ) -> None:
     """
     Update the edge attributes of a datastructure.
@@ -278,7 +291,7 @@ def datastructure_edges_update(
 
 def datastructure_nodes_update(
     datastructure: FDNetwork | FDMesh,
-    eqstate_nodes: tuple[list, list, list],
+    eqstate_nodes: tuple[ElementVectors, ElementVectors, ElementVectors],
 ) -> None:
     """
     Update the nodes or vertex attributes of a datastructure.

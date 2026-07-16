@@ -1,4 +1,3 @@
-import jax
 import jax.numpy as jnp
 import numpy as np
 from jax.experimental.sparse import BCOO
@@ -26,10 +25,10 @@ class EquilibriumStructure(Graph):
     """
     A structure.
     """
-    supports: np.ndarray
+    supports: Int[np.ndarray, "nodes"]
 
-    connectivity_free: jax.Array
-    connectivity_fixed: jax.Array
+    connectivity_free: Float[Array, "edges nodes_free"]
+    connectivity_fixed: Float[Array, "edges nodes_fixed"]
 
     indices_free: Int[Array, "nodes_free"]
     indices_fixed: Int[Array, "nodes_fixed"]
@@ -96,14 +95,14 @@ class EquilibriumStructure(Graph):
         return {int(key): index for index, key in enumerate(self.nodes_fixed)}
 
     @property
-    def nodes_free(self) -> np.ndarray:
+    def nodes_free(self) -> Int[np.ndarray, "nodes_free"]:
         """
         The free nodes.
         """
         return self.nodes[self.indices_free]
 
     @property
-    def nodes_fixed(self) -> np.ndarray:
+    def nodes_fixed(self) -> Int[np.ndarray, "nodes_fixed"]:
         """
         The fixed nodes.
         """
@@ -335,14 +334,14 @@ class EquilibriumMeshStructure(EquilibriumStructure, Mesh):
         return {int(key): index for index, key in enumerate(self.vertices_fixed)}
 
     @property
-    def vertices_free(self) -> np.ndarray:
+    def vertices_free(self) -> Int[np.ndarray, "vertices_free"]:
         """
         The free vertices.
         """
         return self.vertices[self.indices_free]
 
     @property
-    def vertices_fixed(self) -> np.ndarray:
+    def vertices_fixed(self) -> Int[np.ndarray, "vertices_fixed"]:
         """
         The fixed vertices.
         """

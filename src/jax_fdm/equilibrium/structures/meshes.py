@@ -1,4 +1,3 @@
-import jax
 import jax.numpy as jnp
 import numpy as np
 from jax.experimental.sparse import BCOO
@@ -25,12 +24,12 @@ class Mesh(Graph):
     """
     # The faces array can have rows of different lengths. How to handle it?
     # Using a tuple instead of an array?
-    vertices: np.ndarray
-    faces: np.ndarray
-    faces_indexed: jax.Array
-    connectivity_faces_vertices: jax.Array
-    connectivity_edges_faces: jax.Array
-    face_keys: np.ndarray
+    vertices: Int[np.ndarray, "vertices"]
+    faces: Int[np.ndarray, "faces vertices"]
+    faces_indexed: Int[Array, "faces vertices"]
+    connectivity_faces_vertices: Float[Array, "faces vertices"]
+    connectivity_edges_faces: Float[Array, "edges faces"]
+    face_keys: Int[np.ndarray, "faces"]
 
     def __init__(
         self,
@@ -260,7 +259,7 @@ def mesh_edges_faces(mesh: CompasMesh) -> list[tuple[int, ...]]:
     return edges_faces
 
 
-def mesh_connectivity_edges_faces(mesh: CompasMesh) -> np.ndarray:
+def mesh_connectivity_edges_faces(mesh: CompasMesh) -> Float[np.ndarray, "edges faces"]:
     """
     The connectivity matrix between edges and faces of a mesh.
     """
@@ -281,7 +280,7 @@ def face_matrix(
     face_vertices: Int[Array, "faces vertices"],
     rtype: str = "array",
     normalize: bool = True,
-) -> np.ndarray | list | spmatrix:
+) -> Float[np.ndarray, "faces vertices"] | list | spmatrix:
     """
     Creates a face-vertex adjacency matrix that skips -1 vertex entries.
 

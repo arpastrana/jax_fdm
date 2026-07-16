@@ -2,6 +2,7 @@ import jax.numpy as jnp
 from jax import vmap
 from jaxtyping import Array
 from jaxtyping import Float
+from jaxtyping import Int
 
 from jax_fdm.equilibrium.structures import EquilibriumMeshStructure
 from jax_fdm.equilibrium.structures import EquilibriumStructure
@@ -35,7 +36,7 @@ def nodes_load_from_faces(
 
 def calculate_faces_load(
     xyz: Float[Array, "nodes 3"],
-    faces: Float[Array, "faces vertices"],
+    faces: Int[Array, "faces vertices"],
     faces_load: Float[Array, "faces 3"],
     is_local: bool,
 ) -> Float[Array, "faces 3"]:
@@ -51,7 +52,7 @@ def calculate_faces_load(
     return loads
 
 
-def face_xyz(xyz: Float[Array, "nodes 3"], face: Float[Array, "vertices"]) -> Float[Array, "vertices 3"]:
+def face_xyz(xyz: Float[Array, "nodes 3"], face: Int[Array, "vertices"]) -> Float[Array, "vertices 3"]:
     """
     Get this face XYZ coordinates from XYZ vertices array.
     """
@@ -70,7 +71,7 @@ def face_xyz(xyz: Float[Array, "nodes 3"], face: Float[Array, "vertices"]) -> Fl
 
 def face_load_lcs(
     xyz: Float[Array, "nodes 3"],
-    face: Float[Array, "vertices"],
+    face: Int[Array, "vertices"],
     face_load: Float[Array, "3"],
 ) -> Float[Array, "3"]:
     """
@@ -163,7 +164,7 @@ def nodes_load_from_edges(
 
 def calculate_edges_load(
     xyz: Float[Array, "nodes 3"],
-    edges: Float[Array, "edges 2"],
+    edges: Int[Array, "edges 2"],
     edges_load: Float[Array, "edges 3"],
     is_local: bool,
 ) -> Float[Array, "edges 3"]:
@@ -180,7 +181,7 @@ def calculate_edges_load(
 
 def edge_load_lcs(
     xyz: Float[Array, "nodes 3"],
-    edge: Float[Array, "2"],
+    edge: Int[Array, "2"],
     edge_load: Float[Array, "3"],
 ) -> Float[Array, "3"]:
     """

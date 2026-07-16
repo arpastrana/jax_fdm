@@ -1,5 +1,4 @@
 import equinox as eqx
-import jax
 import jax.numpy as jnp
 import numpy as np
 from jax.experimental.sparse import BCOO
@@ -22,11 +21,11 @@ class Graph(eqx.Module):
     """
     A graph.
     """
-    nodes: np.ndarray
-    edges: np.ndarray
-    edges_indexed: jax.Array
-    connectivity: jax.Array
-    adjacency: jax.Array
+    nodes: Int[np.ndarray, "nodes"]
+    edges: Int[np.ndarray, "edges 2"]
+    edges_indexed: Int[Array, "edges 2"]
+    connectivity: Float[Array, "edges nodes"]
+    adjacency: Float[Array, "nodes nodes"]
 
     def __init__(self, nodes: Int[np.ndarray, "nodes"], edges: Int[np.ndarray, "edges 2"]):
         self.nodes = nodes
@@ -167,7 +166,7 @@ class GraphSparse(Graph):
 # Helper functions
 # ==========================================================================
 
-def connectivity_matrix(edges: Int[Array, "edges 2"], rtype: str = "array") -> np.ndarray | list | spmatrix:
+def connectivity_matrix(edges: Int[Array, "edges 2"], rtype: str = "array") -> Float[np.ndarray, "edges nodes"] | list | spmatrix:
     """
     Creates a connectivity matrix from a list of vertex index pairs.
 
@@ -184,7 +183,7 @@ def connectivity_matrix(edges: Int[Array, "edges 2"], rtype: str = "array") -> n
     return build_matrix(C, rtype)
 
 
-def adjacency_matrix(edges: Int[Array, "edges 2"], rtype: str = "array") -> np.ndarray | list | spmatrix:
+def adjacency_matrix(edges: Int[Array, "edges 2"], rtype: str = "array") -> Float[np.ndarray, "nodes nodes"] | list | spmatrix:
     """
     Creates a vertex-vertex adjacency matrix.
 
