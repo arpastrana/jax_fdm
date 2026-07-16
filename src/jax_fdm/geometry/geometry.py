@@ -13,6 +13,18 @@ WORLD_XYZ = jnp.eye(3)
 def cosine_vectors(u: Float[Array, "3"], v: Float[Array, "3"]) -> Float[Array, ""]:
     """
     Compute the signed cosine of the angle between two vectors.
+
+    Parameters
+    ----------
+    u :
+        The first vector.
+    v :
+        The second vector.
+
+    Returns
+    -------
+    cosine :
+        The cosine of the angle, in the range [-1, 1].
     """
     return normalize_vector(u) @ normalize_vector(v)
 
@@ -23,8 +35,24 @@ def angle_vectors(
     deg: bool = False,
 ) -> Float[Array, ""]:
     """
-    Compute the smallest angle in degrees between two vectors.
+    Compute the smallest angle between two vectors.
 
+    Parameters
+    ----------
+    u :
+        The first vector.
+    v :
+        The second vector.
+    deg :
+        If True, return the angle in degrees instead of radians.
+
+    Returns
+    -------
+    angle :
+        The smallest angle between the vectors.
+
+    Notes
+    -----
     The cosine is clipped to [-1, 1] before the arccosine, whose value and
     gradient are singular when the vectors are parallel: in floating point
     the cosine of two parallel vectors can overshoot 1 by a few ulps.
@@ -41,6 +69,16 @@ def angle_vectors(
 def length_vector(u: Float[Array, "3"]) -> Float[Array, "1"]:
     """
     Calculate the length of a vector.
+
+    Parameters
+    ----------
+    u :
+        The vector.
+
+    Returns
+    -------
+    length :
+        The Euclidean length of the vector.
     """
     length = jnp.linalg.norm(u, axis=-1, keepdims=True)
 
@@ -50,6 +88,16 @@ def length_vector(u: Float[Array, "3"]) -> Float[Array, "1"]:
 def length_vector_sqrd(u: Float[Array, "3"]) -> Float[Array, "1"]:
     """
     Calculate the squared length of a vector.
+
+    Parameters
+    ----------
+    u :
+        The vector.
+
+    Returns
+    -------
+    length :
+        The squared Euclidean length of the vector.
     """
     return jnp.sum(u * u, axis=-1, keepdims=True)
 
@@ -57,6 +105,18 @@ def length_vector_sqrd(u: Float[Array, "3"]) -> Float[Array, "1"]:
 def normalize_vector(u: Float[Array, "3"], safe_nan: bool = True) -> Float[Array, "3"]:
     """
     Scale a vector such that it has a unit length.
+
+    Parameters
+    ----------
+    u :
+        The vector to normalize.
+    safe_nan :
+        If True, replace nan entries by zeroes before normalizing.
+
+    Returns
+    -------
+    vector :
+        The unit-length vector.
 
     Notes
     -----
@@ -78,6 +138,21 @@ def normalize_vector(u: Float[Array, "3"], safe_nan: bool = True) -> Float[Array
 def vector_unitized(u: Float[Array, "3"]) -> Float[Array, "3"]:
     """
     Scale a vector such that it has a unit length.
+
+    Parameters
+    ----------
+    u :
+        The vector to normalize.
+
+    Returns
+    -------
+    vector :
+        The unit-length vector.
+
+    Notes
+    -----
+    Unlike normalize_vector, this helper does not guard against zero-length or
+    nan input, so it divides by the raw vector length.
     """
     return u / length_vector(u)
 
@@ -85,6 +160,18 @@ def vector_unitized(u: Float[Array, "3"]) -> Float[Array, "3"]:
 def subtract_vectors(u: Float[Array, "3"], v: Float[Array, "3"]) -> Float[Array, "3"]:
     """
     Subtract two vectors.
+
+    Parameters
+    ----------
+    u :
+        The vector to subtract from.
+    v :
+        The vector to subtract.
+
+    Returns
+    -------
+    vector :
+        The difference u - v.
     """
     return u - v
 
@@ -95,6 +182,18 @@ def line_vector(
 ) -> Float[Array, "3"]:
     """
     Calculate the (normalized) vector formed by the difference of the line end points.
+
+    Parameters
+    ----------
+    line :
+        The line, as its two end points.
+    normalized :
+        If True, scale the vector to unit length.
+
+    Returns
+    -------
+    vector :
+        The vector from the first end point to the second.
     """
     vector = subtract_vectors(line[1], line[0])
     if normalized:
@@ -106,6 +205,18 @@ def line_vector(
 def vector_projection(u: Float[Array, "3"], v: Float[Array, "3"]) -> Float[Array, "3"]:
     """
     Calculates the orthogonal projection of u onto v.
+
+    Parameters
+    ----------
+    u :
+        The vector to project.
+    v :
+        The vector to project onto.
+
+    Returns
+    -------
+    projection :
+        The component of u parallel to v.
     """
     l2 = jnp.sum(v**2)
     x = (u @ jnp.transpose(v)) / l2
@@ -119,6 +230,18 @@ def closest_point_on_plane(
 ) -> Float[Array, "3"]:
     """
     Computes the closest location on a plane to a supplied point.
+
+    Parameters
+    ----------
+    point :
+        The query point.
+    plane :
+        The plane, as its origin and normal.
+
+    Returns
+    -------
+    point :
+        The orthogonal projection of the query point onto the plane.
     """
     origin, normal = plane
     normal = normalize_vector(normal)
@@ -135,6 +258,18 @@ def closest_point_on_line(
 ) -> Float[Array, "3"]:
     """
     Computes the closest location on a line to a supplied point.
+
+    Parameters
+    ----------
+    point :
+        The query point.
+    line :
+        The line, as its two end points.
+
+    Returns
+    -------
+    point :
+        The orthogonal projection of the query point onto the infinite line.
     """
     a, b = line
     ab = b - a
@@ -150,6 +285,18 @@ def closest_point_on_segment(
 ) -> Float[Array, "3"]:
     """
     Calculate the closest location on a segment to an input point.
+
+    Parameters
+    ----------
+    point :
+        The query point.
+    segment :
+        The segment, as its two end points.
+
+    Returns
+    -------
+    point :
+        The closest location on the segment, clamped to its end points.
     """
     a, b = segment
     p = closest_point_on_line(point, segment)
@@ -182,6 +329,18 @@ def distance_point_point_sqrd(
 ) -> Float[Array, ""]:
     """
     Calculate the square of the distance between two points.
+
+    Parameters
+    ----------
+    u :
+        The first point.
+    v :
+        The second point.
+
+    Returns
+    -------
+    distance :
+        The squared Euclidean distance between the points.
     """
     vector = subtract_vectors(u, v)
 
@@ -193,11 +352,24 @@ def normal_polygon_2(
     unitized: bool = False,
 ) -> Float[Array, "3"]:
     """
-    Computes the unit-length normal of a polygon.
+    Computes the normal of a polygon about its centroid.
+
+    Parameters
+    ----------
+    polygon :
+        The polygon, as a sequence of at least three points.
+    unitized :
+        If True, scale the normal to unit length. Off by default.
+
+    Returns
+    -------
+    normal :
+        The polygon normal, summed over the triangles fanning from the centroid.
 
     Notes
     -----
-    A polygon that is defined as a sequence of at least three points.
+    The polygon points are referenced to their centroid before the cross
+    products, so the normal is unaffected by a rigid translation of the input.
     """
     centroid = jnp.mean(polygon, axis=0)
     op = polygon - centroid
@@ -217,11 +389,22 @@ def normal_polygon(
     """
     Computes the normal of a closed polygon.
 
+    Parameters
+    ----------
+    polygon :
+        The polygon, as a sequence of at least three unique points.
+    unitized :
+        If True, scale the normal to unit length.
+
+    Returns
+    -------
+    normal :
+        The polygon normal.
+
     Notes
     -----
-    A polygon that is defined as a sequence of unique points and must be
-    defined by at least 3 points. This function is not nan safe, because it
-    loses information when cross-multiplying valid entries with nan values.
+    This function is not nan safe, because it loses information when
+    cross-multiplying valid entries with nan values.
     """
     assert len(polygon) >= 3, "A polygon must be defined by at least 3 points"
 
@@ -239,8 +422,15 @@ def area_polygon(polygon: Float[Array, "points 3"]) -> Float[Array, ""]:
     """
     Computes the area of a polygon.
 
-    A polygon that is defined as a sequence of unique points and must be
-    defined by at least 3 points.
+    Parameters
+    ----------
+    polygon :
+        The polygon, as a sequence of at least three unique points.
+
+    Returns
+    -------
+    area :
+        The area of the polygon.
     """
     return jnp.squeeze(length_vector(normal_polygon(polygon, unitized=False)))
 
@@ -252,9 +442,17 @@ def normal_triangle(
     """
     Computes the normal vector of a triangle.
 
-    Notes
-    -----
-    A triangle is defined as a set of exactly three points.
+    Parameters
+    ----------
+    triangle :
+        The triangle, as exactly three points.
+    unitize :
+        If True, scale the normal to unit length.
+
+    Returns
+    -------
+    normal :
+        The triangle normal.
     """
     assert len(triangle) == 3, "A triangle is defined by exactly 3 points"
 
@@ -271,9 +469,15 @@ def area_triangle(triangle: Float[Array, "3 3"]) -> Float[Array, ""]:
     """
     Calculate the area of a triangle.
 
-    Notes
-    -----
-    A triangle is defined as a set of exactly three points.
+    Parameters
+    ----------
+    triangle :
+        The triangle, as exactly three points.
+
+    Returns
+    -------
+    area :
+        The area of the triangle.
     """
     return 0.5 * jnp.squeeze(length_vector(normal_triangle(triangle)))
 
@@ -281,6 +485,16 @@ def area_triangle(triangle: Float[Array, "3 3"]) -> Float[Array, ""]:
 def planarity_polygon(polygon: Float[Array, "points 3"]) -> Float[Array, ""]:
     """
     Calculate the planarity of a polygon.
+
+    Parameters
+    ----------
+    polygon :
+        The polygon, as a sequence of at least three points.
+
+    Returns
+    -------
+    planarity :
+        The planarity energy, zero when the polygon is planar.
 
     Notes
     -----
@@ -307,9 +521,15 @@ def planarity_triangle(triangle: Float[Array, "3 3"]) -> Float[Array, ""]:
     """
     Calculate the planarity of a triangle.
 
-    Notes
-    -----
-    The planarity of a triangle is 0.0 by construction.
+    Parameters
+    ----------
+    triangle :
+        The triangle, as exactly three points.
+
+    Returns
+    -------
+    planarity :
+        The planarity energy, always zero for a triangle.
     """
     return jnp.asarray(0.0)
 
@@ -320,14 +540,27 @@ def curvature_point_polygon(
 ) -> Float[Array, ""]:
     """
     Compute the discrete curvature at a point based on a polygon surrounding it.
+
     The discrete curvature of a node equals 2 * pi - sum(alphas).
 
     TODO: divide return value by tributary area of point.
 
+    Parameters
+    ----------
+    point :
+        The central point at which the curvature is evaluated.
+    polygon :
+        The ring of points surrounding the central point.
+
+    Returns
+    -------
+    curvature :
+        The discrete curvature at the central point.
+
     Notes
     -----
     Alphas is the list of angles between each pair of successive edges as
-    the outward vectors from the node. Polygon is a numpy array (# points, 3).
+    the outward vectors from the node.
     """
     op = polygon - point
     norm_op = jnp.reshape(jnp.linalg.norm(op, axis=1), (-1, 1))
@@ -343,6 +576,16 @@ def curvature_point_polygon(
 def line_lcs(line: Float[Array, "2 3"]) -> Float[Array, "3 3"]:
     """
     Returns the local coordinate system (LCS) of a line.
+
+    Parameters
+    ----------
+    line :
+        The line, as its two end points.
+
+    Returns
+    -------
+    lcs :
+        The orthonormal basis, as its stacked U, V, and W axes.
 
     Notes
     -----
@@ -372,15 +615,26 @@ def polygon_lcs(polygon: Float[Array, "points 3"]) -> Float[Array, "3 3"]:
     """
     Returns the local coordinate system (LCS) of a polygon.
 
+    Parameters
+    ----------
+    polygon :
+        The polygon, as a sequence of at least three points.
+
+    Returns
+    -------
+    lcs :
+        The orthonormal basis, as its stacked U, V, and W axes.
+
     Notes
     -----
     The LCS is a 3D orthonormal basis formed by unit vectors U, V, and W.
     The orthonormal basis is constructed using the following convention:
 
-    - The W axis is the polygon normal.
-    - The U axis is the unit vector of the coordinate difference of the line end points.
-    - The V axis is the cross product of U and the global Z axis. If the V axis is
-        parallel to Z, then V becomes the cross product of U and the global Y axis.
+    - The W axis is the unitized polygon normal.
+    - The V axis is the cross product of W and the global X axis. If W is
+      parallel to X, then V becomes the cross product of W and the global Y axis.
+    - The U axis is the cross product of W and V, sign-aligned so it points
+      away from the reference axis used for V.
     """
     w = normal_polygon(polygon, True)
 
@@ -402,18 +656,18 @@ def colinearity_points(points: Float[Array, "points 3"]) -> Float[Array, ""]:
 
     Parameters
     ----------
-    points : jnp.ndarray
-        (n, d) ordered points in 2D or 3D.
+    points :
+        The ordered sequence of points.
 
     Returns
     -------
-    colinearity : jnp.ndarray
-        The colinearity energy.
+    colinearity :
+        The colinearity energy, zero when the points are colinear.
 
     Notes
     -----
     Colinearity is defined as length-normalized fairness energy:
-        E = sum_i ||e_i - e_{i-1}||^2 / 0.5 * (||e_{i-1}||^2 + ||e_i||^2)
+        E = sum_i ||e_i - e_{i-1}||^2 / (0.5 * (||e_{i-1}||^2 + ||e_i||^2))
     where e_i = points[i+1] - points[i].
 
     The normalization makes this energy less sensitive to local point spacing
@@ -441,13 +695,13 @@ def curvature_points(points: Float[Array, "points 3"]) -> Float[Array, ""]:
 
     Parameters
     ----------
-    points : jnp.ndarray
-        (n, d) ordered points in 2D or 3D.
+    points :
+        The ordered sequence of points.
 
     Returns
     -------
-    energy : jnp.ndarray
-        The turning energy.
+    energy :
+        The turning energy, zero when the points are colinear.
 
     Notes
     -----
@@ -471,10 +725,16 @@ def _unit_edge_vectors_polygon(
     """
     Return unit vectors from each vertex to its prev and next neighbors.
 
+    Parameters
+    ----------
+    polygon :
+        The polygon, as a sequence of at least three points.
+
     Returns
     -------
-    unit_to_prev, unit_to_next : tuple of jnp.ndarray
-        Each (n, d); vectors from vertex i toward i-1 and i+1.
+    unit_to_prev, unit_to_next :
+        The unit vectors from each vertex toward its previous and next
+        neighbor, one pair per vertex.
     """
     polygon_prev = jnp.roll(polygon, shift=1, axis=0)
     polygon_next = jnp.roll(polygon, shift=-1, axis=0)
@@ -497,14 +757,15 @@ def angles_polygon(
 
     Parameters
     ----------
-    polygon : jnp.ndarray
-        (n, d) array of polygon coordinates, d=2 or 3
-    deg : bool, optional
-        If True, return the angles in degrees. Default is False.
+    polygon :
+        The polygon, as a sequence of at least three points.
+    deg :
+        If True, return the angles in degrees instead of radians.
+
     Returns
     -------
-    angles : jnp.ndarray
-        (n,) array of internal angles of the polygon in radians.
+    angles :
+        The internal angle at each polygon vertex.
     """
     unit_to_prev, unit_to_next = _unit_edge_vectors_polygon(polygon)
 
@@ -517,12 +778,13 @@ def cosines_angles_polygon(polygon: Float[Array, "points 3"]) -> Float[Array, "p
 
     Parameters
     ----------
-    polygon : jnp.ndarray
-        (n, d) array of polygon coordinates, d=2 or 3
+    polygon :
+        The polygon, as a sequence of at least three points.
+
     Returns
     -------
-    cosines : jnp.ndarray
-        (n,) array of internal cosine angles of the polygon.
+    cosines :
+        The cosine of the internal angle at each polygon vertex.
     """
     unit_to_prev, unit_to_next = _unit_edge_vectors_polygon(polygon)
 
