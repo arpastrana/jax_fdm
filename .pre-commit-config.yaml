@@ -25,7 +25,11 @@ repos:
         exclude: ^data/
       - id: end-of-file-fixer
         exclude: ^data/
+      # --unsafe checks YAML syntax without constructing custom tags; mkdocs.yml
+      # uses !!python/name:... tags (pymdownx fences) that the default loader
+      # cannot build.
       - id: check-yaml
+        args: [--unsafe]
       - id: check-toml
       - id: check-merge-conflict
 
