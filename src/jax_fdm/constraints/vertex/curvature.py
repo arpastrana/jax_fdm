@@ -10,9 +10,8 @@ class VertexCurvatureConstraint(VertexConstraint, NodeCurvatureConstraint):
 
     Notes
     -----
-    A thin vertex counterpart of :class:`NodeCurvatureConstraint`: the
-    constraint logic is inherited unchanged, while the constrained keys and
-    their neighborhood polygon keys resolve against the vertices of a mesh.
+    Both the constrained keys and their neighborhood polygon keys resolve
+    against the vertices of a mesh.
     """
 
     def key_index(self, structure: EquilibriumStructure) -> dict[int, int]:

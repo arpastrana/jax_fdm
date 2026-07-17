@@ -52,6 +52,12 @@ upper limit during constrained form-finding with
 
 ## Vertex constraints
 
+Vertex constraints are thin counterparts of the node constraints above: the
+constraint logic is inherited unchanged, while keys resolve against the
+vertices of a mesh instead of the nodes of a network. Applying one to a
+network raises a `TypeError` pointing to the `Node*` counterpart, and vice
+versa.
+
 ::: jax_fdm.constraints.vertex.coordinates.VertexXCoordinateConstraint
     options:
       heading_level: 3

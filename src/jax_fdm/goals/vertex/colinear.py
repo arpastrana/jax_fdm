@@ -10,10 +10,8 @@ class VerticesColinearGoal(VertexGoal, NodesColinearGoal):
 
     Notes
     -----
-    A thin vertex counterpart of :class:`NodesColinearGoal`: the goal logic is
-    inherited unchanged, while keys resolve against the vertices of a mesh.
-    Like its node counterpart, this goal applies to a *collection* of ordered
-    vertices and is therefore not collectible.
+    This goal applies to a *collection* of ordered vertices and is therefore
+    not collectible.
     """
 
 
@@ -24,8 +22,6 @@ class VerticesCurvatureGoal(VertexGoal, NodesCurvatureGoal):
 
     Notes
     -----
-    A thin vertex counterpart of :class:`NodesCurvatureGoal`: the goal logic is
-    inherited unchanged, while keys resolve against the vertices of a mesh.
-    Like its node counterpart, this goal applies to a *collection* of ordered
-    vertices and is therefore not collectible.
+    This goal applies to a *collection* of ordered vertices and is therefore
+    not collectible.
     """
