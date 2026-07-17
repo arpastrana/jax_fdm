@@ -302,5 +302,11 @@ class VectorGoal:
         return self._target
 
     @target.setter
-    def target(self, target: Float[Array, "..."]) -> None:
+    def target(self, target: float | Float[Array, "..."]) -> None:
+        if isinstance(target, (int, float)):
+            raise TypeError(
+                f"{type(self).__name__} is a vector goal, so its target must be "
+                "an xyz vector (or one per element), not a single number. "
+                "Did you mean the scalar variant of this goal?",
+            )
         self._target = jnp.reshape(jnp.asarray(target, dtype=DTYPE_JAX), (-1, 3))
