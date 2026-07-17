@@ -26,7 +26,7 @@ class Parameter:
     Notes
     -----
     Concrete subclasses set ``attr_name`` to the datastructure attribute they
-    parametrize and implement :meth:`index` and :meth:`value` for their element type.
+    parametrize and implement `index` and `value` for their element type.
     Missing bounds normalize to negative or positive infinity rather than None.
     """
 

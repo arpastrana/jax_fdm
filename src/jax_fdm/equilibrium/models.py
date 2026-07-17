@@ -916,7 +916,7 @@ class EquilibriumModel:
         Notes
         -----
         This is the iteration hot path: the fixed-node residual is passed in rather
-        than recomputed each step, unlike :meth:`load_xyz_matrix`.
+        than recomputed each step, unlike `load_xyz_matrix`.
         """
         _, R_fixed, xyz_fixed, load_state = params
 
@@ -1014,9 +1014,9 @@ class EquilibriumModelSparse(EquilibriumModel):
 
     Notes
     -----
-    Identical to :class:`EquilibriumModel` except the stiffness matrix is assembled
-    in sparse format and the linear system is solved with a sparse solver, which
-    scales to larger structures.
+    Identical to [EquilibriumModel][jax_fdm.equilibrium.models.EquilibriumModel]
+    except the stiffness matrix is assembled in sparse format and the linear
+    system is solved with a sparse solver, which scales to larger structures.
     """
 
     def __init__(self, *args, **kwargs):

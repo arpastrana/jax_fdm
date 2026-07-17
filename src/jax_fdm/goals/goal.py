@@ -34,10 +34,10 @@ class Goal:
     Notes
     -----
     A goal is initialized in two phases: construction stores the key, target, and
-    weight, then :meth:`init` resolves the key to an index against an equilibrium
+    weight, then `init` resolves the key to an index against an equilibrium
     structure before any prediction runs. Subclasses supply the quantity of
-    interest via :meth:`prediction` and mix in :class:`ScalarGoal` or
-    :class:`VectorGoal` for the target's shape.
+    interest via `prediction` and mix in [ScalarGoal][jax_fdm.goals.goal.ScalarGoal]
+    or [VectorGoal][jax_fdm.goals.goal.VectorGoal] for the target's shape.
     """
 
     def __init__(
@@ -213,7 +213,7 @@ class Goal:
         Notes
         -----
         Must be called once before the goal is evaluated; it populates the index
-        that :meth:`prediction` reads.
+        that `prediction` reads.
         """
         self.index = self.index_from_structure(structure)
 

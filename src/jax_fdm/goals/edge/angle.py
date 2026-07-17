@@ -62,7 +62,7 @@ class EdgeAngleGoal(ScalarGoal, EdgeGoal):
         Notes
         -----
         Rebuilds the reference vectors indexed by structure position so that
-        :meth:`prediction` can gather them with the same index as the edges.
+        `prediction` can gather them with the same index as the edges.
         """
         matrix = np.zeros((max(self.index) + 1, 3))
         for vec, idx in zip(self.vector, self.index):

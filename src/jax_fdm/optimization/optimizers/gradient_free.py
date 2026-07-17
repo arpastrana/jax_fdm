@@ -36,7 +36,7 @@ class GradientFreeOptimizer(Optimizer):
 
     Notes
     -----
-    Overrides :meth:`problem` to build an objective without a gradient or hessian,
+    Overrides `problem` to build an objective without a gradient or hessian,
     so the loss is only jitted for its value. Constraints are not supported.
     """
 

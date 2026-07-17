@@ -10,8 +10,9 @@ class MeshLoadPathGoal(NetworkLoadPathGoal):
 
     Notes
     -----
-    A thin wrapper of :class:`NetworkLoadPathGoal` that fixes the key to the mesh
-    sentinel.
+    A thin wrapper of
+    [NetworkLoadPathGoal][jax_fdm.goals.network.loadpath.NetworkLoadPathGoal]
+    that fixes the key to the mesh sentinel.
     """
 
     def __init__(

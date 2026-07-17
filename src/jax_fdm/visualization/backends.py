@@ -40,7 +40,7 @@ def null_viewer(name: str) -> type:
     Build an inert viewer class to use when its backend is not installed.
 
     The returned class warns on construction that the viewer does nothing,
-    then behaves as a :class:`_NullObject`: every method call and attribute
+    then behaves as a `_NullObject`: every method call and attribute
     access is a silent no-op. A whole script that builds and drives a viewer
     therefore runs to completion, only warning that nothing was drawn.
 

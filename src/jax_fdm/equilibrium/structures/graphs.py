@@ -118,7 +118,7 @@ class GraphSparse(Graph):
 
     Notes
     -----
-    The full connectivity matrix is still dense (see :meth:`_connectivity_matrix`);
+    The full connectivity matrix is still dense (see `_connectivity_matrix`);
     only the derived free and fixed submatrices are consumed as sparse arrays.
     """
 

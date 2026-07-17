@@ -29,9 +29,9 @@ class Constraint:
     Notes
     -----
     A constraint is initialized in two phases: construction stores the key and
-    bounds, then :meth:`init` resolves the key to an index against an equilibrium
+    bounds, then `init` resolves the key to an index against an equilibrium
     structure before the constraint is evaluated. Subclasses supply the constrained
-    quantity via :meth:`constraint`. Missing bounds normalize to negative or
+    quantity via `constraint`. Missing bounds normalize to negative or
     positive infinity rather than None.
     """
 
@@ -190,7 +190,7 @@ class Constraint:
         Notes
         -----
         Must be called once before the constraint is evaluated; it populates the
-        index that :meth:`constraint` reads.
+        index that `constraint` reads.
         """
         self.index = self.index_from_structure(structure)
 

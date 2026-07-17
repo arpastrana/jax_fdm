@@ -18,7 +18,7 @@ __all__ = ["NotebookViewer"]
 
 class NotebookViewer(CompasNotebookViewer):
     """
-    A thin wrapper on :class:`compas_notebook.viewer.Viewer`.
+    A thin wrapper on `compas_notebook.viewer.Viewer`.
 
     It subclasses the COMPAS notebook viewer so that the scene, the toolbar and
     ``show`` all work natively. The force density datastructures render through
@@ -27,7 +27,7 @@ class NotebookViewer(CompasNotebookViewer):
 
     For convenience it also accepts the ``width``, ``height``, ``show_grid``,
     ``viewport``, ``camera_position`` and ``camera_target`` keyword arguments
-    directly and folds them into a :class:`compas_notebook.config.Config`, so
+    directly and folds them into a `compas_notebook.config.Config`, so
     the common setup does not require building a config by hand.
     """
     def __init__(
@@ -63,7 +63,7 @@ class NotebookViewer(CompasNotebookViewer):
 
         This is a convenience shortcut for ``viewer.scene.add``. The force
         density datastructures dispatch through the scene registry to their
-        scene objects (:class:`ThreeFDNetworkObject`, :class:`ThreeFDMeshObject`).
+        scene objects (`ThreeFDNetworkObject`, `ThreeFDMeshObject`).
 
         Dispatch is purely by type. To draw a force density datastructure as plain
         geometry instead, convert it to its COMPAS base first and add that, e.g.

@@ -25,8 +25,9 @@ class Mesh(Graph):
 
     Notes
     -----
-    Extends :class:`Graph` with faces. Faces are stored as a rectangular index
-    array padded with ``-1``, since faces may have different numbers of vertices.
+    Extends [Graph][jax_fdm.equilibrium.structures.graphs.Graph] with faces.
+    Faces are stored as a rectangular index array padded with ``-1``, since
+    faces may have different numbers of vertices.
     Edges are derived from the faces when not supplied and carry no topological
     meaning beyond storing per-edge data.
     """
