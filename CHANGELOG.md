@@ -22,6 +22,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Changed `index_from_model(model, structure)` to `index_from_structure(structure)` on all goal and constraint classes. The index always resolves from the structure alone. No implementation read the model. This is a breaking change for custom subclasses that override the resolver.
 - Changed `Parameter.index`, `Parameter.value` and `NodeCurvatureConstraint.polygon_indices` to drop their unused `model` argument, for the same reason: `index` and `polygon_indices` resolve from the structure, and `value` reads from the datastructure. This is a breaking change for direct callers and overriding subclasses; `ParameterManager` and `init` keep their signatures.
 
+### Fixed
+
+- Fixed a circular import that made `import jax_fdm.goals` (and `losses`, `constraints`, `optimization`, `parameters`) fail unless `jax_fdm.equilibrium` or `jax_fdm.datastructures` was imported first. `equilibrium.fdm` imported `Loss`, `Optimizer` and `Parameter` at runtime for annotations only, closing the cycle `equilibrium -> losses -> goals -> equilibrium`; those imports now live under `TYPE_CHECKING` like the existing `Constraint` import.
+
 ### Removed
 
 
