@@ -51,7 +51,7 @@ class NodeCurvatureConstraint(NodeConstraint):
             The structure whose node ordering defines the indices.
         """
         super().init(model, structure)
-        self.index_polygon = self.polygon_indices(model, structure)
+        self.index_polygon = self.polygon_indices(structure)
 
     def key_index(self, structure: EquilibriumStructure) -> dict[int, int]:
         """
@@ -71,7 +71,6 @@ class NodeCurvatureConstraint(NodeConstraint):
 
     def polygon_indices(
         self,
-        model: EquilibriumModel,
         structure: EquilibriumStructure,
     ) -> Int[Array, "nodes neighbors"]:
         """
@@ -79,8 +78,6 @@ class NodeCurvatureConstraint(NodeConstraint):
 
         Parameters
         ----------
-        model :
-            The equilibrium model.
         structure :
             The structure whose node ordering defines the indices.
 

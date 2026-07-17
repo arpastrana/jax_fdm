@@ -1,7 +1,6 @@
 from jaxtyping import Array
 from jaxtyping import Float
 
-from jax_fdm.equilibrium import EquilibriumModel
 from jax_fdm.equilibrium import EquilibriumStructure
 from jax_fdm.goals import Goal
 
@@ -36,9 +35,8 @@ class NetworkGoal(Goal):
         # sentinel key -1 and is never grouped with peers into a collection.
         self.is_collectible = False
 
-    def index_from_model(
+    def index_from_structure(
         self,
-        model: EquilibriumModel,
         structure: EquilibriumStructure,
     ) -> int:
         """
@@ -46,8 +44,6 @@ class NetworkGoal(Goal):
 
         Parameters
         ----------
-        model :
-            The equilibrium model.
         structure :
             The structure the goal is bound to.
 

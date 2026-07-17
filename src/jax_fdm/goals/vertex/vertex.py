@@ -1,5 +1,4 @@
 from jax_fdm.equilibrium import EquilibriumMeshStructure
-from jax_fdm.equilibrium import EquilibriumModel
 from jax_fdm.equilibrium import EquilibriumStructure
 from jax_fdm.goals import Goal
 
@@ -9,9 +8,8 @@ class VertexGoal(Goal):
     The base class for goals defined on the vertices of a mesh.
     """
 
-    def index_from_model(
+    def index_from_structure(
         self,
-        model: EquilibriumModel,
         structure: EquilibriumStructure,
     ) -> int | tuple[int, ...]:
         """
@@ -19,8 +17,6 @@ class VertexGoal(Goal):
 
         Parameters
         ----------
-        model :
-            The equilibrium model.
         structure :
             The mesh structure whose vertex ordering defines the index.
 

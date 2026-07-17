@@ -1,4 +1,3 @@
-from jax_fdm.equilibrium import EquilibriumModel
 from jax_fdm.equilibrium import EquilibriumStructure
 from jax_fdm.goals import Goal
 
@@ -8,9 +7,8 @@ class EdgeGoal(Goal):
     The base class for goals defined on the edges of a network.
     """
 
-    def index_from_model(
+    def index_from_structure(
         self,
-        model: EquilibriumModel,
         structure: EquilibriumStructure,
     ) -> int | tuple[int, ...]:
         """
@@ -18,8 +16,6 @@ class EdgeGoal(Goal):
 
         Parameters
         ----------
-        model :
-            The equilibrium model.
         structure :
             The structure whose edge ordering defines the index.
 

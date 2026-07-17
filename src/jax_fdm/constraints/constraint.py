@@ -135,9 +135,8 @@ class Constraint:
             bound = jnp.inf
         self._bound_up = self._bound_setter(bound)
 
-    def index_from_model(
+    def index_from_structure(
         self,
-        model: EquilibriumModel,
         structure: EquilibriumStructure,
     ) -> int | tuple[int, ...]:
         """
@@ -145,8 +144,6 @@ class Constraint:
 
         Parameters
         ----------
-        model :
-            The equilibrium model.
         structure :
             The structure whose element ordering defines the index.
 
@@ -195,7 +192,7 @@ class Constraint:
         Must be called once before the constraint is evaluated; it populates the
         index that :meth:`constraint` reads.
         """
-        self.index = self.index_from_model(model, structure)
+        self.index = self.index_from_structure(structure)
 
     def __call__(
         self,

@@ -1,8 +1,7 @@
 from jaxtyping import Array
 from jaxtyping import Float
 
-from jax_fdm.equilibrium import EquilibriumMeshStructure
-from jax_fdm.equilibrium import EquilibriumModel
+from jax_fdm.equilibrium import EquilibriumStructure
 from jax_fdm.goals import Goal
 
 
@@ -36,18 +35,15 @@ class MeshGoal(Goal):
         # sentinel key -1 and is never grouped with peers into a collection.
         self.is_collectible = False
 
-    def index_from_model(
+    def index_from_structure(
         self,
-        model: EquilibriumModel,
-        structure: EquilibriumMeshStructure,
+        structure: EquilibriumStructure,
     ) -> int:
         """
         Return the sentinel index shared by all mesh goals.
 
         Parameters
         ----------
-        model :
-            The equilibrium model.
         structure :
             The mesh structure the goal is bound to.
 

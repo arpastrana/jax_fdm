@@ -2,7 +2,6 @@ from jaxtyping import Array
 from jaxtyping import Float
 
 from jax_fdm.constraints import Constraint
-from jax_fdm.equilibrium import EquilibriumModel
 from jax_fdm.equilibrium import EquilibriumStructure
 
 
@@ -30,9 +29,8 @@ class NetworkConstraint(Constraint):
     ) -> None:
         super().__init__(key=-1, bound_low=bound_low, bound_up=bound_up)
 
-    def index_from_model(
+    def index_from_structure(
         self,
-        model: EquilibriumModel,
         structure: EquilibriumStructure,
     ) -> int:
         """
@@ -40,8 +38,6 @@ class NetworkConstraint(Constraint):
 
         Parameters
         ----------
-        model :
-            The equilibrium model.
         structure :
             The structure the constraint is bound to.
 

@@ -162,9 +162,8 @@ class Goal:
         """
         raise NotImplementedError
 
-    def index_from_model(
+    def index_from_structure(
         self,
-        model: EquilibriumModel,
         structure: EquilibriumStructure,
     ) -> int | tuple[int, ...]:
         """
@@ -172,8 +171,6 @@ class Goal:
 
         Parameters
         ----------
-        model :
-            The equilibrium model.
         structure :
             The structure whose element ordering defines the index.
 
@@ -218,7 +215,7 @@ class Goal:
         Must be called once before the goal is evaluated; it populates the index
         that :meth:`prediction` reads.
         """
-        self.index = self.index_from_model(model, structure)
+        self.index = self.index_from_structure(structure)
 
     def __call__(self, eqstate: EquilibriumState) -> GoalState:
         """

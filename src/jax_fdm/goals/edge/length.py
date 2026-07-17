@@ -64,7 +64,7 @@ class EdgesLengthEqualGoal(ScalarGoal, EdgeGoal):
         structure :
             The structure whose edge ordering defines the indices.
         """
-        self.index = np.atleast_2d(super().index_from_model(model, structure))
+        self.index = np.atleast_2d(super().index_from_structure(structure))
 
     def prediction(
         self,

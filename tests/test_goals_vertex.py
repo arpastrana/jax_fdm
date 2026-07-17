@@ -258,7 +258,7 @@ def test_vertices_colinear_goal_initializes_and_optimizes(meshgrid_mesh):
     """
     An aggregate vertex goal resolves a two-dimensional index and optimizes.
 
-    Regression for the aggregate `init`: it must dispatch `index_from_model`
+    Regression for the aggregate `init`: it must dispatch `index_from_structure`
     through the instance's MRO (vertex resolution), not hop over it to the
     node base.
     """

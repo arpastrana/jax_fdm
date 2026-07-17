@@ -45,7 +45,7 @@ class NodesColinearGoal(ScalarGoal, NodeGoal):
         The indices are kept two-dimensional so the whole ordered sequence is fed
         to a single :meth:`prediction` call rather than vmapped per node.
         """
-        self.index = np.atleast_2d(self.index_from_model(model, structure))
+        self.index = np.atleast_2d(self.index_from_structure(structure))
 
     def prediction(
         self,
@@ -104,7 +104,7 @@ class NodesCurvatureGoal(ScalarGoal, NodeGoal):
         The indices are kept two-dimensional so the whole ordered sequence is fed
         to a single :meth:`prediction` call rather than vmapped per node.
         """
-        self.index = np.atleast_2d(self.index_from_model(model, structure))
+        self.index = np.atleast_2d(self.index_from_structure(structure))
 
     def prediction(
         self,
