@@ -103,6 +103,54 @@ Goals are collected into an error term of a [loss function](jax_fdm.losses.md).
 
 ## Vertex goals
 
+::: jax_fdm.goals.vertex.point.VertexPointGoal
+    options:
+      heading_level: 3
+
+::: jax_fdm.goals.vertex.line.VertexLineGoal
+    options:
+      heading_level: 3
+
+::: jax_fdm.goals.vertex.plane.VertexPlaneGoal
+    options:
+      heading_level: 3
+
+::: jax_fdm.goals.vertex.segment.VertexSegmentGoal
+    options:
+      heading_level: 3
+
+::: jax_fdm.goals.vertex.coordinates.VertexXCoordinateGoal
+    options:
+      heading_level: 3
+
+::: jax_fdm.goals.vertex.coordinates.VertexYCoordinateGoal
+    options:
+      heading_level: 3
+
+::: jax_fdm.goals.vertex.coordinates.VertexZCoordinateGoal
+    options:
+      heading_level: 3
+
+::: jax_fdm.goals.vertex.residual.VertexResidualForceGoal
+    options:
+      heading_level: 3
+
+::: jax_fdm.goals.vertex.residual.VertexResidualVectorGoal
+    options:
+      heading_level: 3
+
+::: jax_fdm.goals.vertex.residual.VertexResidualDirectionGoal
+    options:
+      heading_level: 3
+
+::: jax_fdm.goals.vertex.colinear.VerticesColinearGoal
+    options:
+      heading_level: 3
+
+::: jax_fdm.goals.vertex.colinear.VerticesCurvatureGoal
+    options:
+      heading_level: 3
+
 ::: jax_fdm.goals.vertex.normal.VertexNormalAngleGoal
     options:
       heading_level: 3

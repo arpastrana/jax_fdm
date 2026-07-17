@@ -234,17 +234,24 @@ class Goal:
         goal_state :
             The goal state bundling the reference values, the predictions, and the
             weights, vmapped over the goal's elements.
+
+        Raises
+        ------
+        ValueError
+            If the goal and prediction shapes disagree, typically because a scalar
+            prediction dropped its trailing axis.
         """
         # self.index is a numpy index array populated in init and mapped to a
         # jax scalar by vmap
         prediction = vmap(self.prediction, in_axes=(None, 0))(eqstate, self.index)  # pyright: ignore[reportArgumentType]
         goal = vmap(self.goal)(self.target, prediction)
 
-        msg = (
-            f"Goal {self.__class__.__name__} shape: {goal.shape} "
-            f"vs. prediction shape: {prediction.shape}"
-        )
-        assert goal.shape == prediction.shape, msg
+        if goal.shape != prediction.shape:
+            raise ValueError(
+                f"{type(self).__name__}: goal shape {goal.shape} != prediction "
+                f"shape {prediction.shape}. Scalar predictions must have shape "
+                "(1,); wrap the prediction's return value with jnp.atleast_1d.",
+            )
 
         return GoalState(goal=goal, prediction=prediction, weight=self.weight)
 

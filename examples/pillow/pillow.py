@@ -14,15 +14,15 @@ from compas.geometry import Line
 from compas.geometry import add_vectors
 from jax_fdm.constraints import EdgeForceConstraint
 from jax_fdm.constraints import EdgeLengthConstraint
-from jax_fdm.constraints import NodeCurvatureConstraint
+from jax_fdm.constraints import VertexCurvatureConstraint
 
 # jax_fdm
 from jax_fdm.datastructures import FDMesh
 from jax_fdm.equilibrium import constrained_fdm
 from jax_fdm.equilibrium import fdm
 from jax_fdm.goals import EdgeLengthGoal
-from jax_fdm.goals import NetworkLoadPathGoal
-from jax_fdm.goals import NodeLineGoal
+from jax_fdm.goals import MeshLoadPathGoal
+from jax_fdm.goals import VertexLineGoal
 from jax_fdm.losses import Loss
 from jax_fdm.losses import SquaredError
 from jax_fdm.optimization import SLSQP
@@ -128,14 +128,14 @@ if add_horizontal_projection_goal:
     for vertex in mesh.vertices_free():
         xyz = mesh.vertex_coordinates(vertex)
         line = Line(xyz, add_vectors(xyz, [0.0, 0.0, 1.0]))
-        goal = NodeLineGoal(vertex, target=line, weight=weight_horizontal_projection)
+        goal = VertexLineGoal(vertex, target=line, weight=weight_horizontal_projection)
         goals.append(goal)
 
 # load path goal
 if add_load_path_goal:
     if normalise_by_edge_number:
         weight_load_path /= mesh.number_of_edges()
-    goals.append(NetworkLoadPathGoal(target=0.0, weight=weight_load_path))
+    goals.append(MeshLoadPathGoal(target=0.0, weight=weight_load_path))
 
 # edge length goal
 if add_edge_length_goal:
@@ -187,7 +187,7 @@ if add_curvature_constraint:
 
     for key in subpolyedge:
         polygon = mesh.vertex_neighbors(key, ordered=True)
-        constraint = NodeCurvatureConstraint(
+        constraint = VertexCurvatureConstraint(
             key,
             polygon,
             bound_low=crv_min,
@@ -195,7 +195,7 @@ if add_curvature_constraint:
         )
         constraints.append(constraint)
 
-    msg = "Node curvature constraint between {} and {} on {} nodes"
+    msg = "Vertex curvature constraint between {} and {} on {} vertices"
     print(msg.format(round(crv_min, 2), round(crv_max, 2), len(subpolyedge)))
 
 # ==========================================================================

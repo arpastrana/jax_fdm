@@ -64,6 +64,10 @@ upper limit during constrained form-finding with
     options:
       heading_level: 3
 
+::: jax_fdm.constraints.vertex.curvature.VertexCurvatureConstraint
+    options:
+      heading_level: 3
+
 ---
 
 ## Network constraints

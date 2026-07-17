@@ -1,0 +1,31 @@
+from jax_fdm.goals.node import NodesColinearGoal
+from jax_fdm.goals.node import NodesCurvatureGoal
+from jax_fdm.goals.vertex import VertexGoal
+
+
+class VerticesColinearGoal(VertexGoal, NodesColinearGoal):
+    """
+    Minimize length-normalized colinearity energy for an ordered sequence of
+    vertices. This goal favors solutions where vertices are evenly spaced.
+
+    Notes
+    -----
+    A thin vertex counterpart of :class:`NodesColinearGoal`: the goal logic is
+    inherited unchanged, while keys resolve against the vertices of a mesh.
+    Like its node counterpart, this goal applies to a *collection* of ordered
+    vertices and is therefore not collectible.
+    """
+
+
+class VerticesCurvatureGoal(VertexGoal, NodesCurvatureGoal):
+    """
+    Minimize curvature energy (i.e., the turning angle) for an ordered sequence
+    of vertices.
+
+    Notes
+    -----
+    A thin vertex counterpart of :class:`NodesCurvatureGoal`: the goal logic is
+    inherited unchanged, while keys resolve against the vertices of a mesh.
+    Like its node counterpart, this goal applies to a *collection* of ordered
+    vertices and is therefore not collectible.
+    """

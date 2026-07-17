@@ -9,7 +9,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Added a vertex goal family in `goals/vertex/` that completes node-vertex parity: `VertexPointGoal`, `VertexLineGoal`, `VertexSegmentGoal`, `VertexPlaneGoal`, `VertexXCoordinateGoal`, `VertexYCoordinateGoal`, `VertexZCoordinateGoal`, `VertexResidualForceGoal`, `VertexResidualVectorGoal`, `VertexResidualDirectionGoal`, `VerticesColinearGoal` and `VerticesCurvatureGoal`. Each is a thin retargeted subclass of its node counterpart. The prediction and goal logic is inherited unchanged and only the key resolution switches from `node_index` to `vertex_index`, so the classes stay distinct for the type-keyed `Collection` vectorization while sharing one implementation per quantity.
+- Added `VertexCurvatureConstraint`, the vertex counterpart of `NodeCurvatureConstraint`. The node class gained an overridable `key_index` hook so the neighborhood polygon keys resolve through the same vocabulary as the constrained keys.
+- Added contract-teaching error messages to the extension seams: `Collection` now explains the init-parameter-as-attribute convention when an attribute is missing (instead of a bare `AttributeError` from optimizer warmup), and `Goal.__call__` raises a `ValueError` naming the `(1,)` scalar-prediction shape rule and the `jnp.atleast_1d` fix (instead of a bare assert).
+
 ### Changed
+
+- Changed `NodeGoal`, `NodeConstraint`, `VertexGoal` and `VertexConstraint` to enforce their vocabulary: initializing a `Node*` goal or constraint against a mesh structure, or a `Vertex*` one against a network structure, now raises a `TypeError` pointing to the right counterpart. Borrowing previously worked silently only because mesh structures expose `node_index` and `vertex_index` with the same mapping, which left mesh scripts speaking network vocabulary. This is a breaking change: mesh call sites must switch to the vertex classes.
+- Changed `VertexXCoordinateConstraint`, `VertexYCoordinateConstraint` and `VertexZCoordinateConstraint` into thin subclasses of their node counterparts, deleting the verbatim-duplicated constraint bodies.
+- Changed the aggregate goals `NodesColinearGoal` and `NodesCurvatureGoal` to resolve indices via `self.index_from_model` instead of `super().index_from_model`, so the resolution respects the MRO of retargeted subclasses like `VerticesColinearGoal`.
+- Changed the mesh examples to mesh vocabulary: `pillow.py` uses `VertexLineGoal`, `VertexCurvatureConstraint` and `MeshLoadPathGoal`; `monkey_saddle.py` and `monkey_saddle_constraints.py` use `VertexResidualForceGoal`, and the former also `MeshLoadPathGoal`. The network-native `dome_constraints.py` keeps its node goals, which are the correct vocabulary there.
 
 ### Removed
 
