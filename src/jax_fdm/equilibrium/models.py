@@ -3,6 +3,7 @@ from collections.abc import Callable
 import jax
 import jax.numpy as jnp
 from jax.debug import print as jax_print
+from jax.experimental.sparse import BCOO
 from jax.experimental.sparse import CSC
 from jaxtyping import Array
 from jaxtyping import Float
@@ -92,7 +93,7 @@ class EquilibriumModel:
     @staticmethod
     def edges_vectors(
         xyz: Float[Array, "nodes 3"],
-        connectivity: Float[Array, "edges nodes"],
+        connectivity: Float[Array, "edges nodes"] | Float[BCOO, "edges nodes"],
     ) -> Float[Array, "edges 3"]:
         """
         Calculate the unnormalized edge vectors as nodal coordinate differences.
@@ -159,7 +160,7 @@ class EquilibriumModel:
         q: Float[Array, "edges"],
         loads: Float[Array, "nodes 3"],
         vectors: Float[Array, "edges 3"],
-        connectivity: Float[Array, "edges nodes"],
+        connectivity: Float[Array, "edges nodes"] | Float[BCOO, "edges nodes"],
     ) -> Float[Array, "nodes 3"]:
         """
         Compute the residual forces on the nodes of the structure.
@@ -180,7 +181,9 @@ class EquilibriumModel:
         residuals :
             The residual force at each node, zero at nodes in equilibrium.
         """
-        return loads - connectivity.T @ (q[:, None] * vectors)
+        # upstream types the sparse transpose as optional; it is None only for
+        # arrays of dimension > 2, unreachable for a rank-2 incidence matrix
+        return loads - connectivity.T @ (q[:, None] * vectors)  # pyright: ignore[reportOptionalOperand]
 
     @staticmethod
     def nodes_positions(

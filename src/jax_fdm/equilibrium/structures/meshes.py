@@ -36,6 +36,7 @@ class Mesh(Graph):
     vertices: Int[np.ndarray, "vertices"]
     faces: Int[np.ndarray, "faces vertices"]
     faces_indexed: Int[Array, "faces vertices"]
+    edges_faces_indexed: Int[Array, "edges 2"]
     connectivity_faces_vertices: Float[Array, "faces vertices"]
     connectivity_edges_faces: Float[Array, "edges faces"]
     face_keys: Int[np.ndarray, "faces"]
@@ -65,6 +66,7 @@ class Mesh(Graph):
 
         super().__init__(vertices, edges)
 
+        self.edges_faces_indexed = self._edges_faces_indexed()
         self.connectivity_edges_faces = self._connectivity_edges_faces_matrix()
 
     @property
@@ -132,6 +134,22 @@ class Mesh(Graph):
             C[eindex, findex] = 1.0
 
         return jnp.asarray(C)
+
+    def _edges_faces_indexed(self) -> Int[Array, "edges 2"]:
+        """
+        The indices of each edge's incident faces, padded with ``-1``.
+
+        Notes
+        -----
+        Boundary edges have one face and one padding entry; a non-manifold edge
+        keeps only its first two faces, matching the edge-face incidence matrix.
+        """
+        edges_faces = np.full((self.num_edges, 2), -1, dtype=DTYPE_INT_NP)
+        for eindex, findices in enumerate(self._edges_faces()):
+            for slot, findex in enumerate(findices[:2]):
+                edges_faces[eindex, slot] = findex
+
+        return jnp.asarray(edges_faces, dtype=DTYPE_INT_JAX)
 
     def _edges_faces(self) -> tuple[tuple[int, ...], ...]:
         """

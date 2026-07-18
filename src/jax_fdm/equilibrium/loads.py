@@ -191,19 +191,19 @@ def edges_tributary_faces_load(
     edges_load :
         The face load carried by each edge.
     """
-    c_vertices = structure.connectivity
-    c_edges_faces = structure.connectivity_edges_faces
+    edges = structure.edges_indexed
+    edges_faces = structure.edges_faces_indexed
     c_faces_vertices = structure.connectivity_faces_vertices
 
     face_centroids = c_faces_vertices @ xyz
     loads_fn = vmap(edge_tributary_faces_load, in_axes=(0, 0, None, None, None))
 
-    return loads_fn(c_vertices, c_edges_faces, xyz, faces_load, face_centroids)
+    return loads_fn(edges, edges_faces, xyz, faces_load, face_centroids)
 
 
 def edge_tributary_faces_load(
-    c_edge_nodes: Float[Array, "nodes"],
-    c_edge_faces: Float[Array, "faces"],
+    edge: Int[Array, "2"],
+    edge_faces: Int[Array, "2"],
     xyz: Float[Array, "nodes 3"],
     faces_load: Float[Array, "faces 3"],
     face_centroids: Float[Array, "faces 3"],
@@ -213,10 +213,10 @@ def edge_tributary_faces_load(
 
     Parameters
     ----------
-    c_edge_nodes :
-        The row of the node connectivity matrix for this edge.
-    c_edge_faces :
-        The row of the edge-face connectivity matrix for this edge.
+    edge :
+        The node index pair of the edge.
+    edge_faces :
+        The indices of the edge's incident faces, padded with ``-1``.
     xyz :
         The coordinates of all nodes.
     faces_load :
@@ -235,10 +235,9 @@ def edge_tributary_faces_load(
     triangular area spanned by the edge and each face centroid. Padding face
     indices (``-1``) on boundary edges contribute zero.
     """
-    indices = jnp.flatnonzero(c_edge_nodes, size=2)
-    line = xyz[indices, :]
+    line = xyz[edge, :]
 
-    findices = jnp.flatnonzero(c_edge_faces, size=2, fill_value=-1)
+    findices = edge_faces
     floads = faces_load[findices, :]
 
     centroids = face_centroids[findices, :]
@@ -436,5 +435,16 @@ def nodes_tributary_edges_load(
     -------
     loads :
         The load carried by each node, half of each incident edge's load.
+
+    Notes
+    -----
+    Scatter-adds half of each edge's load onto both of its endpoints, which is
+    equivalent to ``0.5 * |C|.T @ edges_load`` but does not require the
+    connectivity matrix, whose absolute value sparse arrays cannot take.
     """
-    return 0.5 * jnp.abs(structure.connectivity).T @ edges_load
+    edges = structure.edges_indexed
+    loads = jnp.zeros((structure.num_nodes, 3))
+    loads = loads.at[edges[:, 0]].add(0.5 * edges_load)
+    loads = loads.at[edges[:, 1]].add(0.5 * edges_load)
+
+    return loads

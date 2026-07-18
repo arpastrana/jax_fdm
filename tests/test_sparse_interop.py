@@ -1,14 +1,15 @@
 """
 Characterization tests for JAX sparse-array interop.
 
-The sparse structures densify their connectivity matrices after a sparse build
-(see `MeshSparse`), citing a historical JAX bug where reverse-mode gradients
-through a module-held BCOO raised ``TypeError: float() argument must be a
-string or a number, not 'Zero'``. The first test proves that bug is gone on
-the installed JAX, guarding the precondition for ever dropping the
-densification. The remaining tests are sentinels that pin the consumer ops
-that still block it: when a JAX upgrade makes one of them pass, the sentinel
-fails loudly and the corresponding ``todense()`` can be reconsidered.
+The sparse structures once densified their connectivity matrices after a
+sparse build, citing a historical JAX bug where reverse-mode gradients through
+a module-held BCOO raised ``TypeError: float() argument must be a string or a
+number, not 'Zero'``. The first test proves that bug is gone on the installed
+JAX, guarding the precondition for keeping the matrices sparse. The remaining
+tests are sentinels pinning the ops JAX sparse arrays still lack; the library
+consumers that needed them were rewritten to index arrays and matmuls during
+the sparse migration. When a JAX upgrade makes a sentinel fail, the op became
+available and the corresponding workaround can be reconsidered.
 """
 
 import equinox as eqx
@@ -74,9 +75,10 @@ def test_sentinel_jnp_abs_rejects_bcoo():
     """
     Sentinel: ``jnp.abs`` on a BCOO still raises.
 
-    `nodes_tributary_edges_load` computes ``jnp.abs(structure.connectivity)``,
-    which requires the connectivity matrix to stay dense. If this test fails
-    because the op now works, that consumer no longer blocks sparsification.
+    `nodes_tributary_edges_load` once computed
+    ``jnp.abs(structure.connectivity)`` and was rewritten as a scatter-add over
+    ``edges_indexed`` to work with sparse connectivity. If this test fails
+    because the op now works, the matmul formulation is available again.
     """
     C = _line_graph_bcoo()
 
@@ -90,10 +92,10 @@ def test_sentinel_vmap_over_unbatched_bcoo_rows_rejects():
     """
     Sentinel: vmap with ``in_axes=0`` over an unbatched BCOO still raises.
 
-    The face-load pipeline and the smoothing goals vmap over rows of the
-    connectivity and adjacency matrices, which requires them to stay dense.
-    A BCOO built with ``n_batch=1`` already supports this today; this sentinel
-    tracks the default unbatched layout the structures would naturally hold.
+    The face-load pipeline once vmapped over rows of the connectivity matrices
+    and was rewritten to vmap over index arrays instead. A BCOO built with
+    ``n_batch=1`` already supports this today; this sentinel tracks the
+    default unbatched layout the structures hold.
     """
     C = _line_graph_bcoo()
     xyz = jnp.ones((C.shape[1], 3))

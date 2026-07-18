@@ -113,36 +113,18 @@ class Graph(eqx.Module):
 
 class GraphSparse(Graph):
     """
-    A graph that exposes its connectivity in SciPy sparse format for assembly.
-
-    Notes
-    -----
-    The full connectivity matrix is still dense (see `_connectivity_matrix`);
-    only the derived free and fixed submatrices are consumed as sparse arrays.
+    A graph that keeps its connectivity matrix in sparse format.
     """
 
-    def _connectivity_matrix(self) -> Float[Array, "edges nodes"]:
+    # The sparse subclass deliberately swaps the dense connectivity for a JAX
+    # sparse array; the narrowed field and builder are the point, not a slip
+    connectivity: Float[BCOO, "edges nodes"]  # pyright: ignore[reportIncompatibleVariableOverride]
+
+    def _connectivity_matrix(self) -> Float[BCOO, "edges nodes"]:  # pyright: ignore[reportIncompatibleMethodOverride]
         """
-        The signed edge-node incidence matrix, returned dense.
-
-        Notes
-        -----
-        This should be sparse but is kept dense to sidestep a JAX bug: building it
-        via ``BCOO.from_scipy_sparse`` raises ``TypeError: float() argument must be
-        a string or a number, not 'Zero'``. The free and fixed submatrices are
-        still built and used as sparse arrays.
+        The signed edge-node incidence matrix, in sparse format.
         """
-        # C = super()._connectivity_matrix()
-        # return BCOO.fromdense(C).astype(DTYPE_JAX)
-
-        # C = self.connectivity_scipy
-        # return BCOO.from_scipy_sparse(C)[:, :]
-
-        # C = self.connectivity_scipy
-        # args = (C.data, C.indices, C.indptr)
-        # return CSC(args, shape=C.shape)
-
-        return super()._connectivity_matrix()
+        return BCOO.from_scipy_sparse(self.connectivity_scipy)
 
     @property
     def connectivity_scipy(self) -> csc_matrix:
