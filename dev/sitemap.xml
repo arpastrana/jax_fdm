@@ -9,14 +9,6 @@
          <lastmod>2026-07-18</lastmod>
     </url>
     <url>
-         <loc>https://arpastrana.github.io/jax_fdm/dev/custom_goals/</loc>
-         <lastmod>2026-07-18</lastmod>
-    </url>
-    <url>
-         <loc>https://arpastrana.github.io/jax_fdm/dev/examples/</loc>
-         <lastmod>2026-07-18</lastmod>
-    </url>
-    <url>
          <loc>https://arpastrana.github.io/jax_fdm/dev/installation/</loc>
          <lastmod>2026-07-18</lastmod>
     </url>
@@ -66,6 +58,22 @@
     </url>
     <url>
          <loc>https://arpastrana.github.io/jax_fdm/dev/api/jax_fdm.visualization.viewers/</loc>
+         <lastmod>2026-07-18</lastmod>
+    </url>
+    <url>
+         <loc>https://arpastrana.github.io/jax_fdm/dev/examples/arch/</loc>
+         <lastmod>2026-07-18</lastmod>
+    </url>
+    <url>
+         <loc>https://arpastrana.github.io/jax_fdm/dev/examples/more/</loc>
+         <lastmod>2026-07-18</lastmod>
+    </url>
+    <url>
+         <loc>https://arpastrana.github.io/jax_fdm/dev/howto/constraints/</loc>
+         <lastmod>2026-07-18</lastmod>
+    </url>
+    <url>
+         <loc>https://arpastrana.github.io/jax_fdm/dev/howto/goals/</loc>
          <lastmod>2026-07-18</lastmod>
     </url>
 </urlset>

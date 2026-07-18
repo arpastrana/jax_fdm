@@ -12,31 +12,31 @@
         <meta name="author" content="Rafael Pastrana">
       
       
-        <link rel="canonical" href="https://arpastrana.github.io/jax_fdm/dev/custom_goals/">
+        <link rel="canonical" href="https://arpastrana.github.io/jax_fdm/dev/howto/goals/">
       
       
-        <link rel="prev" href="../examples/">
+        <link rel="prev" href="../../examples/more/">
       
       
-        <link rel="next" href="../api/jax_fdm.datastructures/">
+        <link rel="next" href="../constraints/">
       
       
         
       
       
-      <link rel="icon" href="../assets/images/jax_logo.svg">
+      <link rel="icon" href="../../assets/images/jax_logo.svg">
       <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
     
     
       
-        <title>Custom goals and constraints - JAX FDM</title>
+        <title>Custom goals - JAX FDM</title>
       
     
     
-      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
+      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
       
         
-        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
       
       
 
@@ -55,11 +55,11 @@
       
     
     
-      <link rel="stylesheet" href="../assets/_mkdocstrings.css">
+      <link rel="stylesheet" href="../../assets/_mkdocstrings.css">
     
-      <link rel="stylesheet" href="../assets/css/custom.css">
+      <link rel="stylesheet" href="../../assets/css/custom.css">
     
-    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
 
@@ -84,7 +84,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#custom-goals-and-constraints" class="md-skip">
+        <a href="#custom-goals" class="md-skip">
           Skip to content
         </a>
       
@@ -104,9 +104,9 @@
 
 <header class="md-header md-header--shadow" data-md-component="header">
   <nav class="md-header__inner md-grid" aria-label="Header">
-    <a href=".." title="JAX FDM" class="md-header__button md-logo" aria-label="JAX FDM" data-md-component="logo">
+    <a href="../.." title="JAX FDM" class="md-header__button md-logo" aria-label="JAX FDM" data-md-component="logo">
       
-  <img src="../assets/images/jax_logo.svg" alt="logo">
+  <img src="../../assets/images/jax_logo.svg" alt="logo">
 
     </a>
     <label class="md-header__button md-icon" for="__drawer">
@@ -123,7 +123,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Custom goals and constraints
+              Custom goals
             
           </span>
         </div>
@@ -241,9 +241,9 @@
 
 <nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
-    <a href=".." title="JAX FDM" class="md-nav__button md-logo" aria-label="JAX FDM" data-md-component="logo">
+    <a href="../.." title="JAX FDM" class="md-nav__button md-logo" aria-label="JAX FDM" data-md-component="logo">
       
-  <img src="../assets/images/jax_logo.svg" alt="logo">
+  <img src="../../assets/images/jax_logo.svg" alt="logo">
 
     </a>
     JAX FDM
@@ -270,7 +270,7 @@
   
   
     <li class="md-nav__item">
-      <a href=".." class="md-nav__link">
+      <a href="../.." class="md-nav__link">
         
   
   
@@ -297,7 +297,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../installation/" class="md-nav__link">
+      <a href="../../installation/" class="md-nav__link">
         
   
   
@@ -324,14 +324,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../examples/" class="md-nav__link">
+      <a href="../../citation/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Examples
+    Citation
   
 
     
@@ -346,6 +346,202 @@
     
       
       
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../license/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    License
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Examples
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Examples
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../examples/arch/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Arch optimization
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../examples/more/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    More examples
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    How-to Guides
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    How-to Guides
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
   
   
     
@@ -367,7 +563,7 @@
   <span class="md-ellipsis">
     
   
-    Custom goals and constraints
+    Custom goals
   
 
     
@@ -385,7 +581,7 @@
   <span class="md-ellipsis">
     
   
-    Custom goals and constraints
+    Custom goals
   
 
     
@@ -425,7 +621,7 @@
   <a href="#recipe-1-a-custom-scalar-goal" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Recipe 1: a custom scalar goal
+        Recipe 1: A custom scalar goal
       
     </span>
   </a>
@@ -436,7 +632,7 @@
   <a href="#recipe-2-a-custom-vector-goal-with-a-moving-target" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Recipe 2: a custom vector goal with a moving target
+        Recipe 2: A custom vector goal with a moving target
       
     </span>
   </a>
@@ -447,7 +643,7 @@
   <a href="#recipe-3-an-aggregate-goal" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Recipe 3: an aggregate goal
+        Recipe 3: An aggregate goal
       
     </span>
   </a>
@@ -458,7 +654,7 @@
   <a href="#recipe-4-retargeting-a-goal-from-nodes-to-vertices" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Recipe 4: retargeting a goal from nodes to vertices
+        Recipe 4: Retargeting a goal from nodes to vertices
       
     </span>
   </a>
@@ -466,21 +662,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#recipe-5-a-custom-constraint" class="md-nav__link">
+  <a href="#summary" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Recipe 5: a custom constraint
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#the-three-contracts" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        The three contracts
+        Summary
       
     </span>
   </a>
@@ -490,6 +675,42 @@
     </ul>
   
 </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../constraints/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Custom constraints
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
       
     </li>
   
@@ -515,10 +736,10 @@
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7" >
         
           
-          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="">
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="">
             
   
   
@@ -536,8 +757,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_5">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -554,7 +775,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../api/jax_fdm.datastructures/" class="md-nav__link">
+      <a href="../../api/jax_fdm.datastructures/" class="md-nav__link">
         
   
   
@@ -582,7 +803,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../api/jax_fdm.equilibrium/" class="md-nav__link">
+      <a href="../../api/jax_fdm.equilibrium/" class="md-nav__link">
         
   
   
@@ -610,7 +831,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../api/jax_fdm.goals/" class="md-nav__link">
+      <a href="../../api/jax_fdm.goals/" class="md-nav__link">
         
   
   
@@ -638,7 +859,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../api/jax_fdm.constraints/" class="md-nav__link">
+      <a href="../../api/jax_fdm.constraints/" class="md-nav__link">
         
   
   
@@ -666,7 +887,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../api/jax_fdm.losses/" class="md-nav__link">
+      <a href="../../api/jax_fdm.losses/" class="md-nav__link">
         
   
   
@@ -694,7 +915,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../api/jax_fdm.optimization/" class="md-nav__link">
+      <a href="../../api/jax_fdm.optimization/" class="md-nav__link">
         
   
   
@@ -722,7 +943,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../api/jax_fdm.parameters/" class="md-nav__link">
+      <a href="../../api/jax_fdm.parameters/" class="md-nav__link">
         
   
   
@@ -750,7 +971,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../api/jax_fdm.geometry/" class="md-nav__link">
+      <a href="../../api/jax_fdm.geometry/" class="md-nav__link">
         
   
   
@@ -788,10 +1009,10 @@
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5_9" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7_9" >
         
           
-          <label class="md-nav__link" for="__nav_5_9" id="__nav_5_9_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_7_9" id="__nav_7_9_label" tabindex="0">
             
   
   
@@ -809,8 +1030,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_5_9_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_5_9">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_7_9_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7_9">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -827,7 +1048,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../api/jax_fdm.visualization.viewers/" class="md-nav__link">
+      <a href="../../api/jax_fdm.visualization.viewers/" class="md-nav__link">
         
   
   
@@ -855,7 +1076,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../api/jax_fdm.visualization.notebooks/" class="md-nav__link">
+      <a href="../../api/jax_fdm.visualization.notebooks/" class="md-nav__link">
         
   
   
@@ -883,7 +1104,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../api/jax_fdm.visualization.plotters/" class="md-nav__link">
+      <a href="../../api/jax_fdm.visualization.plotters/" class="md-nav__link">
         
   
   
@@ -915,60 +1136,6 @@
           </ul>
         </nav>
       
-    </li>
-  
-
-    
-      
-      
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../citation/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Citation
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-    
-      
-      
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../license/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    License
-  
-
-    
-  </span>
-  
-  
-
-      </a>
     </li>
   
 
@@ -1014,7 +1181,7 @@
   <a href="#recipe-1-a-custom-scalar-goal" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Recipe 1: a custom scalar goal
+        Recipe 1: A custom scalar goal
       
     </span>
   </a>
@@ -1025,7 +1192,7 @@
   <a href="#recipe-2-a-custom-vector-goal-with-a-moving-target" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Recipe 2: a custom vector goal with a moving target
+        Recipe 2: A custom vector goal with a moving target
       
     </span>
   </a>
@@ -1036,7 +1203,7 @@
   <a href="#recipe-3-an-aggregate-goal" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Recipe 3: an aggregate goal
+        Recipe 3: An aggregate goal
       
     </span>
   </a>
@@ -1047,7 +1214,7 @@
   <a href="#recipe-4-retargeting-a-goal-from-nodes-to-vertices" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Recipe 4: retargeting a goal from nodes to vertices
+        Recipe 4: Retargeting a goal from nodes to vertices
       
     </span>
   </a>
@@ -1055,21 +1222,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#recipe-5-a-custom-constraint" class="md-nav__link">
+  <a href="#summary" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Recipe 5: a custom constraint
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#the-three-contracts" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        The three contracts
+        Summary
       
     </span>
   </a>
@@ -1096,22 +1252,32 @@
   
 
 
-<h1 id="custom-goals-and-constraints">Custom goals and constraints<a class="headerlink" href="#custom-goals-and-constraints" title="Permanent link">¤</a></h1>
-<p>JAX FDM ships with a rich bank of goals and constraints, but sooner or later your design brief will ask for something the bank does not have.
+<h1 id="custom-goals">Custom goals<a class="headerlink" href="#custom-goals" title="Permanent link">¤</a></h1>
+<p>JAX FDM ships with a rich bank of goals, but sooner or later your design brief will ask for something the bank does not have.
 Maybe you want an edge to rise by exactly half a meter.
-Maybe you want a node to sit on a sphere.
-Maybe your PhD committee wants both, by Friday.</p>
-<p>Good news: a custom goal is one class and one method away.
-This guide walks you through five recipes, from a two-line scalar goal to a full custom constraint, and closes with the three contracts that keep the optimizer happy.</p>
+Maybe you want a node to hover directly above a point on the ground.</p>
+<p>A custom goal is one class and one method away.
+This guide walks you through four recipes, from a two-line scalar goal to a goal that chases a moving target.
+(Constraints get the same treatment in <a href="../constraints/">Custom constraints</a>.)</p>
 <h2 id="how-a-goal-works">How a goal works<a class="headerlink" href="#how-a-goal-works" title="Permanent link">¤</a></h2>
 <p>A goal lives a two-phase life.</p>
-<p><strong>Phase one is construction.</strong>
+<p><strong>Phase one: construction.</strong>
 You build the goal with an element key, a target, and a weight.
+One goal, one key: to target many elements, create one goal per element, and the machinery batches same-type goals into a single vectorized call.
+(The exception is the aggregate goal of recipe 3, which judges a group as a whole and takes the whole list.)
 No structure is involved yet, so you can create goals anywhere, in any order, before or after form-finding.</p>
-<p><strong>Phase two is initialization.</strong>
+<p><strong>Phase two: initialization.</strong>
 When you call <code>constrained_fdm</code>, the optimizer calls <code>goal.init(model, structure)</code> behind the scenes.
-This resolves your element key (a node key, an edge tuple, a vertex key) into an integer index inside the equilibrium structure.
-From then on, the goal reads its quantity of interest straight out of an <code>EquilibriumState</code> by index.</p>
+This resolves your element key (a node key, an edge tuple, a vertex key) into an integer <code>index</code> inside a structure's topology.</p>
+<div class="admonition tip">
+<p class="admonition-title">Keys vs. indices</p>
+<p><strong>The reason for the existence of a key-or-index duality is that solvers and optimizers need consecutive integer indices for fast array access and vectorization, but datastructure keys may not respect this contract.</strong>
+Not only that, but keys are heterogeneous: while node and vertex keys are integers, edges have pairs of integers as keys due to COMPAS datastructure semantics.
+Therefore, we have to establish a sharp separation between the use cases for a <code>key</code> (for streamlined modeling and prototyping) and an <code>index</code> (for the fast JAX numerical core) so that both entities can co-exist.
+Note that nodes, vertices, edges, and faces are indexed deterministically at runtime through their respective datastructure generators, so there <strong>is</strong> a transparent way to go back and forth between the two. For example, the first edge produced by running <code>FDMesh.edges()</code> will have <code>index=0</code>, while the last output edge will have <code>index=FDMesh.number_of_edges() - 1</code>.</p>
+</div>
+<p>Once an <code>index</code> has been computed, the goal reads its quantity of interest by <code>index</code> straight out of an <code>EquilibriumState</code> generated by the FDM.
+In other words: you speak in keys at construction, the JAX FDM machinery speaks in array rows at evaluation, and <code>init</code> is the translation step between the two.</p>
 <p>Every goal you write is the product of two choices:</p>
 <table>
 <thead>
@@ -1132,10 +1298,10 @@ From then on, the goal reads its quantity of interest straight out of an <code>E
 </tbody>
 </table>
 <p>Mix one from each row, add a <code>prediction</code> method, and you have a goal.
-The base classes handle everything else: target storage, weighting, vectorization over many elements, and the squared error against your loss function.</p>
-<h2 id="recipe-1-a-custom-scalar-goal">Recipe 1: a custom scalar goal<a class="headerlink" href="#recipe-1-a-custom-scalar-goal" title="Permanent link">¤</a></h2>
+The base classes handle everything else: target storage, weighting, and vectorization over many elements.</p>
+<h2 id="recipe-1-a-custom-scalar-goal">Recipe 1: A custom scalar goal<a class="headerlink" href="#recipe-1-a-custom-scalar-goal" title="Permanent link">¤</a></h2>
 <p>Suppose you care about how much an edge climbs, its vertical rise.
-No goal in the bank measures that, so we write one.</p>
+No goal in the bank measures that, so we write one from scratch.</p>
 <div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">jax.numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">jnp</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">jax_fdm.goals</span><span class="w"> </span><span class="kn">import</span> <span class="n">ScalarGoal</span>
@@ -1149,21 +1315,16 @@ No goal in the bank measures that, so we write one.</p>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">prediction</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">eq_state</span><span class="p">,</span> <span class="n">index</span><span class="p">):</span>
         <span class="n">vector</span> <span class="o">=</span> <span class="n">eq_state</span><span class="o">.</span><span class="n">vectors</span><span class="p">[</span><span class="n">index</span><span class="p">,</span> <span class="p">:]</span>
-        <span class="n">rise</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">vector</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
 
-        <span class="k">return</span> <span class="n">jnp</span><span class="o">.</span><span class="n">atleast_1d</span><span class="p">(</span><span class="n">rise</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">jnp</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">vector</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
 </code></pre></div>
 <p>That is the whole class.
-Let's unpack the three lines that matter.</p>
+Let's unpack the two lines that matter.</p>
 <ul>
-<li><code>eq_state</code> is an <code>EquilibriumState</code>, a named tuple holding the solved geometry: <code>xyz</code> (node coordinates), <code>residuals</code>, <code>lengths</code>, <code>forces</code>, <code>loads</code>, and <code>vectors</code> (edge vectors from tail to head).
+<li><code>eq_state</code> is an <code>EquilibriumState</code> produced by one of the form-finding FDM models. The state is a named tuple holding the solved geometry: <code>xyz</code> (node coordinates), <code>residuals</code>, <code>lengths</code>, <code>forces</code>, <code>loads</code>, and <code>vectors</code> (edge vectors from tail to head).
 Your prediction slices what it needs out of these arrays.</li>
-<li><code>index</code> is the integer position of <em>one</em> edge.
-You write the prediction for a single element, and JAX FDM vectorizes it across every edge you attach the goal to.
-Free performance, no loops.</li>
-<li><code>jnp.atleast_1d</code> is not decoration.
-A scalar prediction must have shape <code>(1,)</code>, not <code>()</code>.
-Forget it and the goal raises a <code>ValueError</code> that tells you exactly this (we have all been there, so the error message is friendly).</li>
+<li><code>index</code> is where phase two landed your key: the integer row of <em>one</em> edge inside those arrays.
+You write the prediction for a single element, and JAX FDM vectorizes it across every edge you attach the goal to.</li>
 </ul>
 <p>Now use it like any built-in goal:</p>
 <div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">jax_fdm.equilibrium</span><span class="w"> </span><span class="kn">import</span> <span class="n">constrained_fdm</span>
@@ -1192,63 +1353,41 @@ Use <code>jnp</code> operations only.
 No Python <code>if</code> statements on array values, no printing, no mutating outside state.
 In exchange, your goal is differentiated, JIT-compiled, and vectorized for free.</p>
 </div>
-<h2 id="recipe-2-a-custom-vector-goal-with-a-moving-target">Recipe 2: a custom vector goal with a moving target<a class="headerlink" href="#recipe-2-a-custom-vector-goal-with-a-moving-target" title="Permanent link">¤</a></h2>
+<h2 id="recipe-2-a-custom-vector-goal-with-a-moving-target">Recipe 2: A custom vector goal with a moving target<a class="headerlink" href="#recipe-2-a-custom-vector-goal-with-a-moving-target" title="Permanent link">¤</a></h2>
 <p>Scalar goals compare one number against one number.
-Vector goals compare xyz against xyz.
-And sometimes the target is not a fixed point but a <em>set</em>, like the surface of a sphere, where the reference point depends on where the node currently is.</p>
+Vector goals compare a 3D vector against another 3D vector.
+And sometimes the target is not a fixed point but a <em>set</em>, like a line, where the reference point depends on where the node currently is.</p>
 <p>That is what the <code>goal</code> method is for.
 It receives the stored target and the current prediction, and returns the reference value the prediction is compared against.
 The built-in <code>NodeLineGoal</code> and <code>NodePlaneGoal</code> use this trick to chase closest points.
-Here we pull a node onto a sphere:</p>
+Here we pull a node onto a plumb line, the vertical line through a target point, so the node ends up directly above (or below) the point without caring at what height:</p>
 <div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">jax.numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">jnp</span>
 
-<span class="kn">from</span><span class="w"> </span><span class="nn">jax_fdm.geometry</span><span class="w"> </span><span class="kn">import</span> <span class="n">normalize_vector</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">jax_fdm.goals</span><span class="w"> </span><span class="kn">import</span> <span class="n">VectorGoal</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">jax_fdm.goals.node</span><span class="w"> </span><span class="kn">import</span> <span class="n">NodeGoal</span>
 
 
-<span class="k">class</span><span class="w"> </span><span class="nc">NodeSphereGoal</span><span class="p">(</span><span class="n">VectorGoal</span><span class="p">,</span> <span class="n">NodeGoal</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">NodePlumbLineGoal</span><span class="p">(</span><span class="n">VectorGoal</span><span class="p">,</span> <span class="n">NodeGoal</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Pull a node onto the surface of a sphere.</span>
-
-<span class="sd">    The target packs the sphere as four numbers: the center xyz and the radius.</span>
+<span class="sd">    Pull a node onto the vertical line through a target point.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-
-    <span class="nd">@property</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">target</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_target</span>
-
-    <span class="nd">@target</span><span class="o">.</span><span class="n">setter</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">target</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">target</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_target</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">jnp</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">target</span><span class="p">),</span> <span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">4</span><span class="p">))</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">prediction</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">eq_state</span><span class="p">,</span> <span class="n">index</span><span class="p">):</span>
         <span class="k">return</span> <span class="n">eq_state</span><span class="o">.</span><span class="n">xyz</span><span class="p">[</span><span class="n">index</span><span class="p">,</span> <span class="p">:]</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">goal</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="n">prediction</span><span class="p">):</span>
-        <span class="n">center</span> <span class="o">=</span> <span class="n">target</span><span class="p">[:</span><span class="mi">3</span><span class="p">]</span>
-        <span class="n">radius</span> <span class="o">=</span> <span class="n">target</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span>
-        <span class="n">direction</span> <span class="o">=</span> <span class="n">normalize_vector</span><span class="p">(</span><span class="n">prediction</span> <span class="o">-</span> <span class="n">center</span><span class="p">)</span>
-
-        <span class="k">return</span> <span class="n">center</span> <span class="o">+</span> <span class="n">radius</span> <span class="o">*</span> <span class="n">direction</span>
+        <span class="k">return</span> <span class="n">jnp</span><span class="o">.</span><span class="n">concatenate</span><span class="p">((</span><span class="n">target</span><span class="p">[:</span><span class="mi">2</span><span class="p">],</span> <span class="n">prediction</span><span class="p">[</span><span class="mi">2</span><span class="p">:]))</span>
 </code></pre></div>
-<div class="highlight"><pre><span></span><code><span class="n">center</span> <span class="o">=</span> <span class="p">[</span><span class="mf">5.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">]</span>
-<span class="n">radius</span> <span class="o">=</span> <span class="mf">5.0</span>
-
-<span class="n">goals</span> <span class="o">=</span> <span class="p">[</span><span class="n">NodeSphereGoal</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="p">[</span><span class="o">*</span><span class="n">center</span><span class="p">,</span> <span class="n">radius</span><span class="p">])</span> <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">free_nodes</span><span class="p">]</span>
+<div class="highlight"><pre><span></span><code><span class="n">goals</span> <span class="o">=</span> <span class="p">[</span><span class="n">NodePlumbLineGoal</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="p">[</span><span class="mf">2.0</span><span class="p">,</span> <span class="mf">3.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">])</span> <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">free_nodes</span><span class="p">]</span>
 </code></pre></div>
-<p>Two things to notice.</p>
-<p>First, the sphere travels inside <code>target</code> as a flat pack of four numbers, and the <code>target</code> property reshapes it to one row per element.
-Overriding the target property is how a goal declares a custom target shape, exactly like <code>NodeLineGoal</code> reshapes its two line points to <code>(-1, 2, 3)</code>.</p>
-<p>Second, you might be tempted to store the center and radius as plain attributes instead, say <code>self.radius</code>, and skip the property.
-Resist for one more section.
-The reason is the collection contract, and it is contract number two at the end of this guide.</p>
-<h2 id="recipe-3-an-aggregate-goal">Recipe 3: an aggregate goal<a class="headerlink" href="#recipe-3-an-aggregate-goal" title="Permanent link">¤</a></h2>
+<p>The <code>goal</code> method builds the reference point by splicing the target's xy with the node's <em>own</em> z: the closest point on the vertical line is always at the node's current height.
+The target's z coordinate is ignored, so any value does.
+As the node moves during optimization, the reference point moves with it, which is exactly what makes the target a line rather than a point.</p>
+<h2 id="recipe-3-an-aggregate-goal">Recipe 3: An aggregate goal<a class="headerlink" href="#recipe-3-an-aggregate-goal" title="Permanent link">¤</a></h2>
 <p>The goals so far judge each element on its own.
-An aggregate goal judges a <em>group</em> as a whole: the total length of a cable bundle, the evenness of a strip of nodes, the variance of a family of forces.</p>
-<p>Aggregates need three small deviations from the standard recipe:</p>
+An aggregate goal judges a <em>group</em> as a whole, such as the total length of a cable represented by a chain of edges, the evenness of a strip of nodes, and the variance of a group of edge forces.</p>
+<p>Aggregates deviate from the standard recipe by one line:</p>
 <div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">jax.numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">jnp</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">jax_fdm.goals</span><span class="w"> </span><span class="kn">import</span> <span class="n">ScalarGoal</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">jax_fdm.goals.edge</span><span class="w"> </span><span class="kn">import</span> <span class="n">EdgeGoal</span>
@@ -1259,111 +1398,42 @@ An aggregate goal judges a <em>group</em> as a whole: the total length of a cabl
 <span class="sd">    Drive the combined length of a group of edges toward a target value.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="n">weight</span><span class="o">=</span><span class="mf">1.0</span><span class="p">):</span>
-        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="n">key</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="n">target</span><span class="p">,</span> <span class="n">weight</span><span class="o">=</span><span class="n">weight</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">is_collectible</span> <span class="o">=</span> <span class="kc">False</span>
-
-    <span class="k">def</span><span class="w"> </span><span class="nf">init</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">structure</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">index</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">atleast_2d</span><span class="p">(</span><span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">index_from_structure</span><span class="p">(</span><span class="n">structure</span><span class="p">))</span>
+    <span class="n">is_aggregate</span> <span class="o">=</span> <span class="kc">True</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">prediction</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">eq_state</span><span class="p">,</span> <span class="n">index</span><span class="p">):</span>
         <span class="n">lengths</span> <span class="o">=</span> <span class="n">eq_state</span><span class="o">.</span><span class="n">lengths</span><span class="p">[</span><span class="n">index</span><span class="p">]</span>
 
-        <span class="k">return</span> <span class="n">jnp</span><span class="o">.</span><span class="n">atleast_1d</span><span class="p">(</span><span class="n">jnp</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">lengths</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">jnp</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">lengths</span><span class="p">)</span>
 </code></pre></div>
 <div class="highlight"><pre><span></span><code><span class="n">goal</span> <span class="o">=</span> <span class="n">EdgesTotalLengthGoal</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="nb">list</span><span class="p">(</span><span class="n">network</span><span class="o">.</span><span class="n">edges</span><span class="p">()),</span> <span class="n">target</span><span class="o">=</span><span class="mf">12.0</span><span class="p">)</span>
 </code></pre></div>
-<p>The three deviations, in order of appearance:</p>
-<ol>
-<li><strong><code>self.is_collectible = False</code>.</strong>
-Ordinary goals of the same type get stacked into one vectorized batch.
-An aggregate is already a batch of its own, so it opts out.</li>
-<li><strong>A custom <code>init</code> that wraps the index in <code>np.atleast_2d</code>.</strong>
-The extra dimension tells the vectorizer to hand your prediction the <em>whole</em> row of indices in a single call, instead of one index at a time.</li>
-<li><strong>A prediction over the group.</strong>
-<code>index</code> is now an array of edge positions, and you reduce across it however your quantity demands: a sum here, a variance in <code>EdgesLengthEqualGoal</code>, a colinearity energy in <code>NodesColinearGoal</code>.</li>
-</ol>
-<div class="admonition warning">
-<p class="admonition-title">Call <code>self.index_from_structure</code>, or <code>super()</code>, but know why</p>
-<p>In this recipe <code>super().index_from_structure(structure)</code> is fine because <code>EdgesTotalLengthGoal</code> will never be subclassed for another element family.
-If your aggregate might grow a vertex twin one day (like <code>NodesColinearGoal</code> did), call <code>self.index_from_structure(structure)</code> instead, so the subclass's own resolution wins.
-Method resolution order giveth, and method resolution order taketh away.</p>
-</div>
-<h2 id="recipe-4-retargeting-a-goal-from-nodes-to-vertices">Recipe 4: retargeting a goal from nodes to vertices<a class="headerlink" href="#recipe-4-retargeting-a-goal-from-nodes-to-vertices" title="Permanent link">¤</a></h2>
-<p>JAX FDM speaks two dialects.
+<p><code>is_aggregate = True</code> does two things for you.
+It unlocks the list of keys (a per-element goal insists on exactly one key, and tells you so with a <code>TypeError</code>), and it tells the vectorizer to hand your prediction the <em>whole</em> row of indices in a single call, instead of one index at a time.
+<code>index</code> is then an array of edge positions, and you reduce across it however your quantity demands: a sum here, a variance in <code>EdgesLengthEqualGoal</code>, a colinearity energy in <code>NodesColinearGoal</code>.
+The whole-structure goals (<code>Network*</code>, <code>Mesh*</code>) are aggregates too, just ones whose group is the entire structure, so they take no key list at all.</p>
+<h2 id="recipe-4-retargeting-a-goal-from-nodes-to-vertices">Recipe 4: Retargeting a goal from nodes to vertices<a class="headerlink" href="#recipe-4-retargeting-a-goal-from-nodes-to-vertices" title="Permanent link">¤</a></h2>
+<p>JAX FDM speaks two dialects for their datastructures.
 Networks have <strong>nodes</strong>, meshes have <strong>vertices</strong>, and goals are picky about which one they hear.
 Aim a <code>Node*</code> goal at a mesh and you get a <code>TypeError</code> telling you to use the <code>Vertex*</code> counterpart (and the other way around).
 This is deliberate: the two vocabularies resolve keys through different index tables, and silently mixing them is the stuff of subtle bugs.</p>
-<p>So what if you wrote <code>NodeSphereGoal</code> and now want it on a mesh?
+<p>So what if you wrote <code>NodePlumbLineGoal</code> and now want it on a mesh?
 You write its vertex twin, and the twin is gloriously boring:</p>
 <div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">jax_fdm.goals.vertex</span><span class="w"> </span><span class="kn">import</span> <span class="n">VertexGoal</span>
 
 
-<span class="k">class</span><span class="w"> </span><span class="nc">VertexSphereGoal</span><span class="p">(</span><span class="n">VertexGoal</span><span class="p">,</span> <span class="n">NodeSphereGoal</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">VertexPlumbLineGoal</span><span class="p">(</span><span class="n">VertexGoal</span><span class="p">,</span> <span class="n">NodePlumbLineGoal</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Pull a mesh vertex onto the surface of a sphere.</span>
+<span class="sd">    Pull a mesh vertex onto the vertical line through a target point.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 </code></pre></div>
-<p>No methods.
-No body.
+<p>No methods and no body.
 Just a docstring and an inheritance list, with <code>VertexGoal</code> first so the vertex key resolution wins the method resolution order.
-The prediction, the target property, and the sphere projection all come along for the ride.</p>
+The prediction and the plumb projection come along for the ride.</p>
 <p>Every vertex goal in the library (<code>VertexPointGoal</code>, <code>VertexLineGoal</code>, <code>VertexResidualForceGoal</code>, and friends) is built exactly this way, so you are in good company.</p>
-<h2 id="recipe-5-a-custom-constraint">Recipe 5: a custom constraint<a class="headerlink" href="#recipe-5-a-custom-constraint" title="Permanent link">¤</a></h2>
-<p>Goals express preference: get as close to the target as you can.
-Constraints express law: stay between these bounds, or the optimizer does not go home.
-They are enforced by optimizers that support them, like <code>SLSQP</code> and <code>IPOPT</code>.</p>
-<p>A custom constraint subclasses an element family and implements one method, <code>constraint</code>, which plays the same role as a goal's <code>prediction</code>:</p>
-<div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">jax.numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">jnp</span>
-
-<span class="kn">from</span><span class="w"> </span><span class="nn">jax_fdm.constraints.edge</span><span class="w"> </span><span class="kn">import</span> <span class="n">EdgeConstraint</span>
-
-
-<span class="k">class</span><span class="w"> </span><span class="nc">EdgeRiseConstraint</span><span class="p">(</span><span class="n">EdgeConstraint</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Bound the vertical rise of an edge.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-
-    <span class="k">def</span><span class="w"> </span><span class="nf">constraint</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">eq_state</span><span class="p">,</span> <span class="n">index</span><span class="p">):</span>
-        <span class="n">vector</span> <span class="o">=</span> <span class="n">eq_state</span><span class="o">.</span><span class="n">vectors</span><span class="p">[</span><span class="n">index</span><span class="p">,</span> <span class="p">:]</span>
-
-        <span class="k">return</span> <span class="n">jnp</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">vector</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
-</code></pre></div>
-<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">jax_fdm.optimization</span><span class="w"> </span><span class="kn">import</span> <span class="n">SLSQP</span>
-
-
-<span class="n">constraints</span> <span class="o">=</span> <span class="p">[</span><span class="n">EdgeRiseConstraint</span><span class="p">(</span><span class="n">edge</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.4</span><span class="p">)</span> <span class="k">for</span> <span class="n">edge</span> <span class="ow">in</span> <span class="n">network</span><span class="o">.</span><span class="n">edges</span><span class="p">()]</span>
-
-<span class="n">network</span> <span class="o">=</span> <span class="n">constrained_fdm</span><span class="p">(</span>
-    <span class="n">network</span><span class="p">,</span>
-    <span class="n">optimizer</span><span class="o">=</span><span class="n">SLSQP</span><span class="p">(),</span>
-    <span class="n">loss</span><span class="o">=</span><span class="n">loss</span><span class="p">,</span>
-    <span class="n">parameters</span><span class="o">=</span><span class="n">parameters</span><span class="p">,</span>
-    <span class="n">constraints</span><span class="o">=</span><span class="n">constraints</span><span class="p">,</span>
-    <span class="n">maxiter</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>
-<span class="p">)</span>
-</code></pre></div>
-<p>The bounds arrive through the constructor as <code>bound_low</code> and <code>bound_up</code>.
-Leave one as <code>None</code> and it becomes an infinity of the appropriate sign, so one-sided constraints cost you nothing.
-Note that a constraint's value may return a plain scalar of shape <code>()</code>: constraints are flattened after vectorization, so the <code>(1,)</code> rule from recipe 1 is a goals-only affair.</p>
-<h2 id="the-three-contracts">The three contracts<a class="headerlink" href="#the-three-contracts" title="Permanent link">¤</a></h2>
-<p>Three rules keep your custom classes on speaking terms with the optimizer.
-Break one and you get a loud, descriptive error rather than a wrong answer, but why not skip the detour.</p>
-<p><strong>Contract 1: scalar predictions have shape <code>(1,)</code>.</strong>
-A scalar goal's prediction must return shape <code>(1,)</code>, never a bare <code>()</code>.
-Close every scalar prediction with <code>jnp.atleast_1d</code> and move on with your life.
-The error, should you forget, names this exact fix.</p>
-<p><strong>Contract 2: every init parameter is a same-named attribute.</strong>
-When many goals of one type are batched into a collection, the collection rebuilds the goal <em>from its init signature</em>: for each parameter name in <code>__init__</code>, it reads <code>self.&lt;that name&gt;</code> off every goal and stacks the values.
-So if your <code>__init__</code> takes <code>stiffness</code>, then <code>self.stiffness</code> must exist, spelled exactly like the parameter.
-Stash it as <code>self._stiffness</code> or <code>self.k</code> and the collection machinery raises an <code>AttributeError</code> quoting this rule back at you.
-This is also why recipe 2 packed the sphere into <code>target</code> instead of loose attributes: <code>target</code> is already part of the init contract, so the pack rides the existing machinery with zero extra ceremony.</p>
-<p><strong>Contract 3: speak the right vocabulary.</strong>
-<code>Node*</code> classes on networks, <code>Vertex*</code> classes on meshes, no exceptions.
-When you need a goal on the other side of the fence, write a thin twin as in recipe 4.</p>
-<p>And that is it.
-One class, one method, and the entire differentiable machinery (gradients, JIT compilation, vectorization) adopts your goal as one of its own.
-If you build a goal or constraint that others might want, contributions to the bank are warmly welcome 🚀.</p>
+<h2 id="summary">Summary<a class="headerlink" href="#summary" title="Permanent link">¤</a></h2>
+<p>One class, one method, and the entire differentiable machinery (gradients, JIT compilation, vectorization) adopts your goal as one of its own.
+When a preference is not enough and you need to draw a hard line instead, head over to <a href="../constraints/">Custom constraints</a>.
+And if you build a goal that others might want, remember that contributions are warmly welcome 🚀.</p>
 
 
 
@@ -1423,12 +1493,12 @@ If you build a goal or constraint that others might want, contributions to the b
     
       
       
-      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.sections", "navigation.top", "content.code.copy", "search.highlight", "search.suggest", "toc.follow"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"default": "latest", "provider": "mike"}}</script>
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.sections", "navigation.top", "content.code.copy", "search.highlight", "search.suggest", "toc.follow"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"default": "latest", "provider": "mike"}}</script>
     
     
-      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
       
-        <script src="../assets/js/mathjax.js"></script>
+        <script src="../../assets/js/mathjax.js"></script>
       
         <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
       
