@@ -252,34 +252,37 @@ class Mesh(Graph):
 
 class MeshSparse(Mesh, GraphSparse):
     """
-    A mesh that assembles its connectivity through sparse intermediates.
-
-    Notes
-    -----
-    The connectivity matrices are densified after a sparse build rather than kept
-    sparse: leaving them sparse breaks reverse-mode gradients with
-    ``TypeError: float() argument must be a string or a number, not 'Zero'``,
-    raised from ``bcoo._bcoo_dot_general_transpose``.
+    A mesh that keeps its connectivity matrices in sparse format.
     """
 
-    def _connectivity_faces_matrix(self) -> Float[Array, "faces vertices"]:
+    # The sparse subclass deliberately swaps the dense matrices for JAX sparse
+    # arrays; the narrowed fields and builders are the point, not a slip
+    connectivity_faces_vertices: Float[BCOO, "faces vertices"]  # pyright: ignore[reportIncompatibleVariableOverride]
+    connectivity_edges_faces: Float[BCOO, "edges faces"]  # pyright: ignore[reportIncompatibleVariableOverride]
+
+    def _connectivity_faces_matrix(self) -> Float[BCOO, "faces vertices"]:  # pyright: ignore[reportIncompatibleMethodOverride]
         """
-        The row-normalized face-vertex incidence matrix, built sparse, then dense.
+        The row-normalized face-vertex incidence matrix, in sparse format.
         """
         F = face_matrix(self.faces_indexed, normalize=True)
 
-        return BCOO.from_scipy_sparse(F).todense()
+        return BCOO.from_scipy_sparse(F)
 
-    def _connectivity_edges_faces_matrix(self) -> Float[Array, "edges faces"]:
+    def _connectivity_edges_faces_matrix(self) -> Float[BCOO, "edges faces"]:  # pyright: ignore[reportIncompatibleMethodOverride]
         """
-        The edge-face incidence matrix of the mesh.
+        The edge-face incidence matrix of the mesh, in sparse format.
         """
-        C = np.zeros((self.num_edges, self.num_faces))
+        edges_faces = np.asarray(self.edges_faces_indexed)
+        mask = edges_faces >= 0
 
-        for eindex, findex in enumerate(self._edges_faces()):
-            C[eindex, findex] = 1.0
+        rows = np.repeat(np.arange(self.num_edges), mask.sum(axis=1))
+        cols = edges_faces[mask]
+        data = np.ones(rows.size)
 
-        return jnp.asarray(C)
+        shape = (self.num_edges, self.num_faces)
+        C = coo_matrix((data, (rows, cols)), shape=shape)
+
+        return BCOO.from_scipy_sparse(C)
 
 
 # ==========================================================================

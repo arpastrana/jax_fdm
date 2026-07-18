@@ -113,12 +113,13 @@ class Graph(eqx.Module):
 
 class GraphSparse(Graph):
     """
-    A graph that keeps its connectivity matrix in sparse format.
+    A graph that keeps its connectivity and adjacency matrices in sparse format.
     """
 
-    # The sparse subclass deliberately swaps the dense connectivity for a JAX
-    # sparse array; the narrowed field and builder are the point, not a slip
+    # The sparse subclass deliberately swaps the dense matrices for JAX sparse
+    # arrays; the narrowed fields and builders are the point, not a slip
     connectivity: Float[BCOO, "edges nodes"]  # pyright: ignore[reportIncompatibleVariableOverride]
+    adjacency: Float[BCOO, "nodes nodes"]  # pyright: ignore[reportIncompatibleVariableOverride]
 
     def _connectivity_matrix(self) -> Float[BCOO, "edges nodes"]:  # pyright: ignore[reportIncompatibleMethodOverride]
         """
@@ -138,15 +139,15 @@ class GraphSparse(Graph):
         # TODO: Refactor GraphSparse to return a JAX sparse matrix instead
         return connectivity_matrix(self.edges_indexed)
 
-    def _adjacency_matrix(self) -> Float[Array, "nodes nodes"]:
+    def _adjacency_matrix(self) -> Float[BCOO, "nodes nodes"]:  # pyright: ignore[reportIncompatibleMethodOverride]
         """
-        The symmetric node-node adjacency matrix, assembled sparse, then dense.
+        The symmetric node-node adjacency matrix, in sparse format.
         """
         edges_indexed = self.edges_indexed
 
         A = adjacency_matrix(edges_indexed)
 
-        return BCOO.from_scipy_sparse(A).todense()
+        return BCOO.from_scipy_sparse(A)
 
 
 # ==========================================================================
