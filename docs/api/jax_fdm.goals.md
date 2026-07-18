@@ -59,6 +59,10 @@ Goals are collected into an error term of a [loss function](jax_fdm.losses.md).
     options:
       heading_level: 3
 
+::: jax_fdm.goals.node.residual.NodeResidualPlaneGoal
+    options:
+      heading_level: 3
+
 ::: jax_fdm.goals.node.colinear.NodesColinearGoal
     options:
       heading_level: 3
@@ -102,6 +106,66 @@ Goals are collected into an error term of a [loss function](jax_fdm.losses.md).
 ---
 
 ## Vertex goals
+
+Vertex goals are thin counterparts of the node goals above: the goal logic is
+inherited unchanged, while keys resolve against the vertices of a mesh instead
+of the nodes of a network. Applying one to a network raises a `TypeError`
+pointing to the `Node*` counterpart, and vice versa. Only the goals with no
+node equivalent — such as [VertexNormalAngleGoal][jax_fdm.goals.vertex.normal.VertexNormalAngleGoal]
+and [VertexTangentAngleGoal][jax_fdm.goals.vertex.tangent.VertexTangentAngleGoal],
+which need face topology — implement their own logic.
+
+::: jax_fdm.goals.vertex.point.VertexPointGoal
+    options:
+      heading_level: 3
+
+::: jax_fdm.goals.vertex.line.VertexLineGoal
+    options:
+      heading_level: 3
+
+::: jax_fdm.goals.vertex.plane.VertexPlaneGoal
+    options:
+      heading_level: 3
+
+::: jax_fdm.goals.vertex.segment.VertexSegmentGoal
+    options:
+      heading_level: 3
+
+::: jax_fdm.goals.vertex.coordinates.VertexXCoordinateGoal
+    options:
+      heading_level: 3
+
+::: jax_fdm.goals.vertex.coordinates.VertexYCoordinateGoal
+    options:
+      heading_level: 3
+
+::: jax_fdm.goals.vertex.coordinates.VertexZCoordinateGoal
+    options:
+      heading_level: 3
+
+::: jax_fdm.goals.vertex.residual.VertexResidualForceGoal
+    options:
+      heading_level: 3
+
+::: jax_fdm.goals.vertex.residual.VertexResidualVectorGoal
+    options:
+      heading_level: 3
+
+::: jax_fdm.goals.vertex.residual.VertexResidualDirectionGoal
+    options:
+      heading_level: 3
+
+::: jax_fdm.goals.vertex.residual.VertexResidualPlaneGoal
+    options:
+      heading_level: 3
+
+::: jax_fdm.goals.vertex.colinear.VerticesColinearGoal
+    options:
+      heading_level: 3
+
+::: jax_fdm.goals.vertex.colinear.VerticesCurvatureGoal
+    options:
+      heading_level: 3
 
 ::: jax_fdm.goals.vertex.normal.VertexNormalAngleGoal
     options:

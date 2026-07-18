@@ -171,6 +171,24 @@ def test_arrow_visibility_flags(plotter, network):
     assert not arrow_collections(obj)
 
 
+def test_point_filter_speaks_the_datastructure_vocabulary(plotter, network, mesh):
+    """
+    The nodes/vertices keyword restricts the tracked points, and with them the
+    reaction arrows to the selection.
+    """
+    obj = plotter.add(network, show_nodes=False, show_loads=False, nodes=[0])
+    assert obj.points == [0]
+    (reactions,) = arrow_collections(obj)
+    assert len(reactions.get_paths()) == 1  # one support selected, of two
+
+    corner = next(iter(mesh.vertices_where(vertex_degree=2)))
+    obj = plotter.add(mesh, show_vertices=False, show_loads=False, vertices=[corner])
+    assert obj.points == [corner]
+    # the faces draw as a patch collection too; the reactions come last
+    reactions = arrow_collections(obj)[-1]
+    assert len(reactions.get_paths()) == 1
+
+
 def test_below_tolerance_arrows_are_skipped(plotter, network):
     obj = plotter.add(network, show_nodes=False, loadtol=1e6, show_reactions=False)
     assert not arrow_collections(obj)

@@ -3,7 +3,6 @@ from jax.numpy import inf
 from jax_fdm.datastructures import FDMesh
 from jax_fdm.datastructures import FDNetwork
 from jax_fdm.equilibrium import EquilibriumMeshStructure
-from jax_fdm.equilibrium import EquilibriumModel
 from jax_fdm.equilibrium import EquilibriumStructure
 
 # ==========================================================================
@@ -27,7 +26,7 @@ class Parameter:
     Notes
     -----
     Concrete subclasses set ``attr_name`` to the datastructure attribute they
-    parametrize and implement :meth:`index` and :meth:`value` for their element type.
+    parametrize and implement `index` and `value` for their element type.
     Missing bounds normalize to negative or positive infinity rather than None.
     """
 
@@ -81,18 +80,12 @@ class Parameter:
             value = inf
         self._bound_up = value
 
-    def index(
-        self,
-        model: EquilibriumModel,
-        structure: EquilibriumStructure,
-    ) -> int:
+    def index(self, structure: EquilibriumStructure) -> int:
         """
         Resolve the parameter's key to an index in an equilibrium structure.
 
         Parameters
         ----------
-        model :
-            The equilibrium model.
         structure :
             The structure whose element ordering defines the index.
 
@@ -103,18 +96,12 @@ class Parameter:
         """
         raise NotImplementedError
 
-    def value(
-        self,
-        model: EquilibriumModel,
-        datastructure: FDNetwork | FDMesh,
-    ) -> float:
+    def value(self, datastructure: FDNetwork | FDMesh) -> float:
         """
         Read the parameter's current value from a datastructure.
 
         Parameters
         ----------
-        model :
-            The equilibrium model.
         datastructure :
             The network or mesh to read the parametrized attribute from.
 
@@ -138,13 +125,13 @@ class NodeParameter(Parameter):
 
     key: int  # a non-group node key is always a bare int at runtime
 
-    def index(self, model: EquilibriumModel, structure: EquilibriumStructure) -> int:
+    def index(self, structure: EquilibriumStructure) -> int:
         """
         The index of the parametrized node in the structure.
         """
         return structure.node_index[self.key]
 
-    def value(self, model: EquilibriumModel, datastructure: FDNetwork) -> float:
+    def value(self, datastructure: FDNetwork) -> float:
         """
         The current value of the parametrized node attribute.
         """
@@ -159,17 +146,13 @@ class VertexParameter(Parameter):
 
     key: int  # a non-group vertex key is always a bare int at runtime
 
-    def index(
-        self,
-        model: EquilibriumModel,
-        structure: EquilibriumMeshStructure,
-    ) -> int:
+    def index(self, structure: EquilibriumMeshStructure) -> int:
         """
         The index of the parametrized vertex in the structure.
         """
         return structure.vertex_index[self.key]
 
-    def value(self, model: EquilibriumModel, datastructure: FDMesh) -> float:
+    def value(self, datastructure: FDMesh) -> float:
         """
         The current value of the parametrized vertex attribute.
         """
@@ -185,17 +168,13 @@ class EdgeParameter(Parameter):
     # a non-group edge key is always a bare (u, v) tuple at runtime
     key: tuple[int, int]
 
-    def index(self, model: EquilibriumModel, structure: EquilibriumStructure) -> int:
+    def index(self, structure: EquilibriumStructure) -> int:
         """
         The index of the parametrized edge in the structure.
         """
         return structure.edge_index[self.key]
 
-    def value(
-        self,
-        model: EquilibriumModel,
-        datastructure: FDNetwork | FDMesh,
-    ) -> float:
+    def value(self, datastructure: FDNetwork | FDMesh) -> float:
         """
         The current value of the parametrized edge attribute.
         """
@@ -242,18 +221,12 @@ class ParameterGroup(Parameter):
         super().__init__(key, bound_low, bound_up)
         assert len(self.key) > 0
 
-    def index(
-        self,
-        model: EquilibriumModel,
-        structure: EquilibriumStructure,
-    ) -> list[int]:
+    def index(self, structure: EquilibriumStructure) -> list[int]:
         """
         Resolve the group's keys to indices in an equilibrium structure.
 
         Parameters
         ----------
-        model :
-            The equilibrium model.
         structure :
             The structure whose element ordering defines the indices.
 
@@ -270,17 +243,13 @@ class NodeGroupParameter(ParameterGroup):
     A single parameter shared across a group of network nodes.
     """
 
-    def index(
-        self,
-        model: EquilibriumModel,
-        structure: EquilibriumStructure,
-    ) -> list[int]:
+    def index(self, structure: EquilibriumStructure) -> list[int]:
         """
         The indices of the parametrized nodes in the structure.
         """
         return [structure.node_index[key] for key in self.key]
 
-    def value(self, model: EquilibriumModel, datastructure: FDNetwork) -> float:
+    def value(self, datastructure: FDNetwork) -> float:
         """
         The current mean value of the parametrized attribute over the grouped nodes.
         """
@@ -296,17 +265,13 @@ class VertexGroupParameter(ParameterGroup):
     A single parameter shared across a group of mesh vertices.
     """
 
-    def index(
-        self,
-        model: EquilibriumModel,
-        structure: EquilibriumMeshStructure,
-    ) -> list[int]:
+    def index(self, structure: EquilibriumMeshStructure) -> list[int]:
         """
         The indices of the parametrized vertices in the structure.
         """
         return [structure.vertex_index[key] for key in self.key]
 
-    def value(self, model: EquilibriumModel, datastructure: FDMesh) -> float:
+    def value(self, datastructure: FDMesh) -> float:
         """
         The current mean value of the parametrized attribute over the grouped vertices.
         """
@@ -325,21 +290,13 @@ class EdgeGroupParameter(ParameterGroup):
     # an edge group key is always a sequence of (u, v) tuples at runtime
     key: tuple[tuple[int, int], ...]
 
-    def index(
-        self,
-        model: EquilibriumModel,
-        structure: EquilibriumStructure,
-    ) -> list[int]:
+    def index(self, structure: EquilibriumStructure) -> list[int]:
         """
         The indices of the parametrized edges in the structure.
         """
         return [structure.edge_index[key] for key in self.key]
 
-    def value(
-        self,
-        model: EquilibriumModel,
-        datastructure: FDNetwork | FDMesh,
-    ) -> float:
+    def value(self, datastructure: FDNetwork | FDMesh) -> float:
         """
         The current mean value of the parametrized attribute over the grouped edges.
         """
@@ -380,7 +337,7 @@ class NodeSupportParameter(NodeParameter):
     A node support parameter.
     """
 
-    def index(self, model: EquilibriumModel, structure: EquilibriumStructure) -> int:
+    def index(self, structure: EquilibriumStructure) -> int:
         """
         The index of the parametrized node among the structure's supports.
         """
@@ -421,11 +378,7 @@ class NodeGroupSupportParameter(NodeGroupParameter):
     Parametrize a group of support nodes.
     """
 
-    def index(
-        self,
-        model: EquilibriumModel,
-        structure: EquilibriumStructure,
-    ) -> list[int]:
+    def index(self, structure: EquilibriumStructure) -> list[int]:
         """
         The indices of the parametrized nodes among the structure's supports.
         """
@@ -521,7 +474,7 @@ class VertexSupportParameter(VertexParameter):
     A vertex support parameter.
     """
 
-    def index(self, model: EquilibriumModel, structure: EquilibriumStructure) -> int:
+    def index(self, structure: EquilibriumStructure) -> int:
         """
         The index of the parametrized vertex among the structure's supports.
         """
@@ -556,11 +509,7 @@ class VertexGroupSupportParameter(VertexGroupParameter):
     Parametrize a group of support vertices.
     """
 
-    def index(
-        self,
-        model: EquilibriumModel,
-        structure: EquilibriumStructure,
-    ) -> list[int]:
+    def index(self, structure: EquilibriumStructure) -> list[int]:
         """
         The indices of the parametrized vertices among the structure's supports.
         """

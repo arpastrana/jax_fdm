@@ -34,10 +34,10 @@ class Goal:
     Notes
     -----
     A goal is initialized in two phases: construction stores the key, target, and
-    weight, then :meth:`init` resolves the key to an index against an equilibrium
+    weight, then `init` resolves the key to an index against an equilibrium
     structure before any prediction runs. Subclasses supply the quantity of
-    interest via :meth:`prediction` and mix in :class:`ScalarGoal` or
-    :class:`VectorGoal` for the target's shape.
+    interest via `prediction` and mix in [ScalarGoal][jax_fdm.goals.goal.ScalarGoal]
+    or [VectorGoal][jax_fdm.goals.goal.VectorGoal] for the target's shape.
     """
 
     def __init__(
@@ -162,9 +162,8 @@ class Goal:
         """
         raise NotImplementedError
 
-    def index_from_model(
+    def index_from_structure(
         self,
-        model: EquilibriumModel,
         structure: EquilibriumStructure,
     ) -> int | tuple[int, ...]:
         """
@@ -172,8 +171,6 @@ class Goal:
 
         Parameters
         ----------
-        model :
-            The equilibrium model.
         structure :
             The structure whose element ordering defines the index.
 
@@ -216,9 +213,9 @@ class Goal:
         Notes
         -----
         Must be called once before the goal is evaluated; it populates the index
-        that :meth:`prediction` reads.
+        that `prediction` reads.
         """
-        self.index = self.index_from_model(model, structure)
+        self.index = self.index_from_structure(structure)
 
     def __call__(self, eqstate: EquilibriumState) -> GoalState:
         """
@@ -234,17 +231,24 @@ class Goal:
         goal_state :
             The goal state bundling the reference values, the predictions, and the
             weights, vmapped over the goal's elements.
+
+        Raises
+        ------
+        ValueError
+            If the goal and prediction shapes disagree, typically because a scalar
+            prediction dropped its trailing axis.
         """
         # self.index is a numpy index array populated in init and mapped to a
         # jax scalar by vmap
         prediction = vmap(self.prediction, in_axes=(None, 0))(eqstate, self.index)  # pyright: ignore[reportArgumentType]
         goal = vmap(self.goal)(self.target, prediction)
 
-        msg = (
-            f"Goal {self.__class__.__name__} shape: {goal.shape} "
-            f"vs. prediction shape: {prediction.shape}"
-        )
-        assert goal.shape == prediction.shape, msg
+        if goal.shape != prediction.shape:
+            raise ValueError(
+                f"{type(self).__name__}: goal shape {goal.shape} != prediction "
+                f"shape {prediction.shape}. Scalar predictions must have shape "
+                "(1,); wrap the prediction's return value with jnp.atleast_1d.",
+            )
 
         return GoalState(goal=goal, prediction=prediction, weight=self.weight)
 
@@ -298,5 +302,11 @@ class VectorGoal:
         return self._target
 
     @target.setter
-    def target(self, target: Float[Array, "..."]) -> None:
+    def target(self, target: float | Float[Array, "..."]) -> None:
+        if isinstance(target, (int, float)):
+            raise TypeError(
+                f"{type(self).__name__} is a vector goal, so its target must be "
+                "an xyz vector (or one per element), not a single number. "
+                "Did you mean the scalar variant of this goal?",
+            )
         self._target = jnp.reshape(jnp.asarray(target, dtype=DTYPE_JAX), (-1, 3))

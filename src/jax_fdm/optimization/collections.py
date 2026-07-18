@@ -34,6 +34,8 @@ class Collection:
         ------
         TypeError
             If the collectibles are not all of the same type.
+        AttributeError
+            If an init parameter is not stored as a same-named attribute.
         """
         # check homogenity
         ctypes = [type(c) for c in collectibles]
@@ -50,7 +52,14 @@ class Collection:
         ckwargs = defaultdict(list)
         for key in sig.parameters.keys():
             for collectible in collectibles:
-                attr = getattr(collectible, key)
+                try:
+                    attr = getattr(collectible, key)
+                except AttributeError as error:
+                    raise AttributeError(
+                        f"{cls.__name__}.__init__ parameter '{key}' must be "
+                        f"stored as attribute 'self.{key}': collections rebuild "
+                        "goals and constraints from their init signature.",
+                    ) from error
                 ckwargs[key].append(attr)
 
         collection = cls(**ckwargs)

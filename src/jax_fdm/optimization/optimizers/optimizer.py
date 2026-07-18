@@ -95,9 +95,9 @@ class Optimizer:
     Notes
     -----
     Subclasses set ``name`` to their SciPy method identity and override the
-    gradient, hessian, constraint, or minimization hooks as needed. :meth:`problem`
+    gradient, hessian, constraint, or minimization hooks as needed. `problem`
     assembles the objective, its gradient, bounds, and goal collections into an
-    :class:`OptProblem`, which :meth:`solve` then minimizes.
+    `OptProblem`, which `solve` then minimizes.
     """
 
     name: str = ""

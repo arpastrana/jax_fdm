@@ -11,8 +11,8 @@ from jax_fdm.datastructures import FDMesh
 from jax_fdm.equilibrium import constrained_fdm
 from jax_fdm.equilibrium import fdm
 from jax_fdm.goals import EdgeLengthGoal
-from jax_fdm.goals import NetworkLoadPathGoal
-from jax_fdm.goals import NodeResidualForceGoal
+from jax_fdm.goals import MeshLoadPathGoal
+from jax_fdm.goals import VertexResidualForceGoal
 from jax_fdm.losses import L2Regularizer
 from jax_fdm.losses import Loss
 from jax_fdm.losses import PredictionError
@@ -173,12 +173,12 @@ goals_b = []
 for key in mesh.vertices_supports():
     step = steps[key]
     reaction = (1 - step / max_step) ** r_exp * (rmax - rmin) + rmin
-    goal = NodeResidualForceGoal(key, reaction, weight=weight_residual)
+    goal = VertexResidualForceGoal(key, reaction, weight=weight_residual)
     goals_b.append(goal)
 
 # global loadpath goal
 goals_c = []
-load_path = NetworkLoadPathGoal()
+load_path = MeshLoadPathGoal()
 goals_c.append(load_path)
 
 # ==========================================================================

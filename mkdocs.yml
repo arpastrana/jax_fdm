@@ -111,6 +111,7 @@ nav:
   - Overview: index.md
   - Installation: installation.md
   - Examples: examples.md
+  - Custom goals and constraints: custom_goals.md
   - API reference:
       - api/jax_fdm.datastructures.md
       - api/jax_fdm.equilibrium.md

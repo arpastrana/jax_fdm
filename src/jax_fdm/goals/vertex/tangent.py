@@ -28,7 +28,8 @@ class VertexTangentAngleGoal(VertexNormalAngleGoal):
     and spans [-pi / 2, pi / 2]: positive when the vertex normal points within 90
     degrees of the reference vector (the surface rises toward it) and negative when
     the normal is folded away. The sign follows the winding of the mesh faces, which
-    must be unified; see the notes of :class:`VertexNormalAngleGoal`.
+    must be unified; see the notes of
+    [VertexNormalAngleGoal][jax_fdm.goals.vertex.normal.VertexNormalAngleGoal].
     """
 
     def __init__(

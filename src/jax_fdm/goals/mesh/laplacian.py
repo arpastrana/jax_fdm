@@ -18,8 +18,9 @@ class MeshXYZLaplacianGoal(NetworkXYZLaplacianGoal):
 
     Notes
     -----
-    A thin wrapper of :class:`NetworkXYZLaplacianGoal` that fixes the key to the
-    mesh sentinel.
+    A thin wrapper of
+    [NetworkXYZLaplacianGoal][jax_fdm.goals.network.laplacian.NetworkXYZLaplacianGoal]
+    that fixes the key to the mesh sentinel.
     """
 
     def __init__(

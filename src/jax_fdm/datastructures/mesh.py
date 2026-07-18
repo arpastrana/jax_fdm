@@ -233,7 +233,7 @@ class FDMesh(Mesh, FDDatastructure):
 
         Notes
         -----
-        An alias of :meth:`vertices_supports`.
+        An alias of `vertices_supports`.
         """
         return self.vertices_supports(keys)
 

@@ -162,7 +162,7 @@ class FDNetwork(Network, FDDatastructure):
 
         Notes
         -----
-        An alias of :meth:`node_support`; anchor and support are synonyms here.
+        An alias of `node_support`; anchor and support are synonyms here.
         """
         return self.node_support(key)
 
@@ -222,7 +222,7 @@ class FDNetwork(Network, FDDatastructure):
 
         Notes
         -----
-        An alias of :meth:`nodes_supports`.
+        An alias of `nodes_supports`.
         """
         return self.nodes_supports(keys)
 
@@ -243,7 +243,7 @@ class FDNetwork(Network, FDDatastructure):
 
         Notes
         -----
-        An alias of :meth:`nodes_supports`.
+        An alias of `nodes_supports`.
         """
         return self.nodes_supports(keys)
 

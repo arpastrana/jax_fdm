@@ -292,7 +292,7 @@ for config in sweep_configs:
         a = [
             constraint.constraint(
                 eqstate,
-                constraint.index_from_model(model, structure),
+                constraint.index_from_structure(structure),
             ).item()
             for constraint in constraint_angles
         ]

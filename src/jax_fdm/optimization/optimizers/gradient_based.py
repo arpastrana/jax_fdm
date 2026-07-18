@@ -93,7 +93,8 @@ class LBFGSBS(LBFGSB):
     Notes
     -----
     Wrapping each gradient in a NumPy array sidesteps SciPy compatibility issues
-    with JAX arrays, at the cost of being slower than :class:`LBFGSB`.
+    with JAX arrays, at the cost of being slower than
+    [LBFGSB][jax_fdm.optimization.optimizers.gradient_based.LBFGSB].
     """
 
     def gradient(self, loss: Callable) -> Callable:

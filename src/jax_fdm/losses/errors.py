@@ -27,7 +27,7 @@ class Error:
     Notes
     -----
     Goals are grouped into collections in ``collections``; the term evaluates one
-    error per collection and aggregates them via :meth:`errors`.
+    error per collection and aggregates them via `errors`.
     """
 
     def __init__(

@@ -51,11 +51,26 @@ class NodeCurvatureConstraint(NodeConstraint):
             The structure whose node ordering defines the indices.
         """
         super().init(model, structure)
-        self.index_polygon = self.polygon_indices(model, structure)
+        self.index_polygon = self.polygon_indices(structure)
+
+    def key_index(self, structure: EquilibriumStructure) -> dict[int, int]:
+        """
+        The key-to-index mapping used to resolve the neighborhood polygon keys.
+
+        Parameters
+        ----------
+        structure :
+            The structure whose element ordering defines the indices.
+
+        Returns
+        -------
+        key_index :
+            The mapping from node keys to structure indices.
+        """
+        return structure.node_index
 
     def polygon_indices(
         self,
-        model: EquilibriumModel,
         structure: EquilibriumStructure,
     ) -> Int[Array, "nodes neighbors"]:
         """
@@ -63,8 +78,6 @@ class NodeCurvatureConstraint(NodeConstraint):
 
         Parameters
         ----------
-        model :
-            The equilibrium model.
         structure :
             The structure whose node ordering defines the indices.
 
@@ -73,11 +86,12 @@ class NodeCurvatureConstraint(NodeConstraint):
         index_polygon :
             The neighbor indices of each constrained node, keyed by structure index.
         """
+        key_index = self.key_index(structure)
         index_max = max(self.index) + 1
         polygon = np.atleast_2d(self.polygon)
         index_polygon = np.zeros((index_max, polygon.shape[1]))
         for p, idx in zip(polygon, self.index):
-            index_polygon[idx, :] = tuple([structure.node_index[nbr] for nbr in p])
+            index_polygon[idx, :] = tuple([key_index[nbr] for nbr in p])
 
         return jnp.array(index_polygon, dtype=jnp.int64)
 

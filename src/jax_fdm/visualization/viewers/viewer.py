@@ -22,7 +22,7 @@ __all__ = ["Viewer"]
 
 class Viewer(CompasViewer):
     """
-    A thin wrapper on :class:`compas_viewer.Viewer`.
+    A thin wrapper on `compas_viewer.Viewer`.
 
     It subclasses the COMPAS viewer so that camera control, the ``on`` frame
     loop, ``show`` and recording all work natively. The force density
@@ -32,7 +32,7 @@ class Viewer(CompasViewer):
 
     For convenience it also accepts the ``width``, ``height`` and ``show_grid``
     keyword arguments directly and folds them into a
-    :class:`compas_viewer.config.Config`,
+    `compas_viewer.config.Config`,
     so the common window setup does not require building a config by hand.
     The defaults (1200x800, no grid) fit a typical laptop screen and keep the
     grid from cutting through structures that hang below ``z=0``.
@@ -162,7 +162,7 @@ class Viewer(CompasViewer):
         This is a convenience shortcut for ``viewer.scene.add`` with a couple
         of kwarg conveniences for plain COMPAS objects. The force density
         datastructures dispatch through the scene registry to their scene
-        objects (:class:`FDNetworkObject`, :class:`FDMeshObject`).
+        objects (`FDNetworkObject`, `FDMeshObject`).
 
         Dispatch is purely by type. To draw a force-density datastructure as plain
         geometry instead (a bare wireframe or shaded surface), convert it to its

@@ -28,9 +28,10 @@ class EquilibriumStructure(Graph):
 
     Notes
     -----
-    Extends :class:`Graph` with a support mask and the free/fixed node partition,
-    precomputing the free and fixed connectivity submatrices and the index maps
-    that reorder nodes between the free-fixed and native orderings.
+    Extends [Graph][jax_fdm.equilibrium.structures.graphs.Graph] with a support
+    mask and the free/fixed node partition, precomputing the free and fixed
+    connectivity submatrices and the index maps that reorder nodes between the
+    free-fixed and native orderings.
     """
 
     supports: Int[np.ndarray, "nodes"]
@@ -350,7 +351,9 @@ class EquilibriumMeshStructure(EquilibriumStructure, Mesh):
 
     Notes
     -----
-    Adds face connectivity to :class:`EquilibriumStructure`, so mesh vertices play
+    Adds face connectivity to
+    [EquilibriumStructure][jax_fdm.equilibrium.structures.structures.EquilibriumStructure],
+    so mesh vertices play
     the role of nodes while faces enable tributary face-load distribution.
     """
 
@@ -469,8 +472,10 @@ class EquilibriumMeshStructureSparse(
 
     Notes
     -----
-    Combines the face topology of :class:`EquilibriumMeshStructure` with the sparse
-    assembly precomputation of :class:`EquilibriumStructureSparse`.
+    Combines the face topology of
+    [EquilibriumMeshStructure][jax_fdm.equilibrium.structures.structures.EquilibriumMeshStructure]
+    with the sparse assembly precomputation of
+    [EquilibriumStructureSparse][jax_fdm.equilibrium.structures.structures.EquilibriumStructureSparse].
     """
 
     def __init__(

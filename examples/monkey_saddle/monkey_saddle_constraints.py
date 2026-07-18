@@ -12,7 +12,7 @@ from jax_fdm.constraints import EdgeLengthConstraint
 from jax_fdm.datastructures import FDMesh
 from jax_fdm.equilibrium import constrained_fdm
 from jax_fdm.equilibrium import fdm
-from jax_fdm.goals import NodeResidualForceGoal
+from jax_fdm.goals import VertexResidualForceGoal
 from jax_fdm.losses import Loss
 from jax_fdm.losses import SquaredError
 from jax_fdm.optimization import OptimizationRecorder
@@ -166,7 +166,7 @@ goals = []
 for key in mesh.vertices_supports():
     step = steps[key]
     reaction = (1 - step / max_step) ** r_exp * (rmax - rmin) + rmin
-    goal = NodeResidualForceGoal(key, reaction)
+    goal = VertexResidualForceGoal(key, reaction)
     goals.append(goal)
 
 # ==========================================================================

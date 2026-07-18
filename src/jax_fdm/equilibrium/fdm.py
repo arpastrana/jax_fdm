@@ -14,12 +14,15 @@ from jax_fdm.equilibrium import EquilibriumParametersState
 from jax_fdm.equilibrium import EquilibriumState
 from jax_fdm.equilibrium import EquilibriumStructure
 from jax_fdm.equilibrium import EquilibriumStructureSparse
-from jax_fdm.losses import Loss
-from jax_fdm.optimization import Optimizer
-from jax_fdm.parameters import Parameter
 
+# Imported for annotations only: a runtime import would close the package cycle
+# equilibrium -> losses/optimization/parameters -> goals -> equilibrium and make
+# `import jax_fdm.goals` order-dependent.
 if TYPE_CHECKING:
     from jax_fdm.constraints import Constraint
+    from jax_fdm.losses import Loss
+    from jax_fdm.optimization import Optimizer
+    from jax_fdm.parameters import Parameter
 
 # ==========================================================================
 # Type aliases
@@ -139,9 +142,9 @@ def fdm(
 
 def constrained_fdm(
     datastructure: FDNetwork | FDMesh,
-    optimizer: Optimizer,
-    loss: Loss,
-    parameters: list[Parameter] | None = None,
+    optimizer: "Optimizer",
+    loss: "Loss",
+    parameters: list["Parameter"] | None = None,
     constraints: list["Constraint"] | None = None,
     maxiter: int = 100,
     tol: float = 1e-6,

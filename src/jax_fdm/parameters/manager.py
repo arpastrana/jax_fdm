@@ -289,9 +289,9 @@ class ParameterManager:
         for parameter in self.parameters:
             if isinstance(parameter, cls):
                 if isinstance(parameter, ParameterGroup):
-                    indices.extend(parameter.index(self.model, self.structure))
+                    indices.extend(parameter.index(self.structure))
                 else:
-                    indices.append(parameter.index(self.model, self.structure))
+                    indices.append(parameter.index(self.structure))
 
         # return np.array(indices, dtype=np.int64)
         return indices
@@ -359,7 +359,7 @@ class ParameterManager:
         if self._parameters_value is None:
             values = []
             for parameter in self.parameters_ordered:
-                values.append(parameter.value(self.model, self.network))
+                values.append(parameter.value(self.network))
             self._parameters_value = jnp.array(values, dtype=DTYPE_JAX)
 
         return self._parameters_value
