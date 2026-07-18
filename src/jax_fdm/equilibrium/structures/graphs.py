@@ -130,13 +130,21 @@ class GraphSparse(Graph):
     @property
     def connectivity_scipy(self) -> csc_matrix:
         """
-        The signed edge-node incidence matrix as a SciPy sparse matrix.
+        The signed edge-node incidence matrix as a scipy sparse matrix.
+
+        This is the assembly substrate the sparse structures build from: the
+        free and fixed column submatrices and the stiffness precomputation
+        slice and factor it before converting the results to JAX sparse format.
 
         Notes
         -----
-        Rebuilt on every access.
+        Kept in scipy format on purpose. Slicing columns out of a JAX sparse
+        matrix materializes a stored entry for every edge-column pair rather
+        than only the nonzeros, and the stiffness precomputation relies on
+        structural operations (transpose products, diagonal rewrites, index
+        pointer reads) that JAX sparse arrays do not provide. Rebuilt on every
+        access, which costs fractions of a millisecond.
         """
-        # TODO: Refactor GraphSparse to return a JAX sparse matrix instead
         return connectivity_matrix(self.edges_indexed)
 
     def _adjacency_matrix(self) -> Float[BCOO, "nodes nodes"]:  # pyright: ignore[reportIncompatibleMethodOverride]
