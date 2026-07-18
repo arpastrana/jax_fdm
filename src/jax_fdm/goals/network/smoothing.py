@@ -46,8 +46,8 @@ class NetworkSmoothGoal(ScalarGoal, NetworkGoal):
     def prediction(
         self,
         eq_state: EquilibriumState,
-        index: Int[Array, ""],
-    ) -> Float[Array, "1"]:
+        index: Int[Array, "1"],
+    ) -> Float[Array, ""]:
         """
         The mean fairness energy over the network's nodes.
 
@@ -69,9 +69,8 @@ class NetworkSmoothGoal(ScalarGoal, NetworkGoal):
         fairness_fn = vmap(node_nbrs_fairness_ngon, in_axes=(None, 0, 0))
 
         fairness_nodes = fairness_fn(xyz, xyz, adjacency)
-        fairness = jnp.mean(fairness_nodes)
 
-        return jnp.atleast_1d(fairness)
+        return jnp.mean(fairness_nodes)
 
 
 def node_nbrs_fairness_ngon(

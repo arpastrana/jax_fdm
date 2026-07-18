@@ -53,8 +53,8 @@ class MeshSmoothGoal(ScalarGoal, MeshGoal):
     def prediction(
         self,
         eq_state: EquilibriumState,
-        index: Int[Array, ""],
-    ) -> Float[Array, "1"]:
+        index: Int[Array, "1"],
+    ) -> Float[Array, ""]:
         """
         The mean fairness energy over the mesh's free vertices.
 
@@ -77,9 +77,7 @@ class MeshSmoothGoal(ScalarGoal, MeshGoal):
 
         fairness_vertices = fairness_fn(xyz, xyz, adjacency)
         fairness_vertices = fairness_vertices[self.indices_free]
-        fairness = jnp.mean(fairness_vertices)
-
-        return jnp.atleast_1d(fairness)
+        return jnp.mean(fairness_vertices)
 
 
 def vertex_nbrs_fairness_ngon(

@@ -43,8 +43,8 @@ class NetworkXYZLaplacianGoal(ScalarGoal, NetworkGoal):
     def prediction(
         self,
         eq_state: EquilibriumState,
-        index: Int[Array, ""],
-    ) -> Float[Array, "1"]:
+        index: Int[Array, "1"],
+    ) -> Float[Array, ""]:
         """
         The Laplacian energy of the network coordinates.
 
@@ -60,7 +60,6 @@ class NetworkXYZLaplacianGoal(ScalarGoal, NetworkGoal):
         prediction :
             The Laplacian energy, equal to the sum of squared edge lengths.
         """
-        vectors = eq_state.vectors
-        laplacian = jnp.dot(jnp.ravel(vectors), jnp.reshape(vectors, (-1, 1)))
+        vectors = jnp.ravel(eq_state.vectors)
 
-        return jnp.atleast_1d(laplacian)
+        return jnp.dot(vectors, vectors)

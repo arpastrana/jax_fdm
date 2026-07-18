@@ -22,7 +22,7 @@ class VertexNormalAngleGoal(ScalarGoal, VertexGoal):
     Parameters
     ----------
     key :
-        The key or keys of the vertex(es) the goal acts on.
+        The key of the vertex the goal acts on.
     vector :
         The reference vector each vertex normal's angle is measured against.
     target :
@@ -48,7 +48,7 @@ class VertexNormalAngleGoal(ScalarGoal, VertexGoal):
 
     def __init__(
         self,
-        key: int | tuple[int, int] | list[int] | list[tuple[int, int]],
+        key: int,
         vector: Float[Array, "..."],
         target: float | Float[Array, "..."],
         weight: float = 1.0,
@@ -174,7 +174,7 @@ class VertexNormalAngleGoal(ScalarGoal, VertexGoal):
         self,
         eq_state: EquilibriumState,
         index: Int[Array, ""],
-    ) -> Float[Array, "1"]:
+    ) -> Float[Array, ""]:
         """
         The angle between the vertex normal and the reference vector.
 
@@ -195,6 +195,4 @@ class VertexNormalAngleGoal(ScalarGoal, VertexGoal):
 
         # the signed angle is covariant with the normal's orientation, which
         # the winding of the incident faces determines
-        angle = angle_vectors(normal, self.vector[index, :])
-
-        return jnp.atleast_1d(angle)
+        return angle_vectors(normal, self.vector[index, :])

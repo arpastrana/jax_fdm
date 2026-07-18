@@ -23,7 +23,7 @@ class FaceRectangularGoal(ScalarGoal, FaceGoal):
 
     def __init__(
         self,
-        key: int | tuple[int, int] | list[int] | list[tuple[int, int]],
+        key: int,
         weight: float = 1.0,
         target: float | Float[Array, "..."] = 0.0,
     ) -> None:
@@ -54,7 +54,7 @@ class FaceRectangularGoal(ScalarGoal, FaceGoal):
         self,
         eq_state: EquilibriumState,
         index: Int[Array, ""],
-    ) -> Float[Array, "1"]:
+    ) -> Float[Array, ""]:
         """
         A measure of how far a face is from rectangular.
 
@@ -75,4 +75,4 @@ class FaceRectangularGoal(ScalarGoal, FaceGoal):
         face_cosines = vmap(cosines_angles_polygon, in_axes=(0))(fxyz)
         face_cosines = jnp.mean(jnp.abs(face_cosines), axis=-1)
 
-        return jnp.atleast_1d(jnp.sum(face_cosines))
+        return jnp.sum(face_cosines)

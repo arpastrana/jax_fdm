@@ -57,8 +57,8 @@ class MeshPlanarityGoal(ScalarGoal, MeshGoal):
     def prediction(
         self,
         eq_state: EquilibriumState,
-        index: Int[Array, ""],
-    ) -> Float[Array, "1"]:
+        index: Int[Array, "1"],
+    ) -> Float[Array, ""]:
         """
         The average planarity of the mesh faces.
 
@@ -76,7 +76,7 @@ class MeshPlanarityGoal(ScalarGoal, MeshGoal):
         """
         planarities = faces_planarity(self.faces_indexed, eq_state.xyz)
 
-        return jnp.atleast_1d(jnp.mean(planarities))
+        return jnp.mean(planarities)
 
 
 # ==========================================================================

@@ -52,8 +52,8 @@ class MeshAreaGoal(ScalarGoal, MeshGoal):
     def prediction(
         self,
         eq_state: EquilibriumState,
-        index: Int[Array, ""],
-    ) -> Float[Array, "1"]:
+        index: Int[Array, "1"],
+    ) -> Float[Array, ""]:
         """
         The negated total surface area of the mesh.
 
@@ -104,9 +104,7 @@ class MeshAreaGoal(ScalarGoal, MeshGoal):
         faces_area = vmap(face_area, in_axes=(0, None))
         areas = faces_area(self.faces, eq_state.xyz)
 
-        area = jnp.sum(areas) * -1.0
-
-        return jnp.atleast_1d(area)
+        return jnp.sum(areas) * -1.0
 
 
 class MeshFacesAreaEqualizeGoal(ScalarGoal, MeshGoal):
@@ -148,8 +146,8 @@ class MeshFacesAreaEqualizeGoal(ScalarGoal, MeshGoal):
     def prediction(
         self,
         eq_state: EquilibriumState,
-        index: Int[Array, ""],
-    ) -> Float[Array, "1"]:
+        index: Int[Array, "1"],
+    ) -> Float[Array, ""]:
         """
         The variance of the face areas, normalized by their mean.
 
@@ -195,4 +193,4 @@ class MeshFacesAreaEqualizeGoal(ScalarGoal, MeshGoal):
         faces_area = vmap(face_area, in_axes=(0, None))
         areas = faces_area(self.faces, eq_state.xyz)
 
-        return jnp.atleast_1d(jnp.var(areas) / jnp.mean(areas))
+        return jnp.var(areas) / jnp.mean(areas)

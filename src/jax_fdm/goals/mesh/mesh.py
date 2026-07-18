@@ -20,9 +20,11 @@ class MeshGoal(Goal):
 
     Notes
     -----
-    A mesh goal spans the entire structure rather than one element, so it always
-    carries the sentinel key ``-1`` and is never grouped into a collection.
+    A mesh goal spans the entire structure rather than one element, so it is an
+    aggregate that always carries the sentinel key ``-1``.
     """
+
+    is_aggregate = True
 
     def __init__(
         self,
@@ -31,9 +33,6 @@ class MeshGoal(Goal):
         weight: float = 1.0,
     ):
         super().__init__(key=key, target=target, weight=weight)
-        # A mesh goal aggregates the whole structure, so it always carries the
-        # sentinel key -1 and is never grouped with peers into a collection.
-        self.is_collectible = False
 
     def index_from_structure(
         self,

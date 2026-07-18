@@ -6,7 +6,7 @@ Maybe you want a node to sit on a sphere.
 Maybe your PhD committee wants both, by Friday.
 
 Good news: a custom goal is one class and one method away.
-This guide walks you through five recipes, from a two-line scalar goal to a full custom constraint, and closes with the three contracts that keep the optimizer happy.
+This guide walks you through five recipes, from a two-line scalar goal to a full custom constraint.
 
 ## How a goal works
 
@@ -14,12 +14,15 @@ A goal lives a two-phase life.
 
 **Phase one is construction.**
 You build the goal with an element key, a target, and a weight.
+One goal, one key: to target many elements, create one goal per element, and the machinery batches same-type goals into a single vectorized call.
+(The exception is the aggregate goal of recipe 3, which judges a group as a whole and takes the whole list.)
 No structure is involved yet, so you can create goals anywhere, in any order, before or after form-finding.
 
 **Phase two is initialization.**
 When you call `constrained_fdm`, the optimizer calls `goal.init(model, structure)` behind the scenes.
 This resolves your element key (a node key, an edge tuple, a vertex key) into an integer index inside the equilibrium structure.
 From then on, the goal reads its quantity of interest straight out of an `EquilibriumState` by index.
+In other words: you speak in keys at construction, the machinery speaks in array rows at evaluation, and `init` is the translation step between the two.
 
 Every goal you write is the product of two choices:
 
@@ -50,22 +53,18 @@ class EdgeRiseGoal(ScalarGoal, EdgeGoal):
 
     def prediction(self, eq_state, index):
         vector = eq_state.vectors[index, :]
-        rise = jnp.abs(vector[2])
 
-        return jnp.atleast_1d(rise)
+        return jnp.abs(vector[2])
 ```
 
 That is the whole class.
-Let's unpack the three lines that matter.
+Let's unpack the two lines that matter.
 
 - `eq_state` is an `EquilibriumState`, a named tuple holding the solved geometry: `xyz` (node coordinates), `residuals`, `lengths`, `forces`, `loads`, and `vectors` (edge vectors from tail to head).
 Your prediction slices what it needs out of these arrays.
-- `index` is the integer position of *one* edge.
+- `index` is where phase two landed your key: the integer row of *one* edge inside those arrays.
 You write the prediction for a single element, and JAX FDM vectorizes it across every edge you attach the goal to.
 Free performance, no loops.
-- `jnp.atleast_1d` is not decoration.
-A scalar prediction must have shape `(1,)`, not `()`.
-Forget it and the goal raises a `ValueError` that tells you exactly this (we have all been there, so the error message is friendly).
 
 Now use it like any built-in goal:
 
@@ -155,19 +154,20 @@ First, the sphere travels inside `target` as a flat pack of four numbers, and th
 Overriding the target property is how a goal declares a custom target shape, exactly like `NodeLineGoal` reshapes its two line points to `(-1, 2, 3)`.
 
 Second, you might be tempted to store the center and radius as plain attributes instead, say `self.radius`, and skip the property.
-Resist for one more section.
-The reason is the collection contract, and it is contract number two at the end of this guide.
+Resist.
+Behind the scenes, same-type goals are batched into one vectorized call by rebuilding the goal *from its init signature*: every `__init__` parameter must be stored as a same-named attribute so the machinery can read it back and stack it.
+Break that and you get an `AttributeError` quoting the rule at you on the first optimization run.
+Packing the sphere into `target` sidesteps the question entirely, because `target` already rides the existing machinery.
 
 ## Recipe 3: an aggregate goal
 
 The goals so far judge each element on its own.
 An aggregate goal judges a *group* as a whole: the total length of a cable bundle, the evenness of a strip of nodes, the variance of a family of forces.
 
-Aggregates need three small deviations from the standard recipe:
+Aggregates deviate from the standard recipe by one line:
 
 ```python
 import jax.numpy as jnp
-import numpy as np
 
 from jax_fdm.goals import ScalarGoal
 from jax_fdm.goals.edge import EdgeGoal
@@ -178,38 +178,22 @@ class EdgesTotalLengthGoal(ScalarGoal, EdgeGoal):
     Drive the combined length of a group of edges toward a target value.
     """
 
-    def __init__(self, key, target, weight=1.0):
-        super().__init__(key=key, target=target, weight=weight)
-        self.is_collectible = False
-
-    def init(self, model, structure):
-        self.index = np.atleast_2d(super().index_from_structure(structure))
+    is_aggregate = True
 
     def prediction(self, eq_state, index):
         lengths = eq_state.lengths[index]
 
-        return jnp.atleast_1d(jnp.sum(lengths))
+        return jnp.sum(lengths)
 ```
 
 ```python
 goal = EdgesTotalLengthGoal(key=list(network.edges()), target=12.0)
 ```
 
-The three deviations, in order of appearance:
-
-1. **`self.is_collectible = False`.**
-Ordinary goals of the same type get stacked into one vectorized batch.
-An aggregate is already a batch of its own, so it opts out.
-2. **A custom `init` that wraps the index in `np.atleast_2d`.**
-The extra dimension tells the vectorizer to hand your prediction the *whole* row of indices in a single call, instead of one index at a time.
-3. **A prediction over the group.**
-`index` is now an array of edge positions, and you reduce across it however your quantity demands: a sum here, a variance in `EdgesLengthEqualGoal`, a colinearity energy in `NodesColinearGoal`.
-
-!!! warning "Call `self.index_from_structure`, or `super()`, but know why"
-
-    In this recipe `super().index_from_structure(structure)` is fine because `EdgesTotalLengthGoal` will never be subclassed for another element family.
-    If your aggregate might grow a vertex twin one day (like `NodesColinearGoal` did), call `self.index_from_structure(structure)` instead, so the subclass's own resolution wins.
-    Method resolution order giveth, and method resolution order taketh away.
+`is_aggregate = True` does two things for you.
+It unlocks the list of keys (a per-element goal insists on exactly one key, and tells you so with a `TypeError`), and it tells the vectorizer to hand your prediction the *whole* row of indices in a single call, instead of one index at a time.
+`index` is then an array of edge positions, and you reduce across it however your quantity demands: a sum here, a variance in `EdgesLengthEqualGoal`, a colinearity energy in `NodesColinearGoal`.
+The whole-structure goals (`Network*`, `Mesh*`) are aggregates too, just ones whose group is the entire structure, so they take no key list at all.
 
 ## Recipe 4: retargeting a goal from nodes to vertices
 
@@ -281,26 +265,10 @@ network = constrained_fdm(
 
 The bounds arrive through the constructor as `bound_low` and `bound_up`.
 Leave one as `None` and it becomes an infinity of the appropriate sign, so one-sided constraints cost you nothing.
-Note that a constraint's value may return a plain scalar of shape `()`: constraints are flattened after vectorization, so the `(1,)` rule from recipe 1 is a goals-only affair.
 
-## The three contracts
+## One last rule
 
-Three rules keep your custom classes on speaking terms with the optimizer.
-Break one and you get a loud, descriptive error rather than a wrong answer, but why not skip the detour.
-
-**Contract 1: scalar predictions have shape `(1,)`.**
-A scalar goal's prediction must return shape `(1,)`, never a bare `()`.
-Close every scalar prediction with `jnp.atleast_1d` and move on with your life.
-The error, should you forget, names this exact fix.
-
-**Contract 2: every init parameter is a same-named attribute.**
-When many goals of one type are batched into a collection, the collection rebuilds the goal *from its init signature*: for each parameter name in `__init__`, it reads `self.<that name>` off every goal and stacks the values.
-So if your `__init__` takes `stiffness`, then `self.stiffness` must exist, spelled exactly like the parameter.
-Stash it as `self._stiffness` or `self.k` and the collection machinery raises an `AttributeError` quoting this rule back at you.
-This is also why recipe 2 packed the sphere into `target` instead of loose attributes: `target` is already part of the init contract, so the pack rides the existing machinery with zero extra ceremony.
-
-**Contract 3: speak the right vocabulary.**
-`Node*` classes on networks, `Vertex*` classes on meshes, no exceptions.
+Speak the right vocabulary: `Node*` classes on networks, `Vertex*` classes on meshes, no exceptions.
 When you need a goal on the other side of the fence, write a thin twin as in recipe 4.
 
 And that is it.

@@ -18,9 +18,9 @@ class NodeCurvatureConstraint(NodeConstraint):
     Parameters
     ----------
     key :
-        The key or keys of the node(s) the constraint acts on.
+        The key of the node the constraint acts on.
     polygon :
-        The neighboring node keys forming the polygon around each node.
+        The neighboring node keys forming the polygon around the node.
     bound_low :
         The lower bound on the curvature. If None, unbounded below.
     bound_up :
@@ -29,7 +29,7 @@ class NodeCurvatureConstraint(NodeConstraint):
 
     def __init__(
         self,
-        key: int | list[int],
+        key: int,
         polygon: Int[Array, "nodes neighbors"],
         bound_low: float | Float[Array, "..."] | None,
         bound_up: float | Float[Array, "..."] | None,

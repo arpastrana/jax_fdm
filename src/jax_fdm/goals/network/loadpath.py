@@ -21,8 +21,8 @@ class NetworkLoadPathGoal(ScalarGoal, NetworkGoal):
     def prediction(
         self,
         eq_state: EquilibriumState,
-        index: Int[Array, ""],
-    ) -> Float[Array, "1"]:
+        index: Int[Array, "1"],
+    ) -> Float[Array, ""]:
         """
         The total load path of the network.
 
@@ -38,6 +38,4 @@ class NetworkLoadPathGoal(ScalarGoal, NetworkGoal):
         prediction :
             The sum of the absolute force-length product over all edges.
         """
-        load_path = jnp.sum(jnp.abs(jnp.multiply(eq_state.lengths, eq_state.forces)))
-
-        return jnp.atleast_1d(load_path)
+        return jnp.sum(jnp.abs(jnp.multiply(eq_state.lengths, eq_state.forces)))
