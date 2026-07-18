@@ -19,9 +19,9 @@ class EdgeAngleGoal(ScalarGoal, EdgeGoal):
     Parameters
     ----------
     key :
-        The key or keys of the edge(s) the goal acts on.
+        The key of the edge the goal acts on.
     vector :
-        The reference vector each edge's angle is measured against.
+        The reference vector the edge's angle is measured against.
     target :
         The target angle, in radians.
     weight :
@@ -30,7 +30,7 @@ class EdgeAngleGoal(ScalarGoal, EdgeGoal):
 
     def __init__(
         self,
-        key: int | tuple[int, int] | list[int] | list[tuple[int, int]],
+        key: tuple[int, int],
         vector: Float[Array, "..."],
         target: float | Float[Array, "..."],
         weight: float = 1.0,
@@ -87,7 +87,7 @@ class EdgeAngleGoal(ScalarGoal, EdgeGoal):
         self,
         eq_state: EquilibriumState,
         index: Int[Array, ""],
-    ) -> Float[Array, "1"]:
+    ) -> Float[Array, ""]:
         """
         The angle between the edge and its reference vector.
 
@@ -105,4 +105,4 @@ class EdgeAngleGoal(ScalarGoal, EdgeGoal):
         """
         vector = eq_state.vectors[index, :]
 
-        return jnp.atleast_1d(angle_vectors(vector, self.vector[index, :]))
+        return angle_vectors(vector, self.vector[index, :])

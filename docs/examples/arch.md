@@ -1,9 +1,7 @@
-# Examples
+# Arch Optimization
 
-## First example
-
-Suppose you are interested in generating a form in static equilibrium for a 10-meter span arch subjected to vertical point loads of 0.3 kN.
-The arch has to be a compression-only structure.
+Suppose you are interested in finding a suitable funicular geometry for a 10-meter span arch subjected to vertical point loads of 0.3 kN.
+The arch has to be compression-dominant.
 You model the arch as a `jax_fdm` network (download the arch `json` file [here](https://github.com/arpastrana/jax_fdm/blob/main/data/json/arch.json)).
 Then, you apply a force density of -1 to all of its edges, and compute the required shape with the force density method.
 
@@ -52,25 +50,7 @@ viewer.add(f_network.copy(cls=Network))
 viewer.show()
 ```
 
-![Arch load path](assets/images/arch_loadpath.png)
+![Arch load path](../assets/images/arch_loadpath.png)
 
 The constrained form is shallower than the unconstrained one as a result of the optimization process.
 The length of the arch segments also varies within the prescribed bounds to minimize the load path: segments are the longest where the arch's internal forces are lower (1.0 meter, at the apex); and conversely, the segments are shorter where the arch's internal forces are higher (0.75 m, at the base).
-
-## More examples
-
-### Jupyter notebooks
-
-These notebooks run directly from your browser without having to install anything locally! Their sources live in the [`notebooks/`](https://github.com/arpastrana/jax_fdm/tree/main/notebooks) folder.
-
-- [Arch](https://colab.research.google.com/github/arpastrana/jax_fdm/blob/main/notebooks/arch.ipynb): Control the height and the horizontal projection of a 2D arch.
-- [3D spiral](https://colab.research.google.com/github/arpastrana/jax_fdm/blob/main/notebooks/spiral.ipynb): Calculate the loads required to maintain a compression-only 3D spiral in equilibrium [(Angelillo, et al. 2021)](https://doi.org/10.1016/j.engstruct.2021.112176).
-- [Creased masonry vault](https://colab.research.google.com/github/arpastrana/jax_fdm/blob/main/notebooks/vault.ipynb): Best-fit a target surface [(Panozzo, et al. 2013)](https://cims.nyu.edu/gcl/papers/designing-unreinforced-masonry-models-siggraph-2013-panozzo-et-al.pdf).
-
-### Python scripts
-
-The scripts require a local installation of JAX FDM.
-
-- [Pointy dome](https://github.com/arpastrana/jax_fdm/blob/main/examples/dome/dome.py): Control the tilt and the coarse width of a brick dome.
-- [Triple-branching saddle](https://github.com/arpastrana/jax_fdm/blob/main/examples/monkey_saddle/monkey_saddle.py): Design the distribution of thrusts at the supports of a monkey saddle network while constraining the edge lengths.
-- [Saddle bridge](https://github.com/arpastrana/jax_fdm/blob/main/examples/pringle/pringle.py): Create a crease in the middle of the bridge while constraining the transversal edges of the network to a target plane.

@@ -25,7 +25,8 @@ class Goal:
     Parameters
     ----------
     key :
-        The key or keys of the element(s) the goal acts on.
+        The key of the element the goal acts on; a list of keys only for
+        aggregate goals.
     target :
         The value the goal drives its quantity of interest toward.
     weight :
@@ -38,7 +39,18 @@ class Goal:
     structure before any prediction runs. Subclasses supply the quantity of
     interest via `prediction` and mix in [ScalarGoal][jax_fdm.goals.goal.ScalarGoal]
     or [VectorGoal][jax_fdm.goals.goal.VectorGoal] for the target's shape.
+
+    A per-element goal takes exactly one element key; to act on many elements,
+    create one goal per element and let collections vectorize them. Only
+    aggregate goals, which declare `is_aggregate = True`, accept a list of
+    keys.
     """
+
+    # An aggregate goal reduces over many elements (a key list, or the whole
+    # structure) in one prediction call: init feeds vmap the index row
+    # unsplit, and the goal is never grouped with same-type peers into a
+    # vectorized collection since it is already a batch of its own.
+    is_aggregate: bool = False
 
     def __init__(
         self,
@@ -58,8 +70,6 @@ class Goal:
         self.weight = weight
         self.target = target
 
-        self.is_collectible = True
-
     @property
     def key(self) -> int | tuple[int, int] | list[int] | list[tuple[int, int]] | None:
         """
@@ -77,6 +87,19 @@ class Goal:
         # goal (e.g. NodesColinearGoal) keeps its flat list of element keys.
         if isinstance(key, list) and len(key) == 1 and isinstance(key[0], list):
             key = key[0]
+        if isinstance(key, list):
+            if not key:
+                raise ValueError(
+                    f"{type(self).__name__} got an empty key list. "
+                    "Pass at least one element key.",
+                )
+            if not self.is_aggregate and not getattr(self, "_iscollection", False):
+                raise TypeError(
+                    f"{type(self).__name__} takes a single element key, got a "
+                    f"list of {len(key)}. Create one goal per element "
+                    "(collections vectorize same-type goals automatically), or "
+                    "use an aggregate goal for group quantities.",
+                )
         self._key = key
 
     @property
@@ -213,9 +236,14 @@ class Goal:
         Notes
         -----
         Must be called once before the goal is evaluated; it populates the index
-        that `prediction` reads.
+        that `prediction` reads. For an aggregate goal, the index is kept
+        two-dimensional so the whole key list is fed to a single `prediction`
+        call rather than vmapped per element.
         """
-        self.index = self.index_from_structure(structure)
+        index = self.index_from_structure(structure)
+        if self.is_aggregate:
+            index = np.atleast_2d(index)
+        self.index = index
 
     def __call__(self, eqstate: EquilibriumState) -> GoalState:
         """
@@ -235,19 +263,35 @@ class Goal:
         Raises
         ------
         ValueError
-            If the goal and prediction shapes disagree, typically because a scalar
-            prediction dropped its trailing axis.
+            If the number of target rows does not match the number of elements,
+            or if the goal and prediction shapes disagree, typically because a
+            scalar goal's prediction returned more than one value per element.
         """
-        # self.index is a numpy index array populated in init and mapped to a
-        # jax scalar by vmap
+        # self.index is an index array built in init and mapped to jax scalars by vmap
         prediction = vmap(self.prediction, in_axes=(None, 0))(eqstate, self.index)  # pyright: ignore[reportArgumentType]
+
+        if self.target.shape[0] != prediction.shape[0]:
+            raise ValueError(
+                f"{type(self).__name__}: {prediction.shape[0]} element(s) but "
+                f"{self.target.shape[0]} target row(s). Pass one target per "
+                "element.",
+            )
+
         goal = vmap(self.goal)(self.target, prediction)
+
+        # Flatten per-element shapes to one feature row only after the goal
+        # hook, so a custom goal() sees the prediction's true per-element
+        # shape; a scalar prediction may return () per element, which vmap
+        # stacks to (elements,) and lands here as one value per row.
+        prediction = jnp.reshape(prediction, (prediction.shape[0], -1))
+        goal = jnp.reshape(goal, (goal.shape[0], -1))
 
         if goal.shape != prediction.shape:
             raise ValueError(
                 f"{type(self).__name__}: goal shape {goal.shape} != prediction "
-                f"shape {prediction.shape}. Scalar predictions must have shape "
-                "(1,); wrap the prediction's return value with jnp.atleast_1d.",
+                f"shape {prediction.shape}. The prediction must return one value "
+                "per element for a scalar goal, or one vector per element for a "
+                "vector goal.",
             )
 
         return GoalState(goal=goal, prediction=prediction, weight=self.weight)

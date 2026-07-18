@@ -62,8 +62,12 @@ class Collection:
                     ) from error
                 ckwargs[key].append(attr)
 
-        collection = cls(**ckwargs)
+        # Flag the instance before __init__ runs, so the key setter can tell a
+        # collection rebuild (stacked keys are legitimate) from a user passing
+        # a key list to a per-element goal or constraint.
+        collection = object.__new__(cls)
         collection._iscollection = True
+        collection.__init__(**ckwargs)
 
         return collection
 
@@ -80,31 +84,30 @@ def collect_goals(goals: list[Any]) -> list[Any]:
     Returns
     -------
     collections :
-        One collection per type of collectible goal, plus a singleton collection for
-        each goal flagged as not collectible.
+        One collection per type of per-element goal, plus a singleton collection
+        for each aggregate goal, which is already a batch of its own.
     """
-    goals_collectable = []
-    goals_uncollectable = []
+    goals_element = []
+    goals_aggregate = []
 
     for goal in goals:
-        if goal.is_collectible:
-            goals_collectable.append(goal)
+        if goal.is_aggregate:
+            goals_aggregate.append(goal)
         else:
-            goals_uncollectable.append(goal)
+            goals_element.append(goal)
 
     collections = []
 
-    if goals_collectable:
-        goals_sorted = sorted(goals_collectable, key=lambda g: type(g).__name__)
+    if goals_element:
+        goals_sorted = sorted(goals_element, key=lambda g: type(g).__name__)
         groups = groupby(goals_sorted, lambda g: type(g))
 
         for _, group in groups:
             collection = Collection(list(group))
             collections.append(collection)
 
-    if goals_uncollectable:
-        for goal in goals_uncollectable:
-            collections.append(Collection([goal]))
+    for goal in goals_aggregate:
+        collections.append(Collection([goal]))
 
     return collections
 

@@ -14,7 +14,7 @@ class VertexTangentAngleGoal(VertexNormalAngleGoal):
     Parameters
     ----------
     key :
-        The key or keys of the vertex(es) the goal acts on.
+        The key of the vertex the goal acts on.
     vector :
         The reference vector each vertex tangent's angle is measured against.
     target :
@@ -34,7 +34,7 @@ class VertexTangentAngleGoal(VertexNormalAngleGoal):
 
     def __init__(
         self,
-        key: int | tuple[int, int] | list[int] | list[tuple[int, int]],
+        key: int,
         vector: Float[Array, "..."],
         target: float | Float[Array, "..."],
         weight: float = 1.0,

@@ -1,12 +1,9 @@
 import jax.numpy as jnp
-import numpy as np
 from jaxtyping import Array
 from jaxtyping import Float
 from jaxtyping import Int
 
-from jax_fdm.equilibrium import EquilibriumModel
 from jax_fdm.equilibrium import EquilibriumState
-from jax_fdm.equilibrium import EquilibriumStructure
 from jax_fdm.goals import ScalarGoal
 from jax_fdm.goals.edge import EdgeGoal
 
@@ -45,32 +42,20 @@ class EdgesLengthEqualGoal(ScalarGoal, EdgeGoal):
 
     Notes
     -----
-    Applies to a collection of edges at once, so it is not collectible. The goal
-    drives the normalized variance of the lengths to zero.
+    Applies to a collection of edges at once. The goal drives the normalized
+    variance of the lengths to zero.
     """
+
+    is_aggregate = True
 
     def __init__(self, key: list[tuple[int, int]], weight: float = 1.0) -> None:
         super().__init__(key=key, target=0.0, weight=weight)
-        self.is_collectible = False
-
-    def init(self, model: EquilibriumModel, structure: EquilibriumStructure) -> None:
-        """
-        Bind the goal to a structure, keeping the edge indices as one collection.
-
-        Parameters
-        ----------
-        model :
-            The equilibrium model.
-        structure :
-            The structure whose edge ordering defines the indices.
-        """
-        self.index = np.atleast_2d(super().index_from_structure(structure))
 
     def prediction(
         self,
         eq_state: EquilibriumState,
         index: Int[Array, "elements"],
-    ) -> Float[Array, "1"]:
+    ) -> Float[Array, ""]:
         """
         The variance of the edge lengths, normalized by their mean.
 
@@ -88,4 +73,4 @@ class EdgesLengthEqualGoal(ScalarGoal, EdgeGoal):
         """
         lengths = eq_state.lengths[index]
 
-        return jnp.atleast_1d(jnp.var(lengths) / jnp.mean(lengths))
+        return jnp.var(lengths) / jnp.mean(lengths)

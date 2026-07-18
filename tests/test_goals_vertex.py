@@ -33,6 +33,7 @@ from jax_fdm.geometry import curvature_point_polygon
 from jax_fdm.geometry import length_vector
 from jax_fdm.goals import NodePointGoal
 from jax_fdm.goals import ScalarGoal
+from jax_fdm.goals import VectorGoal
 from jax_fdm.goals import VertexLineGoal
 from jax_fdm.goals import VertexPlaneGoal
 from jax_fdm.goals import VertexPointGoal
@@ -452,19 +453,120 @@ def test_collection_names_missing_attribute():
         Collection(goals)
 
 
-def test_goal_shape_mismatch_names_the_fix(meshgrid_mesh):
+def test_scalar_prediction_may_return_a_bare_scalar(meshgrid_mesh):
     """
-    A scalar prediction that drops its trailing axis gets a teaching error.
+    A scalar prediction may return shape () per element; the goal normalizes
+    it to one feature row, so jnp.atleast_1d wrappers are unnecessary.
     """
 
-    class SquashedZGoal(ScalarGoal, VertexGoal):
+    class BareZGoal(ScalarGoal, VertexGoal):
         def prediction(self, eq_state, index):
-            # wrong on purpose: shape () instead of (1,)
             return eq_state.xyz[index, 2]
 
     model, structure, eqstate = _fixed_mesh_state(meshgrid_mesh)
-    goal = SquashedZGoal(0, target=0.0)
+    goal = BareZGoal(0, target=0.0)
     goal.init(model, structure)
 
-    with pytest.raises(ValueError, match="atleast_1d"):
+    gstate = goal(eqstate)
+    assert gstate.prediction.shape == (1, 1)
+    assert gstate.goal.shape == (1, 1)
+    index = structure.vertex_index[0]
+    assert jnp.allclose(gstate.prediction[0, 0], eqstate.xyz[index, 2])
+
+
+def test_multi_key_goal_raises_teaching_error():
+    """
+    A per-element goal rejects a list of keys at construction; multi-key
+    quantities belong to aggregate goals.
+    """
+    with pytest.raises(TypeError, match="single element key"):
+        VertexZCoordinateGoal([0, 1, 2], target=-0.5)
+
+
+def test_empty_key_list_raises():
+    """
+    An empty key list is a construction-time error, not a dtype crash later.
+    """
+    with pytest.raises(ValueError, match="empty key list"):
+        VerticesColinearGoal(key=[])
+
+
+def test_multi_key_constraint_raises_teaching_error():
+    """
+    A constraint rejects a list of keys at construction.
+    """
+    with pytest.raises(TypeError, match="single element key"):
+        VertexZCoordinateConstraint([0, 1], bound_low=-1.0, bound_up=1.0)
+
+
+def test_goal_sees_structured_prediction(meshgrid_mesh):
+    """
+    A custom goal() receives the prediction's true per-element shape; the
+    feature-row flattening happens only after the goal hook runs.
+
+    Regression: flattening before goal() silently squashed a structured
+    prediction, so a per-row normalization normalized the flattened vector.
+    """
+    seen_shapes = []
+
+    class FrameGoal(VectorGoal, VertexGoal):
+        @property
+        def target(self):
+            return self._target
+
+        @target.setter
+        def target(self, target):
+            self._target = jnp.reshape(jnp.asarray(target), (-1, 2, 3))
+
+        def prediction(self, eq_state, index):
+            xyz = eq_state.xyz[index, :]
+            return jnp.stack([xyz, 2.0 * xyz])
+
+        def goal(self, target, prediction):
+            seen_shapes.append(prediction.shape)
+            return prediction / jnp.linalg.norm(prediction, axis=-1, keepdims=True)
+
+    model, structure, eqstate = _fixed_mesh_state(meshgrid_mesh)
+    goal = FrameGoal(5, target=[[1.0, 0.0, 0.0], [0.0, 0.0, 1.0]])
+    goal.init(model, structure)
+
+    gstate = goal(eqstate)
+    assert seen_shapes == [(2, 3)]
+    assert gstate.prediction.shape == (1, 6)
+
+    xyz = eqstate.xyz[structure.vertex_index[5], :]
+    unit = xyz / jnp.linalg.norm(xyz)
+    expected = jnp.concatenate([unit, unit])
+    assert jnp.allclose(gstate.goal.ravel(), expected)
+
+
+def test_target_count_mismatch_names_the_goal(meshgrid_mesh):
+    """
+    A goal whose target holds more rows than it has elements gets a teaching
+    error naming the class instead of a raw vmap error.
+    """
+    model, structure, eqstate = _fixed_mesh_state(meshgrid_mesh)
+    goal = VertexZCoordinateGoal(0, target=[-0.5, -0.6, -0.7])
+    goal.init(model, structure)
+
+    with pytest.raises(ValueError, match="VertexZCoordinateGoal.*target row"):
+        goal(eqstate)
+
+
+def test_goal_shape_mismatch_still_raises(meshgrid_mesh):
+    """
+    A scalar goal whose prediction returns more than one value per element
+    still gets a teaching error.
+    """
+
+    class FatScalarGoal(ScalarGoal, VertexGoal):
+        def prediction(self, eq_state, index):
+            # wrong on purpose: a scalar goal returning a vector
+            return eq_state.xyz[index, :]
+
+    model, structure, eqstate = _fixed_mesh_state(meshgrid_mesh)
+    goal = FatScalarGoal(0, target=0.0)
+    goal.init(model, structure)
+
+    with pytest.raises(ValueError, match="one value per element"):
         goal(eqstate)

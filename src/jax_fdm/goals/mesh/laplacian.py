@@ -77,7 +77,7 @@ class MeshXYZFaceLaplacianGoal(ScalarGoal, MeshGoal):
     def laplacian_vertices(
         self,
         eq_state: EquilibriumState,
-        index: Int[Array, ""],
+        index: Int[Array, "1"],
     ) -> Float[Array, "vertices"]:
         """
         The per-vertex Laplacian energy against neighboring face centroids.
@@ -131,8 +131,8 @@ class MeshXYZFaceLaplacianGoal(ScalarGoal, MeshGoal):
     def prediction(
         self,
         eq_state: EquilibriumState,
-        index: Int[Array, ""],
-    ) -> Float[Array, "1"]:
+        index: Int[Array, "1"],
+    ) -> Float[Array, ""]:
         """
         The mean per-vertex Laplacian energy of the mesh.
 
@@ -150,4 +150,4 @@ class MeshXYZFaceLaplacianGoal(ScalarGoal, MeshGoal):
         """
         laplacians = self.laplacian_vertices(eq_state, index)
 
-        return jnp.atleast_1d(jnp.mean(laplacians))
+        return jnp.mean(laplacians)

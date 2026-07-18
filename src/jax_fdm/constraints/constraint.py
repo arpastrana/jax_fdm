@@ -20,7 +20,7 @@ class Constraint:
     Parameters
     ----------
     key :
-        The key or keys of the element(s) the constraint acts on.
+        The key of the element the constraint acts on.
     bound_low :
         The lower bound on the constrained quantity. If None, unbounded below.
     bound_up :
@@ -33,6 +33,9 @@ class Constraint:
     structure before the constraint is evaluated. Subclasses supply the constrained
     quantity via `constraint`. Missing bounds normalize to negative or
     positive infinity rather than None.
+
+    A constraint takes exactly one element key; to bound many elements, create
+    one constraint per element and let collections vectorize them.
     """
 
     def __init__(
@@ -68,6 +71,19 @@ class Constraint:
         self,
         key: int | tuple[int, int] | list[int] | list[tuple[int, int]],
     ) -> None:
+        if isinstance(key, list):
+            if not key:
+                raise ValueError(
+                    f"{type(self).__name__} got an empty key list. "
+                    "Pass at least one element key.",
+                )
+            if not getattr(self, "_iscollection", False):
+                raise TypeError(
+                    f"{type(self).__name__} takes a single element key, got a "
+                    f"list of {len(key)}. Create one constraint per element "
+                    "(collections vectorize same-type constraints "
+                    "automatically).",
+                )
         self._key = key
 
     @property

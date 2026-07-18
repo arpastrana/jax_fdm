@@ -76,6 +76,7 @@ docs = [
     "mkdocs-material==9.7.6",
     "mkdocstrings[python]==1.0.5",
     "mkdocstrings-python==2.0.5",
+    "mkdocs-redirects==1.2.2",
     "griffelib==2.1.0",
     "mike==2.2.0",
 ]
