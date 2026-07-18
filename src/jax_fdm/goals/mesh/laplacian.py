@@ -1,5 +1,5 @@
 import jax.numpy as jnp
-from jax import vmap
+from jax.experimental.sparse import BCOO
 from jaxtyping import Array
 from jaxtyping import Float
 from jaxtyping import Int
@@ -54,7 +54,9 @@ class MeshXYZFaceLaplacianGoal(ScalarGoal, MeshGoal):
     ) -> None:
         super().__init__(key=-1, target=target, weight=weight)
         # set in init() from the mesh structure, before any prediction runs
-        self.connectivity_faces_vertices: Float[Array, "faces vertices"]
+        self.connectivity_faces_vertices: (
+            Float[Array, "faces vertices"] | Float[BCOO, "faces vertices"]
+        )
 
     def init(
         self,
@@ -94,39 +96,26 @@ class MeshXYZFaceLaplacianGoal(ScalarGoal, MeshGoal):
         laplacians :
             The squared distance from each vertex to the mean of its incident face
             centroids.
+
+        Notes
+        -----
+        Formulated as products with the face-vertex connectivity so that the
+        matrix can be stored dense or in sparse format. Each vertex's neighbor
+        centroid is the average of its incident face centroids, weighted by the
+        row-normalized connectivity entries.
         """
+        xyz = eq_state.xyz
+        connectivity = self.connectivity_faces_vertices
 
-        def vertex_laplacian(
-            vertex_xyz: Float[Array, "3"],
-            vertex_mask: Float[Array, "faces"],
-            faces_centroid: Float[Array, "faces 3"],
-        ) -> Float[Array, ""]:
-            nbrs_xyz = vertex_faces_centroid(vertex_mask, faces_centroid)
-            return vertex_square_distance(vertex_xyz, nbrs_xyz)
+        faces_centroid = connectivity @ xyz
 
-        def vertex_faces_centroid(
-            vertex_mask: Float[Array, "faces"],
-            faces_centroid: Float[Array, "faces 3"],
-        ) -> Float[Array, "3"]:
-            nbrs_xyzs = jnp.reshape(vertex_mask, (-1, 1)) * faces_centroid
-            # return average centroid
-            return jnp.sum(nbrs_xyzs, axis=0) / jnp.sum(vertex_mask)
+        # upstream types the sparse transpose as optional; it is None only for
+        # arrays of dimension > 2, unreachable for a rank-2 incidence matrix
+        connectivity_t = connectivity.T  # pyright: ignore[reportOptionalOperand]
+        weights = connectivity_t @ jnp.ones(connectivity.shape[0])  # pyright: ignore[reportOptionalOperand]
+        nbrs_centroid = (connectivity_t @ faces_centroid) / weights[:, None]  # pyright: ignore[reportOptionalOperand]
 
-        def vertex_square_distance(
-            vertex_xyz: Float[Array, "3"],
-            nbrs_xyz: Float[Array, "3"],
-        ) -> Float[Array, ""]:
-            return jnp.sum(jnp.square(vertex_xyz - nbrs_xyz))
-
-        faces_centroid = self.connectivity_faces_vertices @ eq_state.xyz
-        vertices_laplacian = vmap(vertex_laplacian, in_axes=(0, 1, None))
-        laplacians = vertices_laplacian(
-            eq_state.xyz,
-            self.connectivity_faces_vertices,
-            faces_centroid,
-        )
-
-        return laplacians
+        return jnp.sum(jnp.square(xyz - nbrs_centroid), axis=-1)
 
     def prediction(
         self,

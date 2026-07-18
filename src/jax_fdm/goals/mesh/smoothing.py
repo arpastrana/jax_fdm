@@ -1,5 +1,5 @@
 import jax.numpy as jnp
-from jax import vmap
+from jax.experimental.sparse import BCOO
 from jaxtyping import Array
 from jaxtyping import Float
 from jaxtyping import Int
@@ -28,7 +28,9 @@ class MeshSmoothGoal(ScalarGoal, MeshGoal):
     def __init__(self) -> None:
         super().__init__()
         # set in init() from the mesh structure, before any prediction runs
-        self.adjacency: Float[Array, "vertices vertices"]
+        self.adjacency: (
+            Float[Array, "vertices vertices"] | Float[BCOO, "vertices vertices"]
+        )
         self.indices_free: Int[Array, "nodes_free"]
 
     def init(
@@ -72,42 +74,40 @@ class MeshSmoothGoal(ScalarGoal, MeshGoal):
             neighbors' centroid.
         """
         xyz = eq_state.xyz
-        adjacency = self.adjacency
-        fairness_fn = vmap(vertex_nbrs_fairness_ngon, in_axes=(None, 0, 0))
-
-        fairness_vertices = fairness_fn(xyz, xyz, adjacency)
+        fairness_vertices = vertices_nbrs_fairness(xyz, self.adjacency)
         fairness_vertices = fairness_vertices[self.indices_free]
+
         return jnp.mean(fairness_vertices)
 
 
-def vertex_nbrs_fairness_ngon(
-    xyz_all: Float[Array, "vertices 3"],
-    xyz_vertex: Float[Array, "3"],
-    adjacency_vertex: Float[Array, "vertices"],
-) -> Float[Array, ""]:
+def vertices_nbrs_fairness(
+    xyz: Float[Array, "vertices 3"],
+    adjacency: Float[Array, "vertices vertices"] | Float[BCOO, "vertices vertices"],
+) -> Float[Array, "vertices"]:
     """
-    Compute the valence-weighted fairness energy of one vertex's neighborhood.
+    Compute the valence-weighted fairness energy of every vertex's neighborhood.
 
     Parameters
     ----------
-    xyz_all :
+    xyz :
         The coordinates of all vertices.
-    xyz_vertex :
-        The coordinates of the vertex whose fairness is measured.
-    adjacency_vertex :
-        The row of the adjacency matrix selecting the vertex's neighbors.
+    adjacency :
+        The adjacency matrix selecting each vertex's neighbors.
 
     Returns
     -------
     fairness :
-        The squared distance from the vertex to its neighbors' centroid, scaled by
-        the square of its valence.
+        The squared distance from each vertex to its neighbors' centroid, scaled
+        by the square of its valence.
+
+    Notes
+    -----
+    Formulated as adjacency matrix products so that the matrix can be stored
+    dense or in sparse format. A vertex without neighbors has a nan energy.
     """
-    num_nbrs = jnp.sum(adjacency_vertex, axis=-1)
-    centroid = (adjacency_vertex @ xyz_all) / num_nbrs
+    num_nbrs = adjacency @ jnp.ones(xyz.shape[0])
+    centroids = (adjacency @ xyz) / num_nbrs[:, None]
 
-    fvector = xyz_vertex - centroid
-    assert fvector.shape == xyz_vertex.shape
+    fvectors = xyz - centroids
 
-    # return jnp.dot(fvector, fvector)
-    return jnp.dot(fvector, fvector) * jnp.square(num_nbrs)
+    return jnp.sum(jnp.square(fvectors), axis=-1) * jnp.square(num_nbrs)

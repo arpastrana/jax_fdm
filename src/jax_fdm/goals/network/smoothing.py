@@ -1,5 +1,5 @@
 import jax.numpy as jnp
-from jax import vmap
+from jax.experimental.sparse import BCOO
 from jaxtyping import Array
 from jaxtyping import Float
 from jaxtyping import Int
@@ -27,7 +27,7 @@ class NetworkSmoothGoal(ScalarGoal, NetworkGoal):
     def __init__(self) -> None:
         super().__init__()
         # set in init() from the network structure, before any prediction runs
-        self.adjacency: Float[Array, "nodes nodes"]
+        self.adjacency: Float[Array, "nodes nodes"] | Float[BCOO, "nodes nodes"]
 
     def init(self, model: EquilibriumModel, structure: EquilibriumStructure) -> None:
         """
@@ -65,40 +65,38 @@ class NetworkSmoothGoal(ScalarGoal, NetworkGoal):
             neighbors' centroid.
         """
         xyz = eq_state.xyz
-        adjacency = self.adjacency
-        fairness_fn = vmap(node_nbrs_fairness_ngon, in_axes=(None, 0, 0))
-
-        fairness_nodes = fairness_fn(xyz, xyz, adjacency)
+        fairness_nodes = nodes_nbrs_fairness(xyz, self.adjacency)
 
         return jnp.mean(fairness_nodes)
 
 
-def node_nbrs_fairness_ngon(
-    xyz_all: Float[Array, "nodes 3"],
-    xyz_node: Float[Array, "3"],
-    adjacency_node: Float[Array, "nodes"],
-) -> Float[Array, ""]:
+def nodes_nbrs_fairness(
+    xyz: Float[Array, "nodes 3"],
+    adjacency: Float[Array, "nodes nodes"] | Float[BCOO, "nodes nodes"],
+) -> Float[Array, "nodes"]:
     """
-    Compute the fairness energy of one node's neighborhood.
+    Compute the fairness energy of every node's neighborhood.
 
     Parameters
     ----------
-    xyz_all :
+    xyz :
         The coordinates of all nodes.
-    xyz_node :
-        The coordinates of the node whose fairness is measured.
-    adjacency_node :
-        The row of the adjacency matrix selecting the node's neighbors.
+    adjacency :
+        The adjacency matrix selecting each node's neighbors.
 
     Returns
     -------
     fairness :
-        The squared distance from the node to its neighbors' centroid.
+        The squared distance from each node to its neighbors' centroid.
+
+    Notes
+    -----
+    Formulated as adjacency matrix products so that the matrix can be stored
+    dense or in sparse format. A node without neighbors has a nan energy.
     """
-    num_nbrs = jnp.sum(adjacency_node, axis=-1)
-    centroid = (adjacency_node @ xyz_all) / num_nbrs
+    num_nbrs = adjacency @ jnp.ones(xyz.shape[0])
+    centroids = (adjacency @ xyz) / num_nbrs[:, None]
 
-    fvector = xyz_node - centroid
-    assert fvector.shape == xyz_node.shape
+    fvectors = xyz - centroids
 
-    return jnp.dot(fvector, fvector)
+    return jnp.sum(jnp.square(fvectors), axis=-1)

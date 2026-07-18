@@ -5,14 +5,23 @@ The sparse structures keep their connectivity in JAX sparse format while the
 dense ones hold plain arrays; both must produce the same equilibrium states.
 Loading all three carriers (vertices, edges, faces) with ``tmax > 1`` runs the
 full load-assembly pipeline, pinning the index-array rewrite of the tributary
-load functions numerically against the dense reference.
+load functions numerically against the dense reference. The goal parity test
+pins the matmul rewrite of the neighborhood goals against both structure
+variants, whichever storage format each keeps its matrices in.
 """
 
 import jax.numpy as jnp
+import numpy as np
 import pytest
 
 from jax_fdm.datastructures import FDMesh
+from jax_fdm.equilibrium import EquilibriumModel
+from jax_fdm.equilibrium import EquilibriumState
 from jax_fdm.equilibrium import fdm
+from jax_fdm.equilibrium.fdm import structure_from_datastructure
+from jax_fdm.goals import MeshSmoothGoal
+from jax_fdm.goals import MeshXYZFaceLaplacianGoal
+from jax_fdm.goals import VertexNormalAngleGoal
 
 
 @pytest.fixture
@@ -63,3 +72,56 @@ def test_fdm_dense_sparse_parity_all_load_types(loaded_mesh):
         [mesh_sparse.vertex_residual(v) for v in mesh_sparse.vertices()],
     )
     assert jnp.allclose(residuals_dense, residuals_sparse, atol=1e-6)
+
+
+def _goal_predictions(mesh, sparse):
+    """
+    Evaluate the neighborhood goal predictions on a fixed random state.
+    """
+    structure = structure_from_datastructure(mesh, sparse=sparse)
+    model = EquilibriumModel(tmax=1)
+
+    num_nodes = structure.num_nodes
+    num_edges = structure.num_edges
+    rng = np.random.default_rng(7)
+    xyz = jnp.asarray(rng.random((num_nodes, 3)) * 3.0)
+    eq_state = EquilibriumState(
+        xyz=xyz,
+        residuals=jnp.zeros((num_nodes, 3)),
+        lengths=jnp.zeros((num_edges, 1)),
+        forces=jnp.zeros((num_edges, 1)),
+        loads=jnp.zeros((num_nodes, 3)),
+        vectors=jnp.zeros((num_edges, 3)),
+    )
+
+    sentinel = jnp.asarray([0])
+
+    smooth_goal = MeshSmoothGoal()
+    smooth_goal.init(model, structure)
+
+    laplacian_goal = MeshXYZFaceLaplacianGoal()
+    laplacian_goal.init(model, structure)
+
+    normal_goal = VertexNormalAngleGoal(key=12, vector=[0.0, 0.0, 1.0], target=0.0)
+    normal_goal.init(model, structure)
+
+    return (
+        smooth_goal.prediction(eq_state, sentinel),
+        laplacian_goal.laplacian_vertices(eq_state, sentinel),
+        normal_goal.vertex_normal(eq_state, jnp.asarray(12)),
+    )
+
+
+def test_neighborhood_goals_dense_sparse_parity(loaded_mesh):
+    """
+    The matmul-formulated goals agree between the dense and sparse structures.
+
+    The smoothing, face-laplacian, and vertex-normal goals read the adjacency,
+    face-vertex, and face topology arrays off the structure, whichever storage
+    format the structure keeps them in.
+    """
+    preds_dense = _goal_predictions(loaded_mesh, sparse=False)
+    preds_sparse = _goal_predictions(loaded_mesh, sparse=True)
+
+    for pred_dense, pred_sparse in zip(preds_dense, preds_sparse):
+        assert jnp.allclose(pred_dense, pred_sparse, atol=1e-9)

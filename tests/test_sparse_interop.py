@@ -108,8 +108,10 @@ def test_sentinel_bcoo_comparison_rejects():
     """
     Sentinel: elementwise comparison on a BCOO still raises.
 
-    The vertex normal goal masks with ``connectivity_faces_vertices[:, i] > 0``,
-    which requires the face-vertex matrix to stay dense.
+    The vertex normal goal once masked incident faces by comparing a column of
+    the face-vertex connectivity against zero and was rewritten to compare the
+    face topology index array against the vertex index instead. If this test
+    fails because the op now works, sparse-matrix masking is available again.
     """
     F = BCOO.from_scipy_sparse(coo_matrix(np.eye(4)))
 

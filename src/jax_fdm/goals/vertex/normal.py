@@ -59,7 +59,6 @@ class VertexNormalAngleGoal(ScalarGoal, VertexGoal):
 
         # set in init() from the mesh structure, before any prediction runs
         self.faces_indexed: Int[Array, "faces vertices"]
-        self.connectivity_faces_vertices: Float[Array, "faces vertices"]
 
     @property
     def vector(self) -> Float[Array, "vectors 3"]:
@@ -104,7 +103,6 @@ class VertexNormalAngleGoal(ScalarGoal, VertexGoal):
         super().init(model, structure)
         self.vector = self.vectors()
         self.faces_indexed = structure.faces_indexed
-        self.connectivity_faces_vertices = structure.connectivity_faces_vertices
 
     def face_normals(self, xyz: Float[Array, "nodes 3"]) -> Float[Array, "faces 3"]:
         """
@@ -161,11 +159,14 @@ class VertexNormalAngleGoal(ScalarGoal, VertexGoal):
 
         Notes
         -----
-        The incident faces are selected by masking the face-vertex connectivity, so
-        area-weighted face normals sum into the vertex normal before normalizing.
+        The incident faces are selected by masking the face topology directly:
+        a face is incident when any of its vertex indices equals the queried
+        index. Padding entries (``-1``) never match a valid index. The
+        area-weighted face normals then sum into the vertex normal before
+        normalizing.
         """
         face_normals = self.face_normals(eq_state.xyz)
-        mask = jnp.where(self.connectivity_faces_vertices[:, index] > 0.0, 1.0, 0.0)
+        mask = jnp.any(self.faces_indexed == index, axis=-1)
         normal = jnp.sum(jnp.reshape(mask, (-1, 1)) * face_normals, axis=0)
 
         return normalize_vector(normal)
