@@ -77,6 +77,11 @@ markdown_extensions:
 plugins:
   - search:
       separator: '[\s\-,:!=\[\]()"/]+|(?!\b)(?=[A-Z][a-z])|\.(?!\d)'
+  # The examples page split into examples/; its old URL is linked from the
+  # README shipped in released PyPI packages, so keep it alive.
+  - redirects:
+      redirect_maps:
+        examples.md: examples/arch.md
   - mkdocstrings:
       default_handler: python
       handlers:
@@ -110,8 +115,14 @@ plugins:
 nav:
   - Overview: index.md
   - Installation: installation.md
-  - Examples: examples.md
-  - Custom goals and constraints: custom_goals.md
+  - Citation: citation.md
+  - License: license.md
+  - Examples:
+      - Arch optimization: examples/arch.md
+      - More examples: examples/more.md
+  - How-to Guides:
+      - Custom goals: howto/goals.md
+      - Custom constraints: howto/constraints.md
   - API reference:
       - api/jax_fdm.datastructures.md
       - api/jax_fdm.equilibrium.md
@@ -125,5 +136,3 @@ nav:
           - api/jax_fdm.visualization.viewers.md
           - api/jax_fdm.visualization.notebooks.md
           - api/jax_fdm.visualization.plotters.md
-  - Citation: citation.md
-  - License: license.md

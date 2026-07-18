@@ -87,7 +87,7 @@ Continue this example (adding constraints, optimizing the form, and visualizing 
 
 ## Citation
 
-If you found this library to be useful in academic or industry work, please consider 1) starring the project on Github, and 2) citing it:
+If you found this library to be useful in academic or industry work, please consider (1) starring the project on Github, and (2) citing it:
 
 
 ``` bibtex
