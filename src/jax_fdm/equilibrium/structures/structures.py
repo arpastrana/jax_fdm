@@ -171,15 +171,15 @@ class EquilibriumStructure(Graph):
         Inverts the free-then-fixed permutation: indexing a free-fixed-stacked
         array by this map restores the structure's native node order.
         """
-        # TODO: this method must be refactored to be more transparent.
-        freefixed_indices = jnp.concatenate([self.indices_free, self.indices_fixed])
+        freefixed = np.concatenate(
+            [
+                np.asarray(self.indices_free),
+                np.asarray(self.indices_fixed),
+            ],
+        )
 
-        indices = {node.item(): index for index, node in enumerate(freefixed_indices)}
-        sorted_indices = []
-        for _, index in sorted(indices.items(), key=lambda item: item[0]):
-            sorted_indices.append(index)
-
-        return jnp.asarray(sorted_indices, dtype=DTYPE_INT_JAX)
+        # argsort of a permutation is its inverse
+        return jnp.asarray(np.argsort(freefixed), dtype=DTYPE_INT_JAX)
 
 
 # ==========================================================================
@@ -295,13 +295,15 @@ class EquilibriumStructureSparse(EquilibriumStructure, GraphSparse):
             The positions in the ``data`` array that hold the diagonal entries, in
             row order.
         """
-        all_indices = []
-        for i in range(csc.shape[0]):
-            index_range = csc.indices[csc.indptr[i] : csc.indptr[i + 1]]
-            ind_loc = jnp.where(index_range == i)[0]
-            all_indices.append(ind_loc + csc.indptr[i])
+        # Vectorized in NumPy: a per-row jnp.where loop pays one device
+        # dispatch per row, which dominates the structure build time.
+        indices = np.asarray(csc.indices)
+        indptr = np.asarray(csc.indptr)
 
-        return jnp.concatenate(all_indices)
+        # The column of each entry in the data array, in storage order.
+        columns = np.repeat(np.arange(csc.shape[0]), np.diff(indptr))
+
+        return jnp.asarray(np.flatnonzero(indices == columns), dtype=DTYPE_INT_JAX)
 
     @staticmethod
     def _get_sparse_diag_data(

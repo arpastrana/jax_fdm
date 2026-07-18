@@ -7,7 +7,6 @@ from jaxtyping import Float
 from jaxtyping import Int
 from scipy.sparse import coo_matrix
 from scipy.sparse import csc_matrix
-from scipy.sparse import spmatrix
 
 from jax_fdm import DTYPE_INT_JAX
 from jax_fdm import DTYPE_JAX
@@ -94,9 +93,9 @@ class Graph(eqx.Module):
         """
         The signed edge-node incidence matrix of the graph.
         """
-        edges_indexed = self.edges_indexed
+        C = connectivity_matrix(self.edges_indexed).toarray()
 
-        return jnp.asarray(connectivity_matrix(edges_indexed, "array"), dtype=DTYPE_JAX)
+        return jnp.asarray(C, dtype=DTYPE_JAX)
 
     def _adjacency_matrix(self) -> Float[Array, "nodes nodes"]:
         """
@@ -104,7 +103,7 @@ class Graph(eqx.Module):
         """
         edges_indexed = self.edges_indexed
 
-        return jnp.asarray(adjacency_matrix(edges_indexed, "array"), dtype=DTYPE_JAX)
+        return jnp.asarray(adjacency_matrix(edges_indexed).toarray(), dtype=DTYPE_JAX)
 
 
 # ==========================================================================
@@ -149,21 +148,21 @@ class GraphSparse(Graph):
     def connectivity_scipy(self) -> csc_matrix:
         """
         The signed edge-node incidence matrix as a SciPy sparse matrix.
+
+        Notes
+        -----
+        Rebuilt on every access.
         """
         # TODO: Refactor GraphSparse to return a JAX sparse matrix instead
-        edges_indexed = self.edges_indexed
-
-        # rtype="csc" always yields a csc_matrix; connectivity_matrix's return type
-        # is a broader union across all rtype literals
-        return connectivity_matrix(edges_indexed, "csc")  # pyright: ignore[reportReturnType]
+        return connectivity_matrix(self.edges_indexed)
 
     def _adjacency_matrix(self) -> Float[Array, "nodes nodes"]:
         """
-        The symmetric node-node adjacency matrix, assembled through sparse COO.
+        The symmetric node-node adjacency matrix, assembled sparse, then dense.
         """
         edges_indexed = self.edges_indexed
 
-        A = adjacency_matrix(edges_indexed, "coo")
+        A = adjacency_matrix(edges_indexed)
 
         return BCOO.from_scipy_sparse(A).todense()
 
@@ -173,10 +172,7 @@ class GraphSparse(Graph):
 # ==========================================================================
 
 
-def connectivity_matrix(
-    edges: Int[Array, "edges 2"],
-    rtype: str = "array",
-) -> Float[np.ndarray, "edges nodes"] | list | spmatrix:
+def connectivity_matrix(edges: Int[Array, "edges 2"]) -> csc_matrix:
     """
     Build the signed edge-node incidence matrix from indexed edges.
 
@@ -184,30 +180,27 @@ def connectivity_matrix(
     ----------
     edges :
         The node index pair of each edge.
-    rtype :
-        The return format: ``"array"``, ``"list"``, ``"csr"``, ``"csc"``, or
-        ``"coo"``.
 
     Returns
     -------
     connectivity :
-        The incidence matrix, one row per edge, with ``-1`` in the start node's
-        column and ``+1`` in the end node's column, in the requested format.
+        The incidence matrix in sparse format, one row per edge, with ``-1``
+        in the start node's column and ``+1`` in the end node's column.
     """
-    m = len(edges)
-    data = np.array([-1] * m + [1] * m)
-    rows = np.array(list(range(m)) + list(range(m)))
-    cols = np.array([edge[0] for edge in edges] + [edge[1] for edge in edges])
+    # Iterating a JAX array element-wise costs one device sync per element;
+    # convert to NumPy once and slice columns vectorized.
+    edges_np = np.asarray(edges)
+    m = len(edges_np)
+    data = np.concatenate((-np.ones(m), np.ones(m)))
+    rows = np.concatenate((np.arange(m), np.arange(m)))
+    cols = np.concatenate((edges_np[:, 0], edges_np[:, 1]))
 
-    C = coo_matrix((data, (rows, cols))).asfptype()
+    # coo_matrix.tocsc() yields a csc_matrix at runtime; scipy's bundled stubs
+    # widen the return to csc_array
+    return coo_matrix((data, (rows, cols))).tocsc()  # pyright: ignore[reportReturnType]
 
-    return build_matrix(C, rtype)
 
-
-def adjacency_matrix(
-    edges: Int[Array, "edges 2"],
-    rtype: str = "array",
-) -> Float[np.ndarray, "nodes nodes"] | list | spmatrix:
+def adjacency_matrix(edges: Int[Array, "edges 2"]) -> csc_matrix:
     """
     Build the symmetric node-node adjacency matrix from indexed edges.
 
@@ -215,64 +208,30 @@ def adjacency_matrix(
     ----------
     edges :
         The node index pair of each edge.
-    rtype :
-        The return format: ``"array"``, ``"list"``, ``"csr"``, ``"csc"``, or
-        ``"coo"``.
 
     Returns
     -------
     adjacency :
-        The symmetric adjacency matrix, with a one wherever two nodes share an
-        edge, in the requested format.
+        The symmetric adjacency matrix in sparse format, with a one wherever
+        two nodes share an edge.
 
     Notes
     -----
     Assumes nodes are contiguously indexed from ``0``, so the matrix size is the
     largest node index plus one.
     """
-    num_vertices = np.max(np.ravel(edges)) + 1
+    edges_np = np.asarray(edges)
+    num_vertices = np.max(np.ravel(edges_np)) + 1
 
-    # rows and columns indices for the COO format
-    rows = np.hstack(
-        [edges[:, 0], edges[:, 1]],
-    )  # add edges in both directions for undirected graph
-    cols = np.hstack([edges[:, 1], edges[:, 0]])
+    # add edges in both directions for undirected graph
+    rows = np.concatenate((edges_np[:, 0], edges_np[:, 1]))
+    cols = np.concatenate((edges_np[:, 1], edges_np[:, 0]))
 
     # data to fill in (all 1s for the existence of edges)
     data = np.ones(len(rows), dtype=DTYPE_NP)
 
-    # create the COO matrix
     A = coo_matrix((data, (rows, cols)), shape=(num_vertices, num_vertices))
 
-    # convert to floating point matrix
-    return build_matrix(A.asfptype(), rtype)
-
-
-def build_matrix(M: spmatrix, rtype: str) -> np.ndarray | list | spmatrix:
-    """
-    Convert a SciPy sparse matrix to the requested representation.
-
-    Parameters
-    ----------
-    M :
-        The sparse matrix to convert.
-    rtype :
-        The target format: ``"list"``, ``"array"``, ``"csr"``, ``"csc"``, or
-        ``"coo"``. Any other value returns the matrix unchanged.
-
-    Returns
-    -------
-    matrix :
-        The matrix in the requested representation.
-    """
-    if rtype == "list":
-        return M.toarray().tolist()
-    if rtype == "array":
-        return M.toarray()
-    if rtype == "csr":
-        return M.tocsr()
-    if rtype == "csc":
-        return M.tocsc()
-    if rtype == "coo":
-        return M.tocoo()
-    return M
+    # coo_matrix.tocsc() yields a csc_matrix at runtime; scipy's bundled stubs
+    # widen the return to csc_array
+    return A.tocsc()  # pyright: ignore[reportReturnType]
