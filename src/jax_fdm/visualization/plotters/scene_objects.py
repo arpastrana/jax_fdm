@@ -65,8 +65,8 @@ class FDPlotterObject(PlotterSceneObject):
     Subclasses pair this class with the matching compas_plotter drawable and
     resolve the point vocabulary (a network addresses its points as nodes, a
     mesh as vertices) by implementing the ``point_*`` methods and by exposing
-    it as constructor keyword arguments (``nodecolor``/``nodesize``/
-    ``show_nodes`` on a network, ``vertexcolor``/``vertexsize``/
+    it as constructor keyword arguments (``nodes``/``nodecolor``/``nodesize``/
+    ``show_nodes`` on a network, ``vertices``/``vertexcolor``/``vertexsize``/
     ``show_vertices`` on a mesh) that map onto the neutral point parameters
     here.
 
@@ -357,8 +357,9 @@ class FDNetworkPlotterObject(FDPlotterObject, GraphObject):
     """
     A scene object that draws a force density network in a plotter.
 
-    The network points are styled with the ``nodecolor``, ``nodesize`` and
-    ``show_nodes`` keyword arguments, matching the datastructure vocabulary.
+    The network points are filtered with the ``nodes`` keyword argument and
+    styled with ``nodecolor``, ``nodesize`` and ``show_nodes``, matching the
+    datastructure vocabulary.
     """
 
     point_color_attr = "nodecolor"
@@ -372,6 +373,7 @@ class FDNetworkPlotterObject(FDPlotterObject, GraphObject):
     def __init__(
         self,
         item: FDNetwork | None = None,
+        nodes: list[int] | None = None,
         nodecolor: PointColorSpec = None,
         nodesize: PointSizeSpec = None,
         show_nodes: bool | None = None,
@@ -381,6 +383,7 @@ class FDNetworkPlotterObject(FDPlotterObject, GraphObject):
         # base, dropping injected None defaults so they never clobber the
         # node keywords. The marker size stays in the upstream vocabulary:
         # it is an on-screen size in points, not a world-space sphere radius.
+        points = kwargs.pop("points", None)
         pointcolor = kwargs.pop("pointcolor", None)
         pointsize = kwargs.pop("pointsize", None)
         show_points = kwargs.pop("show_points", None)
@@ -391,6 +394,7 @@ class FDNetworkPlotterObject(FDPlotterObject, GraphObject):
 
         super().__init__(
             item=item,
+            points=nodes if nodes is not None else points,
             pointcolor=nodecolor if nodecolor is not None else pointcolor,
             show_points=show_nodes if show_nodes is not None else show_points,
             **kwargs,
@@ -429,8 +433,9 @@ class FDMeshPlotterObject(FDPlotterObject, MeshObject):
     On top of the shared edge/load/reaction categories, the mesh faces are
     drawn by the inherited compas_plotter face pass.
 
-    The mesh points are styled with the ``vertexcolor``, ``vertexsize`` and
-    ``show_vertices`` keyword arguments, matching the datastructure vocabulary.
+    The mesh points are filtered with the ``vertices`` keyword argument and
+    styled with ``vertexcolor``, ``vertexsize`` and ``show_vertices``,
+    matching the datastructure vocabulary.
     """
 
     point_color_attr = "vertexcolor"
@@ -444,6 +449,7 @@ class FDMeshPlotterObject(FDPlotterObject, MeshObject):
     def __init__(
         self,
         item: FDMesh | None = None,
+        vertices: list[int] | None = None,
         vertexcolor: PointColorSpec = None,
         vertexsize: PointSizeSpec = None,
         show_vertices: bool | None = None,
@@ -453,6 +459,7 @@ class FDMeshPlotterObject(FDPlotterObject, MeshObject):
         # base, dropping injected None defaults so they never clobber the
         # vertex keywords. The marker size stays in the upstream vocabulary:
         # it is an on-screen size in points, not a world-space sphere radius.
+        points = kwargs.pop("points", None)
         pointcolor = kwargs.pop("pointcolor", None)
         pointsize = kwargs.pop("pointsize", None)
         show_points = kwargs.pop("show_points", None)
@@ -463,6 +470,7 @@ class FDMeshPlotterObject(FDPlotterObject, MeshObject):
 
         super().__init__(
             item=item,
+            points=vertices if vertices is not None else points,
             pointcolor=vertexcolor if vertexcolor is not None else pointcolor,
             show_points=show_vertices if show_vertices is not None else show_points,
             **kwargs,

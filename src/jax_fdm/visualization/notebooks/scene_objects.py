@@ -53,9 +53,10 @@ class ThreeFDDatastructureObject(ThreeSceneObject):
 
     Subclasses resolve the point vocabulary (a network addresses its points
     as nodes, a mesh as vertices) by implementing the ``point_*`` methods and
-    by exposing it as constructor keyword arguments (``nodecolor``/``nodesize``/
-    ``show_nodes`` on a network, ``vertexcolor``/``vertexsize``/``show_vertices``
-    on a mesh) that map onto the neutral point parameters here.
+    by exposing it as constructor keyword arguments (``nodes``/``nodecolor``/
+    ``nodesize``/``show_nodes`` on a network, ``vertices``/``vertexcolor``/
+    ``vertexsize``/``show_vertices`` on a mesh) that map onto the neutral
+    point parameters here.
     """
 
     # Tessellation resolution of the batched shapes. Half the viewer default:
@@ -246,8 +247,9 @@ class ThreeFDNetworkObject(ThreeFDDatastructureObject):
     """
     A scene object that renders a force density network in a notebook scene.
 
-    The network points are styled with the ``nodecolor``, ``nodesize`` and
-    ``show_nodes`` keyword arguments, matching the datastructure vocabulary.
+    The network points are filtered with the ``nodes`` keyword argument and
+    styled with ``nodecolor``, ``nodesize`` and ``show_nodes``, matching the
+    datastructure vocabulary.
     """
 
     # Narrows the base class's FDNetwork | FDMesh attribute to the type this
@@ -255,16 +257,19 @@ class ThreeFDNetworkObject(ThreeFDDatastructureObject):
     # type-check against the right datastructure.
     datastructure: FDNetwork
 
-    def __init__(self, item: FDNetwork | None = None, nodecolor: PointColorSpec = None,
-                 nodesize: PointSizeSpec = None, show_nodes: bool | None = None, **kwargs: Any) -> None:
+    def __init__(self, item: FDNetwork | None = None, nodes: list[int] | None = None,
+                 nodecolor: PointColorSpec = None, nodesize: PointSizeSpec = None,
+                 show_nodes: bool | None = None, **kwargs: Any) -> None:
         # Map the node vocabulary onto the neutral point parameters of the
         # base. The scene backend injects the neutral names with explicit None
         # values (meaning "default"), so they are popped and only kept when
         # no node keyword takes precedence.
+        points = kwargs.pop("points", None)
         pointcolor = kwargs.pop("pointcolor", None)
         pointsize = kwargs.pop("pointsize", None)
         show_points = kwargs.pop("show_points", None)
         super().__init__(item=item,
+                         points=nodes if nodes is not None else points,
                          pointcolor=nodecolor if nodecolor is not None else pointcolor,
                          pointsize=nodesize if nodesize is not None else pointsize,
                          show_points=show_nodes if show_nodes is not None else show_points,
@@ -298,8 +303,9 @@ class ThreeFDMeshObject(ThreeFDDatastructureObject):
     On top of the shared edge/vertex/load/reaction categories, the mesh faces
     are drawn as one shaded surface (the mesh itself).
 
-    The mesh points are styled with the ``vertexcolor``, ``vertexsize`` and
-    ``show_vertices`` keyword arguments, matching the datastructure vocabulary.
+    The mesh points are filtered with the ``vertices`` keyword argument and
+    styled with ``vertexcolor``, ``vertexsize`` and ``show_vertices``,
+    matching the datastructure vocabulary.
 
     The compas_viewer backend's ``faceopacity`` has no notebook counterpart:
     the pythreejs materials compas_notebook builds do not support opacity.
@@ -312,6 +318,7 @@ class ThreeFDMeshObject(ThreeFDDatastructureObject):
 
     def __init__(self,
                  item: FDMesh | None = None,
+                 vertices: list[int] | None = None,
                  vertexcolor: PointColorSpec = None,
                  vertexsize: PointSizeSpec = None,
                  show_vertices: bool | None = None,
@@ -321,10 +328,12 @@ class ThreeFDMeshObject(ThreeFDDatastructureObject):
         # base. The scene backend injects the neutral names with explicit None
         # values (meaning "default"), so they are popped and only kept when
         # no vertex keyword takes precedence.
+        points = kwargs.pop("points", None)
         pointcolor = kwargs.pop("pointcolor", None)
         pointsize = kwargs.pop("pointsize", None)
         show_points = kwargs.pop("show_points", None)
         super().__init__(item=item,
+                         points=vertices if vertices is not None else points,
                          pointcolor=vertexcolor if vertexcolor is not None else pointcolor,
                          pointsize=vertexsize if vertexsize is not None else pointsize,
                          show_points=show_vertices if show_vertices is not None else show_points,

@@ -304,6 +304,22 @@ def test_point_kwargs_speak_the_datastructure_vocabulary(network, mesh):
     assert "Vertices" in {child.name for child in obj.children}
 
 
+def test_point_filter_speaks_the_datastructure_vocabulary(network, mesh):
+    """
+    The nodes/vertices keyword restricts the tracked points, and with them the
+    candidate points of the load and reaction arrow categories.
+    """
+    obj = FDNetworkObject(item=network, context="Viewer", nodes=[0, 1])
+    assert obj.points == [0, 1]
+    assert obj.load_points == [0, 1]
+    assert obj.reaction_points == [0, 1]
+
+    obj = FDMeshObject(item=mesh, context="Viewer", vertices=[0])
+    assert obj.points == [0]
+    assert obj.load_points == [0]
+    assert obj.reaction_points == [0]
+
+
 def test_adjacency_is_frozen_and_complete(network, mesh):
     for obj in (
         FDNetworkObject(item=network, context="Viewer"),

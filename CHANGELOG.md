@@ -28,6 +28,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Fixed the `nodes`/`vertices` point-filter keyword being silently ignored by the scene objects of all three visualization backends (viewer, notebook, plotter). The subclasses mapped only the styling vocabulary onto the neutral point parameters of their base class, so a `nodes=` or `vertices=` selection fell through `**kwargs` into the upstream COMPAS scene object and everything drew as if unfiltered, including the load and reaction arrows. The subclass constructors now bind the filter onto the base `points` parameter like the styling keywords, with regression tests on the viewer and plotter objects.
 - Fixed a circular import that made `import jax_fdm.goals` (and `losses`, `constraints`, `optimization`, `parameters`) fail unless `jax_fdm.equilibrium` or `jax_fdm.datastructures` was imported first. `equilibrium.fdm` imported `Loss`, `Optimizer` and `Parameter` at runtime for annotations only, closing the cycle `equilibrium -> losses -> goals -> equilibrium`; those imports now live under `TYPE_CHECKING` like the existing `Constraint` import.
 
 ### Removed
