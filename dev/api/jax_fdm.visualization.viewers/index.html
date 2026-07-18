@@ -348,6 +348,33 @@
       
   
   
+  
+  
+    <li class="md-nav__item">
+      <a href="../../custom_goals/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Custom goals and constraints
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
     
   
   
@@ -366,10 +393,10 @@
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" checked>
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" checked>
         
           
-          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="">
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="">
             
   
   
@@ -387,8 +414,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="true">
-          <label class="md-nav__title" for="__nav_4">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_5">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -641,10 +668,10 @@
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4_9" checked>
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5_9" checked>
         
           
-          <label class="md-nav__link" for="__nav_4_9" id="__nav_4_9_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_5_9" id="__nav_5_9_label" tabindex="0">
             
   
   
@@ -662,8 +689,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_9_label" aria-expanded="true">
-          <label class="md-nav__title" for="__nav_4_9">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_5_9_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_5_9">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -1067,7 +1094,7 @@ extra. Without them, the viewer degrades to a null object that warns on use.</p>
 
 
 
-        <p>A thin wrapper on :class:<code>compas_viewer.Viewer</code>.</p>
+        <p>A thin wrapper on <code>compas_viewer.Viewer</code>.</p>
 <p>It subclasses the COMPAS viewer so that camera control, the <code>on</code> frame
 loop, <code>show</code> and recording all work natively. The force density
 datastructures render through their registered scene objects, so <code>add</code>
@@ -1075,7 +1102,7 @@ only provides the terser <code>viewer.add(obj)</code> interface and a couple of
 kwarg conveniences.</p>
 <p>For convenience it also accepts the <code>width</code>, <code>height</code> and <code>show_grid</code>
 keyword arguments directly and folds them into a
-:class:<code>compas_viewer.config.Config</code>,
+<code>compas_viewer.config.Config</code>,
 so the common window setup does not require building a config by hand.
 The defaults (1200x800, no grid) fit a typical laptop screen and keep the
 grid from cutting through structures that hang below <code>z=0</code>.</p>
@@ -1200,7 +1227,7 @@ the datastructure with <code>fuse=True</code> to animate on batched soups.</p>
 <p>This is a convenience shortcut for <code>viewer.scene.add</code> with a couple
 of kwarg conveniences for plain COMPAS objects. The force density
 datastructures dispatch through the scene registry to their scene
-objects (:class:<code>FDNetworkObject</code>, :class:<code>FDMeshObject</code>).</p>
+objects (<code>FDNetworkObject</code>, <code>FDMeshObject</code>).</p>
 <p>Dispatch is purely by type. To draw a force-density datastructure as plain
 geometry instead (a bare wireframe or shaded surface), convert it to its
 COMPAS base first and add that, e.g. <code>viewer.add(mesh.copy(cls=Mesh))</code>

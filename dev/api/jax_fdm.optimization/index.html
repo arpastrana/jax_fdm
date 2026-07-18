@@ -348,6 +348,33 @@
       
   
   
+  
+  
+    <li class="md-nav__item">
+      <a href="../../custom_goals/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Custom goals and constraints
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
     
   
   
@@ -366,10 +393,10 @@
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" checked>
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" checked>
         
           
-          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="">
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="">
             
   
   
@@ -387,8 +414,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="true">
-          <label class="md-nav__title" for="__nav_4">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_5">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -1420,10 +1447,10 @@
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4_9" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5_9" >
         
           
-          <label class="md-nav__link" for="__nav_4_9" id="__nav_4_9_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_5_9" id="__nav_5_9_label" tabindex="0">
             
   
   
@@ -1441,8 +1468,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_9_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_4_9">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_5_9_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5_9">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -2429,9 +2456,9 @@ since jax_fdm prints its own progress.</p>
 <details class="note" open>
   <summary>Notes</summary>
   <p>Subclasses set <code>name</code> to their SciPy method identity and override the
-gradient, hessian, constraint, or minimization hooks as needed. :meth:<code>problem</code>
+gradient, hessian, constraint, or minimization hooks as needed. <code>problem</code>
 assembles the objective, its gradient, bounds, and goal collections into an
-:class:<code>OptProblem</code>, which :meth:<code>solve</code> then minimizes.</p>
+<code>OptProblem</code>, which <code>solve</code> then minimizes.</p>
 </details>
 
 
@@ -3363,7 +3390,7 @@ constraint dictionaries instead.</p>
 
 <details class="note" open>
   <summary>Notes</summary>
-  <p>Overrides :meth:<code>problem</code> to build an objective without a gradient or hessian,
+  <p>Overrides <code>problem</code> to build an objective without a gradient or hessian,
 so the loss is only jitted for its value. Constraints are not supported.</p>
 </details>
 
@@ -3942,7 +3969,8 @@ and <code>disp</code> removed, as SciPy &gt;= 1.16 no longer accepts it here.</p
 <details class="note" open>
   <summary>Notes</summary>
   <p>Wrapping each gradient in a NumPy array sidesteps SciPy compatibility issues
-with JAX arrays, at the cost of being slower than :class:<code>LBFGSB</code>.</p>
+with JAX arrays, at the cost of being slower than
+<a class="autorefs autorefs-internal" title="            LBFGSB" href="#jax_fdm.optimization.optimizers.gradient_based.LBFGSB">LBFGSB</a>.</p>
 </details>
 
 
@@ -5360,6 +5388,13 @@ arguments gathered across the group.</p>
             –
           <div class="doc-md-description">
             <p>If the collectibles are not all of the same type.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+              <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/exceptions.html#AttributeError">AttributeError</a></code>
+            –
+          <div class="doc-md-description">
+            <p>If an init parameter is not stored as a same-named attribute.</p>
           </div>
         </li>
     </ul>

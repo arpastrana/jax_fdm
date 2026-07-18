@@ -348,6 +348,33 @@
       
   
   
+  
+  
+    <li class="md-nav__item">
+      <a href="../../custom_goals/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Custom goals and constraints
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
     
   
   
@@ -366,10 +393,10 @@
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" checked>
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" checked>
         
           
-          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="">
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="">
             
   
   
@@ -387,8 +414,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="true">
-          <label class="md-nav__title" for="__nav_4">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_5">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -1568,10 +1595,10 @@
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4_9" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5_9" >
         
           
-          <label class="md-nav__link" for="__nav_4_9" id="__nav_4_9_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_5_9" id="__nav_5_9_label" tabindex="0">
             
   
   
@@ -1589,8 +1616,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_9_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_4_9">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_5_9_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5_9">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -4615,7 +4642,7 @@ matrix, the fixed node coordinates, and the load state.</p>
 <details class="note" open>
   <summary>Notes</summary>
   <p>This is the iteration hot path: the fixed-node residual is passed in rather
-than recomputed each step, unlike :meth:<code>load_xyz_matrix</code>.</p>
+than recomputed each step, unlike <code>load_xyz_matrix</code>.</p>
 </details>
 
     </div>
@@ -4779,9 +4806,9 @@ at equilibrium.</p>
 
 <details class="note" open>
   <summary>Notes</summary>
-  <p>Identical to :class:<code>EquilibriumModel</code> except the stiffness matrix is assembled
-in sparse format and the linear system is solved with a sparse solver, which
-scales to larger structures.</p>
+  <p>Identical to <a class="autorefs autorefs-internal" title="            EquilibriumModel" href="#jax_fdm.equilibrium.models.EquilibriumModel">EquilibriumModel</a>
+except the stiffness matrix is assembled in sparse format and the linear
+system is solved with a sparse solver, which scales to larger structures.</p>
 </details>
 
 
@@ -5294,9 +5321,10 @@ equilibrium model can run shape updates as pure array operations.</p>
 
 <details class="note" open>
   <summary>Notes</summary>
-  <p>Extends :class:<code>Graph</code> with a support mask and the free/fixed node partition,
-precomputing the free and fixed connectivity submatrices and the index maps
-that reorder nodes between the free-fixed and native orderings.</p>
+  <p>Extends <a class="autorefs autorefs-internal" title="            Graph" href="#jax_fdm.equilibrium.structures.graphs.Graph">Graph</a> with a support
+mask and the free/fixed node partition, precomputing the free and fixed
+connectivity submatrices and the index maps that reorder nodes between the
+free-fixed and native orderings.</p>
 </details>
 
 
@@ -5581,7 +5609,9 @@ indexing rather than rebuilding its structure at every solve.</p>
 
 <details class="note" open>
   <summary>Notes</summary>
-  <p>Adds face connectivity to :class:<code>EquilibriumStructure</code>, so mesh vertices play
+  <p>Adds face connectivity to
+<a class="autorefs autorefs-internal" title="            EquilibriumStructure" href="#jax_fdm.equilibrium.structures.structures.EquilibriumStructure">EquilibriumStructure</a>,
+so mesh vertices play
 the role of nodes while faces enable tributary face-load distribution.</p>
 </details>
 
@@ -5807,8 +5837,10 @@ index array; the padding is masked out downstream.</p>
 
 <details class="note" open>
   <summary>Notes</summary>
-  <p>Combines the face topology of :class:<code>EquilibriumMeshStructure</code> with the sparse
-assembly precomputation of :class:<code>EquilibriumStructureSparse</code>.</p>
+  <p>Combines the face topology of
+<a class="autorefs autorefs-internal" title="            EquilibriumMeshStructure" href="#jax_fdm.equilibrium.structures.structures.EquilibriumMeshStructure">EquilibriumMeshStructure</a>
+with the sparse assembly precomputation of
+<a class="autorefs autorefs-internal" title="            EquilibriumStructureSparse" href="#jax_fdm.equilibrium.structures.structures.EquilibriumStructureSparse">EquilibriumStructureSparse</a>.</p>
 </details>
 
 
@@ -6010,7 +6042,7 @@ matrices are JAX arrays used in the differentiable equilibrium computation.</p>
 
 <details class="note" open>
   <summary>Notes</summary>
-  <p>The full connectivity matrix is still dense (see :meth:<code>_connectivity_matrix</code>);
+  <p>The full connectivity matrix is still dense (see <code>_connectivity_matrix</code>);
 only the derived free and fixed submatrices are consumed as sparse arrays.</p>
 </details>
 
