@@ -1,7 +1,3 @@
-# compas
-from compas.geometry import Polyline
-from compas.geometry import add_vectors
-
 # static equilibrium
 from jax_fdm.datastructures import FDNetwork
 from jax_fdm.equilibrium import fdm
@@ -20,17 +16,17 @@ py = -0.2
 # Create the geometry of an arch
 # ==========================================================================
 
-start = [-arch_length / 2.0, 0.0, 0.0]
-end = add_vectors(start, [arch_length, 0.0, 0.0])
-curve = Polyline([start, end])
-points = curve.divide(num_segments)
-lines = Polyline(points).lines
+segment_length = arch_length / num_segments
+
+xs = [-arch_length / 2.0 + i * segment_length for i in range(num_segments + 1)]
+nodes = [[x, 0.0, 0.0] for x in xs]
+edges = [(i, i + 1) for i in range(num_segments)]
 
 # ==========================================================================
 # Create arch
 # ==========================================================================
 
-network = FDNetwork.from_lines(lines)
+network = FDNetwork.from_nodes_and_edges(nodes, edges)
 
 # ==========================================================================
 # Define structural system
@@ -38,7 +34,7 @@ network = FDNetwork.from_lines(lines)
 
 # assign supports
 network.node_support(key=0)
-network.node_support(key=len(points) - 1)
+network.node_support(key=num_segments)
 
 # set initial q to all edges
 network.edges_forcedensities(q_init, keys=network.edges())

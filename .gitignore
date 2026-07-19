@@ -123,7 +123,6 @@ conda.recipe/
 !data/json/monkey_saddle.json
 !data/json/vault.json
 !data/json/vault0.json
-!data/json/arch.json
 !tests/baselines/*.json
 !tests/data/*.json
 

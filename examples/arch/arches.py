@@ -1,7 +1,6 @@
 # compas
 from compas.colors import ColorMap
 from compas.geometry import Translation
-from compas.geometry import add_vectors
 
 # jax_fdm
 from jax_fdm.datastructures import FDNetwork
@@ -26,26 +25,17 @@ pz = -0.3
 # Create the base geometry of the arch
 # ==========================================================================
 
-points = []
-
-start = [-length_arch / 2.0, 0.0, 0.0]
 length_segment = length_arch / num_segments
-for i in range(num_segments + 1):
-    point = add_vectors(start, [i * length_segment, 0.0, 0.0])
-    points.append(point)
+
+xs = [-length_arch / 2.0 + i * length_segment for i in range(num_segments + 1)]
+nodes = [[x, 0.0, 0.0] for x in xs]
+edges = [(i, i + 1) for i in range(num_segments)]
 
 # ==========================================================================
 # Create arch network
 # ==========================================================================
 
-network = FDNetwork()
-
-for idx, point in enumerate(points):
-    x, y, z = point
-    network.add_node(idx, x=x, y=y, z=z)
-
-for u, v in zip(range(0, num_segments), range(1, num_segments + 1)):
-    network.add_edge(u, v)
+network = FDNetwork.from_nodes_and_edges(nodes, edges)
 
 # ==========================================================================
 # Define structural system

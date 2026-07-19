@@ -1,8 +1,8 @@
 # Arch Optimization
 
-Suppose you are interested in finding a suitable funicular geometry for a 10-meter span arch subjected to vertical point loads of 0.3 kN.
+Suppose you are interested in finding a suitable funicular geometry for a 5-meter span arch subjected to vertical point loads of 0.3 kN.
 The arch has to be compression-dominant.
-You model the arch as a `jax_fdm` network (download the arch `json` file [here](https://github.com/arpastrana/jax_fdm/blob/main/data/json/arch.json)).
+You model the arch as a `jax_fdm` network built from scratch: a straight line of nodes evenly spaced along the span, joined edge to edge.
 Then, you apply a force density of -1 to all of its edges, and compute the required shape with the force density method.
 
 ```python
@@ -10,7 +10,15 @@ from jax_fdm.datastructures import FDNetwork
 from jax_fdm.equilibrium import fdm
 
 
-network = FDNetwork.from_json("data/json/arch.json")
+length = 5.0
+num_segments = 10
+segment_length = length / num_segments
+
+xs = [-length / 2.0 + i * segment_length for i in range(num_segments + 1)]
+nodes = [[x, 0.0, 0.0] for x in xs]
+edges = [(i, i + 1) for i in range(num_segments)]
+
+network = FDNetwork.from_nodes_and_edges(nodes, edges)
 network.edges_forcedensities(q=-1.0)
 network.nodes_supports(keys=[node for node in network.nodes() if network.is_leaf(node)])
 network.nodes_loads([0.0, 0.0, -0.3])
