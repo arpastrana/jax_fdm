@@ -121,8 +121,12 @@ nav:
       - Arch optimization: examples/arch.md
       - More examples: examples/more.md
   - How-to Guides:
-      - Custom goals: howto/goals.md
-      - Custom constraints: howto/constraints.md
+      - Form-finding: howto/form_finding.md
+      - Constrained form-finding: howto/constrained_form_finding.md
+      - Goals: howto/goals.md
+      - Constraints: howto/constraints.md
+      - Custom goals: howto/custom_goals.md
+      - Custom constraints: howto/custom_constraints.md
   - API reference:
       - api/jax_fdm.datastructures.md
       - api/jax_fdm.equilibrium.md
