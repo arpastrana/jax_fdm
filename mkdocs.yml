@@ -119,6 +119,7 @@ nav:
   - License: license.md
   - Examples:
       - Arch optimization: examples/arch.md
+      - Shape matching: examples/shape_matching.md
       - More examples: examples/more.md
   - How-to Guides:
       - Form-finding: howto/form_finding.md
