@@ -3101,8 +3101,14 @@ the outward vectors from the node.</p>
 
 <details class="note" open>
   <summary>Notes</summary>
-  <p>This function is not nan safe, because it loses information when
-cross-multiplying valid entries with nan values.</p>
+  <p>The polygon points are referenced to their centroid before the cross
+products. For a closed loop the reference point telescopes out of the
+summed cross products, so the normal is unchanged analytically, but the
+centering avoids the catastrophic cancellation that crossing large
+absolute coordinates incurs far away from the origin.</p>
+<p>Rows that contain nan values are excluded from the centroid and drop the
+two cross-product terms they touch, so the direction of the normal
+survives nan padding but its magnitude does not.</p>
 </details>
 
     </div>

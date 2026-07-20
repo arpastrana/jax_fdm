@@ -8365,8 +8365,11 @@ face area.</p>
 
 <details class="note" open>
   <summary>Notes</summary>
-  <p>The incident faces are selected by masking the face-vertex connectivity, so
-area-weighted face normals sum into the vertex normal before normalizing.</p>
+  <p>The incident faces are selected by masking the face topology directly:
+a face is incident when any of its vertex indices equals the queried
+index. Padding entries (<code>-1</code>) never match a valid index. The
+area-weighted face normals then sum into the vertex normal before
+normalizing.</p>
 </details>
 
     </div>
@@ -8644,7 +8647,7 @@ radians.</p>
 
     <div class="doc doc-contents ">
 
-        <p>Bind the goal to a mesh, caching the four corner indices of each face.</p>
+        <p>Bind the goal to a mesh, caching the face topology.</p>
 
 
 <p><span class="doc-section-title">Parameters:</span></p>
@@ -8715,7 +8718,7 @@ radians.</p>
 <b><code>prediction</code></b> (              <code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, &#39;&#39;]</code>
 )          –
           <div class="doc-md-description">
-            <p>The summed mean absolute cosine of the face's corner angles, zero when
+            <p>The mean absolute cosine of the face's corner angles, zero when
 every corner is a right angle.</p>
           </div>
         </li>
@@ -9223,6 +9226,14 @@ centroids.</p>
     </ul>
 
 
+<details class="note" open>
+  <summary>Notes</summary>
+  <p>Formulated as products with the face-vertex connectivity so that the
+matrix can be stored dense or in sparse format. Each vertex's neighbor
+centroid is the average of its incident face centroids, weighted by the
+row-normalized connectivity entries.</p>
+</details>
+
     </div>
 
 </div>
@@ -9515,10 +9526,16 @@ neighbors' centroid.</p>
 <details class="note" open>
   <summary>Notes</summary>
   <p>This goal computes the average planarity of the faces of a mesh.
-The planarity of a face is calculated as the absolute dot product between
-the face's unitized normal vector and its unitized edge vectors.</p>
-<p>This function is experimental and it is unclear whether it works correctly
-for padded faces or faces with more than 4 vertices. Use with caution!</p>
+The planarity of a face is the mean absolute dot product between the
+face's unitized normal vector and its unitized edge vectors, so faces of
+different degrees score comparably and ngons do not dominate the average.
+Triangles are planar by construction and contribute zero to the average;
+padded faces and faces with more than 4 vertices are handled correctly.</p>
+<p>The prediction is an energy, not a distance to a target. To minimize it
+as-is, pair this goal with a
+<a class="autorefs autorefs-internal" title="            PredictionError" href="../jax_fdm.losses/#jax_fdm.losses.PredictionError">PredictionError</a>; a
+<a class="autorefs autorefs-internal" title="            SquaredError" href="../jax_fdm.losses/#jax_fdm.losses.SquaredError">SquaredError</a> would square the
+energy, flattening its gradient as the faces approach planarity.</p>
 </details>
 
 

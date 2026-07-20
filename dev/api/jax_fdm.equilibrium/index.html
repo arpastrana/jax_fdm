@@ -3377,7 +3377,7 @@ If None, the load state is left untouched.</p>
   </span>
 
 <a href="#jax_fdm.equilibrium.models.EquilibriumModel.edges_vectors" class="headerlink" title="Permanent link">¤</a></h4>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">edges_vectors</span><span class="p">(</span><span class="n">xyz</span><span class="p">:</span> <span class="n"><span title="jaxtyping.Float">Float</span></span><span class="p">[</span><span class="n"><span title="jaxtyping.Array">Array</span></span><span class="p">,</span> <span class="s1">&#39;nodes 3&#39;</span><span class="p">],</span> <span class="n">connectivity</span><span class="p">:</span> <span class="n"><span title="jaxtyping.Float">Float</span></span><span class="p">[</span><span class="n"><span title="jaxtyping.Array">Array</span></span><span class="p">,</span> <span class="s1">&#39;edges nodes&#39;</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n"><span title="jaxtyping.Float">Float</span></span><span class="p">[</span><span class="n"><span title="jaxtyping.Array">Array</span></span><span class="p">,</span> <span class="s1">&#39;edges 3&#39;</span><span class="p">]</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">edges_vectors</span><span class="p">(</span><span class="n">xyz</span><span class="p">:</span> <span class="n"><span title="jaxtyping.Float">Float</span></span><span class="p">[</span><span class="n"><span title="jaxtyping.Array">Array</span></span><span class="p">,</span> <span class="s1">&#39;nodes 3&#39;</span><span class="p">],</span> <span class="n">connectivity</span><span class="p">:</span> <span class="n"><span title="jaxtyping.Float">Float</span></span><span class="p">[</span><span class="n"><span title="jaxtyping.Array">Array</span></span><span class="p">,</span> <span class="s1">&#39;edges nodes&#39;</span><span class="p">]</span> <span class="o">|</span> <span class="n"><span title="jaxtyping.Float">Float</span></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" title="jax.experimental.sparse.BCOO" href="https://docs.jax.dev/en/latest/_autosummary/jax.experimental.sparse.BCOO.html#jax.experimental.sparse.BCOO">BCOO</a></span><span class="p">,</span> <span class="s1">&#39;edges nodes&#39;</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n"><span title="jaxtyping.Float">Float</span></span><span class="p">[</span><span class="n"><span title="jaxtyping.Array">Array</span></span><span class="p">,</span> <span class="s1">&#39;edges 3&#39;</span><span class="p">]</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -3397,7 +3397,7 @@ If None, the load state is left untouched.</p>
         </li>
         <li class="doc-section-item field-body">
             <b><code>connectivity</code></b>
-              (<code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, &#39;edges nodes&#39;]</code>)
+              (<code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, &#39;edges nodes&#39;] | <span title="jaxtyping.Float">Float</span>[<a class="autorefs autorefs-external" title="jax.experimental.sparse.BCOO" href="https://docs.jax.dev/en/latest/_autosummary/jax.experimental.sparse.BCOO.html#jax.experimental.sparse.BCOO">BCOO</a>, &#39;edges nodes&#39;]</code>)
           –
           <div class="doc-md-description">
             <p>The signed edge-node incidence matrix of the structure.</p>
@@ -3540,7 +3540,7 @@ If None, the load state is left untouched.</p>
   </span>
 
 <a href="#jax_fdm.equilibrium.models.EquilibriumModel.nodes_residuals" class="headerlink" title="Permanent link">¤</a></h4>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">nodes_residuals</span><span class="p">(</span><span class="n">q</span><span class="p">:</span> <span class="n"><span title="jaxtyping.Float">Float</span></span><span class="p">[</span><span class="n"><span title="jaxtyping.Array">Array</span></span><span class="p">,</span> <span class="n"><span title="edges">edges</span></span><span class="p">],</span> <span class="n">loads</span><span class="p">:</span> <span class="n"><span title="jaxtyping.Float">Float</span></span><span class="p">[</span><span class="n"><span title="jaxtyping.Array">Array</span></span><span class="p">,</span> <span class="s1">&#39;nodes 3&#39;</span><span class="p">],</span> <span class="n">vectors</span><span class="p">:</span> <span class="n"><span title="jaxtyping.Float">Float</span></span><span class="p">[</span><span class="n"><span title="jaxtyping.Array">Array</span></span><span class="p">,</span> <span class="s1">&#39;edges 3&#39;</span><span class="p">],</span> <span class="n">connectivity</span><span class="p">:</span> <span class="n"><span title="jaxtyping.Float">Float</span></span><span class="p">[</span><span class="n"><span title="jaxtyping.Array">Array</span></span><span class="p">,</span> <span class="s1">&#39;edges nodes&#39;</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n"><span title="jaxtyping.Float">Float</span></span><span class="p">[</span><span class="n"><span title="jaxtyping.Array">Array</span></span><span class="p">,</span> <span class="s1">&#39;nodes 3&#39;</span><span class="p">]</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">nodes_residuals</span><span class="p">(</span><span class="n">q</span><span class="p">:</span> <span class="n"><span title="jaxtyping.Float">Float</span></span><span class="p">[</span><span class="n"><span title="jaxtyping.Array">Array</span></span><span class="p">,</span> <span class="n"><span title="edges">edges</span></span><span class="p">],</span> <span class="n">loads</span><span class="p">:</span> <span class="n"><span title="jaxtyping.Float">Float</span></span><span class="p">[</span><span class="n"><span title="jaxtyping.Array">Array</span></span><span class="p">,</span> <span class="s1">&#39;nodes 3&#39;</span><span class="p">],</span> <span class="n">vectors</span><span class="p">:</span> <span class="n"><span title="jaxtyping.Float">Float</span></span><span class="p">[</span><span class="n"><span title="jaxtyping.Array">Array</span></span><span class="p">,</span> <span class="s1">&#39;edges 3&#39;</span><span class="p">],</span> <span class="n">connectivity</span><span class="p">:</span> <span class="n"><span title="jaxtyping.Float">Float</span></span><span class="p">[</span><span class="n"><span title="jaxtyping.Array">Array</span></span><span class="p">,</span> <span class="s1">&#39;edges nodes&#39;</span><span class="p">]</span> <span class="o">|</span> <span class="n"><span title="jaxtyping.Float">Float</span></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" title="jax.experimental.sparse.BCOO" href="https://docs.jax.dev/en/latest/_autosummary/jax.experimental.sparse.BCOO.html#jax.experimental.sparse.BCOO">BCOO</a></span><span class="p">,</span> <span class="s1">&#39;edges nodes&#39;</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n"><span title="jaxtyping.Float">Float</span></span><span class="p">[</span><span class="n"><span title="jaxtyping.Array">Array</span></span><span class="p">,</span> <span class="s1">&#39;nodes 3&#39;</span><span class="p">]</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -3576,7 +3576,7 @@ If None, the load state is left untouched.</p>
         </li>
         <li class="doc-section-item field-body">
             <b><code>connectivity</code></b>
-              (<code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, &#39;edges nodes&#39;]</code>)
+              (<code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, &#39;edges nodes&#39;] | <span title="jaxtyping.Float">Float</span>[<a class="autorefs autorefs-external" title="jax.experimental.sparse.BCOO" href="https://docs.jax.dev/en/latest/_autosummary/jax.experimental.sparse.BCOO.html#jax.experimental.sparse.BCOO">BCOO</a>, &#39;edges nodes&#39;]</code>)
           –
           <div class="doc-md-description">
             <p>The signed edge-node incidence matrix of the structure.</p>
@@ -6213,14 +6213,8 @@ matrices are JAX arrays used in the differentiable equilibrium computation.</p>
 
 
 
-        <p>A graph that exposes its connectivity in SciPy sparse format for assembly.</p>
+        <p>A graph that keeps its connectivity and adjacency matrices in sparse format.</p>
 
-
-<details class="note" open>
-  <summary>Notes</summary>
-  <p>The full connectivity matrix is still dense (see <code>_connectivity_matrix</code>);
-only the derived free and fixed submatrices are consumed as sparse arrays.</p>
-</details>
 
 
 
@@ -6257,8 +6251,21 @@ only the derived free and fixed submatrices are consumed as sparse arrays.</p>
 
     <div class="doc doc-contents ">
 
-        <p>The signed edge-node incidence matrix as a SciPy sparse matrix.</p>
+        <p>The signed edge-node incidence matrix as a scipy sparse matrix.</p>
+<p>This is the assembly substrate the sparse structures build from: the
+free and fixed column submatrices and the stiffness precomputation
+slice and factor it before converting the results to JAX sparse format.</p>
 
+
+<details class="note" open>
+  <summary>Notes</summary>
+  <p>Kept in scipy format on purpose. Slicing columns out of a JAX sparse
+matrix materializes a stored entry for every edge-column pair rather
+than only the nonzeros, and the stiffness precomputation relies on
+structural operations (transpose products, diagonal rewrites, index
+pointer reads) that JAX sparse arrays do not provide. Rebuilt on every
+access, which costs fractions of a millisecond.</p>
+</details>
     </div>
 
 </div>
