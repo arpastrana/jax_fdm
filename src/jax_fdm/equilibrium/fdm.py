@@ -1,5 +1,7 @@
 from collections.abc import Callable
+from collections.abc import Sequence
 from typing import TYPE_CHECKING
+from typing import TypeVar
 
 import numpy as np
 
@@ -33,6 +35,11 @@ if TYPE_CHECKING:
 ElementScalars = list[float]
 ElementVectors = list[list[float]]
 
+# Binds a function's return type to its input type: form-finding a network
+# yields a network, a mesh yields a mesh — the result is an updated copy of
+# the input.
+AnyFDDatastructure = TypeVar("AnyFDDatastructure", bound=FDNetwork | FDMesh)
+
 # ==========================================================================
 # Form-finding
 # ==========================================================================
@@ -42,8 +49,8 @@ def _fdm(
     model: EquilibriumModel,
     params: EquilibriumParametersState,
     structure: EquilibriumStructure,
-    datastructure: FDNetwork | FDMesh,
-) -> FDNetwork | FDMesh:
+    datastructure: AnyFDDatastructure,
+) -> AnyFDDatastructure:
     """
     Solve for static equilibrium and write the result into a datastructure copy.
 
@@ -71,7 +78,7 @@ def _fdm(
 
 
 def fdm(
-    datastructure: FDNetwork | FDMesh,
+    datastructure: AnyFDDatastructure,
     sparse: bool = True,
     is_load_local: bool = False,
     tmax: int = 1,
@@ -80,7 +87,7 @@ def fdm(
     iterload_fn: Callable | None = None,
     implicit_diff: bool = True,
     verbose: bool = False,
-) -> FDNetwork | FDMesh:
+) -> AnyFDDatastructure:
     """
     Compute a datastructure in static equilibrium with the force density method.
 
@@ -141,11 +148,11 @@ def fdm(
 
 
 def constrained_fdm(
-    datastructure: FDNetwork | FDMesh,
+    datastructure: AnyFDDatastructure,
     optimizer: "Optimizer",
     loss: "Loss",
-    parameters: list["Parameter"] | None = None,
-    constraints: list["Constraint"] | None = None,
+    parameters: Sequence["Parameter"] | None = None,
+    constraints: Sequence["Constraint"] | None = None,
     maxiter: int = 100,
     tol: float = 1e-6,
     tmax: int = 1,
@@ -159,7 +166,7 @@ def constrained_fdm(
     nd: bool = False,
     verbose: bool = False,
     jit: bool = True,
-) -> FDNetwork | FDMesh:
+) -> AnyFDDatastructure:
     """
     Form-find a datastructure in constrained static equilibrium via optimization.
 
@@ -437,11 +444,11 @@ def datastructure_validate(datastructure: FDNetwork | FDMesh) -> None:
 
 
 def datastructure_updated(
-    datastructure: FDNetwork | FDMesh,
+    datastructure: AnyFDDatastructure,
     eq_state: EquilibriumState,
     params: EquilibriumParametersState,
     use_loadsfromparams: bool = False,
-) -> FDNetwork | FDMesh:
+) -> AnyFDDatastructure:
     """
     Return a copy of a datastructure updated with an equilibrium state.
 
