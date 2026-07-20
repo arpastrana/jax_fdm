@@ -347,41 +347,6 @@ def distance_point_point_sqrd(
     return jnp.sum(jnp.square(vector))
 
 
-def normal_polygon_2(
-    polygon: Float[Array, "points 3"],
-    unitized: bool = False,
-) -> Float[Array, "3"]:
-    """
-    Computes the normal of a polygon about its centroid.
-
-    Parameters
-    ----------
-    polygon :
-        The polygon, as a sequence of at least three points.
-    unitized :
-        If True, scale the normal to unit length. Off by default.
-
-    Returns
-    -------
-    normal :
-        The polygon normal, summed over the triangles fanning from the centroid.
-
-    Notes
-    -----
-    The polygon points are referenced to their centroid before the cross
-    products, so the normal is unaffected by a rigid translation of the input.
-    """
-    centroid = jnp.mean(polygon, axis=0)
-    op = polygon - centroid
-    op_shifted = jnp.roll(op, 1, axis=0)
-    ns = 0.5 * jnp.cross(op_shifted, op)
-    n = jnp.sum(ns, axis=0)
-
-    if unitized:
-        return normalize_vector(n)
-    return n
-
-
 def normal_polygon(
     polygon: Float[Array, "points 3"],
     unitized: bool = True,
@@ -403,11 +368,20 @@ def normal_polygon(
 
     Notes
     -----
-    This function is not nan safe, because it loses information when
-    cross-multiplying valid entries with nan values.
+    The polygon points are referenced to their centroid before the cross
+    products. For a closed loop the reference point telescopes out of the
+    summed cross products, so the normal is unchanged analytically, but the
+    centering avoids the catastrophic cancellation that crossing large
+    absolute coordinates incurs far away from the origin.
+
+    Rows that contain nan values are excluded from the centroid and drop the
+    two cross-product terms they touch, so the direction of the normal
+    survives nan padding but its magnitude does not.
     """
     assert len(polygon) >= 3, "A polygon must be defined by at least 3 points"
 
+    centroid = jnp.nanmean(polygon, axis=0)
+    polygon = polygon - centroid
     polygon_shifted = jnp.roll(polygon, 1, axis=0)
     ns = 0.5 * jnp.cross(polygon_shifted, polygon)
     normal = jnp.nansum(ns, axis=0)

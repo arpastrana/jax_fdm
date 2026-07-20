@@ -20,11 +20,17 @@ class MeshPlanarityGoal(ScalarGoal, MeshGoal):
     Notes
     -----
     This goal computes the average planarity of the faces of a mesh.
-    The planarity of a face is calculated as the absolute dot product between
-    the face's unitized normal vector and its unitized edge vectors.
+    The planarity of a face is the mean absolute dot product between the
+    face's unitized normal vector and its unitized edge vectors, so faces of
+    different degrees score comparably and ngons do not dominate the average.
+    Triangles are planar by construction and contribute zero to the average;
+    padded faces and faces with more than 4 vertices are handled correctly.
 
-    This function is experimental and it is unclear whether it works correctly
-    for padded faces or faces with more than 4 vertices. Use with caution!
+    The prediction is an energy, not a distance to a target. To minimize it
+    as-is, pair this goal with a
+    [PredictionError][jax_fdm.losses.errors.PredictionError]; a
+    [SquaredError][jax_fdm.losses.errors.SquaredError] would square the
+    energy, flattening its gradient as the faces approach planarity.
     """
 
     def __init__(
@@ -132,7 +138,18 @@ def face_planarity(
     Returns
     -------
     planarity :
-        The face planarity, zero for a triangle by construction.
+        The mean absolute normal-edge cosine of the face, zero for a triangle
+        by construction.
+
+    Notes
+    -----
+    Faces with more than three valid vertices, including padded ones, take the
+    polygon path; the padding scheme in `face_xyz` makes the extra rows inert.
+
+    The polygon planarity is divided by the face's edge count, which for a
+    closed polygon equals its valid vertex count and which the zero-cosine pad
+    edges inflate neither. The per-edge mean keeps faces of different degrees
+    comparable, so ngons do not dominate a mean over a mixed-degree mesh.
     """
     valid_face_indices = jnp.where(face >= 0, 1.0, 0.0)
     sum_indices = jnp.sum(valid_face_indices)
@@ -141,7 +158,7 @@ def face_planarity(
     planarity = jnp.where(
         sum_indices == 3,
         planarity_triangle(fxyz),
-        planarity_polygon(fxyz),
+        planarity_polygon(fxyz) / sum_indices,
     )
 
     return planarity
