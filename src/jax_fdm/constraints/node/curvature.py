@@ -1,3 +1,5 @@
+from collections.abc import Sequence
+
 import jax.numpy as jnp
 import numpy as np
 from jaxtyping import Array
@@ -30,7 +32,7 @@ class NodeCurvatureConstraint(NodeConstraint):
     def __init__(
         self,
         key: int,
-        polygon: Int[Array, "nodes neighbors"],
+        polygon: Int[Array, "nodes neighbors"] | Sequence[int],
         bound_low: float | Float[Array, "..."] | None,
         bound_up: float | Float[Array, "..."] | None,
     ) -> None:

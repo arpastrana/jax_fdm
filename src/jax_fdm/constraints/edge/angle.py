@@ -1,3 +1,5 @@
+from collections.abc import Sequence
+
 import jax.numpy as jnp
 import numpy as np
 from jaxtyping import Array
@@ -30,7 +32,7 @@ class EdgeAngleConstraint(EdgeConstraint):
     def __init__(
         self,
         key: tuple[int, int] | list[tuple[int, int]],
-        vector: Float[Array, "..."],
+        vector: Float[Array, "..."] | Sequence[float],
         bound_low: float | Float[Array, "..."] | None,
         bound_up: float | Float[Array, "..."] | None,
     ) -> None:
@@ -46,7 +48,7 @@ class EdgeAngleConstraint(EdgeConstraint):
         return self._vector
 
     @vector.setter
-    def vector(self, vector: Float[Array, "..."]) -> None:
+    def vector(self, vector: Float[Array, "..."] | Sequence[float]) -> None:
         self._vector = jnp.reshape(jnp.asarray(vector), (-1, 3))
 
     def vectors(self) -> Float[Array, "vectors 3"]:

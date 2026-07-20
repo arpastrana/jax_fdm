@@ -1,3 +1,5 @@
+from collections.abc import Sequence
+
 import jax.numpy as jnp
 import numpy as np
 from jax import vmap
@@ -12,6 +14,7 @@ from jax_fdm.geometry import angle_vectors
 from jax_fdm.geometry import normal_polygon
 from jax_fdm.geometry import normalize_vector
 from jax_fdm.goals import ScalarGoal
+from jax_fdm.goals.goal import TargetLike
 from jax_fdm.goals.vertex import VertexGoal
 
 
@@ -49,8 +52,8 @@ class VertexNormalAngleGoal(ScalarGoal, VertexGoal):
     def __init__(
         self,
         key: int,
-        vector: Float[Array, "..."],
-        target: float | Float[Array, "..."],
+        vector: Float[Array, "..."] | Sequence[float],
+        target: TargetLike,
         weight: float = 1.0,
     ) -> None:
         super().__init__(key=key, target=target, weight=weight)
@@ -68,7 +71,7 @@ class VertexNormalAngleGoal(ScalarGoal, VertexGoal):
         return self._vector
 
     @vector.setter
-    def vector(self, vector: Float[Array, "..."]) -> None:
+    def vector(self, vector: Float[Array, "..."] | Sequence[float]) -> None:
         self._vector = jnp.reshape(jnp.asarray(vector), (-1, 3))
 
     def vectors(self) -> Float[Array, "vectors 3"]:

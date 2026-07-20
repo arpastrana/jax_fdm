@@ -3,6 +3,7 @@ from jaxtyping import Array
 from jaxtyping import Float
 
 from jax_fdm.geometry import closest_point_on_line
+from jax_fdm.goals.goal import TargetLike
 from jax_fdm.goals.node import NodePointGoal
 
 
@@ -19,7 +20,7 @@ class NodeLineGoal(NodePointGoal):
         return self._target
 
     @target.setter
-    def target(self, target: Float[Array, "..."]) -> None:
+    def target(self, target: TargetLike) -> None:
         self._target = jnp.reshape(jnp.asarray(target), (-1, 2, 3))
 
     def goal(

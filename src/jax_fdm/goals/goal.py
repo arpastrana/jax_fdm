@@ -1,4 +1,6 @@
+from collections.abc import Sequence
 from typing import Any
+from typing import TypeAlias
 
 import jax.numpy as jnp
 import numpy as np
@@ -12,6 +14,14 @@ from jax_fdm.equilibrium import EquilibriumModel
 from jax_fdm.equilibrium import EquilibriumState
 from jax_fdm.equilibrium import EquilibriumStructure
 from jax_fdm.goals import GoalState
+
+# What the target setters accept: a scalar, an existing array, or any nesting
+# of float sequences (the setters run the input through jnp.asarray + reshape).
+# COMPAS geometry objects are deliberately excluded; convert them to plain
+# lists at the call site.
+TargetLike: TypeAlias = (
+    float | Float[Array, "..."] | Sequence[float] | Sequence[Sequence[float]]
+)
 
 # ==========================================================================
 # Base goal
@@ -55,7 +65,7 @@ class Goal:
     def __init__(
         self,
         key: int | tuple[int, int] | list[int] | list[tuple[int, int]],
-        target: float | Float[Array, "..."],
+        target: TargetLike,
         weight: float | Float[Array, "..."] = 1.0,
     ) -> None:
         self._key: int | tuple[int, int] | list[int] | list[tuple[int, int]] | None = (
@@ -134,7 +144,7 @@ class Goal:
         raise NotImplementedError
 
     @target.setter
-    def target(self, target: float | Float[Array, "..."]) -> None:
+    def target(self, target: TargetLike) -> None:
         # Concrete goals provide the setter via the ScalarGoal / VectorGoal
         # mixins; the base only declares the contract so that Goal.__init__ can
         # assign self.target without tripping a read-only property.
@@ -319,7 +329,7 @@ class ScalarGoal:
         return self._target
 
     @target.setter
-    def target(self, target: float | Float[Array, "..."]) -> None:
+    def target(self, target: TargetLike) -> None:
         values = [target] if isinstance(target, (int, float)) else target
         self._target = jnp.reshape(jnp.asarray(values, dtype=DTYPE_JAX), (-1, 1))
 
@@ -346,7 +356,7 @@ class VectorGoal:
         return self._target
 
     @target.setter
-    def target(self, target: float | Float[Array, "..."]) -> None:
+    def target(self, target: TargetLike) -> None:
         if isinstance(target, (int, float)):
             raise TypeError(
                 f"{type(self).__name__} is a vector goal, so its target must be "

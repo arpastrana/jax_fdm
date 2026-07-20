@@ -8,6 +8,7 @@ from jax_fdm.equilibrium import EquilibriumMeshStructure
 from jax_fdm.equilibrium import EquilibriumModel
 from jax_fdm.equilibrium import EquilibriumState
 from jax_fdm.goals import ScalarGoal
+from jax_fdm.goals.goal import TargetLike
 from jax_fdm.goals.mesh import MeshGoal
 from jax_fdm.goals.network import NetworkXYZLaplacianGoal
 
@@ -25,7 +26,7 @@ class MeshXYZLaplacianGoal(NetworkXYZLaplacianGoal):
 
     def __init__(
         self,
-        target: float | Float[Array, "..."] = 0.0,
+        target: TargetLike = 0.0,
         weight: float = 1.0,
     ) -> None:
         super().__init__(key=-1, target=target, weight=weight)
@@ -49,7 +50,7 @@ class MeshXYZFaceLaplacianGoal(ScalarGoal, MeshGoal):
 
     def __init__(
         self,
-        target: float | Float[Array, "..."] = 0.0,
+        target: TargetLike = 0.0,
         weight: float = 1.0,
     ) -> None:
         super().__init__(key=-1, target=target, weight=weight)

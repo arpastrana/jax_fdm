@@ -9,6 +9,7 @@ from jax_fdm.equilibrium import EquilibriumModel
 from jax_fdm.equilibrium import EquilibriumState
 from jax_fdm.geometry import area_polygon
 from jax_fdm.goals import ScalarGoal
+from jax_fdm.goals.goal import TargetLike
 from jax_fdm.goals.mesh import MeshGoal
 
 
@@ -24,7 +25,7 @@ class MeshAreaGoal(ScalarGoal, MeshGoal):
 
     def __init__(
         self,
-        target: float | Float[Array, "..."] = 0.0,
+        target: TargetLike = 0.0,
         weight: float = 1.0,
     ) -> None:
         super().__init__(key=-1, target=target, weight=weight)
@@ -118,7 +119,7 @@ class MeshFacesAreaEqualizeGoal(ScalarGoal, MeshGoal):
 
     def __init__(
         self,
-        target: float | Float[Array, "..."] = 0.0,
+        target: TargetLike = 0.0,
         weight: float = 1.0,
     ) -> None:
         super().__init__(key=-1, target=target, weight=weight)

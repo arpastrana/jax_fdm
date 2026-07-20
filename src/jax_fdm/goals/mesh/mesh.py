@@ -1,8 +1,6 @@
-from jaxtyping import Array
-from jaxtyping import Float
-
 from jax_fdm.equilibrium import EquilibriumStructure
 from jax_fdm.goals import Goal
+from jax_fdm.goals.goal import TargetLike
 
 
 class MeshGoal(Goal):
@@ -29,7 +27,7 @@ class MeshGoal(Goal):
     def __init__(
         self,
         key: int = -1,
-        target: float | Float[Array, "..."] = 0.0,
+        target: TargetLike = 0.0,
         weight: float = 1.0,
     ):
         super().__init__(key=key, target=target, weight=weight)

@@ -1,3 +1,5 @@
+from collections.abc import Sequence
+
 import jax.numpy as jnp
 import numpy as np
 from jaxtyping import Array
@@ -10,6 +12,7 @@ from jax_fdm.equilibrium import EquilibriumStructure
 from jax_fdm.geometry import angle_vectors
 from jax_fdm.goals import ScalarGoal
 from jax_fdm.goals.edge import EdgeGoal
+from jax_fdm.goals.goal import TargetLike
 
 
 class EdgeAngleGoal(ScalarGoal, EdgeGoal):
@@ -31,8 +34,8 @@ class EdgeAngleGoal(ScalarGoal, EdgeGoal):
     def __init__(
         self,
         key: tuple[int, int],
-        vector: Float[Array, "..."],
-        target: float | Float[Array, "..."],
+        vector: Float[Array, "..."] | Sequence[float],
+        target: TargetLike,
         weight: float = 1.0,
     ) -> None:
         super().__init__(key=key, target=target, weight=weight)
@@ -47,7 +50,7 @@ class EdgeAngleGoal(ScalarGoal, EdgeGoal):
         return self._vector
 
     @vector.setter
-    def vector(self, vector: Float[Array, "..."]) -> None:
+    def vector(self, vector: Float[Array, "..."] | Sequence[float]) -> None:
         self._vector = jnp.reshape(jnp.asarray(vector), (-1, 3))
 
     def vectors(self) -> Float[Array, "vectors 3"]:
