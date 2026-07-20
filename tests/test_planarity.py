@@ -7,6 +7,7 @@ from jax_fdm.datastructures import FDMesh
 from jax_fdm.equilibrium import EquilibriumMeshStructure
 from jax_fdm.geometry import planarity_polygon
 from jax_fdm.geometry import planarity_triangle
+from jax_fdm.goals.mesh.planarity import face_planarity
 from jax_fdm.goals.mesh.planarity import faces_planarity
 
 
@@ -123,3 +124,23 @@ def test_planarity_mesh_quad_barrel():
 
         planarity = jnp.sum(faces_planarity(faces, xyz))
         assert jnp.allclose(planarity, 0.0), f"Planarity: {planarity}"
+
+
+def test_planarity_far_from_origin():
+    """
+    Test that planarity does not drift when the mesh sits far from the origin.
+    """
+    xyz = jnp.array(
+        [
+            [0.0, 0.0, 0.0],
+            [1.0, 0.0, 0.0],
+            [1.0, 1.0, 0.5],
+            [0.0, 1.0, 0.0],
+        ],
+    )
+    face = jnp.array([0, 1, 2, 3])
+    planarity = face_planarity(face, xyz)
+
+    for shift in (1e6, 1e8, 1e12):
+        planarity_shifted = face_planarity(face, xyz + shift)
+        assert jnp.allclose(planarity, planarity_shifted), f"Drift at {shift:.0e}"

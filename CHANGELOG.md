@@ -30,6 +30,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Changed how the thin-counterpart pattern is documented: the repeated "thin vertex counterpart" Notes on every vertex goal and constraint moved into one intro paragraph under the `Vertex goals` and `Vertex constraints` sections of the API reference, so the pattern is explained once where it is visible as a pattern. Docstrings keep their summaries and any class-specific behavioral notes for `help()` and IDE readers.
 - Changed all Sphinx `:class:`/`:meth:` roles in docstrings (33 across nine packages) to mkdocstrings-native syntax, since mkdocstrings rendered the role prefix as literal text on the documentation site. Targets documented in the API reference became autorefs cross-reference links; self-references, undocumented internals and external COMPAS classes became plain code formatting.
 - Changed `Parameter.index`, `Parameter.value` and `NodeCurvatureConstraint.polygon_indices` to drop their unused `model` argument, for the same reason: `index` and `polygon_indices` resolve from the structure, and `value` reads from the datastructure. This is a breaking change for direct callers and overriding subclasses; `ParameterManager` and `init` keep their signatures.
+- Changed `normal_polygon` to reference the polygon points to their centroid before the rolled cross products. For a closed loop the reference point telescopes out of the summed cross products, so the normal is analytically unchanged and all existing normals, areas and planarities are bit-compatible near the origin — but crossing large absolute coordinates cancelled catastrophically, drifting the planarity of a unit quad by O(1) at coordinates around 1e8 in float64. Centered, the drift is exactly zero through 1e12. The centroid uses `nanmean` so the nan-padding contract of the uncentered version carries over (direction survives nan rows, magnitude does not), pinned by the existing padding and nan tests in `tests/test_normal.py`. `area_polygon`, `planarity_polygon` and `polygon_lcs` inherit the robustness through their `normal_polygon` calls.
 
 ### Fixed
 
@@ -40,6 +41,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Removed
 
+- Removed `normal_polygon_2`, which had no callers: its centroid-referencing trick is now `normal_polygon`'s own behavior, so the duplicate (differing only in a `sum` for `nansum` and a `False` default for `unitized`) had nothing left to offer.
 - Removed the `build_matrix` helper and the `rtype` parameter from `connectivity_matrix`, `adjacency_matrix` and `face_matrix` in `equilibrium/structures/`. Every call site requested a fixed format, so the string-dispatched converter was five dead branches around scipy's own conversion methods. The three helpers now return one unified scipy sparse type: compressed column, the only format the structures actually rely on (column slicing and `indptr` reads in the sparse stiffness precomputation; `jax.experimental.sparse` constructors accept any scipy format and convert internally). Dense consumers call `toarray()` explicitly. This is a breaking change for external callers of these helpers, which were exported via `jax_fdm.equilibrium.structures`.
 
 ## [0.13.0] 2026-07-16
@@ -96,7 +98,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Removed the unused `AbstractGoal` class (`goals/abstract_goal.py`) and the unused `goals_reindex` and `goals_state` helpers (`goals/helpers.py`) from `goals`. Their goal collation is handled by the goal collection machinery in `optimization`.
 - Removed the redundant `Parameter` subclass constructors in `parameters` that only forwarded `*args`/`**kwargs` or set the attribute name, leaving explicit constructors only on `Parameter` and `ParameterGroup`.
-
 
 ## [0.12.0] 2026-07-13
 
@@ -218,7 +219,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed a shape regression in the angle goals (`EdgeAngleGoal`, `VertexNormalAngleGoal`, and thus `VertexTangentAngleGoal`; then still named `NodeNormalAngleGoal`/`NodeTangentAngleGoal`). When `angle_vectors` was refactored to delegate to `cosine_vectors`, its output lost the trailing axis and became a scalar, so a goal's prediction came out `(N,)` while the `ScalarGoal` target stayed `(N, 1)`, raising an assertion in `Goal.__call__`. The goal predictions now wrap `angle_vectors` in `jnp.atleast_1d`, restoring the `(N, 1)` shape; `angle_vectors` stays scalar so `angles_polygon`/`FaceRectangleGoal` are unaffected.
 - Fixed `VertexNormalAngleGoal` (and thus `VertexTangentAngleGoal`) chasing the wrong angle branch. The prediction took the angle from the *signed* cosine of the vertex normal against the reference vector, so it depended on face winding: a mesh whose faces wound the averaged vertex normal downward reported `pi - theta` instead of `theta`. A downward-pointing normal made the tangent goal (`pi/2 - angle_normal`) start negative and unable to reach a positive target, so the optimizer flattened the surface to a zero tangent angle instead of converging. The prediction now takes the angle from the *absolute* cosine, folding it into `[0, pi/2]` so it is invariant to the normal's orientation, and clips the `arccos` argument to guard its gradient singularity when the vectors align. `test_goal_angle.py` gains winding-invariance and upper-hemisphere regression tests that fail against the signed-cosine version.
 
-
 ## [0.10.0] 2026-05-07
 
 ### Added
@@ -330,7 +330,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Removed
 
-
 ## [0.8.5] 2024-09-15
 
 ### Added
@@ -355,7 +354,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Removed
 
-
 ## [0.8.3] 2024-04-18
 
 ### Added
@@ -379,7 +377,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Removed
 
-
 ## [0.8.1] 2023-12-05
 
 ### Added
@@ -390,7 +387,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 ### Removed
-
 
 ## [0.8.0] 2023-11-23
 
@@ -512,7 +508,6 @@ These two load types can be optionally become follower loads setting the `is_loc
 - Fixed bug with the coloring of reaction forces in `artists/network_artist.py`.
 - `LossPlotter` has support to plot named tuple parameters.
 
-
 ### Removed
 
 - Removed `EquilibriumModel.from_network`.
@@ -520,7 +515,6 @@ These two load types can be optionally become follower loads setting the `is_loc
 - Removed `sparse.force_densities_to_b`. Superseded by `EquilibriumModel.force_matrix`.
 - Removed partial jitting from `Loss.__call__`.
 - Removed partial jitting from `Error.__call__`.
-
 
 ## [0.7.1] 2023-05-08
 
@@ -533,7 +527,6 @@ These two load types can be optionally become follower loads setting the `is_loc
 ### Removed
 
 - Removed implicit `partial(jit)` decorator on `ConstrainedOptimizer.constraint`. Jitting now takes place explicitly in `ConstrainedOptimizer.constraints`.
-
 
 ## [0.7.0] 2023-05-08
 
@@ -570,7 +563,6 @@ Support for differentiable CPU sparse solver
 
 ### Removed
 
-
 ## [0.5.2] 2023-03-15
 
 ### Added
@@ -590,7 +582,6 @@ Support for differentiable CPU sparse solver
 - Added `ParameterManager.indices_opt_sort` to fix bug that mistmatch optimization values for unconsecutive parameter indices. This bug applied to individual parameters and to parameter groups.
 
 ### Removed
-
 
 ## [0.5.0] 2023-03-02
 
@@ -635,7 +626,6 @@ Support for differentiable CPU sparse solver
 
 ### Removed
 
-
 ## [0.4.4] 2022-12-15
 
 ### Added
@@ -645,7 +635,6 @@ Support for differentiable CPU sparse solver
 ### Changed
 
 ### Removed
-
 
 ## [0.4.3] 2022-12-14
 
@@ -658,7 +647,6 @@ Support for differentiable CPU sparse solver
 ### Changed
 
 ### Removed
-
 
 ## [0.4.2] 2022-12-12
 
@@ -678,7 +666,6 @@ Support for differentiable CPU sparse solver
 
 ### Removed
 
-
 ## [0.4.1] 2022-11-29
 
 ### Added
@@ -689,7 +676,6 @@ Support for differentiable CPU sparse solver
 - Changed tension-compression force color map gradient to a binary color map.
 
 ### Removed
-
 
 ## [0.4.0] 2022-11-22
 
@@ -718,7 +704,6 @@ Support for differentiable CPU sparse solver
 
 ### Removed
 
-
 ## [0.3.0] 2022-11-08
 
 ### Added
@@ -745,7 +730,6 @@ Support for differentiable CPU sparse solver
 
 ### Removed
 
-
 ## [0.2.4] 2022-10-27
 
 ### Added
@@ -756,7 +740,6 @@ Support for differentiable CPU sparse solver
 - `FDNetworkArtist` now stores network element collections as attributes.
 
 ### Changed
-
 
 ### Removed
 
@@ -792,7 +775,6 @@ Support for differentiable CPU sparse solver
 
 ### Removed
 
-
 ## [0.2.1] 2022-10-17
 
 ### Added
@@ -802,7 +784,6 @@ Support for differentiable CPU sparse solver
 - Rolled back support for python `3.7`.
 
 ### Removed
-
 
 ## [0.2.0] 2022-10-11
 
@@ -820,7 +801,6 @@ Support for differentiable CPU sparse solver
 ### Changed
 
 ### Removed
-
 
 ## [0.1.2] 2022-09-30
 
