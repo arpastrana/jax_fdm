@@ -1,6 +1,7 @@
 """SciPy-backed gradient-free optimizers."""
 
 from collections.abc import Callable
+from collections.abc import Sequence
 from time import perf_counter
 from typing import TYPE_CHECKING
 
@@ -46,8 +47,8 @@ class GradientFreeOptimizer(Optimizer):
         structure: EquilibriumStructure,
         datastructure: FDNetwork | FDMesh,
         loss: Loss,
-        parameters: list[Parameter] | None = None,
-        constraints: list["Constraint"] | None = None,
+        parameters: Sequence[Parameter] | None = None,
+        constraints: Sequence["Constraint"] | None = None,
         maxiter: int = 100,
         tol: float = 1e-6,
         callback: Callable | None = None,

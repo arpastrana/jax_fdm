@@ -1,4 +1,5 @@
 from collections.abc import Callable
+from collections.abc import Sequence
 from functools import partial
 from typing import TYPE_CHECKING
 from typing import Any
@@ -211,7 +212,7 @@ class IPOPT(ConstrainedOptimizer, SecondOrderOptimizer):
 
     def constraints(
         self,
-        constraints: list["Constraint"],
+        constraints: Sequence["Constraint"],
         model: EquilibriumModel,
         structure: EquilibriumStructure,
         params_opt: Float[Array, "parameters"],

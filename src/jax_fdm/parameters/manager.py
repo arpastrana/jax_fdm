@@ -1,5 +1,6 @@
 from collections.abc import Iterable
 from collections.abc import Iterator
+from collections.abc import Sequence
 
 import jax.numpy as jnp
 import numpy as np
@@ -65,7 +66,7 @@ class ParameterManager:
     def __init__(
         self,
         model: EquilibriumModel,
-        parameters: list[Parameter],
+        parameters: Sequence[Parameter],
         structure: EquilibriumStructure,
         network: FDNetwork | FDMesh,
     ) -> None:

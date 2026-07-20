@@ -1,6 +1,7 @@
 """The base optimizer and the SciPy problem it assembles."""
 
 from collections.abc import Callable
+from collections.abc import Sequence
 from dataclasses import dataclass
 from dataclasses import field
 from dataclasses import fields
@@ -140,7 +141,7 @@ class Optimizer:
 
     def constraints(
         self,
-        constraints: list["Constraint"],
+        constraints: Sequence["Constraint"],
         model: EquilibriumModel,
         structure: EquilibriumStructure,
         params_opt: Float[Array, "parameters"],
@@ -286,8 +287,8 @@ class Optimizer:
         structure: EquilibriumStructure,
         datastructure: FDNetwork | FDMesh,
         loss: Loss,
-        parameters: list[Parameter] | None = None,
-        constraints: list["Constraint"] | None = None,
+        parameters: Sequence[Parameter] | None = None,
+        constraints: Sequence["Constraint"] | None = None,
         maxiter: int = 100,
         tol: float = 1e-6,
         callback: Callable | None = None,
@@ -390,7 +391,7 @@ class Optimizer:
             print(f"\tHessian warmup time: {(perf_counter() - start_time):.4} seconds")
 
         # constraints
-        constraints = constraints or []
+        constraints = list(constraints or [])
         if constraints:
             start_time = perf_counter()
             constraints = self.constraints(constraints, model, structure, x) or []
