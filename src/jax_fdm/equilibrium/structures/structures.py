@@ -85,7 +85,7 @@ class EquilibriumStructure(Graph):
             # network.nodes() overload resolution picks the (key, attrs) tuple
             # form since data defaults to False in the untyped COMPAS stub; node
             # is always a bare int key here
-            if network.is_node_support(node):  # pyright: ignore[reportArgumentType]
+            if network.is_node_support(node):
                 flag = 1.0
             supports.append(flag)
 
@@ -417,7 +417,7 @@ class EquilibriumMeshStructure(EquilibriumStructure, Mesh):
             # mesh.vertices() overload resolution picks the (key, attrs) tuple
             # form since data defaults to False in the untyped COMPAS stub;
             # vertex is always a bare int key here
-            if mesh.is_vertex_support(vertex):  # pyright: ignore[reportArgumentType]
+            if mesh.is_vertex_support(vertex):
                 flag = 1.0
             supports.append(flag)
 

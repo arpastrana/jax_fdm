@@ -30,9 +30,8 @@ class Parameter:
     Missing bounds normalize to negative or positive infinity rather than None.
     """
 
-    attr_name: str | None = (
-        None  # the datastructure attribute name; set per concrete subclass
-    )
+    # the datastructure attribute name; every concrete subclass sets one
+    attr_name: str
     key: (
         int | tuple[int, int] | list[int] | list[tuple[int, int]]
     )  # narrowed per concrete subclass
@@ -135,8 +134,7 @@ class NodeParameter(Parameter):
         """
         The current value of the parametrized node attribute.
         """
-        # compas accessors are untyped but the attribute always holds a float here
-        return datastructure.node_attribute(self.key, name=self.attr_name)  # pyright: ignore[reportReturnType]
+        return datastructure.node_attribute(self.key, name=self.attr_name)
 
 
 class VertexParameter(Parameter):
@@ -156,8 +154,7 @@ class VertexParameter(Parameter):
         """
         The current value of the parametrized vertex attribute.
         """
-        # compas accessors are untyped but the attribute always holds a float here
-        return datastructure.vertex_attribute(self.key, name=self.attr_name)  # pyright: ignore[reportReturnType]
+        return datastructure.vertex_attribute(self.key, name=self.attr_name)
 
 
 class EdgeParameter(Parameter):
@@ -178,8 +175,7 @@ class EdgeParameter(Parameter):
         """
         The current value of the parametrized edge attribute.
         """
-        # compas accessors are untyped but the attribute always holds a float here
-        return datastructure.edge_attribute(self.key, name=self.attr_name)  # pyright: ignore[reportReturnType]
+        return datastructure.edge_attribute(self.key, name=self.attr_name)
 
 
 # ==========================================================================
@@ -256,8 +252,7 @@ class NodeGroupParameter(ParameterGroup):
         values = [
             datastructure.node_attribute(key, name=self.attr_name) for key in self.key
         ]
-        # compas accessors are untyped but every attribute value here is a float
-        return sum(values) / len(values)  # pyright: ignore[reportCallIssue, reportArgumentType]
+        return sum(values) / len(values)
 
 
 class VertexGroupParameter(ParameterGroup):
@@ -278,8 +273,7 @@ class VertexGroupParameter(ParameterGroup):
         values = [
             datastructure.vertex_attribute(key, name=self.attr_name) for key in self.key
         ]
-        # compas accessors are untyped but every attribute value here is a float
-        return sum(values) / len(values)  # pyright: ignore[reportCallIssue, reportArgumentType]
+        return sum(values) / len(values)
 
 
 class EdgeGroupParameter(ParameterGroup):
@@ -303,8 +297,7 @@ class EdgeGroupParameter(ParameterGroup):
         values = [
             datastructure.edge_attribute(key, name=self.attr_name) for key in self.key
         ]
-        # compas accessors are untyped but every attribute value here is a float
-        return sum(values) / len(values)  # pyright: ignore[reportCallIssue, reportArgumentType]
+        return sum(values) / len(values)
 
 
 # ==========================================================================

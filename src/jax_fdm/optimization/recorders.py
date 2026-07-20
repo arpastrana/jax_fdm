@@ -1,4 +1,6 @@
+from typing import TYPE_CHECKING
 from typing import Any
+from typing import Self
 
 import jax.tree_util as jtu
 import numpy as np
@@ -31,6 +33,16 @@ class OptimizationRecorder(Data):
     As a COMPAS ``Data`` subclass the history serializes to and from JSON, so an
     optimization run can be saved and replayed.
     """
+
+    if TYPE_CHECKING:
+        # Typing-only redeclaration: COMPAS types the inherited constructor
+        # with a python-2 comment as `-> Data`, hiding this class's indexing
+        # and history API from static checkers. Never executes; the COMPAS
+        # implementation constructs through `cls` and returns this class.
+        # Raising body, not `...`: pylint reads a `...` stub as returning None.
+        @classmethod
+        def from_json(cls, filepath: str) -> Self:
+            raise NotImplementedError
 
     def __init__(self, optimizer: Optimizer | None = None):
         super().__init__()
