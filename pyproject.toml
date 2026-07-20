@@ -171,7 +171,9 @@ markers = [
 ]
 
 [tool.pyright]
-include = ["src/jax_fdm"]
+# examples/ is checked as the downstream-user perspective: it exercises the
+# typed public API the way user scripts do.
+include = ["src/jax_fdm", "examples"]
 # The notebook viz objects import optional viz-extra packages (pythreejs,
 # compas_notebook) that the typecheck CI job does not install.
 exclude = ["**/__pycache__", "src/jax_fdm/visualization/notebooks"]
@@ -181,5 +183,3 @@ typeCheckingMode = "basic"
 # compas, jaxopt and lineax ship no py.typed marker.
 reportMissingModuleSource = "none"
 reportMissingTypeStubs = "none"
-# COMPAS datastructures expose attributes dynamically that pyright cannot see.
-reportAttributeAccessIssue = "warning"
