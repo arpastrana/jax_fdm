@@ -144,3 +144,57 @@ def test_planarity_far_from_origin():
     for shift in (1e6, 1e8, 1e12):
         planarity_shifted = face_planarity(face, xyz + shift)
         assert jnp.allclose(planarity, planarity_shifted), f"Drift at {shift:.0e}"
+
+
+def test_planarity_face_padding_invariant():
+    """
+    Test that -1 padding does not change a face's planarity or its gradient.
+    """
+    xyz = jnp.array(
+        [
+            [0.0, 0.0, 0.0],
+            [1.0, 0.0, 0.0],
+            [1.0, 1.0, 0.5],
+            [0.0, 1.0, 0.0],
+            [9.0, 9.0, 9.0],
+        ],
+    )
+    face = jnp.array([0, 1, 2, 3])
+    face_padded = jnp.array([0, 1, 2, 3, -1, -1])
+
+    planarity = face_planarity(face, xyz)
+    planarity_padded = face_planarity(face_padded, xyz)
+    assert planarity > 0.0
+    assert jnp.allclose(planarity, planarity_padded)
+
+    grad = jax.grad(lambda x: face_planarity(face, x))(xyz)
+    grad_padded = jax.grad(lambda x: face_planarity(face_padded, x))(xyz)
+    assert not jnp.any(jnp.isnan(grad_padded))
+    assert jnp.allclose(grad, grad_padded)
+    assert jnp.allclose(grad[-1], 0.0)
+
+
+def test_planarity_per_edge_mean():
+    """
+    Test that face planarity averages over edges, not sums over them.
+    """
+
+    def corrugated_ngon(num_sides, height):
+        angles = jnp.arange(num_sides) * 2.0 * jnp.pi / num_sides
+        z = jnp.where(jnp.arange(num_sides) % 2 == 0, height, -height)
+        return jnp.stack([jnp.cos(angles), jnp.sin(angles), z], axis=-1)
+
+    # the mean absolute cosine equals the raw cosine sum divided by edge count
+    for num_sides in (4, 6, 8):
+        xyz = corrugated_ngon(num_sides, 0.2)
+        face = jnp.arange(num_sides)
+        planarity = face_planarity(face, xyz)
+        planarity_sum = planarity_polygon(xyz)
+        assert jnp.allclose(planarity, planarity_sum / num_sides)
+
+    # comparable per-edge deviations stay same-order across face degrees
+    quad = face_planarity(jnp.arange(4), corrugated_ngon(4, 0.2))
+    hexa = face_planarity(jnp.arange(6), corrugated_ngon(6, 0.2))
+    octa = face_planarity(jnp.arange(8), corrugated_ngon(8, 0.2))
+    assert hexa < 2.0 * quad
+    assert octa < 3.0 * quad
