@@ -8,7 +8,7 @@ description = "Auto-differentiable and hardware-accelerated force density method
 readme = "README.md"
 license = { text = "MIT license" }
 authors = [{ name = "Rafael Pastrana", email = "arpastrana@princeton.edu" }]
-requires-python = ">=3.10,<3.13"
+requires-python = ">=3.11,<3.13"
 keywords = [
     "jax",
     "automatic-differentiation",
@@ -26,7 +26,6 @@ classifiers = [
     "Operating System :: Microsoft :: Windows",
     "Programming Language :: Python",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: Implementation :: CPython",
@@ -89,7 +88,7 @@ where = ["src"]
 
 [tool.ruff]
 line-length = 88
-target-version = "py310"
+target-version = "py311"
 # The Colab notebooks carry !pip magics and notebook-style cells.
 extend-exclude = ["notebooks"]
 
@@ -177,7 +176,7 @@ include = ["src/jax_fdm"]
 # compas_notebook) that the typecheck CI job does not install.
 exclude = ["**/__pycache__", "src/jax_fdm/visualization/notebooks"]
 # Validate against the minimum supported Python, independent of the CI runner.
-pythonVersion = "3.10"
+pythonVersion = "3.11"
 typeCheckingMode = "basic"
 # compas, jaxopt and lineax ship no py.typed marker.
 reportMissingModuleSource = "none"
