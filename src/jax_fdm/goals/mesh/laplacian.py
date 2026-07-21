@@ -1,11 +1,9 @@
 import jax.numpy as jnp
-from jax.experimental.sparse import BCOO
 from jaxtyping import Array
 from jaxtyping import Float
 from jaxtyping import Int
 
 from jax_fdm.equilibrium import EquilibriumMeshStructure
-from jax_fdm.equilibrium import EquilibriumModel
 from jax_fdm.equilibrium import EquilibriumState
 from jax_fdm.goals.goal import ScalarGoal
 from jax_fdm.goals.goal import TargetLike
@@ -50,39 +48,10 @@ class MeshXYZFaceLaplacianGoal(ScalarGoal, MeshGoal):
     to its neighboring faces centroid.
     """
 
-    def __init__(
-        self,
-        target: TargetLike = 0.0,
-        weight: float = 1.0,
-    ) -> None:
-        super().__init__(key=-1, target=target, weight=weight)
-        # set in init() from the mesh structure, before any prediction runs
-        self.connectivity_faces_vertices: (
-            Float[Array, "faces vertices"] | Float[BCOO, "faces vertices"]
-        )
-
-    def init(
-        self,
-        model: EquilibriumModel,
-        structure: EquilibriumMeshStructure,
-    ) -> None:
-        """
-        Bind the goal to a mesh, caching its face-vertex connectivity.
-
-        Parameters
-        ----------
-        model :
-            The equilibrium model.
-        structure :
-            The mesh structure whose face-vertex connectivity is cached.
-        """
-        super().init(model, structure)
-        self.connectivity_faces_vertices = structure.connectivity_faces_vertices
-
     def laplacian_vertices(
         self,
         eq_state: EquilibriumState,
-        index: Int[Array, "1"],
+        structure: EquilibriumMeshStructure,
     ) -> Float[Array, "vertices"]:
         """
         The per-vertex Laplacian energy against neighboring face centroids.
@@ -91,8 +60,8 @@ class MeshXYZFaceLaplacianGoal(ScalarGoal, MeshGoal):
         ----------
         eq_state :
             The equilibrium state to read vertex coordinates from.
-        index :
-            The sentinel index, unused.
+        structure :
+            The mesh structure providing the face-vertex connectivity.
 
         Returns
         -------
@@ -108,7 +77,7 @@ class MeshXYZFaceLaplacianGoal(ScalarGoal, MeshGoal):
         row-normalized connectivity entries.
         """
         xyz = eq_state.xyz
-        connectivity = self.connectivity_faces_vertices
+        connectivity = structure.connectivity_faces_vertices
 
         faces_centroid = connectivity @ xyz
 
@@ -124,6 +93,7 @@ class MeshXYZFaceLaplacianGoal(ScalarGoal, MeshGoal):
     def prediction(
         self,
         eq_state: EquilibriumState,
+        structure: EquilibriumMeshStructure,
         index: Int[Array, "1"],
     ) -> Float[Array, ""]:
         """
@@ -133,6 +103,8 @@ class MeshXYZFaceLaplacianGoal(ScalarGoal, MeshGoal):
         ----------
         eq_state :
             The equilibrium state to read vertex coordinates from.
+        structure :
+            The mesh structure providing the face-vertex connectivity.
         index :
             The sentinel index, unused.
 
@@ -141,6 +113,6 @@ class MeshXYZFaceLaplacianGoal(ScalarGoal, MeshGoal):
         prediction :
             The mean over vertices of the face-centroid Laplacian energy.
         """
-        laplacians = self.laplacian_vertices(eq_state, index)
+        laplacians = self.laplacian_vertices(eq_state, structure)
 
         return jnp.mean(laplacians)

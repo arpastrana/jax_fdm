@@ -6,6 +6,7 @@ from jaxtyping import Float
 from jaxtyping import Int
 
 from jax_fdm.equilibrium import EquilibriumState
+from jax_fdm.equilibrium import EquilibriumStructure
 from jax_fdm.geometry import length_vector
 from jax_fdm.geometry import normalize_vector
 from jax_fdm.goals.goal import ScalarGoal
@@ -28,6 +29,7 @@ class NodeResidualForceGoal(ScalarGoal, NodeGoal):
     def prediction(
         self,
         eq_state: EquilibriumState,
+        structure: EquilibriumStructure,
         index: Int[Array, ""],
     ) -> Float[Array, "1"]:
         """
@@ -37,6 +39,8 @@ class NodeResidualForceGoal(ScalarGoal, NodeGoal):
         ----------
         eq_state :
             The equilibrium state to read the residual from.
+        structure :
+            The structure the goal is evaluated against; unused.
         index :
             The index of the node.
 
@@ -58,6 +62,7 @@ class NodeResidualVectorGoal(VectorGoal, NodeGoal):
     def prediction(
         self,
         eq_state: EquilibriumState,
+        structure: EquilibriumStructure,
         index: Int[Array, ""],
     ) -> Float[Array, "3"]:
         """
@@ -67,6 +72,8 @@ class NodeResidualVectorGoal(VectorGoal, NodeGoal):
         ----------
         eq_state :
             The equilibrium state to read the residual from.
+        structure :
+            The structure the goal is evaluated against; unused.
         index :
             The index of the node.
 
@@ -93,6 +100,7 @@ class NodeResidualDirectionGoal(VectorGoal, NodeGoal):
     def prediction(
         self,
         eq_state: EquilibriumState,
+        structure: EquilibriumStructure,
         index: Int[Array, ""],
     ) -> Float[Array, "3"]:
         """
@@ -102,6 +110,8 @@ class NodeResidualDirectionGoal(VectorGoal, NodeGoal):
         ----------
         eq_state :
             The equilibrium state to read the residual from.
+        structure :
+            The structure the goal is evaluated against; unused.
         index :
             The index of the node.
 
@@ -162,6 +172,7 @@ class NodeResidualPlaneGoal(VectorGoal, NodeGoal):
     def prediction(
         self,
         eq_state: EquilibriumState,
+        structure: EquilibriumStructure,
         index: Int[Array, ""],
     ) -> Float[Array, "3"]:
         """
@@ -171,6 +182,8 @@ class NodeResidualPlaneGoal(VectorGoal, NodeGoal):
         ----------
         eq_state :
             The equilibrium state to read the residual from.
+        structure :
+            The structure the goal is evaluated against; unused.
         index :
             The index of the node.
 

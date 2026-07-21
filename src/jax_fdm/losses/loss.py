@@ -4,9 +4,12 @@ import jax.numpy as jnp
 from jaxtyping import Array
 from jaxtyping import Float
 
+from jax_fdm.datastructures import FDMesh
+from jax_fdm.datastructures import FDNetwork
 from jax_fdm.equilibrium import EquilibriumModel
 from jax_fdm.equilibrium import EquilibriumParametersState
 from jax_fdm.equilibrium import EquilibriumStructure
+from jax_fdm.equilibrium import equilibrium_state_from_datastructure
 from jax_fdm.losses.errors import Error
 from jax_fdm.losses.regularizers import Regularizer
 
@@ -67,10 +70,54 @@ class Loss:
 
         loss = jnp.asarray(0.0)
         for error_term in self.terms_error:
-            loss = loss + error_term(eq_state)
+            loss = loss + error_term(eq_state, structure)
 
         for reg_term in self.terms_regularization:
             loss = loss + reg_term(params)
+
+        return loss
+
+    def evaluate(
+        self,
+        datastructure: FDMesh | FDNetwork,
+        sparse: bool = True,
+    ) -> Float[Array, ""]:
+        """
+        Evaluate the loss directly on a datastructure, without an optimization.
+
+        Parameters
+        ----------
+        datastructure :
+            The network or mesh to read the equilibrium state from. Its geometry
+            is used as-is; no form-finding is run.
+        sparse :
+            If True, assemble the equilibrium state with the sparse model.
+
+        Returns
+        -------
+        loss :
+            The scalar loss, the sum of the error terms evaluated on the
+            datastructure's equilibrium state and the regularization terms
+            evaluated on its parameters.
+
+        Notes
+        -----
+        Builds the equilibrium state once and reuses it across every error term
+        and regularizer. Error terms evaluate their raw goals as singletons, so
+        the loss works before ``constrained_fdm`` has grouped them into
+        collections.
+        """
+        equilibrium = equilibrium_state_from_datastructure(datastructure, sparse)
+
+        loss = jnp.asarray(0.0)
+        for error_term in self.terms_error:
+            loss = loss + error_term.evaluate_state(
+                equilibrium.eq_state,
+                equilibrium.structure,
+            )
+
+        for reg_term in self.terms_regularization:
+            loss = loss + reg_term(equilibrium.parameters)
 
         return loss
 

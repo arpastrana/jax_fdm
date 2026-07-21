@@ -1,5 +1,3 @@
-from typing import Any
-
 import jax.numpy as jnp
 import numpy as np
 from jax import vmap
@@ -7,10 +5,14 @@ from jaxtyping import Array
 from jaxtyping import Float
 from jaxtyping import Int
 
+from jax_fdm.datastructures import FDMesh
+from jax_fdm.datastructures import FDNetwork
 from jax_fdm.equilibrium import EquilibriumModel
 from jax_fdm.equilibrium import EquilibriumParametersState
 from jax_fdm.equilibrium import EquilibriumState
 from jax_fdm.equilibrium import EquilibriumStructure
+from jax_fdm.equilibrium import equilibrium_state_from_datastructure
+from jax_fdm.equilibrium import indices_from_keys
 
 __all__ = ["Constraint"]
 
@@ -30,11 +32,10 @@ class Constraint:
 
     Notes
     -----
-    A constraint is initialized in two phases: construction stores the key and
-    bounds, then `init` resolves the key to an index against an equilibrium
-    structure before the constraint is evaluated. Subclasses supply the constrained
-    quantity via `constraint`. Missing bounds normalize to negative or
-    positive infinity rather than None.
+    A constraint is stateless: construction stores the key and bounds, and
+    `__call__` resolves the key to an index against an equilibrium structure at
+    evaluation time. Subclasses supply the constrained quantity via `constraint`.
+    Missing bounds normalize to negative or positive infinity rather than None.
 
     A constraint takes exactly one element key; to bound many elements, create
     one constraint per element and let collections vectorize them.
@@ -57,9 +58,6 @@ class Constraint:
 
         self._bound_up: float | Float[Array, "..."]
         self.bound_up = bound_up
-
-        # set in init() from the equilibrium structure, before any constraint runs
-        self._index: Int[np.ndarray, "elements"]
 
     @property
     def key(self) -> int | tuple[int, int] | list[int] | list[tuple[int, int]] | None:
@@ -87,20 +85,6 @@ class Constraint:
                     "automatically).",
                 )
         self._key = key
-
-    @property
-    def index(self) -> Int[np.ndarray, "elements"]:
-        """
-        The index of the constraint key in the canonical ordering of an
-        equilibrium structure.
-        """
-        return self._index
-
-    @index.setter
-    def index(self, index: int | tuple[int, ...] | Int[np.ndarray, "elements"]) -> None:
-        if isinstance(index, int):
-            index = (index,)
-        self._index = np.asarray(index)
 
     @staticmethod
     def _bound_setter(
@@ -172,45 +156,71 @@ class Constraint:
         """
         raise NotImplementedError
 
-    def _index_from_key(self, key_index: dict[Any, int]) -> int | tuple[int, ...]:
+    def _indices_from_keys(
+        self,
+        keys_canonical: Int[np.ndarray, "elements ..."],
+    ) -> int | tuple[int, ...]:
         """
-        Look up the constraint's key in an element-to-index mapping.
+        Resolve the constraint's key(s) to positions in a canonical key ordering.
 
         Parameters
         ----------
-        key_index :
-            The mapping from element key to index.
+        keys_canonical :
+            The structure's canonical key ordering (nodes, vertices, or edge
+            pairs), one row per element.
 
         Returns
         -------
         index :
             A single index for a scalar key, or a tuple of indices for a list key.
         """
-        if isinstance(self.key, list):
-            return tuple(key_index[k] for k in self.key)
-        return key_index[self.key]
+        key = self.key
+        if key is None:
+            raise ValueError(f"{type(self).__name__} has no key to resolve.")
 
-    def init(
-        self,
-        model: EquilibriumModel,
-        structure: EquilibriumStructure,
-    ) -> None:
+        resolved = indices_from_keys(keys_canonical, key)
+        if isinstance(key, list):
+            return tuple(int(index) for index in resolved)
+
+        return int(resolved[0])
+
+    def indices(self, structure: EquilibriumStructure) -> Int[np.ndarray, "elements"]:
         """
-        Bind the constraint to a structure by resolving its key to an index.
+        The constraint's element index as a one-dimensional array, ready for vmap.
 
         Parameters
         ----------
-        model :
-            The equilibrium model.
         structure :
             The structure whose element ordering defines the index.
 
-        Notes
-        -----
-        Must be called once before the constraint is evaluated; it populates the
-        index that `constraint` reads.
+        Returns
+        -------
+        index :
+            One entry per element, mapped by vmap to a per-element scalar.
         """
-        self.index = self.index_from_structure(structure)
+        return np.atleast_1d(np.asarray(self.index_from_structure(structure)))
+
+    def operand(
+        self,
+        structure: EquilibriumStructure,
+    ) -> Int[np.ndarray, "elements"] | tuple[Array, ...]:
+        """
+        The per-element payload vmap maps at axis 0.
+
+        Parameters
+        ----------
+        structure :
+            The structure whose element ordering defines the index.
+
+        Returns
+        -------
+        payload :
+            The index array by default. A constraint carrying an extra
+            per-element array overrides this to return a tuple, which
+            `constraint` unpacks. Every leaf is collection-ordered, so vmap zips
+            row k of each into call k.
+        """
+        return self.indices(structure)
 
     def __call__(
         self,
@@ -236,15 +246,81 @@ class Constraint:
             The constrained quantity for each element, flattened.
         """
         eqstate = model(params, structure)
-        # self.index is a numpy index array mapped to a jax scalar by vmap
-        constraint = vmap(self.constraint, in_axes=(None, 0))(eqstate, self.index)  # pyright: ignore[reportArgumentType]
+
+        return self._constraint(eqstate, structure)
+
+    def _constraint(
+        self,
+        eqstate: EquilibriumState,
+        structure: EquilibriumStructure,
+    ) -> Float[Array, "elements"]:
+        """
+        Evaluate the constraint on a precomputed equilibrium state.
+
+        Parameters
+        ----------
+        eqstate :
+            The equilibrium state to read the constrained quantity from.
+        structure :
+            The structure whose element ordering resolves the constraint's index.
+
+        Returns
+        -------
+        constraint :
+            The constrained quantity for each element, flattened.
+
+        Notes
+        -----
+        The shared core for both a solving `__call__` and a state-consuming
+        `evaluate`. One per-element payload is mapped at axis 0; eqstate and
+        structure are held out (in_axes=None), so structure rides whole and
+        sparse matrices never become vmap operands.
+        """
+        payload = self.operand(structure)
+        constraint = vmap(self.constraint, in_axes=(None, None, 0))(
+            eqstate,
+            structure,
+            payload,  # pyright: ignore[reportArgumentType]
+        )
 
         return jnp.ravel(constraint)
+
+    def evaluate(
+        self,
+        datastructure: FDNetwork | FDMesh,
+        sparse: bool = True,
+    ) -> Float[Array, "elements"]:
+        """
+        Evaluate the constraint directly on a datastructure, without solving.
+
+        Parameters
+        ----------
+        datastructure :
+            The network or mesh to read the equilibrium state from. Its geometry
+            is used as-is; no form-finding is run.
+        sparse :
+            If True, assemble the equilibrium state with the sparse model.
+
+        Returns
+        -------
+        constraint :
+            The constrained quantity for each element, flattened.
+
+        Notes
+        -----
+        A convenience for prototyping a constraint on the high-level COMPAS layer.
+        Unlike `__call__`, it consumes the datastructure's current state directly
+        rather than solving for equilibrium from raw parameters.
+        """
+        equilibrium = equilibrium_state_from_datastructure(datastructure, sparse)
+
+        return self._constraint(equilibrium.eq_state, equilibrium.structure)
 
     def constraint(
         self,
         eq_state: EquilibriumState,
-        index: Int[Array, "..."],
+        structure: EquilibriumStructure,
+        payload: Int[Array, ""] | tuple[Array, ...],
     ) -> Float[Array, "..."]:
         """
         Extract the constrained quantity for one element from an equilibrium state.
@@ -253,8 +329,14 @@ class Constraint:
         ----------
         eq_state :
             The equilibrium state to read the quantity from.
-        index :
-            The index of the element within the equilibrium state.
+        structure :
+            The structure the constraint is evaluated against, held out of the
+            vmap so a constraint can read whole trace-time constants from it.
+            Most constraints ignore it.
+        payload :
+            The per-element slice vmap maps at axis 0. The index of the element
+            for a plain constraint, or a tuple the constraint unpacks when it
+            carries an extra per-element array (see `operand`).
 
         Returns
         -------

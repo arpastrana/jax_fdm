@@ -8,7 +8,6 @@ from jaxtyping import Float
 from jaxtyping import Int
 
 from jax_fdm.equilibrium import EquilibriumMeshStructure
-from jax_fdm.equilibrium import EquilibriumModel
 from jax_fdm.equilibrium import EquilibriumState
 from jax_fdm.geometry import angle_vectors
 from jax_fdm.geometry import normal_polygon
@@ -62,9 +61,6 @@ class VertexNormalAngleGoal(ScalarGoal, VertexGoal):
         self._vector: Float[Array, "vectors 3"]
         self.vector = vector
 
-        # set in init() from the mesh structure, before any prediction runs
-        self.faces_indexed: Int[Array, "faces vertices"]
-
     @property
     def vector(self) -> Float[Array, "vectors 3"]:
         """
@@ -76,45 +72,39 @@ class VertexNormalAngleGoal(ScalarGoal, VertexGoal):
     def vector(self, vector: Float[Array, "..."] | Sequence[float]) -> None:
         self._vector = jnp.reshape(jnp.asarray(vector), (-1, 3))
 
-    def vectors(self) -> Float[Array, "vectors 3"]:
-        """
-        Scatter the reference vectors into a per-index matrix.
-
-        Returns
-        -------
-        vectors :
-            A matrix holding each vertex's reference vector at its structure index.
-        """
-        matrix = np.zeros((max(self.index) + 1, 3))
-        for vec, idx in zip(self.vector, self.index):
-            matrix[idx, :] = vec
-        return jnp.asarray(matrix)
-
-    def init(
+    def operand(
         self,
-        model: EquilibriumModel,
         structure: EquilibriumMeshStructure,
-    ) -> None:
+    ) -> tuple[Int[np.ndarray, "vertices"], Float[Array, "vertices 3"]]:
         """
-        Bind the goal to a mesh, caching face topology and reference vectors.
+        The per-element payload: the vertex indices paired with reference vectors.
 
         Parameters
         ----------
-        model :
-            The equilibrium model.
         structure :
-            The mesh structure providing face indices and face-vertex connectivity.
-        """
-        super().init(model, structure)
-        self.vector = self.vectors()
-        self.faces_indexed = structure.faces_indexed
+            The mesh structure whose vertex ordering defines the indices.
 
-    def face_normals(self, xyz: Float[Array, "vertices 3"]) -> Float[Array, "faces 3"]:
+        Returns
+        -------
+        payload :
+            The vertex index array and the reference vectors, both collection
+            ordered, so vmap zips each vertex's index with its reference vector.
+        """
+        return self.indices(structure), self.vector
+
+    @staticmethod
+    def face_normals(
+        faces_indexed: Int[Array, "faces vertices"],
+        xyz: Float[Array, "vertices 3"],
+    ) -> Float[Array, "faces 3"]:
         """
         Compute the unnormalized normal of every face in the mesh.
 
         Parameters
         ----------
+        faces_indexed :
+            The vertex indices of each face, with ``-1`` padding for absent
+            vertices.
         xyz :
             The coordinates of the mesh vertices.
 
@@ -140,11 +130,12 @@ class VertexNormalAngleGoal(ScalarGoal, VertexGoal):
 
             return normal_polygon(fxyz, unitized=False)
 
-        return vmap(face_normal, in_axes=(0, None))(self.faces_indexed, xyz)
+        return vmap(face_normal, in_axes=(0, None))(faces_indexed, xyz)
 
     def vertex_normal(
         self,
         eq_state: EquilibriumState,
+        faces_indexed: Int[Array, "faces vertices"],
         index: Int[Array, ""],
     ) -> Float[Array, "3"]:
         """
@@ -154,6 +145,8 @@ class VertexNormalAngleGoal(ScalarGoal, VertexGoal):
         ----------
         eq_state :
             The equilibrium state to read the vertex coordinates from.
+        faces_indexed :
+            The mesh face topology whose incident faces set the vertex normal.
         index :
             The index of the vertex.
 
@@ -170,8 +163,8 @@ class VertexNormalAngleGoal(ScalarGoal, VertexGoal):
         area-weighted face normals then sum into the vertex normal before
         normalizing.
         """
-        face_normals = self.face_normals(eq_state.xyz)
-        mask = jnp.any(self.faces_indexed == index, axis=-1)
+        face_normals = self.face_normals(faces_indexed, eq_state.xyz)
+        mask = jnp.any(faces_indexed == index, axis=-1)
         normal = jnp.sum(jnp.reshape(mask, (-1, 1)) * face_normals, axis=0)
 
         return normalize_vector(normal)
@@ -179,7 +172,8 @@ class VertexNormalAngleGoal(ScalarGoal, VertexGoal):
     def prediction(
         self,
         eq_state: EquilibriumState,
-        index: Int[Array, ""],
+        structure: EquilibriumMeshStructure,
+        payload: tuple[Float[Array, ""], Float[Array, "3"]],
     ) -> Float[Array, ""]:
         """
         The angle between the vertex normal and the reference vector.
@@ -188,8 +182,10 @@ class VertexNormalAngleGoal(ScalarGoal, VertexGoal):
         ----------
         eq_state :
             The equilibrium state to read the vertex coordinates from.
-        index :
-            The index of the vertex.
+        structure :
+            The mesh structure providing the face topology.
+        payload :
+            The vertex index and its reference vector for this element.
 
         Returns
         -------
@@ -197,8 +193,9 @@ class VertexNormalAngleGoal(ScalarGoal, VertexGoal):
             The signed angle between the vertex normal and its reference vector, in
             radians.
         """
-        normal = self.vertex_normal(eq_state, index)
+        index, vector = payload
+        normal = self.vertex_normal(eq_state, structure.faces_indexed, index)
 
         # the signed angle is covariant with the normal's orientation, which
         # the winding of the incident faces determines
-        return angle_vectors(normal, self.vector[index, :])
+        return angle_vectors(normal, vector)

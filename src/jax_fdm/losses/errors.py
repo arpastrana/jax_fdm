@@ -4,7 +4,11 @@ import jax.numpy as jnp
 from jaxtyping import Array
 from jaxtyping import Float
 
+from jax_fdm.datastructures import FDMesh
+from jax_fdm.datastructures import FDNetwork
 from jax_fdm.equilibrium import EquilibriumState
+from jax_fdm.equilibrium import EquilibriumStructure
+from jax_fdm.equilibrium import equilibrium_state_from_datastructure
 from jax_fdm.goals import Goal
 from jax_fdm.goals import GoalState
 
@@ -90,7 +94,11 @@ class Error:
         """
         return jnp.sum(errors)
 
-    def __call__(self, eqstate: EquilibriumState) -> Float[Array, ""]:
+    def __call__(
+        self,
+        eqstate: EquilibriumState,
+        structure: EquilibriumStructure,
+    ) -> Float[Array, ""]:
         """
         Evaluate the error term against an equilibrium state.
 
@@ -98,6 +106,8 @@ class Error:
         ----------
         eqstate :
             The equilibrium state to evaluate the goals on.
+        structure :
+            The structure whose element ordering resolves the goals' indices.
 
         Returns
         -------
@@ -106,9 +116,71 @@ class Error:
         """
         errors = []
         for goal_collection in self.collections:
-            gstate = goal_collection(eqstate)
+            gstate = goal_collection(eqstate, structure)
             error = self.error(gstate)
             errors.append(error)
+
+        return self.errors(jnp.array(errors)) * self.alpha
+
+    def evaluate(
+        self,
+        datastructure: FDNetwork | FDMesh,
+        sparse: bool = True,
+    ) -> Float[Array, ""]:
+        """
+        Evaluate the error term directly on a datastructure, without an optimization.
+
+        Parameters
+        ----------
+        datastructure :
+            The network or mesh to read the equilibrium state from. Its geometry
+            is used as-is; no form-finding is run.
+        sparse :
+            If True, assemble the equilibrium state with the sparse model.
+
+        Returns
+        -------
+        error :
+            The aggregated error scaled by ``alpha``.
+
+        Notes
+        -----
+        Evaluates the term's raw goals one by one, rather than the collections
+        the optimizer batches them into, so it works before ``constrained_fdm``
+        has grouped them. The goal count is unchanged, so a mean-style term
+        divides by the same number of goals it would during an optimization.
+        """
+        equilibrium = equilibrium_state_from_datastructure(datastructure, sparse)
+
+        return self.evaluate_state(equilibrium.eq_state, equilibrium.structure)
+
+    def evaluate_state(
+        self,
+        eqstate: EquilibriumState,
+        structure: EquilibriumStructure,
+    ) -> Float[Array, ""]:
+        """
+        Evaluate the error term's raw goals on a precomputed equilibrium state.
+
+        Parameters
+        ----------
+        eqstate :
+            The equilibrium state to evaluate the goals on.
+        structure :
+            The structure whose element ordering resolves the goals' indices.
+
+        Returns
+        -------
+        error :
+            The aggregated error scaled by ``alpha``.
+
+        Notes
+        -----
+        The state-consuming core shared by `evaluate` and `Loss.evaluate`. It
+        evaluates the term's raw goals as singletons rather than the collections
+        the optimizer batches them into.
+        """
+        errors = [self.error(goal(eqstate, structure)) for goal in self.goals]
 
         return self.errors(jnp.array(errors)) * self.alpha
 

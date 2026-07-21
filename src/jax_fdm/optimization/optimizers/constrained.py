@@ -75,9 +75,6 @@ class ConstrainedOptimizer(Optimizer):
 
         clist = []
         for constraint in collections:
-            # initialize constraint
-            constraint.init(model, structure)
-
             # Nested def (not partial): jit(partial(...)) can resolve to the
             # decorator overload, so calls appear to expect a Callable.
             def fun(

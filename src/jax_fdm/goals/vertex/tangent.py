@@ -3,8 +3,8 @@ from collections.abc import Sequence
 import numpy as np
 from jaxtyping import Array
 from jaxtyping import Float
-from jaxtyping import Int
 
+from jax_fdm.equilibrium import EquilibriumMeshStructure
 from jax_fdm.equilibrium import EquilibriumState
 from jax_fdm.goals.goal import TargetLike
 from jax_fdm.goals.vertex.normal import VertexNormalAngleGoal
@@ -49,7 +49,8 @@ class VertexTangentAngleGoal(VertexNormalAngleGoal):
     def prediction(
         self,
         eq_state: EquilibriumState,
-        index: Int[Array, ""],
+        structure: EquilibriumMeshStructure,
+        payload: tuple[Float[Array, ""], Float[Array, "3"]],
     ) -> Float[Array, ""]:
         """
         The angle between the vertex tangent and the reference vector.
@@ -58,8 +59,10 @@ class VertexTangentAngleGoal(VertexNormalAngleGoal):
         ----------
         eq_state :
             The equilibrium state to read the vertex coordinates from.
-        index :
-            The index of the vertex.
+        structure :
+            The mesh structure providing the face topology.
+        payload :
+            The vertex index and its reference vector for this element.
 
         Returns
         -------
@@ -67,7 +70,7 @@ class VertexTangentAngleGoal(VertexNormalAngleGoal):
             The signed tangent angle, 90 degrees minus the vertex normal angle, in
             radians.
         """
-        angle_normal = super().prediction(eq_state, index)
+        angle_normal = super().prediction(eq_state, structure, payload)
 
         angle_tangent = np.pi * 0.5 - angle_normal
 

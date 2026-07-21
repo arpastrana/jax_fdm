@@ -39,4 +39,4 @@ class VertexConstraint(Constraint):
                 "Use its Node* counterpart on a network.",
             )
 
-        return self._index_from_key(structure.vertex_index)
+        return self._indices_from_keys(structure.vertices)

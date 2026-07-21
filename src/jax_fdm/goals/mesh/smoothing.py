@@ -5,7 +5,6 @@ from jaxtyping import Float
 from jaxtyping import Int
 
 from jax_fdm.equilibrium import EquilibriumMeshStructure
-from jax_fdm.equilibrium import EquilibriumModel
 from jax_fdm.equilibrium import EquilibriumState
 from jax_fdm.goals.goal import ScalarGoal
 from jax_fdm.goals.mesh.mesh import MeshGoal
@@ -30,36 +29,10 @@ class MeshSmoothGoal(ScalarGoal, MeshGoal):
     reweighted by the square of its valence.
     """
 
-    def __init__(self) -> None:
-        super().__init__()
-        # set in init() from the mesh structure, before any prediction runs
-        self.adjacency: (
-            Float[Array, "vertices vertices"] | Float[BCOO, "vertices vertices"]
-        )
-        self.indices_free: Int[Array, "vertices_free"]
-
-    def init(
-        self,
-        model: EquilibriumModel,
-        structure: EquilibriumMeshStructure,
-    ) -> None:
-        """
-        Bind the goal to a mesh, caching its adjacency and free-vertex indices.
-
-        Parameters
-        ----------
-        model :
-            The equilibrium model.
-        structure :
-            The mesh structure whose adjacency and free-vertex indices are cached.
-        """
-        super().init(model, structure)
-        self.adjacency = structure.adjacency
-        self.indices_free = structure.indices_free
-
     def prediction(
         self,
         eq_state: EquilibriumState,
+        structure: EquilibriumMeshStructure,
         index: Int[Array, "1"],
     ) -> Float[Array, ""]:
         """
@@ -69,6 +42,8 @@ class MeshSmoothGoal(ScalarGoal, MeshGoal):
         ----------
         eq_state :
             The equilibrium state to read vertex coordinates from.
+        structure :
+            The mesh structure providing the adjacency and free-vertex indices.
         index :
             The sentinel index, unused.
 
@@ -79,8 +54,8 @@ class MeshSmoothGoal(ScalarGoal, MeshGoal):
             neighbors' centroid.
         """
         xyz = eq_state.xyz
-        fairness_vertices = vertices_nbrs_fairness(xyz, self.adjacency)
-        fairness_vertices = fairness_vertices[self.indices_free]
+        fairness_vertices = vertices_nbrs_fairness(xyz, structure.adjacency)
+        fairness_vertices = fairness_vertices[structure.indices_free]
 
         return jnp.mean(fairness_vertices)
 

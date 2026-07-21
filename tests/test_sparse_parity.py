@@ -15,7 +15,6 @@ import numpy as np
 import pytest
 
 from jax_fdm.datastructures import FDMesh
-from jax_fdm.equilibrium import EquilibriumModel
 from jax_fdm.equilibrium import EquilibriumState
 from jax_fdm.equilibrium import fdm
 from jax_fdm.equilibrium.fdm import structure_from_datastructure
@@ -79,7 +78,6 @@ def _goal_predictions(mesh, sparse):
     Evaluate the neighborhood goal predictions on a fixed random state.
     """
     structure = structure_from_datastructure(mesh, sparse=sparse)
-    model = EquilibriumModel(tmax=1)
 
     num_nodes = structure.num_nodes
     num_edges = structure.num_edges
@@ -97,18 +95,13 @@ def _goal_predictions(mesh, sparse):
     sentinel = jnp.asarray([0])
 
     smooth_goal = MeshSmoothGoal()
-    smooth_goal.init(model, structure)
-
     laplacian_goal = MeshXYZFaceLaplacianGoal()
-    laplacian_goal.init(model, structure)
-
     normal_goal = VertexNormalAngleGoal(key=12, vector=[0.0, 0.0, 1.0], target=0.0)
-    normal_goal.init(model, structure)
 
     return (
-        smooth_goal.prediction(eq_state, sentinel),
-        laplacian_goal.laplacian_vertices(eq_state, sentinel),
-        normal_goal.vertex_normal(eq_state, jnp.asarray(12)),
+        smooth_goal.prediction(eq_state, structure, sentinel),
+        laplacian_goal.laplacian_vertices(eq_state, structure),
+        normal_goal.vertex_normal(eq_state, structure.faces_indexed, jnp.asarray(12)),
     )
 
 

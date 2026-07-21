@@ -7,9 +7,9 @@ from jaxtyping import Float
 from jaxtyping import Int
 
 from jax_fdm.constraints.node.node import NodeConstraint
-from jax_fdm.equilibrium import EquilibriumModel
 from jax_fdm.equilibrium import EquilibriumState
 from jax_fdm.equilibrium import EquilibriumStructure
+from jax_fdm.equilibrium import indices_from_keys
 from jax_fdm.geometry import curvature_point_polygon
 
 __all__ = ["NodeCurvatureConstraint"]
@@ -40,45 +40,13 @@ class NodeCurvatureConstraint(NodeConstraint):
     ) -> None:
         super().__init__(key, bound_low, bound_up)
         self.polygon = jnp.asarray(polygon)
-        # set in init() from the equilibrium structure, before any constraint runs
-        self.index_polygon: Int[Array, "nodes neighbors"]
 
-    def init(self, model: EquilibriumModel, structure: EquilibriumStructure) -> None:
-        """
-        Bind the constraint to a structure, resolving its neighborhood polygon.
-
-        Parameters
-        ----------
-        model :
-            The equilibrium model.
-        structure :
-            The structure whose node ordering defines the indices.
-        """
-        super().init(model, structure)
-        self.index_polygon = self.polygon_indices(structure)
-
-    def key_index(self, structure: EquilibriumStructure) -> dict[int, int]:
-        """
-        The key-to-index mapping used to resolve the neighborhood polygon keys.
-
-        Parameters
-        ----------
-        structure :
-            The structure whose element ordering defines the indices.
-
-        Returns
-        -------
-        key_index :
-            The mapping from node keys to structure indices.
-        """
-        return structure.node_index
-
-    def polygon_indices(
+    def keys_canonical(
         self,
         structure: EquilibriumStructure,
-    ) -> Int[Array, "nodes neighbors"]:
+    ) -> Int[np.ndarray, "nodes"]:
         """
-        Resolve each node's neighborhood polygon keys to structure indices.
+        The canonical node-key ordering the neighborhood polygon resolves against.
 
         Parameters
         ----------
@@ -87,22 +55,42 @@ class NodeCurvatureConstraint(NodeConstraint):
 
         Returns
         -------
-        index_polygon :
-            The neighbor indices of each constrained node, keyed by structure index.
+        keys :
+            The structure's node keys, in canonical order.
         """
-        key_index = self.key_index(structure)
-        index_max = max(self.index) + 1
-        polygon = np.atleast_2d(self.polygon)
-        index_polygon = np.zeros((index_max, polygon.shape[1]))
-        for p, idx in zip(polygon, self.index):
-            index_polygon[idx, :] = tuple([key_index[nbr] for nbr in p])
+        return structure.nodes
 
-        return jnp.array(index_polygon, dtype=jnp.int64)
+    def operand(
+        self,
+        structure: EquilibriumStructure,
+    ) -> tuple[Int[np.ndarray, "nodes"], Int[np.ndarray, "nodes neighbors"]]:
+        """
+        The per-element payload: the node indices paired with polygon neighbors.
+
+        Parameters
+        ----------
+        structure :
+            The structure whose node ordering defines the indices.
+
+        Returns
+        -------
+        payload :
+            The constrained-node index array and, per node, the structure indices
+            of its neighborhood polygon, both collection ordered so vmap zips each
+            node's index with its own neighbor row.
+        """
+        index = self.indices(structure)
+        polygon = np.atleast_2d(np.asarray(self.polygon))
+        neighbors = indices_from_keys(self.keys_canonical(structure), polygon.ravel())
+        neighbors = neighbors.reshape(polygon.shape)
+
+        return index, neighbors
 
     def constraint(
         self,
         eq_state: EquilibriumState,
-        index: Int[Array, ""],
+        structure: EquilibriumStructure,
+        payload: tuple[Int[Array, ""], Int[Array, "neighbors"]],
     ) -> Float[Array, ""]:
         """
         The discrete curvature at the node over its one-hop neighborhood.
@@ -111,16 +99,18 @@ class NodeCurvatureConstraint(NodeConstraint):
         ----------
         eq_state :
             The equilibrium state to read the node coordinates from.
-        index :
-            The index of the node.
+        structure :
+            The structure the constraint is evaluated against; unused.
+        payload :
+            The node index and its polygon neighbor indices for this element.
 
         Returns
         -------
         constraint :
             The discrete curvature at the node given its neighbors' coordinates.
         """
+        index, neighbors = payload
         point = eq_state.xyz[index, :]
-        index_polygon = self.index_polygon[index, :]
-        polygon = eq_state.xyz[index_polygon, :]
+        polygon = eq_state.xyz[neighbors, :]
 
         return curvature_point_polygon(point, polygon)

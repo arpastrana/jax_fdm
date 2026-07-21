@@ -3,6 +3,7 @@ from jaxtyping import Float
 from jaxtyping import Int
 
 from jax_fdm.equilibrium import EquilibriumState
+from jax_fdm.equilibrium import EquilibriumStructure
 from jax_fdm.geometry import colinearity_points
 from jax_fdm.geometry import curvature_points
 from jax_fdm.goals.goal import ScalarGoal
@@ -33,6 +34,7 @@ class NodesColinearGoal(ScalarGoal, NodeGoal):
     def prediction(
         self,
         eq_state: EquilibriumState,
+        structure: EquilibriumStructure,
         index: Int[Array, "points"],
     ) -> Float[Array, ""]:
         """
@@ -42,6 +44,8 @@ class NodesColinearGoal(ScalarGoal, NodeGoal):
         ----------
         eq_state :
             The equilibrium state to read the node coordinates from.
+        structure :
+            The structure the goal is evaluated against; unused.
         index :
             The indices of the ordered nodes.
 
@@ -74,6 +78,7 @@ class NodesCurvatureGoal(ScalarGoal, NodeGoal):
     def prediction(
         self,
         eq_state: EquilibriumState,
+        structure: EquilibriumStructure,
         index: Int[Array, "points"],
     ) -> Float[Array, ""]:
         """
@@ -83,6 +88,8 @@ class NodesCurvatureGoal(ScalarGoal, NodeGoal):
         ----------
         eq_state :
             The equilibrium state to read the node coordinates from.
+        structure :
+            The structure the goal is evaluated against; unused.
         index :
             The indices of the ordered nodes.
 

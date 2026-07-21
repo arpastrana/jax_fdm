@@ -39,4 +39,4 @@ class NodeConstraint(Constraint):
                 "Use its Vertex* counterpart on a mesh.",
             )
 
-        return self._index_from_key(structure.node_index)
+        return self._indices_from_keys(structure.nodes)

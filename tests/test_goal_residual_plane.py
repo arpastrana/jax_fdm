@@ -89,8 +89,7 @@ def test_residual_plane_goal_projection(arch_network):
     normal = jnp.asarray([2.0, 0.0, 2.0])
 
     goal = NodeResidualPlaneGoal(support, target=normal)
-    goal.init(model, structure)
-    gstate = goal(eqstate)
+    gstate = goal(eqstate, structure)
 
     direction = normalize_vector(residual)
     assert jnp.allclose(gstate.prediction, direction)
@@ -119,8 +118,7 @@ def test_residual_plane_goal_invariances(arch_network):
 
     def error(eqstate, normal):
         goal = NodeResidualPlaneGoal(support, target=normal)
-        goal.init(model, structure)
-        gstate = goal(eqstate)
+        gstate = goal(eqstate, structure)
         return jnp.sum(jnp.square(gstate.prediction - gstate.goal))
 
     normal = [0.0, 0.0, 1.0]
@@ -165,12 +163,11 @@ def test_vertex_residual_plane_goal(meshgrid_mesh):
     normal = jnp.asarray([0.0, 0.0, 1.0])
 
     goal = VertexResidualPlaneGoal(vkey, target=normal)
-    goal.init(model, structure)
 
     index = structure.vertex_index[vkey]
-    assert int(goal.index[0]) == index
+    assert goal.index_from_structure(structure) == index
 
-    gstate = goal(eqstate)
+    gstate = goal(eqstate, structure)
     direction = normalize_vector(eqstate.residuals[index, :])
     projection = direction - jnp.dot(direction, normal) * normal
     assert jnp.allclose(gstate.prediction, direction)
@@ -185,7 +182,7 @@ def test_vertex_residual_plane_goal_on_network_raises(arch_network):
     goal = VertexResidualPlaneGoal(0, target=[0.0, 0.0, 1.0])
 
     with pytest.raises(TypeError, match="Node"):
-        goal.init(model, structure)
+        goal.index_from_structure(structure)
 
 
 # ==============================================================================

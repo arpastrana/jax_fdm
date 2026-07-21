@@ -38,4 +38,4 @@ class FaceGoal(Goal):
                 f"{type(self).__name__} targets mesh faces. Networks have no faces.",
             )
 
-        return self._index_from_key(structure.face_index)
+        return self._indices_from_keys(structure.face_keys)

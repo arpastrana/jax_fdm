@@ -5,12 +5,10 @@ from jaxtyping import Float
 from jaxtyping import Int
 
 from jax_fdm.equilibrium import EquilibriumMeshStructure
-from jax_fdm.equilibrium import EquilibriumModel
 from jax_fdm.equilibrium import EquilibriumState
 from jax_fdm.geometry import planarity_polygon
 from jax_fdm.geometry import planarity_triangle
 from jax_fdm.goals.goal import ScalarGoal
-from jax_fdm.goals.goal import TargetLike
 from jax_fdm.goals.mesh.mesh import MeshGoal
 
 __all__ = ["MeshPlanarityGoal", "face_xyz", "face_planarity", "faces_planarity"]
@@ -36,36 +34,10 @@ class MeshPlanarityGoal(ScalarGoal, MeshGoal):
     energy, flattening its gradient as the faces approach planarity.
     """
 
-    def __init__(
-        self,
-        target: TargetLike = 0.0,
-        weight: float = 1.0,
-    ) -> None:
-        super().__init__(key=-1, target=target, weight=weight)
-        # set in init() from the mesh structure, before any prediction runs
-        self.faces_indexed: Int[Array, "faces vertices"]
-
-    def init(
-        self,
-        model: EquilibriumModel,
-        structure: EquilibriumMeshStructure,
-    ) -> None:
-        """
-        Bind the goal to a mesh, caching its face indices.
-
-        Parameters
-        ----------
-        model :
-            The equilibrium model.
-        structure :
-            The mesh structure whose face indices are cached.
-        """
-        super().init(model, structure)
-        self.faces_indexed = structure.faces_indexed
-
     def prediction(
         self,
         eq_state: EquilibriumState,
+        structure: EquilibriumMeshStructure,
         index: Int[Array, "1"],
     ) -> Float[Array, ""]:
         """
@@ -75,6 +47,8 @@ class MeshPlanarityGoal(ScalarGoal, MeshGoal):
         ----------
         eq_state :
             The equilibrium state to read vertex coordinates from.
+        structure :
+            The mesh structure providing the face indices.
         index :
             The sentinel index, unused.
 
@@ -83,7 +57,7 @@ class MeshPlanarityGoal(ScalarGoal, MeshGoal):
         prediction :
             The mean face planarity, zero when every face is planar.
         """
-        planarities = faces_planarity(self.faces_indexed, eq_state.xyz)
+        planarities = faces_planarity(structure.faces_indexed, eq_state.xyz)
 
         return jnp.mean(planarities)
 

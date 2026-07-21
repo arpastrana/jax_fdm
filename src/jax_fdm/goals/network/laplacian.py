@@ -4,6 +4,7 @@ from jaxtyping import Float
 from jaxtyping import Int
 
 from jax_fdm.equilibrium import EquilibriumState
+from jax_fdm.equilibrium import EquilibriumStructure
 from jax_fdm.goals.goal import ScalarGoal
 from jax_fdm.goals.network.network import NetworkGoal
 
@@ -45,6 +46,7 @@ class NetworkXYZLaplacianGoal(ScalarGoal, NetworkGoal):
     def prediction(
         self,
         eq_state: EquilibriumState,
+        structure: EquilibriumStructure,
         index: Int[Array, "1"],
     ) -> Float[Array, ""]:
         """
@@ -54,6 +56,8 @@ class NetworkXYZLaplacianGoal(ScalarGoal, NetworkGoal):
         ----------
         eq_state :
             The equilibrium state to read the edge vectors from.
+        structure :
+            The structure the goal is evaluated against; unused.
         index :
             The sentinel index, unused.
 

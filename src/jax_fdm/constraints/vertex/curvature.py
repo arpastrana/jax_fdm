@@ -1,3 +1,6 @@
+import numpy as np
+from jaxtyping import Int
+
 from jax_fdm.constraints.node.curvature import NodeCurvatureConstraint
 from jax_fdm.constraints.vertex.vertex import VertexConstraint
 from jax_fdm.equilibrium import EquilibriumMeshStructure
@@ -16,9 +19,12 @@ class VertexCurvatureConstraint(VertexConstraint, NodeCurvatureConstraint):
     against the vertices of a mesh.
     """
 
-    def key_index(self, structure: EquilibriumStructure) -> dict[int, int]:
+    def keys_canonical(
+        self,
+        structure: EquilibriumStructure,
+    ) -> Int[np.ndarray, "vertices"]:
         """
-        The key-to-index mapping used to resolve the neighborhood polygon keys.
+        The canonical vertex-key ordering the neighborhood polygon resolves against.
 
         Parameters
         ----------
@@ -27,8 +33,8 @@ class VertexCurvatureConstraint(VertexConstraint, NodeCurvatureConstraint):
 
         Returns
         -------
-        key_index :
-            The mapping from vertex keys to structure indices.
+        keys :
+            The mesh's vertex keys, in canonical order.
 
         Raises
         ------
@@ -41,4 +47,4 @@ class VertexCurvatureConstraint(VertexConstraint, NodeCurvatureConstraint):
                 "Use its Node* counterpart on a network.",
             )
 
-        return structure.vertex_index
+        return structure.vertices

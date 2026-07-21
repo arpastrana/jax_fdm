@@ -144,9 +144,8 @@ def test_vertex_goal_resolves_vertex_index(meshgrid_mesh):
     vkey = list(meshgrid_mesh.vertices())[3]
 
     goal = VertexPointGoal(vkey, target=[0.0, 0.0, 0.0])
-    goal.init(model, structure)
 
-    assert int(goal.index[0]) == structure.vertex_index[vkey]
+    assert goal.index_from_structure(structure) == structure.vertex_index[vkey]
 
 
 # ==============================================================================
@@ -163,8 +162,7 @@ def test_vertex_point_and_coordinate_predictions(meshgrid_mesh):
     index = structure.vertex_index[vkey]
 
     goal = VertexPointGoal(vkey, target=[0.0, 0.0, 0.0])
-    goal.init(model, structure)
-    assert jnp.allclose(goal(eqstate).prediction, eqstate.xyz[index, :])
+    assert jnp.allclose(goal(eqstate, structure).prediction, eqstate.xyz[index, :])
 
     for goal_cls, axis in [
         (VertexXCoordinateGoal, 0),
@@ -172,8 +170,7 @@ def test_vertex_point_and_coordinate_predictions(meshgrid_mesh):
         (VertexZCoordinateGoal, 2),
     ]:
         goal = goal_cls(vkey, target=0.0)
-        goal.init(model, structure)
-        prediction = goal(eqstate).prediction
+        prediction = goal(eqstate, structure).prediction
         assert jnp.allclose(prediction.ravel(), eqstate.xyz[index, axis])
 
 
@@ -187,12 +184,13 @@ def test_vertex_residual_predictions(meshgrid_mesh):
     residual = eqstate.residuals[index, :]
 
     goal = VertexResidualVectorGoal(vkey, target=[0.0, 0.0, 0.0])
-    goal.init(model, structure)
-    assert jnp.allclose(goal(eqstate).prediction, residual)
+    assert jnp.allclose(goal(eqstate, structure).prediction, residual)
 
     goal = VertexResidualForceGoal(vkey, target=0.0)
-    goal.init(model, structure)
-    assert jnp.allclose(goal(eqstate).prediction.ravel(), length_vector(residual))
+    assert jnp.allclose(
+        goal(eqstate, structure).prediction.ravel(),
+        length_vector(residual),
+    )
 
 
 def test_vertex_projection_goals(meshgrid_mesh):
@@ -213,8 +211,7 @@ def test_vertex_projection_goals(meshgrid_mesh):
         (VertexPlaneGoal, plane, closest_point_on_plane),
     ]:
         goal = goal_cls(vkey, target=target)
-        goal.init(model, structure)
-        gstate = goal(eqstate)
+        gstate = goal(eqstate, structure)
         expected = closest_fn(point, jnp.asarray(target))
         assert jnp.allclose(gstate.goal, expected)
         assert jnp.allclose(gstate.prediction, point)
@@ -269,13 +266,13 @@ def test_vertices_colinear_goal_initializes_and_optimizes(meshgrid_mesh):
 
     goal = VerticesColinearGoal(key=strip)
     model, structure, eqstate = _fixed_mesh_state(mesh.copy())
-    goal.init(model, structure)
 
-    assert goal.index.ndim == 1
+    index = goal.indices(structure)
+    assert index.ndim == 2
     expected = tuple(structure.vertex_index[vkey] for vkey in strip)
-    assert tuple(int(i) for i in goal.index) == expected
+    assert tuple(int(i) for i in index.ravel()) == expected
 
-    prediction = goal(eqstate).prediction
+    prediction = goal(eqstate, structure).prediction
     assert jnp.all(jnp.isfinite(prediction))
 
     loss = Loss(SquaredError(goals=[VerticesColinearGoal(key=strip)]))
@@ -326,7 +323,7 @@ def test_node_goal_on_mesh_raises(meshgrid_mesh):
     goal = NodePointGoal(0, target=[0.0, 0.0, 0.0])
 
     with pytest.raises(TypeError, match="Vertex"):
-        goal.init(model, structure)
+        goal.index_from_structure(structure)
 
 
 def test_vertex_goal_on_network_raises(arch_network):
@@ -334,11 +331,10 @@ def test_vertex_goal_on_network_raises(arch_network):
     A vertex goal refuses to initialize against a network structure.
     """
     structure = EquilibriumStructure.from_network(arch_network)
-    model = _model()
     goal = VertexPointGoal(0, target=[0.0, 0.0, 0.0])
 
     with pytest.raises(TypeError, match="Node"):
-        goal.init(model, structure)
+        goal.index_from_structure(structure)
 
 
 def test_node_goal_on_network_still_works(arch_network):
@@ -346,13 +342,11 @@ def test_node_goal_on_network_still_works(arch_network):
     Node goals keep resolving on network structures.
     """
     structure = EquilibriumStructure.from_network(arch_network)
-    model = _model()
     node = next(iter(arch_network.nodes()))
 
     goal = NodePointGoal(node, target=[0.0, 0.0, 0.0])
-    goal.init(model, structure)
 
-    assert int(goal.index[0]) == structure.node_index[node]
+    assert goal.index_from_structure(structure) == structure.node_index[node]
 
 
 def test_node_constraint_on_mesh_raises(meshgrid_mesh):
@@ -363,7 +357,7 @@ def test_node_constraint_on_mesh_raises(meshgrid_mesh):
     constraint = NodeXCoordinateConstraint(0, bound_low=0.0, bound_up=1.0)
 
     with pytest.raises(TypeError, match="Vertex"):
-        constraint.init(model, structure)
+        constraint.index_from_structure(structure)
 
 
 # ==============================================================================
@@ -385,9 +379,8 @@ def test_vertex_coordinate_constraints(meshgrid_mesh):
         (VertexZCoordinateConstraint, 2),
     ]:
         constraint = constraint_cls(vkey, bound_low=-1.0, bound_up=1.0)
-        constraint.init(model, structure)
-        assert int(constraint.index[0]) == index
-        value = constraint.constraint(eqstate, constraint.index[0])
+        assert constraint.index_from_structure(structure) == index
+        value = constraint._constraint(eqstate, structure)
         assert jnp.allclose(value, eqstate.xyz[index, axis])
 
 
@@ -411,16 +404,16 @@ def test_vertex_curvature_constraint(meshgrid_mesh):
         bound_low=-1.0,
         bound_up=1.0,
     )
-    constraint.init(model, structure)
 
     index = structure.vertex_index[vkey]
-    assert int(constraint.index[0]) == index
+    assert constraint.index_from_structure(structure) == index
 
-    index_polygon = constraint.index_polygon[index, :]
+    _, neighbors = constraint.operand(structure)
+    index_polygon = neighbors[0]
     expected_polygon = tuple(structure.vertex_index[nbr] for nbr in polygon)
     assert tuple(int(i) for i in index_polygon) == expected_polygon
 
-    value = constraint.constraint(eqstate, constraint.index[0])
+    value = constraint._constraint(eqstate, structure)
     expected = curvature_point_polygon(
         eqstate.xyz[index, :],
         eqstate.xyz[index_polygon, :],
@@ -460,14 +453,13 @@ def test_scalar_prediction_may_return_a_bare_scalar(meshgrid_mesh):
     """
 
     class BareZGoal(ScalarGoal, VertexGoal):
-        def prediction(self, eq_state, index):
+        def prediction(self, eq_state, structure, index):
             return eq_state.xyz[index, 2]
 
     model, structure, eqstate = _fixed_mesh_state(meshgrid_mesh)
     goal = BareZGoal(0, target=0.0)
-    goal.init(model, structure)
 
-    gstate = goal(eqstate)
+    gstate = goal(eqstate, structure)
     assert gstate.prediction.shape == (1, 1)
     assert gstate.goal.shape == (1, 1)
     index = structure.vertex_index[0]
@@ -518,7 +510,7 @@ def test_goal_sees_structured_prediction(meshgrid_mesh):
         def target(self, target):
             self._target = jnp.reshape(jnp.asarray(target), (-1, 2, 3))
 
-        def prediction(self, eq_state, index):
+        def prediction(self, eq_state, structure, index):
             xyz = eq_state.xyz[index, :]
             return jnp.stack([xyz, 2.0 * xyz])
 
@@ -528,9 +520,8 @@ def test_goal_sees_structured_prediction(meshgrid_mesh):
 
     model, structure, eqstate = _fixed_mesh_state(meshgrid_mesh)
     goal = FrameGoal(5, target=[[1.0, 0.0, 0.0], [0.0, 0.0, 1.0]])
-    goal.init(model, structure)
 
-    gstate = goal(eqstate)
+    gstate = goal(eqstate, structure)
     assert seen_shapes == [(2, 3)]
     assert gstate.prediction.shape == (1, 6)
 
@@ -547,10 +538,9 @@ def test_target_count_mismatch_names_the_goal(meshgrid_mesh):
     """
     model, structure, eqstate = _fixed_mesh_state(meshgrid_mesh)
     goal = VertexZCoordinateGoal(0, target=[-0.5, -0.6, -0.7])
-    goal.init(model, structure)
 
     with pytest.raises(ValueError, match="VertexZCoordinateGoal.*target row"):
-        goal(eqstate)
+        goal(eqstate, structure)
 
 
 def test_goal_shape_mismatch_still_raises(meshgrid_mesh):
@@ -560,13 +550,12 @@ def test_goal_shape_mismatch_still_raises(meshgrid_mesh):
     """
 
     class FatScalarGoal(ScalarGoal, VertexGoal):
-        def prediction(self, eq_state, index):
+        def prediction(self, eq_state, structure, index):
             # wrong on purpose: a scalar goal returning a vector
             return eq_state.xyz[index, :]
 
     model, structure, eqstate = _fixed_mesh_state(meshgrid_mesh)
     goal = FatScalarGoal(0, target=0.0)
-    goal.init(model, structure)
 
     with pytest.raises(ValueError, match="one value per element"):
-        goal(eqstate)
+        goal(eqstate, structure)

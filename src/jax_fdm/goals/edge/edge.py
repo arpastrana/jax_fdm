@@ -26,4 +26,4 @@ class EdgeGoal(Goal):
         index :
             The index, or tuple of indices, of the goal's edge(s).
         """
-        return self._index_from_key(structure.edge_index)
+        return self._indices_from_keys(structure.edges)

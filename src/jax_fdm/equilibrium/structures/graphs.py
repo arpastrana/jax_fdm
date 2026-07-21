@@ -21,6 +21,7 @@ __all__ = [
     "GraphSparse",
     "adjacency_matrix",
     "connectivity_matrix",
+    "indices_from_keys",
 ]
 
 
@@ -171,6 +172,78 @@ class GraphSparse(Graph):
 # ==========================================================================
 # Helper functions
 # ==========================================================================
+
+
+def indices_from_keys(
+    keys_canonical: Int[np.ndarray, "elements ..."],
+    keys_query: (
+        int
+        | tuple[int, ...]
+        | list[int]
+        | list[tuple[int, int]]
+        | Int[np.ndarray, "..."]
+    ),
+) -> Int[np.ndarray, "queries"]:
+    """
+    Resolve element keys to their positions in a canonical ordering, loop-free.
+
+    Parameters
+    ----------
+    keys_canonical :
+        The structure's canonical key ordering: a 1-D array of node/vertex/face
+        keys, or a 2-D array of edge key pairs, one row per element.
+    keys_query :
+        The key or keys to resolve, matching the canonical kind. A single node
+        key, an edge key pair, or a list of either.
+
+    Returns
+    -------
+    indices :
+        The position of each queried key in the canonical ordering.
+
+    Raises
+    ------
+    KeyError
+        If any queried key is absent from the canonical ordering.
+
+    Notes
+    -----
+    Vectorized with ``argsort`` + ``searchsorted`` rather than a per-key dict
+    lookup. Edge pairs are folded to a single integer code ``u * base + v`` so
+    the same one-dimensional search resolves them; the code is order-sensitive,
+    matching the directed edge convention of the connectivity.
+    """
+    canonical = np.asarray(keys_canonical)
+    query = np.asarray(keys_query)
+
+    if canonical.ndim == 2:
+        # edge keys: fold each (u, v) pair to an order-sensitive integer code.
+        # The base must exceed every node index in both the canonical edges and
+        # the queried ones; sized to the canonical edges alone, an absent edge
+        # whose endpoint runs past the canonical maximum could fold onto a real
+        # edge's code and resolve as a false match instead of raising.
+        query = query.reshape(-1, canonical.shape[1])
+        base = int(canonical.max())
+        if query.size:
+            base = max(base, int(query.max()))
+        base += 1
+        canonical = canonical[:, 0].astype(np.int64) * base + canonical[:, 1]
+        query = query[:, 0].astype(np.int64) * base + query[:, 1]
+    else:
+        query = query.ravel()
+
+    order = np.argsort(canonical)
+    canonical_sorted = canonical[order]
+    position = np.searchsorted(canonical_sorted, query)
+
+    # searchsorted returns an insertion point; clip it into range and confirm the
+    # landed key actually equals the query, so a missing key raises rather than
+    # aliasing onto a neighbor.
+    position_clipped = np.clip(position, 0, canonical_sorted.size - 1)
+    if not np.array_equal(canonical_sorted[position_clipped], query):
+        raise KeyError("One or more keys are absent from the structure ordering.")
+
+    return order[position]
 
 
 def connectivity_matrix(

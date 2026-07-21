@@ -7,7 +7,6 @@ from jaxtyping import Float
 from jaxtyping import Int
 
 from jax_fdm.constraints.edge.edge import EdgeConstraint
-from jax_fdm.equilibrium import EquilibriumModel
 from jax_fdm.equilibrium import EquilibriumState
 from jax_fdm.equilibrium import EquilibriumStructure
 from jax_fdm.geometry import angle_vectors
@@ -53,38 +52,31 @@ class EdgeAngleConstraint(EdgeConstraint):
     def vector(self, vector: Float[Array, "..."] | Sequence[float]) -> None:
         self._vector = jnp.reshape(jnp.asarray(vector), (-1, 3))
 
-    def vectors(self) -> Float[Array, "vectors 3"]:
+    def operand(
+        self,
+        structure: EquilibriumStructure,
+    ) -> tuple[Int[np.ndarray, "edges"], Float[Array, "edges 3"]]:
         """
-        Scatter the reference vectors into a per-index matrix.
-
-        Returns
-        -------
-        vectors :
-            A matrix holding each edge's reference vector at its structure index.
-        """
-        matrix = np.zeros((max(self.index) + 1, 3))
-        for vec, idx in zip(self.vector, self.index):
-            matrix[idx, :] = vec
-        return jnp.asarray(matrix)
-
-    def init(self, model: EquilibriumModel, structure: EquilibriumStructure) -> None:
-        """
-        Bind the constraint to a structure and reindex its reference vectors.
+        The per-element payload: the edge indices paired with reference vectors.
 
         Parameters
         ----------
-        model :
-            The equilibrium model.
         structure :
             The structure whose edge ordering defines the indices.
+
+        Returns
+        -------
+        payload :
+            The edge index array and the reference vectors, both collection
+            ordered, so vmap zips each edge's index with its own reference vector.
         """
-        super().init(model, structure)
-        self.vector = self.vectors()
+        return self.indices(structure), self.vector
 
     def constraint(
         self,
         eq_state: EquilibriumState,
-        index: Int[Array, ""],
+        structure: EquilibriumStructure,
+        payload: tuple[Float[Array, ""], Float[Array, "3"]],
     ) -> Float[Array, ""]:
         """
         The angle between the edge and its reference vector.
@@ -93,13 +85,16 @@ class EdgeAngleConstraint(EdgeConstraint):
         ----------
         eq_state :
             The equilibrium state to read the edge vector from.
-        index :
-            The index of the edge.
+        structure :
+            The structure the constraint is evaluated against; unused.
+        payload :
+            The edge index and its reference vector for this element.
 
         Returns
         -------
         constraint :
             The angle between the edge and its reference vector, in radians.
         """
-        vector = eq_state.vectors[index, :]
-        return angle_vectors(vector, self.vector[index, :])
+        index, vector = payload
+
+        return angle_vectors(eq_state.vectors[index, :], vector)

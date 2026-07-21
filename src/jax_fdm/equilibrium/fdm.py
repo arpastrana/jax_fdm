@@ -1,8 +1,10 @@
 from collections.abc import Callable
 from collections.abc import Sequence
 from typing import TYPE_CHECKING
+from typing import NamedTuple
 from typing import TypeVar
 
+import jax.numpy as jnp
 import numpy as np
 
 from jax_fdm import DTYPE_JAX
@@ -29,6 +31,8 @@ if TYPE_CHECKING:
 __all__ = [
     "fdm",
     "constrained_fdm",
+    "DatastructureEquilibrium",
+    "equilibrium_state_from_datastructure",
     "model_from_sparsity",
     "structure_from_datastructure",
     "structure_from_network",
@@ -278,6 +282,89 @@ def constrained_fdm(
     params = optimizer.parameters_fdm(opt_params)
 
     return _fdm(model, params, structure, datastructure)
+
+
+# ==========================================================================
+# Equilibrium state from a datastructure
+# ==========================================================================
+
+
+class DatastructureEquilibrium(NamedTuple):
+    """
+    The equilibrium of a datastructure and the objects used to compute it.
+
+    Attributes
+    ----------
+    eq_state :
+        The equilibrium state read off the datastructure as-is, without solving.
+    structure :
+        The structure carrying the connectivity the state was assembled on.
+    model :
+        The model that assembled the state.
+    parameters :
+        The force densities, fixed coordinates, and loads read off the
+        datastructure.
+    """
+
+    eq_state: EquilibriumState
+    structure: EquilibriumStructure
+    model: EquilibriumModel
+    parameters: EquilibriumParametersState
+
+
+def equilibrium_state_from_datastructure(
+    datastructure: FDNetwork | FDMesh,
+    sparse: bool = True,
+) -> DatastructureEquilibrium:
+    """
+    Assemble an equilibrium state from a datastructure without solving.
+
+    Parameters
+    ----------
+    datastructure :
+        The network or mesh to read geometry, force densities, and loads from.
+    sparse :
+        If True, build the sparse structure and model variants.
+
+    Returns
+    -------
+    equilibrium :
+        The equilibrium state, structure, model, and parameters. The state
+        reflects the datastructure's current geometry as-is; it is the input a
+        goal or constraint reads, not a form-found result.
+
+    Notes
+    -----
+    Bundles the model, structure, and parameter state a goal or constraint needs
+    to evaluate against the high-level COMPAS layer, for quick prototyping without
+    running an optimization. The node loads are read back as-is; edge and face
+    tributary loads are not re-aggregated, since a form-found datastructure
+    already carries them in its node loads and re-aggregating would double-count.
+    """
+    structure = structure_from_datastructure(datastructure, sparse)
+    model = model_from_sparsity(sparse=sparse, tmax=1, eta=1e-6)
+    parameters = EquilibriumParametersState.from_datastructure(
+        datastructure,
+        dtype=DTYPE_JAX,
+    )
+
+    if isinstance(datastructure, FDNetwork):
+        xyz = datastructure.nodes_coordinates()
+    elif isinstance(datastructure, FDMesh):
+        xyz = datastructure.vertices_coordinates()
+    else:
+        raise ValueError(f"Input datastructure {datastructure} is invalid")
+
+    xyz = jnp.asarray(xyz, dtype=DTYPE_JAX)
+
+    eq_state = model.equilibrium_state(
+        parameters.q,
+        xyz,
+        parameters.loads.nodes,
+        structure,
+    )
+
+    return DatastructureEquilibrium(eq_state, structure, model, parameters)
 
 
 # ==========================================================================

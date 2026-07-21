@@ -5,11 +5,9 @@ from jaxtyping import Float
 from jaxtyping import Int
 
 from jax_fdm.equilibrium import EquilibriumMeshStructure
-from jax_fdm.equilibrium import EquilibriumModel
 from jax_fdm.equilibrium import EquilibriumState
 from jax_fdm.geometry import area_polygon
 from jax_fdm.goals.goal import ScalarGoal
-from jax_fdm.goals.goal import TargetLike
 from jax_fdm.goals.mesh.mesh import MeshGoal
 
 __all__ = ["MeshAreaGoal", "MeshFacesAreaEqualizeGoal"]
@@ -25,36 +23,10 @@ class MeshAreaGoal(ScalarGoal, MeshGoal):
     minimizing loss maximizes the mesh area.
     """
 
-    def __init__(
-        self,
-        target: TargetLike = 0.0,
-        weight: float = 1.0,
-    ) -> None:
-        super().__init__(key=-1, target=target, weight=weight)
-        # set in init() from the mesh structure, before any prediction runs
-        self.faces: Int[Array, "faces vertices"]
-
-    def init(
-        self,
-        model: EquilibriumModel,
-        structure: EquilibriumMeshStructure,
-    ) -> None:
-        """
-        Bind the goal to a mesh, caching its face indices.
-
-        Parameters
-        ----------
-        model :
-            The equilibrium model.
-        structure :
-            The mesh structure whose face indices are cached.
-        """
-        super().init(model, structure)
-        self.faces = structure.faces_indexed
-
     def prediction(
         self,
         eq_state: EquilibriumState,
+        structure: EquilibriumMeshStructure,
         index: Int[Array, "1"],
     ) -> Float[Array, ""]:
         """
@@ -64,6 +36,8 @@ class MeshAreaGoal(ScalarGoal, MeshGoal):
         ----------
         eq_state :
             The equilibrium state to read vertex coordinates from.
+        structure :
+            The mesh structure providing the face indices.
         index :
             The sentinel index, unused.
 
@@ -105,7 +79,7 @@ class MeshAreaGoal(ScalarGoal, MeshGoal):
             return area_polygon(fxyz)
 
         faces_area = vmap(face_area, in_axes=(0, None))
-        areas = faces_area(self.faces, eq_state.xyz)
+        areas = faces_area(structure.faces_indexed, eq_state.xyz)
 
         return jnp.sum(areas) * -1.0
 
@@ -119,36 +93,10 @@ class MeshFacesAreaEqualizeGoal(ScalarGoal, MeshGoal):
     The goal drives the mean-normalized variance of the face areas to zero.
     """
 
-    def __init__(
-        self,
-        target: TargetLike = 0.0,
-        weight: float = 1.0,
-    ) -> None:
-        super().__init__(key=-1, target=target, weight=weight)
-        # set in init() from the mesh structure, before any prediction runs
-        self.faces: Int[Array, "faces vertices"]
-
-    def init(
-        self,
-        model: EquilibriumModel,
-        structure: EquilibriumMeshStructure,
-    ) -> None:
-        """
-        Bind the goal to a mesh, caching its face indices.
-
-        Parameters
-        ----------
-        model :
-            The equilibrium model.
-        structure :
-            The mesh structure whose face indices are cached.
-        """
-        super().init(model, structure)
-        self.faces = structure.faces_indexed
-
     def prediction(
         self,
         eq_state: EquilibriumState,
+        structure: EquilibriumMeshStructure,
         index: Int[Array, "1"],
     ) -> Float[Array, ""]:
         """
@@ -158,6 +106,8 @@ class MeshFacesAreaEqualizeGoal(ScalarGoal, MeshGoal):
         ----------
         eq_state :
             The equilibrium state to read vertex coordinates from.
+        structure :
+            The mesh structure providing the face indices.
         index :
             The sentinel index, unused.
 
@@ -194,6 +144,6 @@ class MeshFacesAreaEqualizeGoal(ScalarGoal, MeshGoal):
             return area_polygon(fxyz)
 
         faces_area = vmap(face_area, in_axes=(0, None))
-        areas = faces_area(self.faces, eq_state.xyz)
+        areas = faces_area(structure.faces_indexed, eq_state.xyz)
 
         return jnp.var(areas) / jnp.mean(areas)

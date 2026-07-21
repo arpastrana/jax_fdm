@@ -4,6 +4,7 @@ from jaxtyping import Float
 from jaxtyping import Int
 
 from jax_fdm.equilibrium import EquilibriumState
+from jax_fdm.equilibrium import EquilibriumStructure
 from jax_fdm.goals.edge.edge import EdgeGoal
 from jax_fdm.goals.goal import ScalarGoal
 
@@ -21,6 +22,7 @@ class EdgeLengthGoal(ScalarGoal, EdgeGoal):
     def prediction(
         self,
         eq_state: EquilibriumState,
+        structure: EquilibriumStructure,
         index: Int[Array, ""],
     ) -> Float[Array, "1"]:
         """
@@ -30,6 +32,8 @@ class EdgeLengthGoal(ScalarGoal, EdgeGoal):
         ----------
         eq_state :
             The equilibrium state to read the length from.
+        structure :
+            The structure the goal is evaluated against; unused.
         index :
             The index of the edge.
 
@@ -59,6 +63,7 @@ class EdgesLengthEqualGoal(ScalarGoal, EdgeGoal):
     def prediction(
         self,
         eq_state: EquilibriumState,
+        structure: EquilibriumStructure,
         index: Int[Array, "elements"],
     ) -> Float[Array, ""]:
         """
@@ -68,6 +73,8 @@ class EdgesLengthEqualGoal(ScalarGoal, EdgeGoal):
         ----------
         eq_state :
             The equilibrium state to read the lengths from.
+        structure :
+            The structure the goal is evaluated against; unused.
         index :
             The indices of the edges.
 

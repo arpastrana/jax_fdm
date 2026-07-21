@@ -3,6 +3,7 @@ from jaxtyping import Float
 from jaxtyping import Int
 
 from jax_fdm.equilibrium import EquilibriumState
+from jax_fdm.equilibrium import EquilibriumStructure
 from jax_fdm.geometry import normalize_vector
 from jax_fdm.goals.edge.edge import EdgeGoal
 from jax_fdm.goals.goal import VectorGoal
@@ -23,6 +24,7 @@ class EdgeDirectionGoal(VectorGoal, EdgeGoal):
     def prediction(
         self,
         eq_state: EquilibriumState,
+        structure: EquilibriumStructure,
         index: Int[Array, ""],
     ) -> Float[Array, "3"]:
         """
@@ -32,6 +34,8 @@ class EdgeDirectionGoal(VectorGoal, EdgeGoal):
         ----------
         eq_state :
             The equilibrium state to read the edge vector from.
+        structure :
+            The structure the goal is evaluated against; unused.
         index :
             The index of the edge.
 
