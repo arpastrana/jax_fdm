@@ -10,6 +10,7 @@ import matplotlib
 
 matplotlib.use("Agg")
 
+import matplotlib.pyplot as plt  # noqa: E402
 import pytest  # noqa: E402
 
 compas_plotter = pytest.importorskip("compas_plotter")
@@ -70,7 +71,12 @@ def mesh():
 
 @pytest.fixture
 def plotter():
-    return Plotter()
+    plotter = Plotter()
+    yield plotter
+    # pyplot retains every figure until closed; close the one this plotter
+    # created (if any) so the suite does not trip matplotlib's open-figure warning
+    if plotter._axes is not None:
+        plt.close(plotter.figure)
 
 
 # ==========================================================================
