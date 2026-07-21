@@ -248,14 +248,12 @@ class Goal:
         Notes
         -----
         Must be called once before the goal is evaluated; it populates the index
-        that `prediction` reads. For an aggregate goal, the index is kept
-        two-dimensional so the whole key list is fed to a single `prediction`
-        call rather than vmapped per element.
+        that `prediction` reads. The index is always one-dimensional, one entry
+        per element. `__call__` vmaps `prediction` over it: a per-element goal
+        maps each entry, while an aggregate goal maps its whole index as a
+        single batch-of-one row.
         """
-        index = self.index_from_structure(structure)
-        if self.is_aggregate:
-            index = np.atleast_2d(index)
-        self.index = index
+        self.index = self.index_from_structure(structure)
 
     def __call__(self, eqstate: EquilibriumState) -> GoalState:
         """
@@ -279,8 +277,12 @@ class Goal:
             or if the goal and prediction shapes disagree, typically because a
             scalar goal's prediction returned more than one value per element.
         """
-        # self.index is an index array built in init and mapped to jax scalars by vmap
-        prediction = vmap(self.prediction, in_axes=(None, 0))(eqstate, self.index)  # pyright: ignore[reportArgumentType]
+        # self.index is a 1-D numpy index array, one entry per element. vmap
+        # maps its leading axis: a per-element goal maps each entry to a jax
+        # scalar, while an aggregate goal maps its whole index as a single
+        # batch-of-one row, mirrored by the leading axis its target carries.
+        index = self.index[jnp.newaxis, :] if self.is_aggregate else self.index
+        prediction = vmap(self.prediction, in_axes=(None, 0))(eqstate, index)  # pyright: ignore[reportArgumentType]
 
         if self.target.shape[0] != prediction.shape[0]:
             raise ValueError(
