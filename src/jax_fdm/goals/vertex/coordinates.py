@@ -3,6 +3,12 @@ from jax_fdm.goals.node.coordinates import NodeYCoordinateGoal
 from jax_fdm.goals.node.coordinates import NodeZCoordinateGoal
 from jax_fdm.goals.vertex.vertex import VertexGoal
 
+__all__ = [
+    "VertexXCoordinateGoal",
+    "VertexYCoordinateGoal",
+    "VertexZCoordinateGoal",
+]
+
 
 class VertexXCoordinateGoal(VertexGoal, NodeXCoordinateGoal):
     """

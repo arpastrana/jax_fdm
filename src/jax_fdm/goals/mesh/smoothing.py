@@ -10,6 +10,11 @@ from jax_fdm.equilibrium import EquilibriumState
 from jax_fdm.goals.goal import ScalarGoal
 from jax_fdm.goals.mesh.mesh import MeshGoal
 
+__all__ = [
+    "MeshSmoothGoal",
+    "vertices_nbrs_fairness",
+]
+
 
 class MeshSmoothGoal(ScalarGoal, MeshGoal):
     """

@@ -5,6 +5,8 @@ from jaxtyping import Int
 from jax_fdm.constraints.edge.edge import EdgeConstraint
 from jax_fdm.equilibrium import EquilibriumState
 
+__all__ = ["EdgeForceConstraint"]
+
 
 class EdgeForceConstraint(EdgeConstraint):
     """

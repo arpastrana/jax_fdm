@@ -6,6 +6,12 @@ from jax_fdm.equilibrium import EquilibriumState
 from jax_fdm.goals.goal import ScalarGoal
 from jax_fdm.goals.node.node import NodeGoal
 
+__all__ = [
+    "NodeXCoordinateGoal",
+    "NodeYCoordinateGoal",
+    "NodeZCoordinateGoal",
+]
+
 
 class NodeXCoordinateGoal(ScalarGoal, NodeGoal):
     """

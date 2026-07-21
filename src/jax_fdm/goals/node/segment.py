@@ -4,6 +4,8 @@ from jaxtyping import Float
 from jax_fdm.geometry import closest_point_on_segment
 from jax_fdm.goals.node.line import NodeLineGoal
 
+__all__ = ["NodeSegmentGoal"]
+
 
 class NodeSegmentGoal(NodeLineGoal):
     """

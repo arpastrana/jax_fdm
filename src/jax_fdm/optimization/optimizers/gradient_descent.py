@@ -13,6 +13,11 @@ from jax_fdm.optimization.optimizers.optimizer import OptProblem
 # Gradient descent
 # ==========================================================================
 
+__all__ = [
+    "GradientDescent",
+    "gradient_descent",
+]
+
 
 class GradientDescent(Optimizer):
     """

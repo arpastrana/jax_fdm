@@ -30,6 +30,8 @@ from jax_fdm.parameters.parameters import NodeSupportZParameter
 from jax_fdm.parameters.parameters import Parameter
 from jax_fdm.parameters.parameters import ParameterGroup
 
+__all__ = ["ParameterManager"]
+
 
 class ParameterManager:
     """

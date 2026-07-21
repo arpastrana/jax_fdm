@@ -1,9 +1,11 @@
-from .datastructure import FDDatastructure
-from .mesh import FDMesh
-from .network import FDNetwork
+from types import ModuleType as _ModuleType
+
+from .datastructure import *  # noqa F403
+from .mesh import *  # noqa F403
+from .network import *  # noqa F403
 
 __all__ = [
-    "FDDatastructure",
-    "FDNetwork",
-    "FDMesh",
+    name
+    for name, value in vars().items()
+    if not name.startswith("_") and not isinstance(value, _ModuleType)
 ]

@@ -1,6 +1,8 @@
 from jax_fdm.equilibrium import EquilibriumStructure
 from jax_fdm.goals.goal import Goal
 
+__all__ = ["EdgeGoal"]
+
 
 class EdgeGoal(Goal):
     """

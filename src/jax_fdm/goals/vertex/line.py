@@ -1,6 +1,8 @@
 from jax_fdm.goals.node.line import NodeLineGoal
 from jax_fdm.goals.vertex.vertex import VertexGoal
 
+__all__ = ["VertexLineGoal"]
+
 
 class VertexLineGoal(VertexGoal, NodeLineGoal):
     """

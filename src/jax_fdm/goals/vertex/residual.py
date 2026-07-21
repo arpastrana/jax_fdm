@@ -6,6 +6,13 @@ from jax_fdm.goals.node.residual import NodeResidualPlaneGoal
 from jax_fdm.goals.node.residual import NodeResidualVectorGoal
 from jax_fdm.goals.vertex.vertex import VertexGoal
 
+__all__ = [
+    "VertexResidualDirectionGoal",
+    "VertexResidualForceGoal",
+    "VertexResidualPlaneGoal",
+    "VertexResidualVectorGoal",
+]
+
 
 class VertexResidualForceGoal(VertexGoal, NodeResidualForceGoal):
     """

@@ -21,6 +21,13 @@ from jax_fdm.equilibrium.structures.meshes import MeshSparse
 # Structure
 # ==========================================================================
 
+__all__ = [
+    "EquilibriumMeshStructure",
+    "EquilibriumMeshStructureSparse",
+    "EquilibriumStructure",
+    "EquilibriumStructureSparse",
+]
+
 
 class EquilibriumStructure(Graph):
     """

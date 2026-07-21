@@ -12,6 +12,13 @@ from jax_fdm.goals.goal import ScalarGoal
 from jax_fdm.goals.goal import VectorGoal
 from jax_fdm.goals.node.node import NodeGoal
 
+__all__ = [
+    "NodeResidualDirectionGoal",
+    "NodeResidualForceGoal",
+    "NodeResidualPlaneGoal",
+    "NodeResidualVectorGoal",
+]
+
 
 class NodeResidualForceGoal(ScalarGoal, NodeGoal):
     """

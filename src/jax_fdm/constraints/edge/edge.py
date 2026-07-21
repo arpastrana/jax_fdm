@@ -1,6 +1,8 @@
 from jax_fdm.constraints.constraint import Constraint
 from jax_fdm.equilibrium import EquilibriumStructure
 
+__all__ = ["EdgeConstraint"]
+
 
 class EdgeConstraint(Constraint):
     """

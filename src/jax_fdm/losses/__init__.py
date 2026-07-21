@@ -1,27 +1,11 @@
-from .errors import AbsoluteError
-from .errors import Error
-from .errors import LogMaxError
-from .errors import MeanAbsoluteError
-from .errors import MeanPredictionError
-from .errors import MeanSquaredError
-from .errors import PredictionError
-from .errors import RootMeanSquaredError
-from .errors import SquaredError
-from .loss import Loss
-from .regularizers import L2Regularizer
-from .regularizers import Regularizer
+from types import ModuleType as _ModuleType
+
+from .errors import *  # noqa F403
+from .loss import *  # noqa F403
+from .regularizers import *  # noqa F403
 
 __all__ = [
-    "Error",
-    "SquaredError",
-    "MeanSquaredError",
-    "RootMeanSquaredError",
-    "PredictionError",
-    "MeanPredictionError",
-    "AbsoluteError",
-    "MeanAbsoluteError",
-    "LogMaxError",
-    "Regularizer",
-    "L2Regularizer",
-    "Loss",
+    name
+    for name, value in vars().items()
+    if not name.startswith("_") and not isinstance(value, _ModuleType)
 ]

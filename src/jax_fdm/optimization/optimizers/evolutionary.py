@@ -16,6 +16,11 @@ from jax_fdm.optimization.optimizers.optimizer import OptProblem
 # Optimizers
 # ==========================================================================
 
+__all__ = [
+    "DifferentialEvolution",
+    "DualAnnealing",
+]
+
 
 class DifferentialEvolution(GradientFreeOptimizer):
     """

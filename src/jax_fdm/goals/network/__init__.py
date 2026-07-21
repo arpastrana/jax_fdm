@@ -1,13 +1,12 @@
-from .laplacian import NetworkXYZLaplacianGoal
-from .loadpath import NetworkLoadPathGoal
-from .network import NetworkGoal
-from .smoothing import NetworkSmoothGoal
-from .smoothing import nodes_nbrs_fairness
+from types import ModuleType as _ModuleType
+
+from .laplacian import *  # noqa F403
+from .loadpath import *  # noqa F403
+from .network import *  # noqa F403
+from .smoothing import *  # noqa F403
 
 __all__ = [
-    "NetworkGoal",
-    "NetworkLoadPathGoal",
-    "NetworkXYZLaplacianGoal",
-    "NetworkSmoothGoal",
-    "nodes_nbrs_fairness",
+    name
+    for name, value in vars().items()
+    if not name.startswith("_") and not isinstance(value, _ModuleType)
 ]

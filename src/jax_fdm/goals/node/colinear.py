@@ -8,6 +8,11 @@ from jax_fdm.geometry import curvature_points
 from jax_fdm.goals.goal import ScalarGoal
 from jax_fdm.goals.node.node import NodeGoal
 
+__all__ = [
+    "NodesColinearGoal",
+    "NodesCurvatureGoal",
+]
+
 
 class NodesColinearGoal(ScalarGoal, NodeGoal):
     """

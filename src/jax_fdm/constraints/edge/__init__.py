@@ -1,11 +1,12 @@
-from .angle import EdgeAngleConstraint
-from .edge import EdgeConstraint
-from .force import EdgeForceConstraint
-from .length import EdgeLengthConstraint
+from types import ModuleType as _ModuleType
+
+from .angle import *  # noqa F403
+from .edge import *  # noqa F403
+from .force import *  # noqa F403
+from .length import *  # noqa F403
 
 __all__ = [
-    "EdgeConstraint",
-    "EdgeForceConstraint",
-    "EdgeLengthConstraint",
-    "EdgeAngleConstraint",
+    name
+    for name, value in vars().items()
+    if not name.startswith("_") and not isinstance(value, _ModuleType)
 ]

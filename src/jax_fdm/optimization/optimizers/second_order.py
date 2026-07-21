@@ -9,6 +9,8 @@ from jax_fdm.optimization.optimizers.optimizer import Optimizer
 # Second-order optimizer
 # ==========================================================================
 
+__all__ = ["SecondOrderOptimizer"]
+
 
 class SecondOrderOptimizer(Optimizer):
     """

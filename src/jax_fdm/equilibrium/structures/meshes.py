@@ -17,6 +17,14 @@ from jax_fdm.equilibrium.structures.graphs import GraphSparse
 # Mesh
 # ==========================================================================
 
+__all__ = [
+    "Mesh",
+    "MeshSparse",
+    "face_matrix",
+    "mesh_connectivity_edges_faces",
+    "mesh_edges_faces",
+]
+
 
 class Mesh(Graph):
     """

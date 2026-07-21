@@ -8,6 +8,8 @@ from optimistix import RecursiveCheckpointAdjoint
 
 from jax_fdm.equilibrium.solvers.types import SolverIterParams
 
+__all__ = ["solver_optimistix"]
+
 
 def solver_optimistix(
     solver_cls: Callable,

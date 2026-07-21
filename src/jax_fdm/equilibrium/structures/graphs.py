@@ -16,6 +16,13 @@ from jax_fdm import DTYPE_NP
 # Graph
 # ==========================================================================
 
+__all__ = [
+    "Graph",
+    "GraphSparse",
+    "adjacency_matrix",
+    "connectivity_matrix",
+]
+
 
 class Graph(eqx.Module):
     """

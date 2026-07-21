@@ -1,19 +1,14 @@
-from .angle import EdgeAngleGoal
-from .direction import EdgeDirectionGoal
-from .edge import EdgeGoal
-from .force import EdgeForceGoal
-from .force import EdgesForceEqualGoal
-from .length import EdgeLengthGoal
-from .length import EdgesLengthEqualGoal
-from .loadpath import EdgeLoadPathGoal
+from types import ModuleType as _ModuleType
+
+from .angle import *  # noqa F403
+from .direction import *  # noqa F403
+from .edge import *  # noqa F403
+from .force import *  # noqa F403
+from .length import *  # noqa F403
+from .loadpath import *  # noqa F403
 
 __all__ = [
-    "EdgeGoal",
-    "EdgeLengthGoal",
-    "EdgesLengthEqualGoal",
-    "EdgeForceGoal",
-    "EdgesForceEqualGoal",
-    "EdgeLoadPathGoal",
-    "EdgeDirectionGoal",
-    "EdgeAngleGoal",
+    name
+    for name, value in vars().items()
+    if not name.startswith("_") and not isinstance(value, _ModuleType)
 ]

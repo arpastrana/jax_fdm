@@ -2,6 +2,8 @@ from jax_fdm.equilibrium import EquilibriumMeshStructure
 from jax_fdm.equilibrium import EquilibriumStructure
 from jax_fdm.goals.goal import Goal
 
+__all__ = ["VertexGoal"]
+
 
 class VertexGoal(Goal):
     """

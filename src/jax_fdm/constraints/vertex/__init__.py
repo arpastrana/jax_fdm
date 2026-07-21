@@ -1,13 +1,11 @@
-from .coordinates import VertexXCoordinateConstraint
-from .coordinates import VertexYCoordinateConstraint
-from .coordinates import VertexZCoordinateConstraint
-from .curvature import VertexCurvatureConstraint
-from .vertex import VertexConstraint
+from types import ModuleType as _ModuleType
+
+from .coordinates import *  # noqa F403
+from .curvature import *  # noqa F403
+from .vertex import *  # noqa F403
 
 __all__ = [
-    "VertexConstraint",
-    "VertexXCoordinateConstraint",
-    "VertexYCoordinateConstraint",
-    "VertexZCoordinateConstraint",
-    "VertexCurvatureConstraint",
+    name
+    for name, value in vars().items()
+    if not name.startswith("_") and not isinstance(value, _ModuleType)
 ]

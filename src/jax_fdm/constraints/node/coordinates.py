@@ -5,6 +5,12 @@ from jaxtyping import Int
 from jax_fdm.constraints.node.node import NodeConstraint
 from jax_fdm.equilibrium import EquilibriumState
 
+__all__ = [
+    "NodeXCoordinateConstraint",
+    "NodeYCoordinateConstraint",
+    "NodeZCoordinateConstraint",
+]
+
 
 class NodeXCoordinateConstraint(NodeConstraint):
     """

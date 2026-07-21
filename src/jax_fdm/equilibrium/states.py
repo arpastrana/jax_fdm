@@ -13,6 +13,12 @@ from jax_fdm.datastructures import FDNetwork
 # Equilibrium state
 # ==========================================================================
 
+__all__ = [
+    "EquilibriumParametersState",
+    "EquilibriumState",
+    "LoadState",
+]
+
 
 class EquilibriumState(NamedTuple):
     """

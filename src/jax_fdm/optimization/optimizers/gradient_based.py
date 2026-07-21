@@ -13,6 +13,19 @@ from jax_fdm.optimization.optimizers.second_order import SecondOrderOptimizer
 # Optimizers
 # ==========================================================================
 
+__all__ = [
+    "BFGS",
+    "LBFGSB",
+    "LBFGSBS",
+    "SLSQP",
+    "NewtonCG",
+    "TruncatedNewton",
+    "TrustRegionConstrained",
+    "TrustRegionExact",
+    "TrustRegionKrylov",
+    "TrustRegionNewton",
+]
+
 
 class SLSQP(ConstrainedOptimizer):
     """

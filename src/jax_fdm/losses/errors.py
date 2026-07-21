@@ -12,6 +12,18 @@ from jax_fdm.goals import GoalState
 # Error
 # ==========================================================================
 
+__all__ = [
+    "AbsoluteError",
+    "Error",
+    "LogMaxError",
+    "MeanAbsoluteError",
+    "MeanPredictionError",
+    "MeanSquaredError",
+    "PredictionError",
+    "RootMeanSquaredError",
+    "SquaredError",
+]
+
 
 class Error:
     """

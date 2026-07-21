@@ -16,6 +16,13 @@ from jax_fdm.equilibrium.solvers.types import SolverIterParams
 # JAXOPT solvers
 # ==========================================================================
 
+__all__ = [
+    "is_solver_leastsquares",
+    "solver_dogleg",
+    "solver_gauss_newton",
+    "solver_levenberg_marquardt",
+]
+
 
 def solver_gauss_newton(
     fn: Callable,

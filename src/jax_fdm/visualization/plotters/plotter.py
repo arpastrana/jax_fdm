@@ -2,6 +2,8 @@ from typing import Any
 
 from compas_plotter import Plotter as CompasPlotter
 
+__all__ = ["Plotter"]
+
 
 class Plotter(CompasPlotter):
     """

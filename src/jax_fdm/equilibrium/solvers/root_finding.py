@@ -14,6 +14,11 @@ from jax_fdm.equilibrium.solvers.types import SolverIterParams
 # Optimistix solvers
 # ==========================================================================
 
+__all__ = [
+    "is_solver_root_finding",
+    "solver_newton",
+]
+
 
 def solver_newton(
     fn: Callable,

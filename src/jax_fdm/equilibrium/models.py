@@ -37,6 +37,12 @@ StiffnessMatrix = (
 # Equilibrium model
 # ==========================================================================
 
+__all__ = [
+    "EquilibriumModel",
+    "EquilibriumModelSparse",
+    "StiffnessMatrix",
+]
+
 
 class EquilibriumModel:
     """

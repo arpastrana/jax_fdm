@@ -6,6 +6,8 @@ from jax_fdm.equilibrium import EquilibriumState
 from jax_fdm.goals.goal import VectorGoal
 from jax_fdm.goals.node.node import NodeGoal
 
+__all__ = ["NodePointGoal"]
+
 
 class NodePointGoal(VectorGoal, NodeGoal):
     """

@@ -1,39 +1,13 @@
-from .constraint import Constraint
-from .edge import EdgeAngleConstraint
-from .edge import EdgeConstraint
-from .edge import EdgeForceConstraint
-from .edge import EdgeLengthConstraint
-from .network import NetworkConstraint
-from .network import NetworkEdgesForceConstraint
-from .network import NetworkEdgesLengthConstraint
-from .node import NodeConstraint
-from .node import NodeCurvatureConstraint
-from .node import NodeXCoordinateConstraint
-from .node import NodeYCoordinateConstraint
-from .node import NodeZCoordinateConstraint
-from .vertex import VertexConstraint
-from .vertex import VertexCurvatureConstraint
-from .vertex import VertexXCoordinateConstraint
-from .vertex import VertexYCoordinateConstraint
-from .vertex import VertexZCoordinateConstraint
+from types import ModuleType as _ModuleType
+
+from .constraint import *  # noqa F403
+from .edge import *  # noqa F403
+from .network import *  # noqa F403
+from .node import *  # noqa F403
+from .vertex import *  # noqa F403
 
 __all__ = [
-    "Constraint",
-    "NodeConstraint",
-    "NodeXCoordinateConstraint",
-    "NodeYCoordinateConstraint",
-    "NodeZCoordinateConstraint",
-    "NodeCurvatureConstraint",
-    "EdgeConstraint",
-    "EdgeForceConstraint",
-    "EdgeLengthConstraint",
-    "EdgeAngleConstraint",
-    "NetworkConstraint",
-    "NetworkEdgesLengthConstraint",
-    "NetworkEdgesForceConstraint",
-    "VertexConstraint",
-    "VertexXCoordinateConstraint",
-    "VertexYCoordinateConstraint",
-    "VertexZCoordinateConstraint",
-    "VertexCurvatureConstraint",
+    name
+    for name, value in vars().items()
+    if not name.startswith("_") and not isinstance(value, _ModuleType)
 ]

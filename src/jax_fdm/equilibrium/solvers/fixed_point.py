@@ -29,6 +29,19 @@ from jax_fdm.equilibrium.sparse import splu_solve_cpu as splu_solve
 # Iterative solvers - JAXOPT
 # ==========================================================================
 
+__all__ = [
+    "fixed_point_bwd_adjoint",
+    "fixed_point_bwd_adjoint_general",
+    "fixed_point_bwd_fixedpoint",
+    "fixed_point_bwd_materialize",
+    "fixed_point_fwd",
+    "is_solver_fixedpoint",
+    "solver_anderson",
+    "solver_fixedpoint",
+    "solver_fixedpoint_implicit",
+    "solver_forward",
+]
+
 
 def solver_anderson(
     f: Callable,

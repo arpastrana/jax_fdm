@@ -1,31 +1,16 @@
-from .colinear import NodesColinearGoal
-from .colinear import NodesCurvatureGoal
-from .coordinates import NodeXCoordinateGoal
-from .coordinates import NodeYCoordinateGoal
-from .coordinates import NodeZCoordinateGoal
-from .line import NodeLineGoal
-from .node import NodeGoal
-from .plane import NodePlaneGoal
-from .point import NodePointGoal
-from .residual import NodeResidualDirectionGoal
-from .residual import NodeResidualForceGoal
-from .residual import NodeResidualPlaneGoal
-from .residual import NodeResidualVectorGoal
-from .segment import NodeSegmentGoal
+from types import ModuleType as _ModuleType
+
+from .colinear import *  # noqa F403
+from .coordinates import *  # noqa F403
+from .line import *  # noqa F403
+from .node import *  # noqa F403
+from .plane import *  # noqa F403
+from .point import *  # noqa F403
+from .residual import *  # noqa F403
+from .segment import *  # noqa F403
 
 __all__ = [
-    "NodeGoal",
-    "NodePointGoal",
-    "NodeXCoordinateGoal",
-    "NodeYCoordinateGoal",
-    "NodeZCoordinateGoal",
-    "NodeLineGoal",
-    "NodeSegmentGoal",
-    "NodePlaneGoal",
-    "NodeResidualForceGoal",
-    "NodeResidualVectorGoal",
-    "NodeResidualDirectionGoal",
-    "NodeResidualPlaneGoal",
-    "NodesColinearGoal",
-    "NodesCurvatureGoal",
+    name
+    for name, value in vars().items()
+    if not name.startswith("_") and not isinstance(value, _ModuleType)
 ]

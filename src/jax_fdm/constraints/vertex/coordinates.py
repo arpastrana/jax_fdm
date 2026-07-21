@@ -3,6 +3,12 @@ from jax_fdm.constraints.node.coordinates import NodeYCoordinateConstraint
 from jax_fdm.constraints.node.coordinates import NodeZCoordinateConstraint
 from jax_fdm.constraints.vertex.vertex import VertexConstraint
 
+__all__ = [
+    "VertexXCoordinateConstraint",
+    "VertexYCoordinateConstraint",
+    "VertexZCoordinateConstraint",
+]
+
 
 class VertexXCoordinateConstraint(VertexConstraint, NodeXCoordinateConstraint):
     """

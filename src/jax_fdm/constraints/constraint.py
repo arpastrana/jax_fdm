@@ -12,6 +12,8 @@ from jax_fdm.equilibrium import EquilibriumParametersState
 from jax_fdm.equilibrium import EquilibriumState
 from jax_fdm.equilibrium import EquilibriumStructure
 
+__all__ = ["Constraint"]
+
 
 class Constraint:
     """

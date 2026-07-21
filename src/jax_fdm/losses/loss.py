@@ -14,6 +14,8 @@ from jax_fdm.losses.regularizers import Regularizer
 # Loss
 # ==========================================================================
 
+__all__ = ["Loss"]
+
 
 class Loss:
     """

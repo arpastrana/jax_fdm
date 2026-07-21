@@ -7,6 +7,11 @@ from jax_fdm.equilibrium import EquilibriumState
 from jax_fdm.goals.edge.edge import EdgeGoal
 from jax_fdm.goals.goal import ScalarGoal
 
+__all__ = [
+    "EdgeForceGoal",
+    "EdgesForceEqualGoal",
+]
+
 
 class EdgeForceGoal(ScalarGoal, EdgeGoal):
     """
