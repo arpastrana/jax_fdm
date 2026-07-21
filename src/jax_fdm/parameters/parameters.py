@@ -1,3 +1,5 @@
+from collections.abc import Sequence
+
 from jax.numpy import inf
 
 from jax_fdm.datastructures import FDMesh
@@ -33,12 +35,12 @@ class Parameter:
     # the datastructure attribute name; every concrete subclass sets one
     attr_name: str
     key: (
-        int | tuple[int, int] | list[int] | list[tuple[int, int]]
+        int | tuple[int, int] | Sequence[int] | Sequence[tuple[int, int]]
     )  # narrowed per concrete subclass
 
     def __init__(
         self,
-        key: int | tuple[int, int] | list[int] | list[tuple[int, int]],
+        key: int | tuple[int, int] | Sequence[int] | Sequence[tuple[int, int]],
         bound_low: float | None = None,
         bound_up: float | None = None,
     ) -> None:
@@ -198,7 +200,7 @@ class ParameterGroup(Parameter):
 
     def __init__(
         self,
-        key: list[int] | list[tuple[int, int]],
+        key: Sequence[int] | Sequence[tuple[int, int]],
         bound_low: float | None = None,
         bound_up: float | None = None,
     ) -> None:

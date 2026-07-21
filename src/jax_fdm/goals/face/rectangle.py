@@ -7,8 +7,8 @@ from jax_fdm.equilibrium import EquilibriumMeshStructure
 from jax_fdm.equilibrium import EquilibriumModel
 from jax_fdm.equilibrium import EquilibriumState
 from jax_fdm.geometry import cosines_angles_polygon
-from jax_fdm.goals import ScalarGoal
-from jax_fdm.goals.face import FaceGoal
+from jax_fdm.goals.face.face import FaceGoal
+from jax_fdm.goals.goal import ScalarGoal
 from jax_fdm.goals.goal import TargetLike
 
 __all__ = ["FaceRectangularGoal"]

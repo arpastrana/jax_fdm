@@ -2,7 +2,7 @@ from jaxtyping import Array
 from jaxtyping import Float
 
 from jax_fdm.geometry import closest_point_on_segment
-from jax_fdm.goals.node import NodeLineGoal
+from jax_fdm.goals.node.line import NodeLineGoal
 
 
 class NodeSegmentGoal(NodeLineGoal):

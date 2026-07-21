@@ -6,8 +6,8 @@ from jaxtyping import Float
 from scipy.optimize import OptimizeResult
 from scipy.optimize import approx_fprime
 
-from jax_fdm.optimization.optimizers import Optimizer
-from jax_fdm.optimization.optimizers import OptProblem
+from jax_fdm.optimization.optimizers.optimizer import Optimizer
+from jax_fdm.optimization.optimizers.optimizer import OptProblem
 
 # ==========================================================================
 # Gradient descent

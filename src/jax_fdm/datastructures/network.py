@@ -9,7 +9,7 @@ from typing import overload
 
 from compas.datastructures import Mesh
 from compas.datastructures import Network
-from jax_fdm.datastructures import FDDatastructure
+from jax_fdm.datastructures.datastructure import FDDatastructure
 from jax_fdm.datastructures.types import FDNetworkType
 
 __all__ = ["FDNetwork"]
@@ -28,9 +28,7 @@ class FDNetwork(FDNetworkType, Network, FDDatastructure):
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
 
-        self.update_default_edge_attributes(
-            {"q": 0.0, "length": 0.0, "force": 0.0, "px": 0.0, "py": 0.0, "pz": 0.0},
-        )
+        self.update_default_edge_attributes(self.edge_attributes_default)
 
         self.update_default_node_attributes(
             {

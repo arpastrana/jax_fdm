@@ -4,7 +4,7 @@ from jaxtyping import Float
 
 from jax_fdm.geometry import closest_point_on_line
 from jax_fdm.goals.goal import TargetLike
-from jax_fdm.goals.node import NodePointGoal
+from jax_fdm.goals.node.point import NodePointGoal
 
 __all__ = ["NodeLineGoal"]
 

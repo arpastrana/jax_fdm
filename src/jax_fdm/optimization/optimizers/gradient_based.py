@@ -5,9 +5,9 @@ from typing import Any
 
 import numpy as np
 
-from jax_fdm.optimization.optimizers import ConstrainedOptimizer
-from jax_fdm.optimization.optimizers import Optimizer
-from jax_fdm.optimization.optimizers import SecondOrderOptimizer
+from jax_fdm.optimization.optimizers.constrained import ConstrainedOptimizer
+from jax_fdm.optimization.optimizers.optimizer import Optimizer
+from jax_fdm.optimization.optimizers.second_order import SecondOrderOptimizer
 
 # ==========================================================================
 # Optimizers

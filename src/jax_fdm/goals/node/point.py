@@ -3,8 +3,8 @@ from jaxtyping import Float
 from jaxtyping import Int
 
 from jax_fdm.equilibrium import EquilibriumState
-from jax_fdm.goals import VectorGoal
-from jax_fdm.goals.node import NodeGoal
+from jax_fdm.goals.goal import VectorGoal
+from jax_fdm.goals.node.node import NodeGoal
 
 
 class NodePointGoal(VectorGoal, NodeGoal):

@@ -15,20 +15,20 @@ from jax_fdm.datastructures import FDMesh
 from jax_fdm.datastructures import FDNetwork
 from jax_fdm.equilibrium import EquilibriumModel
 from jax_fdm.equilibrium import EquilibriumStructure
-from jax_fdm.parameters import EdgeForceDensityParameter
-from jax_fdm.parameters import EdgeParameter
-from jax_fdm.parameters import NodeLoadParameter
-from jax_fdm.parameters import NodeLoadXParameter
-from jax_fdm.parameters import NodeLoadYParameter
-from jax_fdm.parameters import NodeLoadZParameter
-from jax_fdm.parameters import NodeSupportParameter
-from jax_fdm.parameters import NodeSupportXParameter
-from jax_fdm.parameters import NodeSupportYParameter
-from jax_fdm.parameters import NodeSupportZParameter
-from jax_fdm.parameters import Parameter
-from jax_fdm.parameters import ParameterGroup
-from jax_fdm.parameters import combine_parameters
-from jax_fdm.parameters import split_parameters
+from jax_fdm.parameters.helpers import combine_parameters
+from jax_fdm.parameters.helpers import split_parameters
+from jax_fdm.parameters.parameters import EdgeForceDensityParameter
+from jax_fdm.parameters.parameters import EdgeParameter
+from jax_fdm.parameters.parameters import NodeLoadParameter
+from jax_fdm.parameters.parameters import NodeLoadXParameter
+from jax_fdm.parameters.parameters import NodeLoadYParameter
+from jax_fdm.parameters.parameters import NodeLoadZParameter
+from jax_fdm.parameters.parameters import NodeSupportParameter
+from jax_fdm.parameters.parameters import NodeSupportXParameter
+from jax_fdm.parameters.parameters import NodeSupportYParameter
+from jax_fdm.parameters.parameters import NodeSupportZParameter
+from jax_fdm.parameters.parameters import Parameter
+from jax_fdm.parameters.parameters import ParameterGroup
 
 
 class ParameterManager:

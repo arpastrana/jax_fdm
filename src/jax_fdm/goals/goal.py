@@ -13,7 +13,7 @@ from jax_fdm import DTYPE_JAX
 from jax_fdm.equilibrium import EquilibriumModel
 from jax_fdm.equilibrium import EquilibriumState
 from jax_fdm.equilibrium import EquilibriumStructure
-from jax_fdm.goals import GoalState
+from jax_fdm.goals.state import GoalState
 
 __all__ = ["Goal", "ScalarGoal", "VectorGoal"]
 

@@ -9,9 +9,9 @@ from jax_fdm.equilibrium import EquilibriumModel
 from jax_fdm.equilibrium import EquilibriumState
 from jax_fdm.geometry import planarity_polygon
 from jax_fdm.geometry import planarity_triangle
-from jax_fdm.goals import ScalarGoal
+from jax_fdm.goals.goal import ScalarGoal
 from jax_fdm.goals.goal import TargetLike
-from jax_fdm.goals.mesh import MeshGoal
+from jax_fdm.goals.mesh.mesh import MeshGoal
 
 __all__ = ["MeshPlanarityGoal", "face_xyz", "face_planarity", "faces_planarity"]
 

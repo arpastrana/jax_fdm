@@ -13,8 +13,8 @@ from scipy.optimize import NonlinearConstraint
 from jax_fdm.equilibrium import EquilibriumModel
 from jax_fdm.equilibrium import EquilibriumParametersState
 from jax_fdm.equilibrium import EquilibriumStructure
-from jax_fdm.optimization import collect_constraints
-from jax_fdm.optimization.optimizers import Optimizer
+from jax_fdm.optimization.collections import collect_constraints
+from jax_fdm.optimization.optimizers.optimizer import Optimizer
 
 if TYPE_CHECKING:
     # Annotation-only import: pulling jax_fdm.constraints at runtime would form a

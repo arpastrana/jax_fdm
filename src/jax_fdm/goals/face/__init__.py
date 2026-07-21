@@ -1,5 +1,7 @@
-from .face import *  # noqa F403
-from .rectangle import *  # noqa F403
+from .face import FaceGoal
+from .rectangle import FaceRectangularGoal
 
-
-__all__ = [name for name in dir() if not name.startswith("_")]
+__all__ = [
+    "FaceGoal",
+    "FaceRectangularGoal",
+]

@@ -13,9 +13,9 @@ from jax_fdm.equilibrium import EquilibriumState
 from jax_fdm.geometry import angle_vectors
 from jax_fdm.geometry import normal_polygon
 from jax_fdm.geometry import normalize_vector
-from jax_fdm.goals import ScalarGoal
+from jax_fdm.goals.goal import ScalarGoal
 from jax_fdm.goals.goal import TargetLike
-from jax_fdm.goals.vertex import VertexGoal
+from jax_fdm.goals.vertex.vertex import VertexGoal
 
 __all__ = ["VertexNormalAngleGoal"]
 

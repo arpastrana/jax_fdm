@@ -7,7 +7,7 @@ from jaxtyping import Int
 
 from jax_fdm.equilibrium import EquilibriumState
 from jax_fdm.goals.goal import TargetLike
-from jax_fdm.goals.vertex import VertexNormalAngleGoal
+from jax_fdm.goals.vertex.normal import VertexNormalAngleGoal
 
 __all__ = ["VertexTangentAngleGoal"]
 

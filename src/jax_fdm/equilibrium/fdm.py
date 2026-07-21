@@ -8,14 +8,14 @@ import numpy as np
 from jax_fdm import DTYPE_JAX
 from jax_fdm.datastructures import FDMesh
 from jax_fdm.datastructures import FDNetwork
-from jax_fdm.equilibrium import EquilibriumMeshStructure
-from jax_fdm.equilibrium import EquilibriumMeshStructureSparse
-from jax_fdm.equilibrium import EquilibriumModel
-from jax_fdm.equilibrium import EquilibriumModelSparse
-from jax_fdm.equilibrium import EquilibriumParametersState
-from jax_fdm.equilibrium import EquilibriumState
-from jax_fdm.equilibrium import EquilibriumStructure
-from jax_fdm.equilibrium import EquilibriumStructureSparse
+from jax_fdm.equilibrium.models import EquilibriumModel
+from jax_fdm.equilibrium.models import EquilibriumModelSparse
+from jax_fdm.equilibrium.states import EquilibriumParametersState
+from jax_fdm.equilibrium.states import EquilibriumState
+from jax_fdm.equilibrium.structures import EquilibriumMeshStructure
+from jax_fdm.equilibrium.structures import EquilibriumMeshStructureSparse
+from jax_fdm.equilibrium.structures import EquilibriumStructure
+from jax_fdm.equilibrium.structures import EquilibriumStructureSparse
 
 # Imported for annotations only: a runtime import would close the package cycle
 # equilibrium -> losses/optimization/parameters -> goals -> equilibrium and make

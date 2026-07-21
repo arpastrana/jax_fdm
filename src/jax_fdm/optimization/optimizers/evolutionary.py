@@ -9,8 +9,8 @@ from scipy.optimize import OptimizeResult
 from scipy.optimize import differential_evolution
 from scipy.optimize import dual_annealing
 
-from jax_fdm.optimization.optimizers import GradientFreeOptimizer
-from jax_fdm.optimization.optimizers import OptProblem
+from jax_fdm.optimization.optimizers.gradient_free import GradientFreeOptimizer
+from jax_fdm.optimization.optimizers.optimizer import OptProblem
 
 # ==========================================================================
 # Optimizers

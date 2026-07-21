@@ -1,5 +1,5 @@
-from jax_fdm.goals.node import NodeSegmentGoal
-from jax_fdm.goals.vertex import VertexGoal
+from jax_fdm.goals.node.segment import NodeSegmentGoal
+from jax_fdm.goals.vertex.vertex import VertexGoal
 
 
 class VertexSegmentGoal(VertexGoal, NodeSegmentGoal):

@@ -2,7 +2,7 @@ from jaxtyping import Array
 from jaxtyping import Float
 from jaxtyping import Int
 
-from jax_fdm.constraints.edge import EdgeConstraint
+from jax_fdm.constraints.edge.edge import EdgeConstraint
 from jax_fdm.equilibrium import EquilibriumState
 
 

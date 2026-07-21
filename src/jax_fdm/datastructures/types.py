@@ -242,6 +242,11 @@ class FDMeshType:
     def index_vertex(self) -> dict[int, int]:
         raise NotImplementedError
 
+    # COMPAS infers the value type from its untyped `vertices()`; the keys are
+    # always plain vertex integers, so re-narrow the map to dict[str, int].
+    def gkey_vertex(self, precision: int | None = None) -> dict[str, int]:
+        raise NotImplementedError
+
     @overload
     def edges(self, data: Literal[False] = False) -> Iterator[tuple[int, int]]: ...
     @overload
@@ -264,6 +269,38 @@ class FDMeshType:
     def edge_attribute(
         self,
         edge: tuple[int, int],
+        name: str,
+        value: Any = None,
+    ) -> Any:
+        raise NotImplementedError
+
+    # COMPAS infers a broad union from its untyped point math; the midpoint
+    # of an edge is always a single xyz point, so re-narrow to list[float].
+    def edge_midpoint(self, edge: tuple[int, int]) -> list[float]:
+        raise NotImplementedError
+
+    @overload
+    def faces(self, data: Literal[False] = False) -> Iterator[int]: ...
+    @overload
+    def faces(
+        self,
+        data: Literal[True],
+    ) -> Iterator[tuple[int, dict[str, Any]]]: ...
+    def faces(self, data: bool = False) -> Iterator[Any]:
+        raise NotImplementedError
+
+    @overload
+    def face_attribute(self, key: int, name: str) -> Any: ...
+    @overload
+    def face_attribute(
+        self,
+        key: int,
+        name: str,
+        value: Any,
+    ) -> None: ...
+    def face_attribute(
+        self,
+        key: int,
         name: str,
         value: Any = None,
     ) -> Any:
@@ -377,6 +414,11 @@ class FDNetworkType:
     def index_edge(self) -> dict[int, tuple[int, int]]:
         raise NotImplementedError
 
+    # COMPAS infers the value type from its untyped `nodes()`; the keys are
+    # always plain node integers, so re-narrow the map to dict[str, int].
+    def gkey_node(self, precision: int | None = None) -> dict[str, int]:
+        raise NotImplementedError
+
     @overload
     def edges(self, data: Literal[False] = False) -> Iterator[tuple[int, int]]: ...
     @overload
@@ -402,4 +444,9 @@ class FDNetworkType:
         name: str,
         value: Any = None,
     ) -> Any:
+        raise NotImplementedError
+
+    # COMPAS infers a broad union from its untyped point math; the midpoint
+    # of an edge is always a single xyz point, so re-narrow to list[float].
+    def edge_midpoint(self, edge: tuple[int, int]) -> list[float]:
         raise NotImplementedError

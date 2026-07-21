@@ -7,10 +7,10 @@ from jaxtyping import Int
 from jax_fdm.equilibrium import EquilibriumMeshStructure
 from jax_fdm.equilibrium import EquilibriumModel
 from jax_fdm.equilibrium import EquilibriumState
-from jax_fdm.goals import ScalarGoal
+from jax_fdm.goals.goal import ScalarGoal
 from jax_fdm.goals.goal import TargetLike
-from jax_fdm.goals.mesh import MeshGoal
-from jax_fdm.goals.network import NetworkXYZLaplacianGoal
+from jax_fdm.goals.mesh.mesh import MeshGoal
+from jax_fdm.goals.network.laplacian import NetworkXYZLaplacianGoal
 
 __all__ = ["MeshXYZLaplacianGoal", "MeshXYZFaceLaplacianGoal"]
 

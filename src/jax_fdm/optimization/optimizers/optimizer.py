@@ -26,7 +26,7 @@ from jax_fdm.equilibrium import EquilibriumParametersState
 from jax_fdm.equilibrium import EquilibriumStructure
 from jax_fdm.equilibrium import LoadState
 from jax_fdm.losses import Loss
-from jax_fdm.optimization import collect_goals
+from jax_fdm.optimization.collections import collect_goals
 from jax_fdm.parameters import EdgeForceDensityParameter
 from jax_fdm.parameters import Parameter
 from jax_fdm.parameters import ParameterManager

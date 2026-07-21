@@ -1,5 +1,5 @@
-from jax_fdm.goals.node import NodeLineGoal
-from jax_fdm.goals.vertex import VertexGoal
+from jax_fdm.goals.node.line import NodeLineGoal
+from jax_fdm.goals.vertex.vertex import VertexGoal
 
 
 class VertexLineGoal(VertexGoal, NodeLineGoal):

@@ -7,7 +7,7 @@ from lineax import SVD
 from optimistix import Newton
 from optimistix import root_find
 
-from jax_fdm.equilibrium.solvers import solver_optimistix
+from jax_fdm.equilibrium.solvers.optimistix import solver_optimistix
 from jax_fdm.equilibrium.solvers.types import SolverIterParams
 
 # ==========================================================================

@@ -4,8 +4,8 @@ from jaxtyping import Float
 from jaxtyping import Int
 
 from jax_fdm.equilibrium import EquilibriumState
-from jax_fdm.goals import ScalarGoal
-from jax_fdm.goals.network import NetworkGoal
+from jax_fdm.goals.goal import ScalarGoal
+from jax_fdm.goals.network.network import NetworkGoal
 
 
 class NetworkXYZLaplacianGoal(ScalarGoal, NetworkGoal):

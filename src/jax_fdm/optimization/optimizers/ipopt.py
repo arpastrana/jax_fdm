@@ -14,10 +14,10 @@ from jaxtyping import Float
 from jax_fdm import has_backend
 from jax_fdm.equilibrium import EquilibriumModel
 from jax_fdm.equilibrium import EquilibriumStructure
-from jax_fdm.optimization import collect_constraints
-from jax_fdm.optimization.optimizers import ConstrainedOptimizer
-from jax_fdm.optimization.optimizers import OptProblem
-from jax_fdm.optimization.optimizers import SecondOrderOptimizer
+from jax_fdm.optimization.collections import collect_constraints
+from jax_fdm.optimization.optimizers.constrained import ConstrainedOptimizer
+from jax_fdm.optimization.optimizers.optimizer import OptProblem
+from jax_fdm.optimization.optimizers.second_order import SecondOrderOptimizer
 
 if TYPE_CHECKING:
     # Annotation-only import: pulling jax_fdm.constraints at runtime would form a

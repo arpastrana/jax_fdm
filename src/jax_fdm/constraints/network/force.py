@@ -3,7 +3,7 @@ from jaxtyping import Array
 from jaxtyping import Float
 from jaxtyping import Int
 
-from jax_fdm.constraints.network import NetworkConstraint
+from jax_fdm.constraints.network.network import NetworkConstraint
 from jax_fdm.equilibrium import EquilibriumState
 
 

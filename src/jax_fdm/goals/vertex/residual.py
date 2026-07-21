@@ -1,10 +1,10 @@
 """Goals defined on the residual forces at mesh vertices."""
 
-from jax_fdm.goals.node import NodeResidualDirectionGoal
-from jax_fdm.goals.node import NodeResidualForceGoal
-from jax_fdm.goals.node import NodeResidualPlaneGoal
-from jax_fdm.goals.node import NodeResidualVectorGoal
-from jax_fdm.goals.vertex import VertexGoal
+from jax_fdm.goals.node.residual import NodeResidualDirectionGoal
+from jax_fdm.goals.node.residual import NodeResidualForceGoal
+from jax_fdm.goals.node.residual import NodeResidualPlaneGoal
+from jax_fdm.goals.node.residual import NodeResidualVectorGoal
+from jax_fdm.goals.vertex.vertex import VertexGoal
 
 
 class VertexResidualForceGoal(VertexGoal, NodeResidualForceGoal):

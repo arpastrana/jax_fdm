@@ -1,7 +1,7 @@
-from jax_fdm.goals.node import NodeXCoordinateGoal
-from jax_fdm.goals.node import NodeYCoordinateGoal
-from jax_fdm.goals.node import NodeZCoordinateGoal
-from jax_fdm.goals.vertex import VertexGoal
+from jax_fdm.goals.node.coordinates import NodeXCoordinateGoal
+from jax_fdm.goals.node.coordinates import NodeYCoordinateGoal
+from jax_fdm.goals.node.coordinates import NodeZCoordinateGoal
+from jax_fdm.goals.vertex.vertex import VertexGoal
 
 
 class VertexXCoordinateGoal(VertexGoal, NodeXCoordinateGoal):

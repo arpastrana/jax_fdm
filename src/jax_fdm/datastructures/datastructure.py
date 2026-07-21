@@ -5,6 +5,7 @@ from collections.abc import Iterator
 from collections.abc import Sequence
 from math import fabs
 from statistics import stdev
+from typing import overload
 
 from jax_fdm.datastructures.types import FDDatastructureType
 
@@ -21,6 +22,17 @@ class FDDatastructure(FDDatastructureType):
     inherit from it to avoid a redundant inheritance diamond. The typing-only
     base declares the COMPAS accessors this mixin calls.
     """
+
+    # Force-density edge defaults shared by every FD datastructure, registered
+    # via `update_default_edge_attributes` in each subclass constructor.
+    edge_attributes_default: dict[str, float] = {
+        "q": 0.0,
+        "length": 0.0,
+        "force": 0.0,
+        "px": 0.0,
+        "py": 0.0,
+        "pz": 0.0,
+    }
 
     # ----------------------------------------------------------------------
     # Edges
@@ -48,6 +60,10 @@ class FDDatastructure(FDDatastructureType):
         """
         return self.edge_attributes(key, names=("px", "py", "pz"), values=load)
 
+    @overload
+    def edge_forcedensity(self, key: tuple[int, int]) -> float: ...
+    @overload
+    def edge_forcedensity(self, key: tuple[int, int], q: float) -> None: ...
     def edge_forcedensity(
         self,
         key: tuple[int, int],
@@ -242,8 +258,7 @@ class FDDatastructure(FDDatastructureType):
         edges_neg = []
         for edge in self.edges():
             _edges = edges_neg
-            # getter-mode call always returns float
-            if self.edge_forcedensity(edge) > 0.0:  # pyright: ignore[reportOptionalOperand]
+            if self.edge_forcedensity(edge) > 0.0:
                 _edges = edges_pos
             _edges.append(edge)
 
