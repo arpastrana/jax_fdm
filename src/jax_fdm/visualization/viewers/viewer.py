@@ -107,6 +107,27 @@ class Viewer(CompasViewer):
         self.scene.clear()
         self.scene.instance_colors.clear()
 
+    def update(self) -> None:
+        """
+        Repaint the viewer window immediately.
+
+        Schedules a repaint and drains the event queue so it happens now,
+        painting whatever the scene objects currently hold. This acts at the
+        window layer: it does not touch scene data, so refresh the buffers of
+        any mutated object first (e.g. ``scene_object.update()``).
+
+        Notes
+        -----
+        The intended use is animating a blocking computation that runs on the
+        GUI thread. Because the computation blocks Qt's event loop, a normally
+        scheduled repaint would not be serviced until it returns and every frame
+        would collapse into one. Calling this per step forces each frame to
+        paint while the computation is still running. A computation on a worker
+        thread does not need it: the viewer repaints on its own timer.
+        """
+        self.renderer.update()
+        self.app.processEvents()
+
     def show(self) -> None:
         """
         Show the viewer window and block until it is closed.
