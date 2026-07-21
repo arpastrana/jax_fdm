@@ -2,6 +2,8 @@ from jax_fdm.equilibrium import EquilibriumStructure
 from jax_fdm.goals import Goal
 from jax_fdm.goals.goal import TargetLike
 
+__all__ = ["NetworkGoal"]
+
 
 class NetworkGoal(Goal):
     """

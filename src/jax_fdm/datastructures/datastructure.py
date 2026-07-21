@@ -2,10 +2,13 @@
 
 from collections.abc import Iterable
 from collections.abc import Iterator
+from collections.abc import Sequence
 from math import fabs
 from statistics import stdev
 
 from jax_fdm.datastructures.types import FDDatastructureType
+
+__all__ = ["FDDatastructure"]
 
 
 class FDDatastructure(FDDatastructureType):
@@ -26,7 +29,7 @@ class FDDatastructure(FDDatastructureType):
     def edge_load(
         self,
         key: tuple[int, int],
-        load: list[float] | None = None,
+        load: Iterable[float] | None = None,
     ) -> list[float] | None:
         """
         Get or set the load vector on a single edge.
@@ -164,7 +167,7 @@ class FDDatastructure(FDDatastructureType):
 
     def edges_loads(
         self,
-        load: list[float] | None = None,
+        load: Sequence[float] | None = None,
         keys: Iterable[tuple[int, int]] | None = None,
     ) -> list[list[float]] | None:
         """

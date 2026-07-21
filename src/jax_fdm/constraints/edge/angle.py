@@ -12,6 +12,8 @@ from jax_fdm.equilibrium import EquilibriumState
 from jax_fdm.equilibrium import EquilibriumStructure
 from jax_fdm.geometry import angle_vectors
 
+__all__ = ["EdgeAngleConstraint"]
+
 
 class EdgeAngleConstraint(EdgeConstraint):
     """

@@ -11,6 +11,8 @@ from jax_fdm.goals import ScalarGoal
 from jax_fdm.goals.face import FaceGoal
 from jax_fdm.goals.goal import TargetLike
 
+__all__ = ["FaceRectangularGoal"]
+
 
 class FaceRectangularGoal(ScalarGoal, FaceGoal):
     """

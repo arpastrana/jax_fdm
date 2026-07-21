@@ -21,6 +21,8 @@ if TYPE_CHECKING:
     # cycle (constraints -> equilibrium -> optimization).
     from jax_fdm.constraints import Constraint
 
+__all__ = ["ConstrainedOptimizer"]
+
 # ==========================================================================
 # Constrained optimizer
 # ========== ===============================================================

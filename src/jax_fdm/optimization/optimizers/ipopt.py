@@ -24,6 +24,8 @@ if TYPE_CHECKING:
     # cycle (constraints -> equilibrium -> optimization).
     from jax_fdm.constraints import Constraint
 
+__all__ = ["IPOPT"]
+
 if has_backend("cyipopt"):
     # cyipopt is an optional (ipopt extra) dependency, gated by has_backend above.
     from cyipopt import minimize_ipopt  # pyright: ignore[reportMissingImports]

@@ -12,6 +12,8 @@ from jax_fdm.goals.goal import TargetLike
 from jax_fdm.goals.mesh import MeshGoal
 from jax_fdm.goals.network import NetworkXYZLaplacianGoal
 
+__all__ = ["MeshXYZLaplacianGoal", "MeshXYZFaceLaplacianGoal"]
+
 
 class MeshXYZLaplacianGoal(NetworkXYZLaplacianGoal):
     """

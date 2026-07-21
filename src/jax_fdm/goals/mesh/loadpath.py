@@ -1,6 +1,8 @@
 from jax_fdm.goals import NetworkLoadPathGoal
 from jax_fdm.goals.goal import TargetLike
 
+__all__ = ["MeshLoadPathGoal"]
+
 
 class MeshLoadPathGoal(NetworkLoadPathGoal):
     """

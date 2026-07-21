@@ -15,6 +15,8 @@ from jax_fdm.equilibrium import EquilibriumState
 from jax_fdm.equilibrium import EquilibriumStructure
 from jax_fdm.goals import GoalState
 
+__all__ = ["Goal", "ScalarGoal", "VectorGoal"]
+
 # What the target setters accept: a scalar, an existing array, or any nesting
 # of float sequences (the setters run the input through jnp.asarray + reshape).
 # COMPAS geometry objects are deliberately excluded; convert them to plain

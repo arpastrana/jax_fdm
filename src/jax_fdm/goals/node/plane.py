@@ -6,6 +6,8 @@ from jax_fdm.geometry import closest_point_on_plane
 from jax_fdm.goals.goal import TargetLike
 from jax_fdm.goals.node import NodePointGoal
 
+__all__ = ["NodePlaneGoal"]
+
 
 class NodePlaneGoal(NodePointGoal):
     """

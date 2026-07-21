@@ -2,6 +2,7 @@
 
 from collections.abc import Iterable
 from collections.abc import Iterator
+from collections.abc import Sequence
 from typing import Any
 from typing import Self
 from typing import overload
@@ -10,6 +11,8 @@ from compas.datastructures import Mesh
 from compas.datastructures import Network
 from jax_fdm.datastructures import FDDatastructure
 from jax_fdm.datastructures.types import FDNetworkType
+
+__all__ = ["FDNetwork"]
 
 
 class FDNetwork(FDNetworkType, Network, FDDatastructure):
@@ -283,7 +286,7 @@ class FDNetwork(FDNetworkType, Network, FDDatastructure):
     def node_load(
         self,
         key: int,
-        load: list[float] | None = None,
+        load: Iterable[float] | None = None,
     ) -> list[float] | None:
         """
         Get or set the load vector on a single node.
@@ -305,7 +308,7 @@ class FDNetwork(FDNetworkType, Network, FDDatastructure):
 
     def nodes_loads(
         self,
-        load: list[float] | None = None,
+        load: Sequence[float] | None = None,
         keys: Iterable[int] | None = None,
     ) -> list[list[float]] | None:
         """

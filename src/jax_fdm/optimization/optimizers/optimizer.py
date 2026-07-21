@@ -36,6 +36,8 @@ if TYPE_CHECKING:
     # cycle (constraints -> equilibrium -> optimization).
     from jax_fdm.constraints import Constraint
 
+__all__ = ["OptProblem", "Optimizer"]
+
 # ==========================================================================
 # Optimization problem
 # ==========================================================================

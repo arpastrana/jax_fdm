@@ -12,6 +12,8 @@ from jax_fdm.equilibrium import EquilibriumState
 from jax_fdm.equilibrium import EquilibriumStructure
 from jax_fdm.geometry import curvature_point_polygon
 
+__all__ = ["NodeCurvatureConstraint"]
+
 
 class NodeCurvatureConstraint(NodeConstraint):
     """

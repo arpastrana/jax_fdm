@@ -12,6 +12,8 @@ if TYPE_CHECKING:
     from jax_fdm.constraints import Constraint
     from jax_fdm.goals import Goal
 
+__all__ = ["Collection", "collect_goals", "collect_constraints"]
+
 
 class Collection:
     """

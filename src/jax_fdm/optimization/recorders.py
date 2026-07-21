@@ -1,3 +1,4 @@
+from os import PathLike
 from typing import TYPE_CHECKING
 from typing import Any
 from typing import Self
@@ -11,6 +12,8 @@ from compas.data import Data
 from jax_fdm.equilibrium import EquilibriumParametersState
 from jax_fdm.equilibrium import LoadState
 from jax_fdm.optimization.optimizers import Optimizer
+
+__all__ = ["OptimizationRecorder"]
 
 # ==========================================================================
 # Recorder
@@ -41,7 +44,7 @@ class OptimizationRecorder(Data):
         # implementation constructs through `cls` and returns this class.
         # Raising body, not `...`: pylint reads a `...` stub as returning None.
         @classmethod
-        def from_json(cls, filepath: str) -> Self:
+        def from_json(cls, filepath: str | PathLike[str]) -> Self:
             raise NotImplementedError
 
     def __init__(self, optimizer: Optimizer | None = None):

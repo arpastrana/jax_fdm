@@ -14,6 +14,8 @@ from jax_fdm.goals import ScalarGoal
 from jax_fdm.goals.edge import EdgeGoal
 from jax_fdm.goals.goal import TargetLike
 
+__all__ = ["EdgeAngleGoal"]
+
 
 class EdgeAngleGoal(ScalarGoal, EdgeGoal):
     """

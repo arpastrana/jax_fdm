@@ -13,6 +13,8 @@ from jax_fdm.goals import ScalarGoal
 from jax_fdm.goals.goal import TargetLike
 from jax_fdm.goals.mesh import MeshGoal
 
+__all__ = ["MeshPlanarityGoal", "face_xyz", "face_planarity", "faces_planarity"]
+
 
 class MeshPlanarityGoal(ScalarGoal, MeshGoal):
     """

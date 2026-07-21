@@ -17,6 +17,8 @@ from jax_fdm.goals import ScalarGoal
 from jax_fdm.goals.goal import TargetLike
 from jax_fdm.goals.vertex import VertexGoal
 
+__all__ = ["VertexNormalAngleGoal"]
+
 
 class VertexNormalAngleGoal(ScalarGoal, VertexGoal):
     """

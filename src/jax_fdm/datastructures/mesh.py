@@ -2,6 +2,7 @@
 
 from collections.abc import Iterable
 from collections.abc import Iterator
+from collections.abc import Sequence
 from typing import Any
 from typing import overload
 
@@ -11,6 +12,8 @@ from compas.datastructures import Mesh
 from jax_fdm.datastructures import FDDatastructure
 from jax_fdm.datastructures.types import FDMeshType
 from jax_fdm.geometry import polygon_lcs
+
+__all__ = ["FDMesh"]
 
 
 class FDMesh(FDMeshType, Mesh, FDDatastructure):
@@ -94,7 +97,7 @@ class FDMesh(FDMeshType, Mesh, FDDatastructure):
     def vertex_load(
         self,
         key: int,
-        load: list[float] | None = None,
+        load: Iterable[float] | None = None,
     ) -> list[float] | None:
         """
         Get or set the load vector on a single vertex.
@@ -267,7 +270,7 @@ class FDMesh(FDMeshType, Mesh, FDDatastructure):
 
     def vertices_loads(
         self,
-        load: list[float] | None = None,
+        load: Sequence[float] | None = None,
         keys: Iterable[int] | None = None,
     ) -> list[list[float]] | None:
         """

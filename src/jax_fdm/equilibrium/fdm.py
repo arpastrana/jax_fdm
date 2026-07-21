@@ -26,6 +26,20 @@ if TYPE_CHECKING:
     from jax_fdm.optimization import Optimizer
     from jax_fdm.parameters import Parameter
 
+__all__ = [
+    "fdm",
+    "constrained_fdm",
+    "model_from_sparsity",
+    "structure_from_datastructure",
+    "structure_from_network",
+    "structure_from_mesh",
+    "datastructure_validate",
+    "datastructure_updated",
+    "datastructure_update",
+    "datastructure_edges_update",
+    "datastructure_nodes_update",
+]
+
 # ==========================================================================
 # Type aliases
 # ==========================================================================

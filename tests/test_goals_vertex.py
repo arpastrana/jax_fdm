@@ -48,9 +48,9 @@ from jax_fdm.goals.vertex import VertexGoal
 from jax_fdm.losses import Loss
 from jax_fdm.losses import SquaredError
 from jax_fdm.optimization import LBFGSB
-from jax_fdm.optimization import EdgeForceDensityParameter
 from jax_fdm.optimization.collections import Collection
 from jax_fdm.optimization.collections import collect_goals
+from jax_fdm.parameters import EdgeForceDensityParameter
 
 MAXITER = 50
 
