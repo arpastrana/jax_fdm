@@ -36,7 +36,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Changed the goal index to a single one-dimensional rank, so `Goal._index` matches its `Int[np.ndarray, "elements"]` annotation for both goal kinds. `Goal.init` no longer bumps an aggregate index to two dimensions with `np.atleast_2d`; `Goal.__call__` adds the transient leading axis only for aggregates, reshaping to `(1, elements)` for the same `vmap` that maps a per-element index directly. Behavior is bit-identical — every `prediction` receives the same shape as before.
 - Changed the force-density edge defaults duplicated in the `FDMesh` and `FDNetwork` constructors into a shared `edge_attributes_default` class attribute on the `FDDatastructure` mixin. Internal only — the registered defaults are unchanged. (The mixin's tail MRO position rules out an `__init__` hook: COMPAS's `Data.__init__` does not chain `super().__init__`.)
 - Changed aggregate index resolution to dispatch through `self.index_from_structure` in the base `Goal.init`, so retargeted subclasses like `VerticesColinearGoal` resolve through the vertex vocabulary without an override.
-- Changed the mesh examples to mesh vocabulary: `pillow.py` uses `VertexLineGoal`, `VertexCurvatureConstraint` and `MeshLoadPathGoal`; `monkey_saddle.py`/`monkey_saddle_constraints.py` use `VertexResidualForceGoal`. The network-native `dome_constraints.py` keeps its node goals.
+- Changed the mesh examples to mesh vocabulary: `pillow.py` uses `VertexLineGoal`, `VertexCurvatureConstraint` and `MeshLoadPathGoal`; `monkey_saddle.py`/`monkey_saddle_constraints.py` use `VertexResidualForceGoal`.
 - Changed the arch examples and the README/docs arch snippets to build the network from nodes and edges with `FDNetwork.from_nodes_and_edges` instead of loading `data/json/arch.json`, which was removed.
 - Changed `index_from_model(model, structure)` to `index_from_structure(structure)` on all goal and constraint classes, since no implementation read the model. Breaking for custom subclasses that override the resolver.
 - Changed how the thin-counterpart pattern is documented: the repeated "thin vertex counterpart" Notes moved into one intro paragraph per API-reference section. Docstrings keep their summaries and class-specific notes.
@@ -61,6 +61,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Removed
 
+- Removed the `examples/dome/dome_constraints.py` example, a broken constraint-sweep script that added little over the other examples. The plain `examples/dome/dome.py` stays.
 - Removed `normal_polygon_2`, which had no callers now that its centroid-referencing trick is `normal_polygon`'s own behavior.
 - Removed the `build_matrix` helper and the `rtype` parameter from `connectivity_matrix`, `adjacency_matrix` and `face_matrix` in `equilibrium/structures/`: every call site requested a fixed format, so the string dispatch was dead branches around scipy's own conversions. The three now return compressed-column sparse (the only format the structures rely on); dense consumers call `toarray()`. Breaking for external callers, which imported these via `jax_fdm.equilibrium.structures`.
 
