@@ -12,7 +12,7 @@ When you later write a [custom goal](custom_goals.md) or [custom constraint](cus
 You model a structure as a COMPAS-flavored datastructure: an `FDNetwork` for bars and cables, an `FDMesh` for surfaces.
 The datastructure carries everything the force density method needs, all as ordinary attributes you set before solving:
 
-- a **force density** on every edge (the signed force-to-length ratio; negative pulls in compression, positive in tension),
+- a **force density** on every edge (the signed force-to-length ratio, negative pulls in compression, positive in tension),
 - a set of **supports**, the nodes held fixed in space,
 - the **loads** applied to the free nodes.
 
@@ -51,7 +51,7 @@ The input `network` is left untouched, so you can form-find the same model many 
 
     `fdm` never mutates its input.
     It reads the force densities, supports, and loads off the datastructure you hand it, solves for equilibrium, and writes the solved geometry into a fresh copy.
-    Keep the return value; the original stays as you built it.
+    Keep the return value, and the original stays as you built it.
 
 ### Kinds of load
 
@@ -140,10 +140,10 @@ The `loads` field is itself a small `LoadState` named tuple, because loads can e
 | `edges` | `(edges, 3)` or `0.0` | the line load on each edge |
 | `faces` | `(faces, 3)` or `0.0` | the area load on each face (meshes only) |
 
-Edge and face loads collapse to the scalar `0.0` when every entry is zero, which lets the model skip distributing them altogether; a network always carries `faces=0.0`.
+Edge and face loads collapse to the scalar `0.0` when every entry is zero, which lets the model skip distributing them altogether, and a network always carries `faces=0.0`.
 
 These arrays are the reason the datastructure conversion matters: `q` is ordered by the structure's edge numbering, `xyz_fixed` by its support numbering, so the parameter state and the structure speak the same index language.
-For a plain `fdm` call these come straight off your datastructure; under `constrained_fdm`, they are exactly what the optimizer is free to change, one number at a time.
+For a plain `fdm` call these come straight off your datastructure. Under `constrained_fdm`, they are exactly what the optimizer is free to change, one number at a time.
 
 ### The model
 
@@ -179,7 +179,7 @@ The state is a named tuple of arrays:
 | `loads` | `(nodes, 3)` | the load resolved onto each node |
 | `vectors` | `(edges, 3)` | the edge vectors, pointing from tail node to head node |
 
-The **geometry** lives in `xyz`, `lengths`, and `vectors`; the **force state** lives in `forces`, `residuals`, and `loads`.
+The **geometry** lives in `xyz`, `lengths`, and `vectors`, while the **force state** lives in `forces`, `residuals`, and `loads`.
 The residuals do double duty: they are your equilibrium check (a free node with a non-zero residual has not settled) and your reactions (a support's residual *is* the force it feeds back into the structure).
 
 This is the object `fdm` unpacks to update the datastructure it returns.

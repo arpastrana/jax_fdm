@@ -61,4 +61,4 @@ viewer.show()
 ![Arch load path](../assets/images/arch_loadpath.png)
 
 The constrained form is shallower than the unconstrained one as a result of the optimization process.
-The length of the arch segments also varies within the prescribed bounds to minimize the load path: segments are the longest where the arch's internal forces are lower (1.0 meter, at the apex); and conversely, the segments are shorter where the arch's internal forces are higher (0.75 m, at the base).
+The length of the arch segments also varies within the prescribed bounds to minimize the load path: segments are the longest where the arch's internal forces are lower (1.0 meter, at the apex), and conversely, the segments are shorter where the arch's internal forces are higher (0.75 m, at the base).

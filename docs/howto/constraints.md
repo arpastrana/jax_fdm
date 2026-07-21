@@ -4,7 +4,7 @@ Goals express *soft* preference: get as close to the target as you can.
 Constraints express *hard* restrictions: stay between these bounds, or the optimizer does not go home.
 
 This guide is about what a constraint *is* and how it differs from a goal.
-It assumes you have read [goals](goals.md); constraints reuse most of that machinery, so here we focus on what changes.
+It assumes you have read [goals](goals.md). Constraints reuse most of that machinery, so here we focus on what changes.
 Once the anatomy is clear, [custom constraints](custom_constraints.md) shows you how to write your own, and for how goals and constraints slot into a full optimization problem, see [constrained form-finding](constrained_form_finding.md).
 
 ## The anatomy of a constraint
@@ -76,7 +76,7 @@ Keys at construction, array rows at evaluation, `init` in between — the [same 
 The differences are three.
 
 - **Bounds instead of a target.**
-A constraint carries no target and no weight; it carries `bound_low` and `bound_up`, and the optimizer keeps the constrained quantity between them.
+A constraint carries no target and no weight. It carries `bound_low` and `bound_up`, and the optimizer keeps the constrained quantity between them.
 Leave either bound as `None` and it becomes an infinity of the appropriate sign, so one-sided constraints cost you nothing.
 - **Law needs an enforcer.**
 Constraints are honored only by optimizers that support them, `SLSQP` and `IPOPT`.

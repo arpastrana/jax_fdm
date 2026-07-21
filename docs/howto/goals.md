@@ -98,7 +98,7 @@ class EdgeLengthGoal(ScalarGoal, EdgeGoal):
 Five moving parts underpin how any goal works:
 
 - **The base classes say *what* and *where*.** `ScalarGoal` fixes the shape of the quantity, one number per element, and `EdgeGoal` fixes the element it lives on, an edge. Every goal picks one from each of these two families, and that pair is what wires up the target storage and the key resolution you would otherwise write by hand.
-- **The constructor says *which* and *how much*.** It stores the three inputs from the section above: the `key` of the edge, the `target` length, and the `weight`. Most goals in the library skip writing this out and simply inherit it from the base `Goal`, since it is the same three lines every time; we spell it out here to show where your inputs land.
+- **The constructor says *which* and *how much*.** It stores the three inputs from the section above: the `key` of the edge, the `target` length, and the `weight`. Most goals in the library skip writing this out and simply inherit it from the base `Goal`, since it is the same three lines every time. We spell it out here to show where your inputs land.
 - **The `prediction` method says *how*.** Given an `eq_state` and the `index` the edge `key` was resolved to, it returns the quantity the goal cares about, here the edge's length, read straight out of the equilibrium state's `lengths` array. That single method is what makes an `EdgeLengthGoal` an *edge length* goal rather than any other kind.
 - **The `goal` method says *toward what*.** An error term in the loss measures the gap between a goal's *prediction* and its *goal* value. Here `goal` just hands back the `target` unchanged: reach the target length, plain and simple. But it receives the current `prediction` too, and some goals use it to compare against a *moving* reference rather than a fixed target, the trick behind `NodeLineGoal` and `NodePlaneGoal`. [Custom goals](custom_goals.md#recipe-2-a-custom-vector-goal-with-a-moving-target) puts it to work.
 - **The `__call__` method says *put it together*.** A goal is a callable object: `__call__` is the one method that runs the other two. It asks `prediction` for the current value, hands that to `goal` to get the reference to compare against, and bundles the two with the `weight` into a `GoalState`, a small record carrying exactly the three numbers an error term needs. You never call this yourself, but it is the seam where a goal plugs into the rest of the machinery.
@@ -112,7 +112,7 @@ goal_state = goal(eq_state)   # -> GoalState(goal=..., prediction=..., weight=..
 That is the whole point of making a goal callable: it turns three separate concerns, *what to read*, *what to aim at*, and *how much it matters*, into one uniform `GoalState` that downstream code can consume without knowing anything about edges or lengths.
 And downstream code is exactly a **loss**.
 A loss holds a list of goals, and to score an equilibrium state it calls each goal in turn, `goal(eq_state)`, collects the returned `GoalState` records, and feeds their `prediction`, `goal`, and `weight` into an error term that measures the gap.
-So the goal never computes an error itself; it only reports its three numbers, and the loss composes them into the single scalar the optimizer minimizes.
+So the goal never computes an error itself. It only reports its three numbers, and the loss composes them into the single scalar the optimizer minimizes.
 (You will meet the loss and its error terms in [constrained form-finding](constrained_form_finding.md).)
 
 That is the whole contract, top to bottom:
@@ -125,7 +125,7 @@ That is the whole contract, top to bottom:
 
 ## Goal families
 
-The `EdgeLengthGoal` above made two choices, `ScalarGoal` and `EdgeGoal`; those are the two axes every goal is built along:
+The `EdgeLengthGoal` above made two choices, `ScalarGoal` and `EdgeGoal`, and those are the two axes every goal is built along:
 
 | Choice | Options |
 | --- | --- |

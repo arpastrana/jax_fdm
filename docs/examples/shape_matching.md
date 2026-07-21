@@ -69,7 +69,7 @@ viewer.show()
 ![Shape matching, initial guess](../assets/images/shape_matching_initial.png)
 
 The result is funicular, it hangs in equilibrium, and it even reaches roughly the right overall height, rising to about 4.3 meters against the creased target's 4.5.
-But a shared force density can only produce a smooth, rounded dome; it rounds off exactly the features that make the target distinctive, above all its sharp crease.
+But a shared force density can only produce a smooth, rounded dome, rounding off exactly the features that make the target distinctive, above all its sharp crease.
 So while the silhouette is in the ballpark, the fit node by node is poor: the free nodes sit about 1.2 meters from their targets on average, and the [Hausdorff distance](https://en.wikipedia.org/wiki/Hausdorff_distance), the largest gap between the two, is about 5.2 meters.
 To sharpen the shape the force densities need to *vary* across the network, and finding that variation by hand is hopeless.
 That is a job for optimization.
