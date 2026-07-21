@@ -40,7 +40,7 @@ targets = {node: network.node_coordinates(node) for node in network.nodes()}
 supports = [node for node in network.nodes() if network.is_leaf(node)]
 network.nodes_supports(supports)
 network.nodes_loads([0.0, 0.0, -0.2], keys=network.nodes_free())
-network.edges_forcedensities(q=-2.0)
+network.edges_forcedensities(q=-1.0)
 
 # ==========================================================================
 # Define optimization parameters
@@ -112,11 +112,19 @@ network_matched.print_stats()
 viewer = Viewer()
 
 # modify view
-viewer.renderer.camera.zoom(-35)  # number of steps, negative to zoom out
-viewer.renderer.camera.rotation.z = 0.0  # set rotation around z axis to zero
+viewer.renderer.camera.target = (1.5, 0.0, -2.0)
+viewer.renderer.camera.position = (20.0, -16.0, 18.5)
 
 # optimized network
-viewer.add(network_matched, edgewidth=(0.1, 0.3), edgecolor="fd", loadscale=5.0)
+viewer.add(
+    network_matched,
+    edgewidth=(0.1, 0.2),
+    edgecolor="fd",
+    show_reactions=False,
+    show_loads=False,
+    show_nodes=True,
+    nodesize=0.2,
+)
 
 # reference network as plain geometry
 viewer.add(network.copy(cls=Network), show_points=False, color=Color.grey())

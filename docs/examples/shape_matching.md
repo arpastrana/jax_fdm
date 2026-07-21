@@ -19,10 +19,17 @@ Our design intent is a `creased_shell` network, a doubly-curved surface with a s
 
 ```python
 from jax_fdm.datastructures import FDNetwork
+from jax_fdm.visualization import Viewer
 
 
 network = FDNetwork.from_json("data/json/creased_shell.json")
+
+viewer = Viewer()
+viewer.add(network)
+viewer.show()
 ```
+
+![Shape matching, target](../assets/images/shape_matching_target.png)
 
 This 193-node, 324-edge network is the shape we want to approximate, so we record every node's position as the target to aim for before we touch anything.
 
@@ -36,7 +43,7 @@ Now we set up the structural problem on that same network: support it along its 
 supports = [node for node in network.nodes() if network.is_leaf(node)]
 network.nodes_supports(supports)
 network.nodes_loads([0.0, 0.0, -0.2], keys=network.nodes_free())
-network.edges_forcedensities(q=-2.0)
+network.edges_forcedensities(q=-1.0)
 ```
 
 The negative force density puts every edge in compression, since we are looking for a compression-only solution.
@@ -51,14 +58,20 @@ from jax_fdm.equilibrium import fdm
 
 
 network_guess = fdm(network)
+
+viewer = Viewer()
+viewer.add(network_guess, edgecolor="fd")
+viewer.add(network.copy(cls=Network), color=Color.grey())
+
+viewer.show()
 ```
 
 ![Shape matching, initial guess](../assets/images/shape_matching_initial.png)
 
-The result is funicular, it hangs in equilibrium, but it is miles away from the target.
-The perimeter supports sit at ground level, so with a single force density shared across every edge, the free nodes sag into a shallow mound that rises to only about 2.1 meters, while the creased target peaks near 4.5.
-Measured as a [Hausdorff distance](https://en.wikipedia.org/wiki/Hausdorff_distance), the largest gap between the guess and the target is about 5.6 meters.
-A constant force density simply cannot bend the shape to match a doubly-curved surface; the force densities need to *vary* across the network, and finding that variation by hand is hopeless.
+The result is funicular, it hangs in equilibrium, and it even reaches roughly the right overall height, rising to about 4.3 meters against the creased target's 4.5.
+But a shared force density can only produce a smooth, rounded dome; it rounds off exactly the features that make the target distinctive, above all its sharp crease.
+So while the silhouette is in the ballpark, the fit node by node is poor: the free nodes sit about 1.2 meters from their targets on average, and the [Hausdorff distance](https://en.wikipedia.org/wiki/Hausdorff_distance), the largest gap between the two, is about 5.2 meters.
+To sharpen the shape the force densities need to *vary* across the network, and finding that variation by hand is hopeless.
 That is a job for optimization.
 
 ## After: the optimized match
@@ -126,8 +139,8 @@ network_matched = constrained_fdm(
 
 ![Shape matching, optimized result](../assets/images/shape_matching_optimized.png)
 
-The optimized network rises to about 4.46 meters, all but reaching the target's 4.49, and the Hausdorff distance drops from 5.6 meters to 0.69, an order of magnitude closer.
-The force densities now follow a non-trivial distribution across the edges, exactly the spread a single constant value could never provide, and every one of them stayed negative, so the match is compression-only as intended.
+The optimized network now captures the crease the guess had rounded away, and the Hausdorff distance drops from 5.2 meters to 0.70, an order of magnitude closer.
+The force densities follow a non-trivial distribution across the edges, exactly the spread a single constant value could never provide, and every one of them stayed negative, so the match is compression-only as intended.
 
 !!! tip "Why the match matters mechanically"
 
@@ -157,14 +170,13 @@ A fresh load of `creased_shell.json` gives us the target surface back as its own
 from compas.colors import Color
 from compas.datastructures import Network
 from compas.geometry import Line
-from jax_fdm.visualization import Viewer
 
 
 network_target = FDNetwork.from_json("data/json/creased_shell.json")
 
 viewer = Viewer()
-viewer.add(network_matched, edgewidth=(0.1, 0.3), edgecolor="fd", loadscale=5.0)
-viewer.add(network_target.copy(cls=Network), show_points=False, color=Color.grey())
+viewer.add(network_matched, edgecolor="fd")
+viewer.add(network.copy(cls=Network), color=Color.grey())
 
 for node in network_matched.nodes():
     line = Line(network_matched.node_coordinates(node), targets[node])
