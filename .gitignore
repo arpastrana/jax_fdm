@@ -120,9 +120,8 @@ docs/api/generated/
 conda.recipe/
 
 *.json
+!data/json/creased_shell.json
 !data/json/monkey_saddle.json
-!data/json/vault.json
-!data/json/vault0.json
 !tests/baselines/*.json
 !tests/data/*.json
 
