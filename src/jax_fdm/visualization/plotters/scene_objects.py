@@ -107,15 +107,14 @@ class FDPlotterObject(PlotterSceneObject):
         # The scene registry always dispatches a real datastructure to this
         # constructor; the Optional in the signature only matches the base
         # class default.
+        assert item is not None
         self.datastructure: FDNetwork | FDMesh = item
 
         self.points: list[int] = (
             list(points) if points is not None else list(self.point_keys())
         )
-        # item is always populated before draw(); edges() with data=False always
-        # yields plain (u, v) keys.
         self.edges: list[tuple[int, int]] = (
-            list(edges) if edges is not None else list(item.edges())  # pyright: ignore[reportOptionalMemberAccess, reportArgumentType, reportAttributeAccessIssue]
+            list(edges) if edges is not None else list(self.datastructure.edges())
         )
 
         # The point-edge adjacency is cached once at construction, so drawing
@@ -482,7 +481,7 @@ class FDMeshPlotterObject(FDPlotterObject, MeshObject):
 
     def point_coordinates(self, key: int) -> list[float]:
         # the getter-mode call always returns a list
-        return self.datastructure.vertex_coordinates(key)  # pyright: ignore[reportReturnType]
+        return self.datastructure.vertex_coordinates(key)
 
     def point_load(self, key: int) -> list[float]:
         # the getter-mode call always returns a list

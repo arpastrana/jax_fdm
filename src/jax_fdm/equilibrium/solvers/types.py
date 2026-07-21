@@ -2,6 +2,9 @@
 
 from typing import Any
 
+__all__ = ["SolverIterParams"]
+
+
 # The parameter PyTree threaded through the fixed-point, nonlinear, and
 # least-squares solvers: e.g. (K, R_fixed, xyz_fixed, load_state) on the
 # fixed-point path or (q, xyz_fixed, load_state) on the residual path. Its

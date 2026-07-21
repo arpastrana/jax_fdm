@@ -9,35 +9,60 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Added a vertex goal family in `goals/vertex/` that completes node-vertex parity: `VertexPointGoal`, `VertexLineGoal`, `VertexSegmentGoal`, `VertexPlaneGoal`, `VertexXCoordinateGoal`, `VertexYCoordinateGoal`, `VertexZCoordinateGoal`, `VertexResidualForceGoal`, `VertexResidualVectorGoal`, `VertexResidualDirectionGoal`, `VerticesColinearGoal` and `VerticesCurvatureGoal`. Each is a thin retargeted subclass of its node counterpart. The prediction and goal logic is inherited unchanged and only the key resolution switches from `node_index` to `vertex_index`, so the classes stay distinct for the type-keyed `Collection` vectorization while sharing one implementation per quantity.
+- Added a vertex goal family in `goals/vertex/` that completes node-vertex parity: `VertexPointGoal`, `VertexLineGoal`, `VertexSegmentGoal`, `VertexPlaneGoal`, `VertexXCoordinateGoal`, `VertexYCoordinateGoal`, `VertexZCoordinateGoal`, `VertexResidualForceGoal`, `VertexResidualVectorGoal`, `VertexResidualDirectionGoal`, `VerticesColinearGoal` and `VerticesCurvatureGoal`. Each is a thin subclass of its node counterpart that inherits the prediction unchanged and only switches key resolution from `node_index` to `vertex_index`.
 - Added `VertexCurvatureConstraint`, the vertex counterpart of `NodeCurvatureConstraint`. The node class gained an overridable `key_index` hook so the neighborhood polygon keys resolve through the same vocabulary as the constrained keys.
-- Added documentation how-to guides under a new How-to Guides section in the docs navigation: `form_finding.md` and `constrained_form_finding.md` explain the public entry points and the JAX numerical core beneath them, while goals and constraints each split into a concept guide (`goals.md`, `constraints.md`, covering the anatomy and evaluation of a goal or constraint) and a custom guide (`custom_goals.md`, `custom_constraints.md`, with recipes for scalar, vector, moving-target and aggregate goals, and their constraint counterparts). The examples page split into an Examples section (`docs/examples/arch.md` walkthrough plus `docs/examples/more.md` galleries), with a redirect keeping the old `examples/` URL alive.
-- Added a shape-matching example walkthrough (`docs/examples/shape_matching.md`) that approximates a doubly-curved creased shell with a compression-only network, contrasting an initial constant-force-density guess against the optimized `NodePointGoal` match. A single `data/json/creased_shell.json` serves as both the network to set up and the target to record. The runnable companion script `examples/creased_shell/creased_shell.py` (renamed from `examples/vault/vault.py`) and `notebooks/vault.ipynb` follow the same one-file flow. The unused `data/json/vault.json` and `data/json/vault0.json` were removed.
-- Added an equal-force truss example walkthrough (`docs/examples/truss_equal_force.md`, script `examples/truss/truss_equal_force.py`) that morphs the bottom chord of a brace-less planar truss so it carries a uniform axial force, buildable from a single constant cross-section. It uses one `EdgeForceGoal` per bottom edge to equalize the force and a `NodesColinearGoal` to keep the top chord straight, and draws on the graphic-statics framing of Beghini et al. (2014).
-- Added `NodeResidualPlaneGoal` and `VertexResidualPlaneGoal`, which drive the residual force vector at a support toward a target plane described by its normal vector. Tests in `tests/test_goal_residual_plane.py` pin the projection math, the magnitude and normal-scale invariances, the vertex vocabulary resolution, and an end-to-end arch optimization that rotates the support reactions into tilted target planes.
-- Added contract-teaching error messages to the extension seams: `Collection` now explains the init-parameter-as-attribute convention when an attribute is missing (instead of a bare `AttributeError` from optimizer warmup), `Goal.__call__` raises a `ValueError` when the goal and prediction shapes disagree or when the target row count does not match the element count (instead of a bare assert or a raw vmap inconsistent-sizes error), and the `VectorGoal` target setter raises a `TypeError` pointing to the scalar goal variant when given a single number (instead of an opaque reshape error).
-- Widening the setter to handle the scalar branch also restores the `target` property's base-class contract, clearing the pyright override complaint on every vector goal. Constructing any goal or constraint with an empty key list is now a `ValueError` at construction rather than a dtype crash at evaluation.
+- Added how-to guides under a new How-to Guides section: `form_finding.md` and `constrained_form_finding.md` for the public entry points and the JAX numerical core, plus a concept guide and a custom guide each for goals (`goals.md`, `custom_goals.md`) and constraints (`constraints.md`, `custom_constraints.md`). Split the examples page into an Examples section (`docs/examples/arch.md` walkthrough plus `docs/examples/more.md` galleries) with a redirect from the old `examples/` URL.
+- Added a shape-matching example (`docs/examples/shape_matching.md`, `examples/creased_shell/creased_shell.py`) that best-fits a compression-only network to a creased-shell target with per-vertex `NodePointGoal`. One `data/json/creased_shell.json` is both the network and the target; `notebooks/vault.ipynb` follows the same flow. Removed the unused `data/json/vault.json` and `vault0.json`.
+- Added an equal-force truss example (`docs/examples/truss_equal_force.md`, `examples/truss/truss_equal_force.py`) that morphs the bottom chord of a brace-less planar truss to a uniform axial force with one `EdgeForceGoal` per edge and a `NodesColinearGoal` on the top chord.
+- Added `NodeResidualPlaneGoal` and `VertexResidualPlaneGoal`, which drive the residual force vector at a support toward a target plane. Tests in `tests/test_goal_residual_plane.py` pin the projection math, the magnitude and normal-scale invariances, and an end-to-end arch optimization.
+- Added contract-teaching errors at the extension seams: `Collection` explains the init-parameter-as-attribute convention on a missing attribute, `Goal.__call__` raises `ValueError` on a goal/prediction shape or target-count mismatch, and the `VectorGoal` target setter raises `TypeError` pointing to the scalar variant when given a single number. Constructing any goal or constraint with an empty key list is now a `ValueError` at construction rather than a dtype crash at evaluation.
+- Added typing-only mixin classes in `datastructures/types.py` (`FDMeshType`, `FDNetworkType`, `FDDatastructureType`), inherited as the first base of `FDMesh`, `FDNetwork` and `FDDatastructure` and erased at runtime. They re-declare what COMPAS's python-2 type comments misreport: the inherited constructors and chainables return the FD subclass rather than base `Mesh`/`Data`, and the getter/setter dual accessors (`vertices`/`nodes`, `vertex_attribute`/`node_attribute`, `edges`, `faces`, coordinate getters) get mode-split `@overload` signatures instead of one broad union. `FDMesh.from_meshgrid(...)` now types as `FDMesh`, so `fdm(mesh)` and FD-specific methods type-check downstream, and about thirty `# pyright: ignore` suppressions across the datastructures, parameters, structures and visualization modules are retired. `OptimizationRecorder.from_json` gets the same `Self`-returning treatment.
 
 ### Changed
 
-- Changed `Goal.__call__` to accept scalar predictions of shape `()`: the vmapped prediction and goal are normalized to one feature row per element, so custom scalar goals no longer need to close with `jnp.atleast_1d`. The `(1,)` contract and its teaching error are gone; the shape check remains and now catches real mismatches, such as a scalar goal returning a vector. All 16 internal `jnp.atleast_1d` wrappers were deleted and the affected predictions now annotate their true scalar return. The flattening happens only after the `goal` hook runs, so a custom `goal()` receives the prediction's true per-element shape. Initializing a `Node*` goal or constraint against a mesh structure, or a `Vertex*` one against a network structure, now raises a `TypeError` pointing to the right counterpart. Borrowing previously worked silently only because mesh structures expose `node_index` and `vertex_index` with the same mapping, which left mesh scripts speaking network vocabulary. This is a breaking change: mesh call sites must switch to the vertex classes.
-- Changed per-element goals and constraints to enforce a single element key: passing a list of keys now raises a teaching `TypeError` at construction instead of crashing the `Collection` machinery later with `unhashable type: 'list'` when a same-type peer is present. Multi-element quantities belong to the aggregate goals, which now declare a class-level `is_aggregate = True` flag (`False` by default). The flag replaces both the hand-written aggregate boilerplate and the `is_collectible` instance attribute assigned in every constructor, which was always its negation: the base `Goal.init` keeps an aggregate's index two-dimensional (previously a copied `np.atleast_2d` override in every aggregate) and `collect_goals` gives each aggregate its own singleton collection. The whole-structure `NetworkGoal` and `MeshGoal` bases declare `is_aggregate = True` the same way, as aggregates whose group is the entire structure, so their sentinel index now reaches `prediction` as a one-element row instead of a scalar (the argument is unused there either way). `EdgesForceEqualGoal`, `EdgesLengthEqualGoal`, `NodesColinearGoal` and `NodesCurvatureGoal` shrink accordingly, and the aggregate recipe in the custom goals guide collapses from three deviations to one line. This is a breaking change for callers that passed a key list to a per-element goal or constraint, for third-party aggregates, which must now declare `is_aggregate = True` at class level instead of assigning `is_collectible` in `__init__`, and for any code reading `is_collectible`.
-- Changed `VertexXCoordinateConstraint`, `VertexYCoordinateConstraint` and `VertexZCoordinateConstraint` into thin subclasses of their node counterparts, deleting the verbatim-duplicated constraint bodies.
-- Changed aggregate index resolution to respect the MRO of retargeted subclasses like `VerticesColinearGoal`: the base `Goal.init` dispatches through `self.index_from_structure`, so vertex twins of aggregate goals resolve through the vertex vocabulary without overriding anything.
-- Changed the arch examples in `examples/arch/` and the arch snippets in the README and docs to build the network from nodes and edges with `FDNetwork.from_nodes_and_edges` instead of loading `data/json/arch.json`, so the geometry is explicit and the scripts stand alone. The now-unused `data/json/arch.json` was removed.
-- Changed the mesh examples to mesh vocabulary: `pillow.py` uses `VertexLineGoal`, `VertexCurvatureConstraint` and `MeshLoadPathGoal`; `monkey_saddle.py` and `monkey_saddle_constraints.py` use `VertexResidualForceGoal`, and the former also `MeshLoadPathGoal`. The network-native `dome_constraints.py` keeps its node goals, which are the correct vocabulary there.
-- Changed `index_from_model(model, structure)` to `index_from_structure(structure)` on all goal and constraint classes. The index always resolves from the structure alone. No implementation read the model. This is a breaking change for custom subclasses that override the resolver.
-- Changed how the thin-counterpart pattern is documented: the repeated "thin vertex counterpart" Notes on every vertex goal and constraint moved into one intro paragraph under the `Vertex goals` and `Vertex constraints` sections of the API reference, so the pattern is explained once where it is visible as a pattern. Docstrings keep their summaries and any class-specific behavioral notes for `help()` and IDE readers.
-- Changed all Sphinx `:class:`/`:meth:` roles in docstrings (33 across nine packages) to mkdocstrings-native syntax, since mkdocstrings rendered the role prefix as literal text on the documentation site. Targets documented in the API reference became autorefs cross-reference links; self-references, undocumented internals and external COMPAS classes became plain code formatting.
-- Changed `Parameter.index`, `Parameter.value` and `NodeCurvatureConstraint.polygon_indices` to drop their unused `model` argument, for the same reason: `index` and `polygon_indices` resolve from the structure, and `value` reads from the datastructure. This is a breaking change for direct callers and overriding subclasses; `ParameterManager` and `init` keep their signatures.
+- Changed the pyright scope to also check `examples/` and restored `reportAttributeAccessIssue` to its default error severity, now that the typing mixins retire the dynamic-attribute warnings it silenced. The examples were brought to zero diagnostics with behavior-neutral edits.
+- Changed `fdm` and `constrained_fdm` to bind their return type to their input type through the `AnyFDDatastructure` type variable (bound to `FDNetwork | FDMesh`): a network in types a network out, a mesh a mesh. Call sites no longer need `isinstance` narrowing to reach network- or mesh-specific methods on the result.
+- Cleaned up the star-exported package namespaces while keeping the compact `from .x import *` `__init__.py` idiom. Every leaf module declares its own `__all__` so a star-import pulls only its public API, and each package `__init__` computes `__all__` from `vars()` filtered of underscored names and submodules. This shrinks each package's public surface to its real API (`jax_fdm.goals` from 103 exported names to 61) without hand-listing symbols. `EdgeForceDensityParameter` is now importable only from its home package `jax_fdm.parameters`. The `reportUnsupportedDunderAll` pyright warning on each `__init__` is accepted: pyright cannot evaluate a computed `__all__`, and the compact form is the deliberate tradeoff.
+- Changed the intra-package base-class imports to read from the concrete defining submodule (`from jax_fdm.goals.goal import ScalarGoal`) rather than the half-initialized package namespace, removing the load-order dependence that forced a hand-ordered star-import sequence. Internal only — no public import path changes.
+- Renamed the module-level `solvers` dict in `equilibrium/sparse.py` to `_solvers`. As a public name it was star-imported and shadowed the sibling `solvers` subpackage, breaking `import jax_fdm.equilibrium.solvers.<module>` under some isort orderings. Internal only.
+- Changed parameter and goal container annotations from `list[X]` to `Sequence[X]` where the callee only iterates (`constrained_fdm`, `Optimizer.problem`/`constraints`, `Error.__init__`, `ParameterManager.__init__`, `collect_goals`/`collect_constraints`), so covariance lets `list[EdgeForceDensityParameter]` satisfy `list[Parameter]`.
+- Changed goal `target` inputs to the `TargetLike` alias (`float | Float[Array, "..."] | Sequence[float] | Sequence[Sequence[float]]`), matching what the setters accept at runtime; plain lists and tuples now type-check while COMPAS geometry objects stay excluded. The `vector`/`polygon` goal and constraint params accept float sequences the same way. Datastructure `keys` params that are only iterated widened to `Iterable`; `load` vectors widened to `Iterable[float]` for single-element setters and `Sequence[float]` for the re-reading many-element setters. Also corrected the lying `edges_forcedensities(q: list[float])` to `q: float | None`.
+- Changed the minimum supported Python to 3.11, from 3.10. The 3.10 floor was notional since the current JAX/jaxtyping/lineax/optimistix/NumPy releases all require 3.11+, and the bump lets typed signatures use `typing.Self` without `typing_extensions`. Breaking for 3.10 environments.
+- Changed the sparse structures to keep their edge-node connectivity in JAX sparse format instead of densifying after a sparse build, removing a workaround for a since-fixed JAX reverse-mode gradient bug (guarded by `tests/test_sparse_interop.py`). At 7320 edges the dense matrix weighed 218 MB; kept sparse, the sparse-model loss evaluates ~2x and its gradient ~4x faster on CPU. The tributary-load helpers now flow both storage formats through one path (`nodes_tributary_edges_load` via `edges_indexed`, the face-load pipeline via a new `edges_faces_indexed` array). Parity pinned by `tests/test_sparse_parity.py`. Breaking for code reading `structure.connectivity` and expecting a dense array; call `.todense()`.
+- Changed the sparse structures to keep their remaining O(n^2) matrices sparse too: `adjacency` on `GraphSparse`, `connectivity_faces_vertices` and `connectivity_edges_faces` on `MeshSparse`. Breaking for code reading these off sparse structures and expecting dense arrays; call `.todense()`.
+- Changed the neighborhood goals from per-element `vmap` over matrix rows/columns to whole-matrix products that work on either storage format: `NetworkSmoothGoal`/`MeshSmoothGoal` (via array-wide `nodes_nbrs_fairness`/`vertices_nbrs_fairness`), `MeshXYZFaceLaplacianGoal`, and `VertexNormalAngleGoal` (which drops its cached matrix). Predictions are bit-identical on a fixed random state; parity pinned in `tests/test_sparse_parity.py`. Breaking for callers of the removed per-element fairness helpers.
+- Changed `Goal.__call__` to accept scalar predictions of shape `()`, so custom scalar goals no longer need to close with `jnp.atleast_1d`. The `(1,)` contract and its teaching error are gone; the shape check remains and now catches real mismatches. Flattening happens only after the `goal` hook, so a custom `goal()` sees the prediction's true per-element shape. Initializing a `Node*` goal or constraint against a mesh (or a `Vertex*` one against a network) now raises a `TypeError` pointing to the right counterpart, closing a silent path where mesh scripts spoke network vocabulary. Breaking: mesh call sites must switch to the vertex classes.
+- Changed per-element goals and constraints to enforce a single element key, raising a teaching `TypeError` at construction instead of crashing `Collection` later. Multi-element quantities belong to aggregate goals, which now declare a class-level `is_aggregate = True` flag (replacing the hand-written boilerplate and the negated `is_collectible` instance attribute); `collect_goals` gives each aggregate its own singleton collection. `NetworkGoal` and `MeshGoal` declare the flag too. `EdgesForceEqualGoal`, `EdgesLengthEqualGoal`, `NodesColinearGoal` and `NodesCurvatureGoal` shrink accordingly. Breaking for callers passing a key list to a per-element goal/constraint, for third-party aggregates (declare `is_aggregate = True` at class level), and for code reading `is_collectible`.
+- Changed the goal index to a single one-dimensional rank, so `Goal._index` matches its `Int[np.ndarray, "elements"]` annotation for both goal kinds. `Goal.init` no longer bumps an aggregate index to two dimensions with `np.atleast_2d`; `Goal.__call__` adds the transient leading axis only for aggregates, reshaping to `(1, elements)` for the same `vmap` that maps a per-element index directly. Behavior is bit-identical — every `prediction` receives the same shape as before.
+- Changed the force-density edge defaults duplicated in the `FDMesh` and `FDNetwork` constructors into a shared `edge_attributes_default` class attribute on the `FDDatastructure` mixin. Internal only — the registered defaults are unchanged. (The mixin's tail MRO position rules out an `__init__` hook: COMPAS's `Data.__init__` does not chain `super().__init__`.)
+- Changed aggregate index resolution to dispatch through `self.index_from_structure` in the base `Goal.init`, so retargeted subclasses like `VerticesColinearGoal` resolve through the vertex vocabulary without an override.
+- Changed the mesh examples to mesh vocabulary: `pillow.py` uses `VertexLineGoal`, `VertexCurvatureConstraint` and `MeshLoadPathGoal`; `monkey_saddle.py`/`monkey_saddle_constraints.py` use `VertexResidualForceGoal`. The network-native `dome_constraints.py` keeps its node goals.
+- Changed the arch examples and the README/docs arch snippets to build the network from nodes and edges with `FDNetwork.from_nodes_and_edges` instead of loading `data/json/arch.json`, which was removed.
+- Changed `index_from_model(model, structure)` to `index_from_structure(structure)` on all goal and constraint classes, since no implementation read the model. Breaking for custom subclasses that override the resolver.
+- Changed how the thin-counterpart pattern is documented: the repeated "thin vertex counterpart" Notes moved into one intro paragraph per API-reference section. Docstrings keep their summaries and class-specific notes.
+- Changed all Sphinx `:class:`/`:meth:` roles in docstrings (33 across nine packages) to mkdocstrings-native syntax, since the role prefix rendered as literal text on the docs site.
+- Changed `Parameter.index`, `Parameter.value` and `NodeCurvatureConstraint.polygon_indices` to drop their unused `model` argument. Breaking for direct callers and overriding subclasses; `ParameterManager` and `init` keep their signatures.
+- Changed `normal_polygon` to reference the polygon points to their centroid before the rolled cross products. The normal is analytically unchanged and bit-compatible near the origin, but the uncentered form cancelled catastrophically at large coordinates (drifting a unit quad's planarity by O(1) around 1e8 in float64); centered, the drift is zero through 1e12. `nanmean` preserves the nan-padding contract, pinned by `tests/test_normal.py`. `area_polygon`, `planarity_polygon` and `polygon_lcs` inherit the robustness.
+- Changed `face_planarity` to divide the polygon planarity by the face's edge count, turning the per-face score from a sum of absolute normal-edge cosines into their mean, so ngon-heavy regions no longer dominate the `MeshPlanarityGoal` average on mixed-degree meshes. Pinned by `tests/test_planarity.py`. Breaking for planarity magnitudes: on a pure-quad mesh the prediction is a quarter of its previous value, so tuned weights may need rescaling.
+- Cleaned up the type-checker suppressions and lint config surfaced by a pyright audit, with no runtime effect. The ruff `notebooks` exclusion was narrowed to the `notebooks/*.ipynb` glob so it no longer also skipped the `visualization/notebooks` source subpackage, which had been silently un-linted. Removed `# pyright: ignore` pragmas that no longer suppressed anything (sparse-override, `reportOptionalOperand` around the sparse transpose now using `.transpose()`, `reportRedeclaration` on the `gradient_descent` closures, `reportArgumentType` at the `jnp.flatnonzero` and factory-dispatch boundaries) and normalized 111 `# noqa F403` directives to `# noqa: F403`. Corrected three annotations that disagreed with the runtime: `EquilibriumStructureSparse.connectivity_free`/`connectivity_fixed` to `Float[BCOO, ...]`, `IPOPT.hvp` to the `(parameters, parameters)` Hessian, and `VertexTangentAngleGoal.prediction` to the scalar `Float[Array, ""]`.
+- Changed the mesh goals to speak mesh vocabulary in their coordinate-array annotations: the `xyz` params of the face and vertex helpers in `goals/mesh/area.py`, `goals/mesh/planarity.py` and `goals/vertex/normal.py` now read `Float[Array, "vertices 3"]` (they had said `"nodes 3"` while already naming their returns `"vertices"`), and `MeshSmoothGoal.indices_free` reads `Int[Array, "vertices_free"]`. `EquilibriumState.xyz` keeps `"nodes 3"` as the shared node-and-vertex abstraction. Annotation-only.
+- Changed `Optimizer.solve` and `GradientFreeOptimizer.solve` to return `jnp.asarray(res_q.x)` rather than the NumPy SciPy result vector, matching their `Float[Array, "parameters"]` signature and the differentiable pipeline downstream.
+- Removed the `from __future__ import print_function` relic from `jax_fdm/__init__.py` and added `-> None` to the seventeen `__init__` methods across `equilibrium`, `goals` and `optimization` that lacked one.
 
 ### Fixed
 
-- Fixed the `nodes`/`vertices` point-filter keyword being silently ignored by the scene objects of all three visualization backends (viewer, notebook, plotter). The subclasses mapped only the styling vocabulary onto the neutral point parameters of their base class, so a `nodes=` or `vertices=` selection fell through `**kwargs` into the upstream COMPAS scene object and everything drew as if unfiltered, including the load and reaction arrows. The subclass constructors now bind the filter onto the base `points` parameter like the styling keywords, with regression tests on the viewer and plotter objects.
-- Fixed a circular import that made `import jax_fdm.goals` (and `losses`, `constraints`, `optimization`, `parameters`) fail unless `jax_fdm.equilibrium` or `jax_fdm.datastructures` was imported first. `equilibrium.fdm` imported `Loss`, `Optimizer` and `Parameter` at runtime for annotations only, closing the cycle `equilibrium -> losses -> goals -> equilibrium`; those imports now live under `TYPE_CHECKING` like the existing `Constraint` import.
+- Fixed `colinearity_points` in `geometry` overcounting its energy through a shape mismatch: the per-edge squared lengths carry a trailing unit axis, so the `lbar` normalizer broadcast `(interior, 1)` against `(interior,)` into a matrix whose cross terms roughly doubled the summed energy. Raveling the averaged lengths back to `(interior,)` restores the per-vertex division. `NodesColinearGoal` and `VerticesColinearGoal` read this energy, so their landscapes shift by the corrected scale; `test_colinear_load_optimization_flattens_arch` was re-baselined from `atol=1e-9` to `atol=1e-8` (still flattens, final loss ~2e-19).
+- Fixed a `NameError` in `gradient_descent` when `maxiter=0`: the loop variable `k`, read after the loop, was never bound when the body did not run. It is now initialized to `-1` before the loop.
+- Fixed `connectivity_matrix` and `adjacency_matrix` in `equilibrium/structures/` undersizing their node axis when the highest-indexed node touches no edge, since both inferred the node count from the largest edge index. Both now take an optional `num_nodes` argument that the `Graph` builders pass, so the matrices span every node.
+- Fixed `FaceRectangularGoal` leaking predictions across collected goals: it summed the rectangularity measure over every cached face row per prediction, so two goals vectorized into one collection each saw the sum over both faces. The prediction now gathers one face per element index. Pinned by `tests/test_goal_face_rectangle.py`.
+- Fixed the slow construction of equilibrium structures (seconds for meshes beyond a thousand edges): a 1860-edge structure now builds in ~0.06 s instead of ~5.5 s, and the gap widens with size since the worst loop was quadratic. Four Python-loop hot spots were vectorized — `Mesh._edges_faces` (one halfedge pass instead of rescanning faces per edge), `EquilibriumStructureSparse._get_sparse_diag_indices` (one NumPy comparison instead of a per-row `jnp.where`), the COO assembly in `connectivity_matrix`/`adjacency_matrix`/`face_matrix` (NumPy-once instead of per-element device syncs), and `_indices_freefixed` (`np.argsort` instead of a `.item()`-per-node sort). All rebuilt matrices are bit-identical.
+- Fixed the `nodes`/`vertices` point-filter keyword being silently ignored by the scene objects of all three visualization backends (viewer, notebook, plotter): the subclasses mapped only the styling vocabulary, so the filter fell through `**kwargs` and everything drew unfiltered. The constructors now bind it onto the base `points` parameter, with regression tests on the viewer and plotter objects.
+- Fixed a circular import that made `import jax_fdm.goals` (and `losses`, `constraints`, `optimization`, `parameters`) fail unless `equilibrium` or `datastructures` was imported first. `equilibrium.fdm` imported `Loss`, `Optimizer` and `Parameter` at runtime for annotations only; those imports now live under `TYPE_CHECKING`.
 
 ### Removed
 
+- Removed `normal_polygon_2`, which had no callers now that its centroid-referencing trick is `normal_polygon`'s own behavior.
+- Removed the `build_matrix` helper and the `rtype` parameter from `connectivity_matrix`, `adjacency_matrix` and `face_matrix` in `equilibrium/structures/`: every call site requested a fixed format, so the string dispatch was dead branches around scipy's own conversions. The three now return compressed-column sparse (the only format the structures rely on); dense consumers call `toarray()`. Breaking for external callers, which imported these via `jax_fdm.equilibrium.structures`.
 
 ## [0.13.0] 2026-07-16
 
@@ -93,7 +118,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Removed the unused `AbstractGoal` class (`goals/abstract_goal.py`) and the unused `goals_reindex` and `goals_state` helpers (`goals/helpers.py`) from `goals`. Their goal collation is handled by the goal collection machinery in `optimization`.
 - Removed the redundant `Parameter` subclass constructors in `parameters` that only forwarded `*args`/`**kwargs` or set the attribute name, leaving explicit constructors only on `Parameter` and `ParameterGroup`.
-
 
 ## [0.12.0] 2026-07-13
 
@@ -215,7 +239,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed a shape regression in the angle goals (`EdgeAngleGoal`, `VertexNormalAngleGoal`, and thus `VertexTangentAngleGoal`; then still named `NodeNormalAngleGoal`/`NodeTangentAngleGoal`). When `angle_vectors` was refactored to delegate to `cosine_vectors`, its output lost the trailing axis and became a scalar, so a goal's prediction came out `(N,)` while the `ScalarGoal` target stayed `(N, 1)`, raising an assertion in `Goal.__call__`. The goal predictions now wrap `angle_vectors` in `jnp.atleast_1d`, restoring the `(N, 1)` shape; `angle_vectors` stays scalar so `angles_polygon`/`FaceRectangleGoal` are unaffected.
 - Fixed `VertexNormalAngleGoal` (and thus `VertexTangentAngleGoal`) chasing the wrong angle branch. The prediction took the angle from the *signed* cosine of the vertex normal against the reference vector, so it depended on face winding: a mesh whose faces wound the averaged vertex normal downward reported `pi - theta` instead of `theta`. A downward-pointing normal made the tangent goal (`pi/2 - angle_normal`) start negative and unable to reach a positive target, so the optimizer flattened the surface to a zero tangent angle instead of converging. The prediction now takes the angle from the *absolute* cosine, folding it into `[0, pi/2]` so it is invariant to the normal's orientation, and clips the `arccos` argument to guard its gradient singularity when the vectors align. `test_goal_angle.py` gains winding-invariance and upper-hemisphere regression tests that fail against the signed-cosine version.
 
-
 ## [0.10.0] 2026-05-07
 
 ### Added
@@ -327,7 +350,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Removed
 
-
 ## [0.8.5] 2024-09-15
 
 ### Added
@@ -352,7 +374,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Removed
 
-
 ## [0.8.3] 2024-04-18
 
 ### Added
@@ -376,7 +397,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Removed
 
-
 ## [0.8.1] 2023-12-05
 
 ### Added
@@ -387,7 +407,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 ### Removed
-
 
 ## [0.8.0] 2023-11-23
 
@@ -509,7 +528,6 @@ These two load types can be optionally become follower loads setting the `is_loc
 - Fixed bug with the coloring of reaction forces in `artists/network_artist.py`.
 - `LossPlotter` has support to plot named tuple parameters.
 
-
 ### Removed
 
 - Removed `EquilibriumModel.from_network`.
@@ -517,7 +535,6 @@ These two load types can be optionally become follower loads setting the `is_loc
 - Removed `sparse.force_densities_to_b`. Superseded by `EquilibriumModel.force_matrix`.
 - Removed partial jitting from `Loss.__call__`.
 - Removed partial jitting from `Error.__call__`.
-
 
 ## [0.7.1] 2023-05-08
 
@@ -530,7 +547,6 @@ These two load types can be optionally become follower loads setting the `is_loc
 ### Removed
 
 - Removed implicit `partial(jit)` decorator on `ConstrainedOptimizer.constraint`. Jitting now takes place explicitly in `ConstrainedOptimizer.constraints`.
-
 
 ## [0.7.0] 2023-05-08
 
@@ -567,7 +583,6 @@ Support for differentiable CPU sparse solver
 
 ### Removed
 
-
 ## [0.5.2] 2023-03-15
 
 ### Added
@@ -587,7 +602,6 @@ Support for differentiable CPU sparse solver
 - Added `ParameterManager.indices_opt_sort` to fix bug that mistmatch optimization values for unconsecutive parameter indices. This bug applied to individual parameters and to parameter groups.
 
 ### Removed
-
 
 ## [0.5.0] 2023-03-02
 
@@ -632,7 +646,6 @@ Support for differentiable CPU sparse solver
 
 ### Removed
 
-
 ## [0.4.4] 2022-12-15
 
 ### Added
@@ -642,7 +655,6 @@ Support for differentiable CPU sparse solver
 ### Changed
 
 ### Removed
-
 
 ## [0.4.3] 2022-12-14
 
@@ -655,7 +667,6 @@ Support for differentiable CPU sparse solver
 ### Changed
 
 ### Removed
-
 
 ## [0.4.2] 2022-12-12
 
@@ -675,7 +686,6 @@ Support for differentiable CPU sparse solver
 
 ### Removed
 
-
 ## [0.4.1] 2022-11-29
 
 ### Added
@@ -686,7 +696,6 @@ Support for differentiable CPU sparse solver
 - Changed tension-compression force color map gradient to a binary color map.
 
 ### Removed
-
 
 ## [0.4.0] 2022-11-22
 
@@ -715,7 +724,6 @@ Support for differentiable CPU sparse solver
 
 ### Removed
 
-
 ## [0.3.0] 2022-11-08
 
 ### Added
@@ -742,7 +750,6 @@ Support for differentiable CPU sparse solver
 
 ### Removed
 
-
 ## [0.2.4] 2022-10-27
 
 ### Added
@@ -753,7 +760,6 @@ Support for differentiable CPU sparse solver
 - `FDNetworkArtist` now stores network element collections as attributes.
 
 ### Changed
-
 
 ### Removed
 
@@ -789,7 +795,6 @@ Support for differentiable CPU sparse solver
 
 ### Removed
 
-
 ## [0.2.1] 2022-10-17
 
 ### Added
@@ -799,7 +804,6 @@ Support for differentiable CPU sparse solver
 - Rolled back support for python `3.7`.
 
 ### Removed
-
 
 ## [0.2.0] 2022-10-11
 
@@ -817,7 +821,6 @@ Support for differentiable CPU sparse solver
 ### Changed
 
 ### Removed
-
 
 ## [0.1.2] 2022-09-30
 

@@ -1,4 +1,6 @@
+from collections.abc import Sequence
 from typing import Any
+from typing import TypeAlias
 
 import jax.numpy as jnp
 import numpy as np
@@ -11,7 +13,17 @@ from jax_fdm import DTYPE_JAX
 from jax_fdm.equilibrium import EquilibriumModel
 from jax_fdm.equilibrium import EquilibriumState
 from jax_fdm.equilibrium import EquilibriumStructure
-from jax_fdm.goals import GoalState
+from jax_fdm.goals.state import GoalState
+
+__all__ = ["Goal", "ScalarGoal", "VectorGoal"]
+
+# What the target setters accept: a scalar, an existing array, or any nesting
+# of float sequences (the setters run the input through jnp.asarray + reshape).
+# COMPAS geometry objects are deliberately excluded; convert them to plain
+# lists at the call site.
+TargetLike: TypeAlias = (
+    float | Float[Array, "..."] | Sequence[float] | Sequence[Sequence[float]]
+)
 
 # ==========================================================================
 # Base goal
@@ -55,7 +67,7 @@ class Goal:
     def __init__(
         self,
         key: int | tuple[int, int] | list[int] | list[tuple[int, int]],
-        target: float | Float[Array, "..."],
+        target: TargetLike,
         weight: float | Float[Array, "..."] = 1.0,
     ) -> None:
         self._key: int | tuple[int, int] | list[int] | list[tuple[int, int]] | None = (
@@ -134,7 +146,7 @@ class Goal:
         raise NotImplementedError
 
     @target.setter
-    def target(self, target: float | Float[Array, "..."]) -> None:
+    def target(self, target: TargetLike) -> None:
         # Concrete goals provide the setter via the ScalarGoal / VectorGoal
         # mixins; the base only declares the contract so that Goal.__init__ can
         # assign self.target without tripping a read-only property.
@@ -236,14 +248,12 @@ class Goal:
         Notes
         -----
         Must be called once before the goal is evaluated; it populates the index
-        that `prediction` reads. For an aggregate goal, the index is kept
-        two-dimensional so the whole key list is fed to a single `prediction`
-        call rather than vmapped per element.
+        that `prediction` reads. The index is always one-dimensional, one entry
+        per element. `__call__` vmaps `prediction` over it: a per-element goal
+        maps each entry, while an aggregate goal maps its whole index as a
+        single batch-of-one row.
         """
-        index = self.index_from_structure(structure)
-        if self.is_aggregate:
-            index = np.atleast_2d(index)
-        self.index = index
+        self.index = self.index_from_structure(structure)
 
     def __call__(self, eqstate: EquilibriumState) -> GoalState:
         """
@@ -267,8 +277,12 @@ class Goal:
             or if the goal and prediction shapes disagree, typically because a
             scalar goal's prediction returned more than one value per element.
         """
-        # self.index is an index array built in init and mapped to jax scalars by vmap
-        prediction = vmap(self.prediction, in_axes=(None, 0))(eqstate, self.index)  # pyright: ignore[reportArgumentType]
+        # self.index is a 1-D numpy index array, one entry per element. vmap
+        # maps its leading axis: a per-element goal maps each entry to a jax
+        # scalar, while an aggregate goal maps its whole index as a single
+        # batch-of-one row, mirrored by the leading axis its target carries.
+        index = self.index[jnp.newaxis, :] if self.is_aggregate else self.index
+        prediction = vmap(self.prediction, in_axes=(None, 0))(eqstate, index)  # pyright: ignore[reportArgumentType]
 
         if self.target.shape[0] != prediction.shape[0]:
             raise ValueError(
@@ -319,7 +333,7 @@ class ScalarGoal:
         return self._target
 
     @target.setter
-    def target(self, target: float | Float[Array, "..."]) -> None:
+    def target(self, target: TargetLike) -> None:
         values = [target] if isinstance(target, (int, float)) else target
         self._target = jnp.reshape(jnp.asarray(values, dtype=DTYPE_JAX), (-1, 1))
 
@@ -346,7 +360,7 @@ class VectorGoal:
         return self._target
 
     @target.setter
-    def target(self, target: float | Float[Array, "..."]) -> None:
+    def target(self, target: TargetLike) -> None:
         if isinstance(target, (int, float)):
             raise TypeError(
                 f"{type(self).__name__} is a vector goal, so its target must be "

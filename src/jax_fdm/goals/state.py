@@ -3,6 +3,8 @@ from typing import NamedTuple
 from jaxtyping import Array
 from jaxtyping import Float
 
+__all__ = ["GoalState"]
+
 
 class GoalState(NamedTuple):
     """

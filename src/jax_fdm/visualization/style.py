@@ -118,8 +118,7 @@ def edge_colors(
 
     if color == "fd":
         cmap = COLORMAP_FD
-        # the getter-mode call (no q kwarg) always returns a float
-        values = [fabs(datastructure.edge_forcedensity(edge)) for edge in edges]  # pyright: ignore[reportArgumentType]
+        values = [fabs(datastructure.edge_forcedensity(edge)) for edge in edges]
         try:
             ratios = remap_values(values)
         except ZeroDivisionError:

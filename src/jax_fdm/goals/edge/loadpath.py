@@ -4,8 +4,10 @@ from jaxtyping import Float
 from jaxtyping import Int
 
 from jax_fdm.equilibrium import EquilibriumState
-from jax_fdm.goals import ScalarGoal
-from jax_fdm.goals.edge import EdgeGoal
+from jax_fdm.goals.edge.edge import EdgeGoal
+from jax_fdm.goals.goal import ScalarGoal
+
+__all__ = ["EdgeLoadPathGoal"]
 
 
 class EdgeLoadPathGoal(ScalarGoal, EdgeGoal):

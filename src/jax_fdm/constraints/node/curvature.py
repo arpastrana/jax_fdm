@@ -1,14 +1,18 @@
+from collections.abc import Sequence
+
 import jax.numpy as jnp
 import numpy as np
 from jaxtyping import Array
 from jaxtyping import Float
 from jaxtyping import Int
 
-from jax_fdm.constraints.node import NodeConstraint
+from jax_fdm.constraints.node.node import NodeConstraint
 from jax_fdm.equilibrium import EquilibriumModel
 from jax_fdm.equilibrium import EquilibriumState
 from jax_fdm.equilibrium import EquilibriumStructure
 from jax_fdm.geometry import curvature_point_polygon
+
+__all__ = ["NodeCurvatureConstraint"]
 
 
 class NodeCurvatureConstraint(NodeConstraint):
@@ -30,7 +34,7 @@ class NodeCurvatureConstraint(NodeConstraint):
     def __init__(
         self,
         key: int,
-        polygon: Int[Array, "nodes neighbors"],
+        polygon: Int[Array, "nodes neighbors"] | Sequence[int],
         bound_low: float | Float[Array, "..."] | None,
         bound_up: float | Float[Array, "..."] | None,
     ) -> None:

@@ -14,6 +14,12 @@ from jax_fdm.equilibrium.solvers.types import SolverIterParams
 # Custom VJP via implicit differentiation
 # ==========================================================================
 
+__all__ = [
+    "nonlinear_bwd",
+    "nonlinear_fwd",
+    "solver_nonlinear_implicit",
+]
+
 
 @partial(custom_vjp, nondiff_argnums=(0, 1, 2))
 def solver_nonlinear_implicit(

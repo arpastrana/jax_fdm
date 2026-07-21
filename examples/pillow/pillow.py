@@ -10,7 +10,6 @@ import numpy as np
 # compas
 from compas.colors import Color
 from compas.datastructures import Mesh
-from compas.geometry import Line
 from compas.geometry import add_vectors
 from jax_fdm.constraints import EdgeForceConstraint
 from jax_fdm.constraints import EdgeLengthConstraint
@@ -98,7 +97,7 @@ for edge in mesh.edges():
     q = q0 + dq * (random() - 0.5)
     mesh.edge_forcedensity(edge, q)
 
-meshes = {"input": mesh}
+meshes: dict[str, FDMesh] = {"input": mesh}
 
 # ==========================================================================
 # Initial form finding - no external loads
@@ -127,7 +126,7 @@ if add_horizontal_projection_goal:
     print("Horizontal projection goal")
     for vertex in mesh.vertices_free():
         xyz = mesh.vertex_coordinates(vertex)
-        line = Line(xyz, add_vectors(xyz, [0.0, 0.0, 1.0]))
+        line = [xyz, add_vectors(xyz, [0.0, 0.0, 1.0])]
         goal = VertexLineGoal(vertex, target=line, weight=weight_horizontal_projection)
         goals.append(goal)
 

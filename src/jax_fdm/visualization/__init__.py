@@ -1,7 +1,13 @@
-from .buffers import *  # noqa F403
-from .style import *  # noqa F403
-from .plotters import *  # noqa F403
-from .viewers import *  # noqa F403
-from .notebooks import *  # noqa F403
+from types import ModuleType as _ModuleType
 
-__all__ = [name for name in dir() if not name.startswith("_")]
+from .buffers import *  # noqa: F403
+from .notebooks import *  # noqa: F403
+from .plotters import *  # noqa: F403
+from .style import *  # noqa: F403
+from .viewers import *  # noqa: F403
+
+__all__ = [
+    name
+    for name, value in vars().items()
+    if not name.startswith("_") and not isinstance(value, _ModuleType)
+]

@@ -48,9 +48,9 @@ from jax_fdm.goals.vertex import VertexGoal
 from jax_fdm.losses import Loss
 from jax_fdm.losses import SquaredError
 from jax_fdm.optimization import LBFGSB
-from jax_fdm.optimization import EdgeForceDensityParameter
 from jax_fdm.optimization.collections import Collection
 from jax_fdm.optimization.collections import collect_goals
+from jax_fdm.parameters import EdgeForceDensityParameter
 
 MAXITER = 50
 
@@ -257,7 +257,7 @@ def test_vertex_line_goal_optimizes(meshgrid_mesh):
 
 def test_vertices_colinear_goal_initializes_and_optimizes(meshgrid_mesh):
     """
-    An aggregate vertex goal resolves a two-dimensional index and optimizes.
+    An aggregate vertex goal resolves a one-dimensional index and optimizes.
 
     Regression for the aggregate `init`: it must dispatch `index_from_structure`
     through the instance's MRO (vertex resolution), not hop over it to the
@@ -271,9 +271,9 @@ def test_vertices_colinear_goal_initializes_and_optimizes(meshgrid_mesh):
     model, structure, eqstate = _fixed_mesh_state(mesh.copy())
     goal.init(model, structure)
 
-    assert goal.index.ndim == 2
+    assert goal.index.ndim == 1
     expected = tuple(structure.vertex_index[vkey] for vkey in strip)
-    assert tuple(int(i) for i in goal.index[0]) == expected
+    assert tuple(int(i) for i in goal.index) == expected
 
     prediction = goal(eqstate).prediction
     assert jnp.all(jnp.isfinite(prediction))

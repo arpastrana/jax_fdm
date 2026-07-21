@@ -1,3 +1,5 @@
+from collections.abc import Sequence
+
 from jax.numpy import inf
 
 from jax_fdm.datastructures import FDMesh
@@ -8,6 +10,48 @@ from jax_fdm.equilibrium import EquilibriumStructure
 # ==========================================================================
 # Parameter
 # ==========================================================================
+
+__all__ = [
+    "EdgeForceDensityParameter",
+    "EdgeGroupForceDensityParameter",
+    "EdgeGroupParameter",
+    "EdgeParameter",
+    "NodeGroupLoadXParameter",
+    "NodeGroupLoadYParameter",
+    "NodeGroupLoadZParameter",
+    "NodeGroupParameter",
+    "NodeGroupSupportParameter",
+    "NodeGroupSupportXParameter",
+    "NodeGroupSupportYParameter",
+    "NodeGroupSupportZParameter",
+    "NodeLoadParameter",
+    "NodeLoadXParameter",
+    "NodeLoadYParameter",
+    "NodeLoadZParameter",
+    "NodeParameter",
+    "NodeSupportParameter",
+    "NodeSupportXParameter",
+    "NodeSupportYParameter",
+    "NodeSupportZParameter",
+    "Parameter",
+    "ParameterGroup",
+    "VertexGroupLoadXParameter",
+    "VertexGroupLoadYParameter",
+    "VertexGroupLoadZParameter",
+    "VertexGroupParameter",
+    "VertexGroupSupportParameter",
+    "VertexGroupSupportXParameter",
+    "VertexGroupSupportYParameter",
+    "VertexGroupSupportZParameter",
+    "VertexLoadXParameter",
+    "VertexLoadYParameter",
+    "VertexLoadZParameter",
+    "VertexParameter",
+    "VertexSupportParameter",
+    "VertexSupportXParameter",
+    "VertexSupportYParameter",
+    "VertexSupportZParameter",
+]
 
 
 class Parameter:
@@ -30,16 +74,15 @@ class Parameter:
     Missing bounds normalize to negative or positive infinity rather than None.
     """
 
-    attr_name: str | None = (
-        None  # the datastructure attribute name; set per concrete subclass
-    )
+    # the datastructure attribute name; every concrete subclass sets one
+    attr_name: str
     key: (
-        int | tuple[int, int] | list[int] | list[tuple[int, int]]
+        int | tuple[int, int] | Sequence[int] | Sequence[tuple[int, int]]
     )  # narrowed per concrete subclass
 
     def __init__(
         self,
-        key: int | tuple[int, int] | list[int] | list[tuple[int, int]],
+        key: int | tuple[int, int] | Sequence[int] | Sequence[tuple[int, int]],
         bound_low: float | None = None,
         bound_up: float | None = None,
     ) -> None:
@@ -135,8 +178,7 @@ class NodeParameter(Parameter):
         """
         The current value of the parametrized node attribute.
         """
-        # compas accessors are untyped but the attribute always holds a float here
-        return datastructure.node_attribute(self.key, name=self.attr_name)  # pyright: ignore[reportReturnType]
+        return datastructure.node_attribute(self.key, name=self.attr_name)
 
 
 class VertexParameter(Parameter):
@@ -156,8 +198,7 @@ class VertexParameter(Parameter):
         """
         The current value of the parametrized vertex attribute.
         """
-        # compas accessors are untyped but the attribute always holds a float here
-        return datastructure.vertex_attribute(self.key, name=self.attr_name)  # pyright: ignore[reportReturnType]
+        return datastructure.vertex_attribute(self.key, name=self.attr_name)
 
 
 class EdgeParameter(Parameter):
@@ -178,8 +219,7 @@ class EdgeParameter(Parameter):
         """
         The current value of the parametrized edge attribute.
         """
-        # compas accessors are untyped but the attribute always holds a float here
-        return datastructure.edge_attribute(self.key, name=self.attr_name)  # pyright: ignore[reportReturnType]
+        return datastructure.edge_attribute(self.key, name=self.attr_name)
 
 
 # ==========================================================================
@@ -202,7 +242,7 @@ class ParameterGroup(Parameter):
 
     def __init__(
         self,
-        key: list[int] | list[tuple[int, int]],
+        key: Sequence[int] | Sequence[tuple[int, int]],
         bound_low: float | None = None,
         bound_up: float | None = None,
     ) -> None:
@@ -256,8 +296,7 @@ class NodeGroupParameter(ParameterGroup):
         values = [
             datastructure.node_attribute(key, name=self.attr_name) for key in self.key
         ]
-        # compas accessors are untyped but every attribute value here is a float
-        return sum(values) / len(values)  # pyright: ignore[reportCallIssue, reportArgumentType]
+        return sum(values) / len(values)
 
 
 class VertexGroupParameter(ParameterGroup):
@@ -278,8 +317,7 @@ class VertexGroupParameter(ParameterGroup):
         values = [
             datastructure.vertex_attribute(key, name=self.attr_name) for key in self.key
         ]
-        # compas accessors are untyped but every attribute value here is a float
-        return sum(values) / len(values)  # pyright: ignore[reportCallIssue, reportArgumentType]
+        return sum(values) / len(values)
 
 
 class EdgeGroupParameter(ParameterGroup):
@@ -303,8 +341,7 @@ class EdgeGroupParameter(ParameterGroup):
         values = [
             datastructure.edge_attribute(key, name=self.attr_name) for key in self.key
         ]
-        # compas accessors are untyped but every attribute value here is a float
-        return sum(values) / len(values)  # pyright: ignore[reportCallIssue, reportArgumentType]
+        return sum(values) / len(values)
 
 
 # ==========================================================================

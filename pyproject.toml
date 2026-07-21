@@ -8,7 +8,7 @@ description = "Auto-differentiable and hardware-accelerated force density method
 readme = "README.md"
 license = { text = "MIT license" }
 authors = [{ name = "Rafael Pastrana", email = "arpastrana@princeton.edu" }]
-requires-python = ">=3.10,<3.13"
+requires-python = ">=3.11,<3.13"
 keywords = [
     "jax",
     "automatic-differentiation",
@@ -26,7 +26,6 @@ classifiers = [
     "Operating System :: Microsoft :: Windows",
     "Programming Language :: Python",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: Implementation :: CPython",
@@ -89,9 +88,11 @@ where = ["src"]
 
 [tool.ruff]
 line-length = 88
-target-version = "py310"
-# The Colab notebooks carry !pip magics and notebook-style cells.
-extend-exclude = ["notebooks"]
+target-version = "py311"
+# The Colab notebooks carry !pip magics and notebook-style cells. Matched by the
+# root .ipynb glob so the visualization/notebooks source subpackage, which holds
+# only .py files, stays linted.
+extend-exclude = ["notebooks/*.ipynb"]
 
 [tool.ruff.format]
 # Format code inside docstrings too. On its own, ruff format packs a wrapped
@@ -172,15 +173,15 @@ markers = [
 ]
 
 [tool.pyright]
-include = ["src/jax_fdm"]
+# examples/ is checked as the downstream-user perspective: it exercises the
+# typed public API the way user scripts do.
+include = ["src/jax_fdm", "examples"]
 # The notebook viz objects import optional viz-extra packages (pythreejs,
 # compas_notebook) that the typecheck CI job does not install.
 exclude = ["**/__pycache__", "src/jax_fdm/visualization/notebooks"]
 # Validate against the minimum supported Python, independent of the CI runner.
-pythonVersion = "3.10"
+pythonVersion = "3.11"
 typeCheckingMode = "basic"
 # compas, jaxopt and lineax ship no py.typed marker.
 reportMissingModuleSource = "none"
 reportMissingTypeStubs = "none"
-# COMPAS datastructures expose attributes dynamically that pyright cannot see.
-reportAttributeAccessIssue = "warning"

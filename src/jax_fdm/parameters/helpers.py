@@ -9,6 +9,12 @@ from jaxtyping import Float
 from jaxtyping import Int
 from jaxtyping import Shaped
 
+__all__ = [
+    "combine_parameters",
+    "reshape_parameters",
+    "split_parameters",
+]
+
 
 def split_parameters(
     parray: Float[Array, "parameters"],

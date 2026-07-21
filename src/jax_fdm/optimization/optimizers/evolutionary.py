@@ -9,12 +9,17 @@ from scipy.optimize import OptimizeResult
 from scipy.optimize import differential_evolution
 from scipy.optimize import dual_annealing
 
-from jax_fdm.optimization.optimizers import GradientFreeOptimizer
-from jax_fdm.optimization.optimizers import OptProblem
+from jax_fdm.optimization.optimizers.gradient_free import GradientFreeOptimizer
+from jax_fdm.optimization.optimizers.optimizer import OptProblem
 
 # ==========================================================================
 # Optimizers
 # ==========================================================================
+
+__all__ = [
+    "DifferentialEvolution",
+    "DualAnnealing",
+]
 
 
 class DifferentialEvolution(GradientFreeOptimizer):
@@ -47,7 +52,7 @@ class DifferentialEvolution(GradientFreeOptimizer):
         num_workers: int = 1,
         seed: int = 43,
         **kwargs: Any,
-    ):
+    ) -> None:
         super().__init__(**kwargs)
         self.popsize = popsize
         self.vectorized = vectorized
@@ -116,7 +121,7 @@ class DualAnnealing(GradientFreeOptimizer):
         no_local_search: bool = True,
         seed: int = 42,
         **kwargs: Any,
-    ):
+    ) -> None:
         super().__init__(**kwargs)
         self.no_local_search = no_local_search
         self.seed = seed

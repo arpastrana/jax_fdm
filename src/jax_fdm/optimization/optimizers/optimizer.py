@@ -1,6 +1,7 @@
 """The base optimizer and the SciPy problem it assembles."""
 
 from collections.abc import Callable
+from collections.abc import Sequence
 from dataclasses import dataclass
 from dataclasses import field
 from dataclasses import fields
@@ -25,7 +26,7 @@ from jax_fdm.equilibrium import EquilibriumParametersState
 from jax_fdm.equilibrium import EquilibriumStructure
 from jax_fdm.equilibrium import LoadState
 from jax_fdm.losses import Loss
-from jax_fdm.optimization import collect_goals
+from jax_fdm.optimization.collections import collect_goals
 from jax_fdm.parameters import EdgeForceDensityParameter
 from jax_fdm.parameters import Parameter
 from jax_fdm.parameters import ParameterManager
@@ -34,6 +35,8 @@ if TYPE_CHECKING:
     # Annotation-only import: pulling jax_fdm.constraints at runtime would form a
     # cycle (constraints -> equilibrium -> optimization).
     from jax_fdm.constraints import Constraint
+
+__all__ = ["OptProblem", "Optimizer"]
 
 # ==========================================================================
 # Optimization problem
@@ -102,7 +105,7 @@ class Optimizer:
 
     name: str = ""
 
-    def __init__(self, disp: bool = False, **kwargs: Any):
+    def __init__(self, disp: bool = False, **kwargs: Any) -> None:
         # `name` is the fixed scipy method identity of each optimizer, so it is a
         # class attribute rather than a constructor argument. `disp` toggles the
         # backend's own console output; jax_fdm already prints its own progress,
@@ -140,7 +143,7 @@ class Optimizer:
 
     def constraints(
         self,
-        constraints: list["Constraint"],
+        constraints: Sequence["Constraint"],
         model: EquilibriumModel,
         structure: EquilibriumStructure,
         params_opt: Float[Array, "parameters"],
@@ -286,8 +289,8 @@ class Optimizer:
         structure: EquilibriumStructure,
         datastructure: FDNetwork | FDMesh,
         loss: Loss,
-        parameters: list[Parameter] | None = None,
-        constraints: list["Constraint"] | None = None,
+        parameters: Sequence[Parameter] | None = None,
+        constraints: Sequence["Constraint"] | None = None,
         maxiter: int = 100,
         tol: float = 1e-6,
         callback: Callable | None = None,
@@ -390,7 +393,7 @@ class Optimizer:
             print(f"\tHessian warmup time: {(perf_counter() - start_time):.4} seconds")
 
         # constraints
-        constraints = constraints or []
+        constraints = list(constraints or [])
         if constraints:
             start_time = perf_counter()
             constraints = self.constraints(constraints, model, structure, x) or []
@@ -490,7 +493,9 @@ class Optimizer:
         )
         print(f"Optimization elapsed time: {perf_counter() - start_time} seconds")
 
-        return res_q.x
+        # SciPy hands back a NumPy result vector; return a jax array to match
+        # the signature and the differentiable pipeline downstream.
+        return jnp.asarray(res_q.x)
 
     def _minimize(self, opt_problem: OptProblem) -> OptimizeResult:
         """

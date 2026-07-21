@@ -9,6 +9,39 @@ WORLD_Y = jnp.array([0.0, 1.0, 0.0])
 WORLD_Z = jnp.array([0.0, 0.0, 1.0])
 WORLD_XYZ = jnp.eye(3)
 
+__all__ = [
+    "WORLD_X",
+    "WORLD_XYZ",
+    "WORLD_Y",
+    "WORLD_Z",
+    "angle_vectors",
+    "angles_polygon",
+    "area_polygon",
+    "area_triangle",
+    "closest_point_on_line",
+    "closest_point_on_plane",
+    "closest_point_on_segment",
+    "colinearity_points",
+    "cosine_vectors",
+    "cosines_angles_polygon",
+    "curvature_point_polygon",
+    "curvature_points",
+    "distance_point_point_sqrd",
+    "length_vector",
+    "length_vector_sqrd",
+    "line_lcs",
+    "line_vector",
+    "normal_polygon",
+    "normal_triangle",
+    "normalize_vector",
+    "planarity_polygon",
+    "planarity_triangle",
+    "polygon_lcs",
+    "subtract_vectors",
+    "vector_projection",
+    "vector_unitized",
+]
+
 
 def cosine_vectors(u: Float[Array, "3"], v: Float[Array, "3"]) -> Float[Array, ""]:
     """
@@ -347,41 +380,6 @@ def distance_point_point_sqrd(
     return jnp.sum(jnp.square(vector))
 
 
-def normal_polygon_2(
-    polygon: Float[Array, "points 3"],
-    unitized: bool = False,
-) -> Float[Array, "3"]:
-    """
-    Computes the normal of a polygon about its centroid.
-
-    Parameters
-    ----------
-    polygon :
-        The polygon, as a sequence of at least three points.
-    unitized :
-        If True, scale the normal to unit length. Off by default.
-
-    Returns
-    -------
-    normal :
-        The polygon normal, summed over the triangles fanning from the centroid.
-
-    Notes
-    -----
-    The polygon points are referenced to their centroid before the cross
-    products, so the normal is unaffected by a rigid translation of the input.
-    """
-    centroid = jnp.mean(polygon, axis=0)
-    op = polygon - centroid
-    op_shifted = jnp.roll(op, 1, axis=0)
-    ns = 0.5 * jnp.cross(op_shifted, op)
-    n = jnp.sum(ns, axis=0)
-
-    if unitized:
-        return normalize_vector(n)
-    return n
-
-
 def normal_polygon(
     polygon: Float[Array, "points 3"],
     unitized: bool = True,
@@ -403,11 +401,20 @@ def normal_polygon(
 
     Notes
     -----
-    This function is not nan safe, because it loses information when
-    cross-multiplying valid entries with nan values.
+    The polygon points are referenced to their centroid before the cross
+    products. For a closed loop the reference point telescopes out of the
+    summed cross products, so the normal is unchanged analytically, but the
+    centering avoids the catastrophic cancellation that crossing large
+    absolute coordinates incurs far away from the origin.
+
+    Rows that contain nan values are excluded from the centroid and drop the
+    two cross-product terms they touch, so the direction of the normal
+    survives nan padding but its magnitude does not.
     """
     assert len(polygon) >= 3, "A polygon must be defined by at least 3 points"
 
+    centroid = jnp.nanmean(polygon, axis=0)
+    polygon = polygon - centroid
     polygon_shifted = jnp.roll(polygon, 1, axis=0)
     ns = 0.5 * jnp.cross(polygon_shifted, polygon)
     normal = jnp.nansum(ns, axis=0)
@@ -681,7 +688,7 @@ def colinearity_points(points: Float[Array, "points 3"]) -> Float[Array, ""]:
 
     dt = line_vectors[1:] - line_vectors[:-1]
     dtdt = jnp.sum(dt**2, axis=-1)
-    lbar = 0.5 * (lengths_squared[1:] + lengths_squared[:-1])
+    lbar = 0.5 * (lengths_squared[1:] + lengths_squared[:-1]).ravel()
     n_interior = dt.shape[0]
 
     return jnp.sum(dtdt / lbar) / jnp.maximum(n_interior, 1)

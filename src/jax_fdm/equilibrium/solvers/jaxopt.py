@@ -6,6 +6,8 @@ from jaxtyping import Float
 
 from jax_fdm.equilibrium.solvers.types import SolverIterParams
 
+__all__ = ["solver_jaxopt"]
+
 
 def solver_jaxopt(
     solver_cls: Callable,

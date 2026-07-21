@@ -18,9 +18,10 @@ Auto-differentiable and hardware accelerated force density method.
 
 <!-- --8<-- [start:pitch] -->
 Lightweight structures span long distances with slender cross-sections due to their mechanically efficient shapes.
-However, simulating these structures and turning them into feasible designs that satisfy technical constraints remains challenging due to geometrically nonlinear mechanical behaviors and high-dimensional search spaces.
+However, simulating these structures and turning them into feasible designs that satisfy additional technical constraints remains challenging.
+This is because of the geometrically nonlinear mechanical behaviors of these structure and the high-dimensional search spaces that describe them.
 
-JAX FDM enables the solution of inverse problems for lightweight structures modeled as pin-jointed bar systems using the force density method (FDM) and gradient-based optimization.
+JAX FDM solves inverse design problems for lightweight structures modeled as pin-jointed bar systems using the force density method (FDM) and gradient-based optimization.
 It streamlines the integration of mechanical simulations into deep learning models for machine learning research.
 <!-- --8<-- [end:pitch] -->
 
@@ -60,7 +61,7 @@ pip install jax-fdm
 ```
 
 This pulls in COMPAS 2.x and the other core dependencies automatically.
-JAX FDM supports Python 3.10 to 3.12, and builds on JAX, SciPy, Equinox, and the COMPAS framework.
+JAX FDM supports Python 3.11 to 3.12, and builds on JAX, SciPy, Equinox, and the COMPAS framework.
 For the optional extras (3D and notebook viewers, a 2D plotter, the IPOPT optimizer, development tools) and platform notes for Windows, see the [installation guide](https://arpastrana.github.io/jax_fdm/installation/).
 
 ## Quick example

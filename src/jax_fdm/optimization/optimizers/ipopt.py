@@ -1,4 +1,5 @@
 from collections.abc import Callable
+from collections.abc import Sequence
 from functools import partial
 from typing import TYPE_CHECKING
 from typing import Any
@@ -13,15 +14,17 @@ from jaxtyping import Float
 from jax_fdm import has_backend
 from jax_fdm.equilibrium import EquilibriumModel
 from jax_fdm.equilibrium import EquilibriumStructure
-from jax_fdm.optimization import collect_constraints
-from jax_fdm.optimization.optimizers import ConstrainedOptimizer
-from jax_fdm.optimization.optimizers import OptProblem
-from jax_fdm.optimization.optimizers import SecondOrderOptimizer
+from jax_fdm.optimization.collections import collect_constraints
+from jax_fdm.optimization.optimizers.constrained import ConstrainedOptimizer
+from jax_fdm.optimization.optimizers.optimizer import OptProblem
+from jax_fdm.optimization.optimizers.second_order import SecondOrderOptimizer
 
 if TYPE_CHECKING:
     # Annotation-only import: pulling jax_fdm.constraints at runtime would form a
     # cycle (constraints -> equilibrium -> optimization).
     from jax_fdm.constraints import Constraint
+
+__all__ = ["IPOPT"]
 
 if has_backend("cyipopt"):
     # cyipopt is an optional (ipopt extra) dependency, gated by has_backend above.
@@ -51,7 +54,7 @@ class IPOPT(ConstrainedOptimizer, SecondOrderOptimizer):
 
     name = "IPOPT"
 
-    def __init__(self, acc_tol: float = 1e-9, **kwargs: Any):
+    def __init__(self, acc_tol: float = 1e-9, **kwargs: Any) -> None:
         super().__init__(**kwargs)
         self.acceptable_tol = acc_tol
 
@@ -172,7 +175,7 @@ class IPOPT(ConstrainedOptimizer, SecondOrderOptimizer):
         x: Float[Array, "parameters"],
         v: Float[Array, "constraints"],
         f: Callable,
-    ) -> Float[Array, "parameters"]:
+    ) -> Float[Array, "parameters parameters"]:
         """
         The constraint hessian contracted with the Lagrange multipliers.
 
@@ -211,7 +214,7 @@ class IPOPT(ConstrainedOptimizer, SecondOrderOptimizer):
 
     def constraints(
         self,
-        constraints: list["Constraint"],
+        constraints: Sequence["Constraint"],
         model: EquilibriumModel,
         structure: EquilibriumStructure,
         params_opt: Float[Array, "parameters"],

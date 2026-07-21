@@ -1,4 +1,7 @@
+from os import PathLike
+from typing import TYPE_CHECKING
 from typing import Any
+from typing import Self
 
 import jax.tree_util as jtu
 import numpy as np
@@ -9,6 +12,8 @@ from compas.data import Data
 from jax_fdm.equilibrium import EquilibriumParametersState
 from jax_fdm.equilibrium import LoadState
 from jax_fdm.optimization.optimizers import Optimizer
+
+__all__ = ["OptimizationRecorder"]
 
 # ==========================================================================
 # Recorder
@@ -32,7 +37,17 @@ class OptimizationRecorder(Data):
     optimization run can be saved and replayed.
     """
 
-    def __init__(self, optimizer: Optimizer | None = None):
+    if TYPE_CHECKING:
+        # Typing-only redeclaration: COMPAS types the inherited constructor
+        # with a python-2 comment as `-> Data`, hiding this class's indexing
+        # and history API from static checkers. Never executes; the COMPAS
+        # implementation constructs through `cls` and returns this class.
+        # Raising body, not `...`: pylint reads a `...` stub as returning None.
+        @classmethod
+        def from_json(cls, filepath: str | PathLike[str]) -> Self:
+            raise NotImplementedError
+
+    def __init__(self, optimizer: Optimizer | None = None) -> None:
         super().__init__()
         self.optimizer = optimizer
         self.history = self._init_history()

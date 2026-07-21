@@ -7,7 +7,7 @@ pip install jax-fdm
 ```
 
 This pulls in COMPAS 2.x and the other core dependencies automatically.
-JAX FDM supports Python 3.10 to 3.12, and builds on JAX, SciPy, Equinox, and the COMPAS framework.
+JAX FDM supports Python 3.11 and 3.12, and builds on JAX, SciPy, Equinox, and the COMPAS framework.
 See the complete [dependency list](https://github.com/arpastrana/jax_fdm/blob/main/pyproject.toml).
 
 ## Optional extras

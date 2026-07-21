@@ -1,6 +1,6 @@
 """A gradient-based optimizer that handles equality and inequality constraints."""
 
-from functools import partial
+from collections.abc import Sequence
 from typing import TYPE_CHECKING
 from typing import Any
 
@@ -13,13 +13,15 @@ from scipy.optimize import NonlinearConstraint
 from jax_fdm.equilibrium import EquilibriumModel
 from jax_fdm.equilibrium import EquilibriumParametersState
 from jax_fdm.equilibrium import EquilibriumStructure
-from jax_fdm.optimization import collect_constraints
-from jax_fdm.optimization.optimizers import Optimizer
+from jax_fdm.optimization.collections import collect_constraints
+from jax_fdm.optimization.optimizers.optimizer import Optimizer
 
 if TYPE_CHECKING:
     # Annotation-only import: pulling jax_fdm.constraints at runtime would form a
     # cycle (constraints -> equilibrium -> optimization).
     from jax_fdm.constraints import Constraint
+
+__all__ = ["ConstrainedOptimizer"]
 
 # ==========================================================================
 # Constrained optimizer
@@ -33,7 +35,7 @@ class ConstrainedOptimizer(Optimizer):
 
     def constraints(
         self,
-        constraints: list["Constraint"],
+        constraints: Sequence["Constraint"],
         model: EquilibriumModel,
         structure: EquilibriumStructure,
         params_opt: Float[Array, "parameters"],
@@ -76,28 +78,27 @@ class ConstrainedOptimizer(Optimizer):
             # initialize constraint
             constraint.init(model, structure)
 
-            # gather information for scipy constraint
-            fun = partial(
-                self.constraint,
-                constraint=constraint,
-                model=model,
-                structure=structure,
-            )
+            # Nested def (not partial): jit(partial(...)) can resolve to the
+            # decorator overload, so calls appear to expect a Callable.
+            def fun(
+                params: Float[Array, "parameters"],
+            ) -> Float[Array, "constraints"]:
+                return self.constraint(params, constraint, model, structure)
 
-            fun = jit(fun)
+            fun_jit = jit(fun)
             jac = jit(jacfwd(fun))
 
             lb = constraint.bound_low
             ub = constraint.bound_up
 
             # warm start
-            fun(params_opt)
+            fun_jit(params_opt)
             jac(params_opt)
 
             # store non linear constraint
             # scipy's NonlinearConstraint stub types `jac` as a literal string
             # mode selector; a callable Jacobian is also valid per scipy docs
-            clist.append(NonlinearConstraint(fun=fun, jac=jac, lb=lb, ub=ub))  # pyright: ignore[reportArgumentType]
+            clist.append(NonlinearConstraint(fun=fun_jit, jac=jac, lb=lb, ub=ub))  # pyright: ignore[reportArgumentType]
 
         return clist
 

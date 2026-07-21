@@ -157,7 +157,10 @@ class FDArrowsObject(FDBufferObject):
     arrows_attr: str | None = None
 
     def build_soup(self) -> Soup:
+        # an arrow category is always added as a child of the FD parent, whose
+        # untyped compas `parent` property pyright infers as None
         parent = self.parent
+        assert isinstance(parent, FDDatastructureObject)
         # subclasses always set arrows_attr to a str before instantiation
         anchors, vectors, colors = getattr(parent, self.arrows_attr)()  # pyright: ignore[reportArgumentType]
 
@@ -232,8 +235,11 @@ class FDObject(FDBufferObject):
 
     @property
     def fd_parent(self) -> "FDDatastructureObject":
-        # The element sits under a category group under the FD parent.
-        return self.parent.parent
+        # The element sits under a category group under the FD parent; the
+        # untyped compas `parent` property pyright infers as None.
+        grandparent = self.parent.parent if self.parent else None
+        assert isinstance(grandparent, FDDatastructureObject)
+        return grandparent
 
 
 class FDEdgeObject(FDObject):
@@ -252,8 +258,8 @@ class FDEdgeObject(FDObject):
         # edge_coordinates always returns plain xyz lists, not compas attribute
         # views.
         return cylinders_buffer(
-            [start],  # pyright: ignore[reportArgumentType]
-            [end],  # pyright: ignore[reportArgumentType]
+            [start],
+            [end],
             [parent.edge_width[self.key] / 2.0],
             [parent.edge_color[self.key].rgba],
             u=parent.shape_u,
@@ -393,16 +399,15 @@ class FDDatastructureObject(ViewerSceneObject):
         # The scene registry always dispatches a real datastructure to this
         # constructor; the Optional in the signature only matches the base
         # class default.
+        assert item is not None
         self.datastructure: FDNetwork | FDMesh = item
 
         # Point and edge iterables, optionally filtered (defaults to all).
         self.points: list[int] = (
             list(points) if points is not None else list(self.point_keys())
         )
-        # item is always populated before draw(); edges() with data=False yields
-        # plain (u, v) keys.
         self.edges: list[tuple[int, int]] = (
-            list(edges) if edges is not None else list(item.edges())  # pyright: ignore[reportOptionalMemberAccess]
+            list(edges) if edges is not None else list(self.datastructure.edges())
         )
 
         # Connectivity is frozen at add time, like the soup topology: the
@@ -819,7 +824,7 @@ class FDMeshObject(FDDatastructureObject):
 
     def point_coordinates(self, key: int) -> list[float]:
         # the getter-mode call always returns a list
-        return self.datastructure.vertex_coordinates(key)  # pyright: ignore[reportReturnType]
+        return self.datastructure.vertex_coordinates(key)
 
     def point_load(self, key: int) -> list[float]:
         # the getter-mode call always returns a list

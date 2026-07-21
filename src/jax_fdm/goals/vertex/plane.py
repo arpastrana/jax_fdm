@@ -1,5 +1,7 @@
-from jax_fdm.goals.node import NodePlaneGoal
-from jax_fdm.goals.vertex import VertexGoal
+from jax_fdm.goals.node.plane import NodePlaneGoal
+from jax_fdm.goals.vertex.vertex import VertexGoal
+
+__all__ = ["VertexPlaneGoal"]
 
 
 class VertexPlaneGoal(VertexGoal, NodePlaneGoal):

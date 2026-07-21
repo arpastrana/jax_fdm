@@ -36,7 +36,7 @@ from jax_fdm.losses import Loss
 from jax_fdm.losses import MeanAbsoluteError
 from jax_fdm.losses import SquaredError
 from jax_fdm.optimization import LBFGSB
-from jax_fdm.optimization import EdgeForceDensityParameter
+from jax_fdm.parameters import EdgeForceDensityParameter
 
 TARGET_ANGLE = jnp.pi / 4  # 45 degrees to the vertical
 BOUND_LOW = -10.0

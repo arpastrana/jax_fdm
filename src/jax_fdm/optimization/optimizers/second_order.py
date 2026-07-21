@@ -3,11 +3,13 @@ from collections.abc import Callable
 from jax import jacfwd
 from jax import jacrev
 
-from jax_fdm.optimization.optimizers import Optimizer
+from jax_fdm.optimization.optimizers.optimizer import Optimizer
 
 # ==========================================================================
 # Second-order optimizer
 # ==========================================================================
+
+__all__ = ["SecondOrderOptimizer"]
 
 
 class SecondOrderOptimizer(Optimizer):

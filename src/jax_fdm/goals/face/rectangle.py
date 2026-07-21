@@ -1,5 +1,4 @@
 import jax.numpy as jnp
-from jax import vmap
 from jaxtyping import Array
 from jaxtyping import Float
 from jaxtyping import Int
@@ -8,8 +7,11 @@ from jax_fdm.equilibrium import EquilibriumMeshStructure
 from jax_fdm.equilibrium import EquilibriumModel
 from jax_fdm.equilibrium import EquilibriumState
 from jax_fdm.geometry import cosines_angles_polygon
-from jax_fdm.goals import ScalarGoal
-from jax_fdm.goals.face import FaceGoal
+from jax_fdm.goals.face.face import FaceGoal
+from jax_fdm.goals.goal import ScalarGoal
+from jax_fdm.goals.goal import TargetLike
+
+__all__ = ["FaceRectangularGoal"]
 
 
 class FaceRectangularGoal(ScalarGoal, FaceGoal):
@@ -25,11 +27,11 @@ class FaceRectangularGoal(ScalarGoal, FaceGoal):
         self,
         key: int,
         weight: float = 1.0,
-        target: float | Float[Array, "..."] = 0.0,
+        target: TargetLike = 0.0,
     ) -> None:
         super().__init__(key=key, target=target, weight=weight)
         # set in init() from the mesh structure, before any prediction runs
-        self.face_indices: Int[Array, "faces 4"]
+        self.faces_indexed: Int[Array, "faces vertices"]
 
     def init(
         self,
@@ -37,7 +39,7 @@ class FaceRectangularGoal(ScalarGoal, FaceGoal):
         structure: EquilibriumMeshStructure,
     ) -> None:
         """
-        Bind the goal to a mesh, caching the four corner indices of each face.
+        Bind the goal to a mesh, caching the face topology.
 
         Parameters
         ----------
@@ -47,8 +49,7 @@ class FaceRectangularGoal(ScalarGoal, FaceGoal):
             The mesh structure whose face ordering defines the indices.
         """
         super().init(model, structure)
-        face_indices = structure.faces_indexed[self.index]
-        self.face_indices = face_indices[:, :4]
+        self.faces_indexed = structure.faces_indexed
 
     def prediction(
         self,
@@ -68,11 +69,10 @@ class FaceRectangularGoal(ScalarGoal, FaceGoal):
         Returns
         -------
         prediction :
-            The summed mean absolute cosine of the face's corner angles, zero when
+            The mean absolute cosine of the face's corner angles, zero when
             every corner is a right angle.
         """
-        fxyz = eq_state.xyz[self.face_indices]
-        face_cosines = vmap(cosines_angles_polygon, in_axes=(0))(fxyz)
-        face_cosines = jnp.mean(jnp.abs(face_cosines), axis=-1)
+        fxyz = eq_state.xyz[self.faces_indexed[index, :4]]
+        face_cosines = cosines_angles_polygon(fxyz)
 
-        return jnp.sum(face_cosines)
+        return jnp.mean(jnp.abs(face_cosines))

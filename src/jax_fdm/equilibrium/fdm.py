@@ -1,19 +1,21 @@
 from collections.abc import Callable
+from collections.abc import Sequence
 from typing import TYPE_CHECKING
+from typing import TypeVar
 
 import numpy as np
 
 from jax_fdm import DTYPE_JAX
 from jax_fdm.datastructures import FDMesh
 from jax_fdm.datastructures import FDNetwork
-from jax_fdm.equilibrium import EquilibriumMeshStructure
-from jax_fdm.equilibrium import EquilibriumMeshStructureSparse
-from jax_fdm.equilibrium import EquilibriumModel
-from jax_fdm.equilibrium import EquilibriumModelSparse
-from jax_fdm.equilibrium import EquilibriumParametersState
-from jax_fdm.equilibrium import EquilibriumState
-from jax_fdm.equilibrium import EquilibriumStructure
-from jax_fdm.equilibrium import EquilibriumStructureSparse
+from jax_fdm.equilibrium.models import EquilibriumModel
+from jax_fdm.equilibrium.models import EquilibriumModelSparse
+from jax_fdm.equilibrium.states import EquilibriumParametersState
+from jax_fdm.equilibrium.states import EquilibriumState
+from jax_fdm.equilibrium.structures import EquilibriumMeshStructure
+from jax_fdm.equilibrium.structures import EquilibriumMeshStructureSparse
+from jax_fdm.equilibrium.structures import EquilibriumStructure
+from jax_fdm.equilibrium.structures import EquilibriumStructureSparse
 
 # Imported for annotations only: a runtime import would close the package cycle
 # equilibrium -> losses/optimization/parameters -> goals -> equilibrium and make
@@ -24,6 +26,20 @@ if TYPE_CHECKING:
     from jax_fdm.optimization import Optimizer
     from jax_fdm.parameters import Parameter
 
+__all__ = [
+    "fdm",
+    "constrained_fdm",
+    "model_from_sparsity",
+    "structure_from_datastructure",
+    "structure_from_network",
+    "structure_from_mesh",
+    "datastructure_validate",
+    "datastructure_updated",
+    "datastructure_update",
+    "datastructure_edges_update",
+    "datastructure_nodes_update",
+]
+
 # ==========================================================================
 # Type aliases
 # ==========================================================================
@@ -32,6 +48,11 @@ if TYPE_CHECKING:
 # scalar value per element (e.g. force densities) or an xyz triple per element.
 ElementScalars = list[float]
 ElementVectors = list[list[float]]
+
+# Binds a function's return type to its input type: form-finding a network
+# yields a network, a mesh yields a mesh — the result is an updated copy of
+# the input.
+AnyFDDatastructure = TypeVar("AnyFDDatastructure", bound=FDNetwork | FDMesh)
 
 # ==========================================================================
 # Form-finding
@@ -42,8 +63,8 @@ def _fdm(
     model: EquilibriumModel,
     params: EquilibriumParametersState,
     structure: EquilibriumStructure,
-    datastructure: FDNetwork | FDMesh,
-) -> FDNetwork | FDMesh:
+    datastructure: AnyFDDatastructure,
+) -> AnyFDDatastructure:
     """
     Solve for static equilibrium and write the result into a datastructure copy.
 
@@ -71,7 +92,7 @@ def _fdm(
 
 
 def fdm(
-    datastructure: FDNetwork | FDMesh,
+    datastructure: AnyFDDatastructure,
     sparse: bool = True,
     is_load_local: bool = False,
     tmax: int = 1,
@@ -80,7 +101,7 @@ def fdm(
     iterload_fn: Callable | None = None,
     implicit_diff: bool = True,
     verbose: bool = False,
-) -> FDNetwork | FDMesh:
+) -> AnyFDDatastructure:
     """
     Compute a datastructure in static equilibrium with the force density method.
 
@@ -141,11 +162,11 @@ def fdm(
 
 
 def constrained_fdm(
-    datastructure: FDNetwork | FDMesh,
+    datastructure: AnyFDDatastructure,
     optimizer: "Optimizer",
     loss: "Loss",
-    parameters: list["Parameter"] | None = None,
-    constraints: list["Constraint"] | None = None,
+    parameters: Sequence["Parameter"] | None = None,
+    constraints: Sequence["Constraint"] | None = None,
     maxiter: int = 100,
     tol: float = 1e-6,
     tmax: int = 1,
@@ -159,7 +180,7 @@ def constrained_fdm(
     nd: bool = False,
     verbose: bool = False,
     jit: bool = True,
-) -> FDNetwork | FDMesh:
+) -> AnyFDDatastructure:
     """
     Form-find a datastructure in constrained static equilibrium via optimization.
 
@@ -342,18 +363,14 @@ def structure_from_datastructure(
     ValueError
         If the datastructure is neither a network nor a mesh.
     """
+    # Call each factory inside its own isinstance branch so the narrowed
+    # datastructure type flows into the matching factory signature.
     if isinstance(datastructure, FDNetwork):
-        structure_factory = structure_from_network
+        return structure_from_network(datastructure, sparse)
     elif isinstance(datastructure, FDMesh):
-        structure_factory = structure_from_mesh
+        return structure_from_mesh(datastructure, sparse)
     else:
         raise ValueError(f"Input datastructure {datastructure} is invalid")
-
-    # structure_factory is narrowed to structure_from_network/structure_from_mesh by
-    # the isinstance checks above, but pyright does not carry that correlation across
-    # the reassigned datastructure param; the two branches match datastructure's
-    # actual runtime type
-    return structure_factory(datastructure, sparse)  # pyright: ignore[reportArgumentType]
 
 
 def structure_from_network(network: FDNetwork, sparse: bool) -> EquilibriumStructure:
@@ -437,11 +454,11 @@ def datastructure_validate(datastructure: FDNetwork | FDMesh) -> None:
 
 
 def datastructure_updated(
-    datastructure: FDNetwork | FDMesh,
+    datastructure: AnyFDDatastructure,
     eq_state: EquilibriumState,
     params: EquilibriumParametersState,
     use_loadsfromparams: bool = False,
-) -> FDNetwork | FDMesh:
+) -> AnyFDDatastructure:
     """
     Return a copy of a datastructure updated with an equilibrium state.
 

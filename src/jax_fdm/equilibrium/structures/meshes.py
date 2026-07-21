@@ -5,18 +5,25 @@ from jaxtyping import Array
 from jaxtyping import Float
 from jaxtyping import Int
 from scipy.sparse import coo_matrix
-from scipy.sparse import spmatrix
+from scipy.sparse import csc_matrix
 
 from compas.datastructures import Mesh as CompasMesh
 from jax_fdm import DTYPE_INT_JAX
 from jax_fdm import DTYPE_INT_NP
 from jax_fdm.equilibrium.structures.graphs import Graph
 from jax_fdm.equilibrium.structures.graphs import GraphSparse
-from jax_fdm.equilibrium.structures.graphs import build_matrix
 
 # ==========================================================================
 # Mesh
 # ==========================================================================
+
+__all__ = [
+    "Mesh",
+    "MeshSparse",
+    "face_matrix",
+    "mesh_connectivity_edges_faces",
+    "mesh_edges_faces",
+]
 
 
 class Mesh(Graph):
@@ -37,6 +44,7 @@ class Mesh(Graph):
     vertices: Int[np.ndarray, "vertices"]
     faces: Int[np.ndarray, "faces vertices"]
     faces_indexed: Int[Array, "faces vertices"]
+    edges_faces_indexed: Int[Array, "edges 2"]
     connectivity_faces_vertices: Float[Array, "faces vertices"]
     connectivity_edges_faces: Float[Array, "edges faces"]
     face_keys: Int[np.ndarray, "faces"]
@@ -48,7 +56,7 @@ class Mesh(Graph):
         edges: Int[np.ndarray, "edges 2"] | None = None,
         face_keys: Int[np.ndarray, "faces"] | None = None,
         **kwargs,
-    ):
+    ) -> None:
 
         if edges is None:
             edges = self._edges_from_faces(faces)
@@ -66,6 +74,7 @@ class Mesh(Graph):
 
         super().__init__(vertices, edges)
 
+        self.edges_faces_indexed = self._edges_faces_indexed()
         self.connectivity_edges_faces = self._connectivity_edges_faces_matrix()
 
     @property
@@ -134,6 +143,22 @@ class Mesh(Graph):
 
         return jnp.asarray(C)
 
+    def _edges_faces_indexed(self) -> Int[Array, "edges 2"]:
+        """
+        The indices of each edge's incident faces, padded with ``-1``.
+
+        Notes
+        -----
+        Boundary edges have one face and one padding entry; a non-manifold edge
+        keeps only its first two faces, matching the edge-face incidence matrix.
+        """
+        edges_faces = np.full((self.num_edges, 2), -1, dtype=DTYPE_INT_NP)
+        for eindex, findices in enumerate(self._edges_faces()):
+            for slot, findex in enumerate(findices[:2]):
+                edges_faces[eindex, slot] = findex
+
+        return jnp.asarray(edges_faces, dtype=DTYPE_INT_JAX)
+
     def _edges_faces(self) -> tuple[tuple[int, ...], ...]:
         """
         The face indices incident to each edge.
@@ -149,28 +174,27 @@ class Mesh(Graph):
         An edge shared by more than two faces is non-manifold; it is kept but a
         warning is printed, since it can distort area-load distribution.
         """
+        halfedges_faces: dict[tuple[int, int], list[int]] = {}
+        for findex, face in enumerate(self.faces):
+            face_clean = [int(vkey) for vkey in face if vkey >= 0]
+            face_loop = face_clean + face_clean[:1]
+            for u, v in zip(face_loop, face_loop[1:]):
+                halfedges_faces.setdefault((u, v), []).append(findex)
+
         edges_faces = []
         for u, v in self.edges:
-            edge = (int(u), int(v))
-            findices = []
-
-            for findex, face in enumerate(self.faces):
-                face = [vkey for vkey in face if vkey >= 0]
-                face_loop = np.concatenate((face, face[:1]))
-                for u, v in zip(face_loop, face_loop[1:]):
-                    # iterate one one time clockwise, another counter clockwise
-                    halfedge1 = (int(u), int(v))
-                    halfedge2 = (int(v), int(u))
-
-                    if edge == halfedge1 or edge == halfedge2:
-                        findices.append(findex)
+            # collect faces on both windings of the edge
+            halfedge = (int(u), int(v))
+            halfedge_rev = (int(v), int(u))
+            findices = halfedges_faces.get(halfedge, [])
+            findices = findices + halfedges_faces.get(halfedge_rev, [])
 
             # NOTE: Temporary disabled assertion
             # assert len(findices) <= 2
 
             if len(findices) > 2:
                 print(
-                    f"Warning: Edge {edge} is non-manifold, it's shared by "
+                    f"Warning: Edge {halfedge} is non-manifold, it's shared by "
                     f"({len(findices)}) faces. This might lead to unexpected "
                     f"behavior in e.g. in area load calculations.",
                 )
@@ -224,9 +248,9 @@ class Mesh(Graph):
         """
         The row-normalized face-vertex incidence matrix, a face centroid operator.
         """
-        F = face_matrix(self.faces_indexed, "array", normalize=True)
+        F = face_matrix(self.faces_indexed, normalize=True)
 
-        return jnp.asarray(F)
+        return jnp.asarray(F.toarray())
 
 
 # ==========================================================================
@@ -236,34 +260,37 @@ class Mesh(Graph):
 
 class MeshSparse(Mesh, GraphSparse):
     """
-    A mesh that assembles its connectivity through sparse intermediates.
-
-    Notes
-    -----
-    The connectivity matrices are densified after a sparse build rather than kept
-    sparse: leaving them sparse breaks reverse-mode gradients with
-    ``TypeError: float() argument must be a string or a number, not 'Zero'``,
-    raised from ``bcoo._bcoo_dot_general_transpose``.
+    A mesh that keeps its connectivity matrices in sparse format.
     """
 
-    def _connectivity_faces_matrix(self) -> Float[Array, "faces vertices"]:
-        """
-        The row-normalized face-vertex incidence matrix, built through sparse COO.
-        """
-        F = face_matrix(self.faces_indexed, "csc", normalize=True)
+    # The sparse subclass deliberately swaps the dense matrices for JAX sparse
+    # arrays; the narrowed fields and builders are the point, not a slip
+    connectivity_faces_vertices: Float[BCOO, "faces vertices"]
+    connectivity_edges_faces: Float[BCOO, "edges faces"]
 
-        return BCOO.from_scipy_sparse(F).todense()
-
-    def _connectivity_edges_faces_matrix(self) -> Float[Array, "edges faces"]:
+    def _connectivity_faces_matrix(self) -> Float[BCOO, "faces vertices"]:
         """
-        The edge-face incidence matrix of the mesh.
+        The row-normalized face-vertex incidence matrix, in sparse format.
         """
-        C = np.zeros((self.num_edges, self.num_faces))
+        F = face_matrix(self.faces_indexed, normalize=True)
 
-        for eindex, findex in enumerate(self._edges_faces()):
-            C[eindex, findex] = 1.0
+        return BCOO.from_scipy_sparse(F)
 
-        return jnp.asarray(C)
+    def _connectivity_edges_faces_matrix(self) -> Float[BCOO, "edges faces"]:
+        """
+        The edge-face incidence matrix of the mesh, in sparse format.
+        """
+        edges_faces = np.asarray(self.edges_faces_indexed)
+        mask = edges_faces >= 0
+
+        rows = np.repeat(np.arange(self.num_edges), mask.sum(axis=1))
+        cols = edges_faces[mask]
+        data = np.ones(rows.size)
+
+        shape = (self.num_edges, self.num_faces)
+        C = coo_matrix((data, (rows, cols)), shape=shape)
+
+        return BCOO.from_scipy_sparse(C)
 
 
 # ==========================================================================
@@ -333,9 +360,8 @@ def mesh_connectivity_edges_faces(mesh: CompasMesh) -> Float[np.ndarray, "edges 
 
 def face_matrix(
     face_vertices: Int[Array, "faces vertices"],
-    rtype: str = "array",
     normalize: bool = True,
-) -> Float[np.ndarray, "faces vertices"] | list | spmatrix:
+) -> csc_matrix:
     """
     Build a face-vertex incidence matrix, ignoring padding vertices.
 
@@ -343,9 +369,6 @@ def face_matrix(
     ----------
     face_vertices :
         The vertex indices of each face, with ``-1`` padding for absent vertices.
-    rtype :
-        The return format: ``"array"``, ``"list"``, ``"csr"``, ``"csc"``, or
-        ``"coo"``.
     normalize :
         If True, each row sums to one, so the matrix averages vertex quantities
         into face centroids; if False, each row sums to the face's vertex count.
@@ -353,30 +376,24 @@ def face_matrix(
     Returns
     -------
     face_matrix :
-        The face-vertex incidence matrix in the requested format.
+        The face-vertex incidence matrix in sparse format.
     """
-    face_vertices_clean = []
-    for face in face_vertices:
-        face_clean = [vertex for vertex in face if vertex >= 0]
-        face_vertices_clean.append(face_clean)
+    # Iterating a JAX array element-wise costs one device sync per element;
+    # convert to NumPy once and build the COO triplets vectorized.
+    faces_np = np.asarray(face_vertices)
+    mask = faces_np >= 0
+
+    counts = mask.sum(axis=1)
+    rows = np.repeat(np.arange(faces_np.shape[0]), counts)
+    cols = faces_np[mask]
 
     if normalize:
-        f = np.array(
-            [
-                (i, j, 1.0 / len(vertices))
-                for i, vertices in enumerate(face_vertices_clean)
-                for j in vertices
-            ],
-        )
+        data = np.repeat(1.0 / counts, counts)
     else:
-        f = np.array(
-            [
-                (i, j, 1.0)
-                for i, vertices in enumerate(face_vertices_clean)
-                for j in vertices
-            ],
-        )
+        data = np.ones(rows.size)
 
-    F = coo_matrix((f[:, 2], (f[:, 0].astype(int), f[:, 1].astype(int))))
+    F = coo_matrix((data, (rows, cols)))
 
-    return build_matrix(F, rtype)
+    # coo_matrix.tocsc() yields a csc_matrix at runtime; scipy's bundled stubs
+    # widen the return to csc_array
+    return F.tocsc()  # pyright: ignore[reportReturnType]
