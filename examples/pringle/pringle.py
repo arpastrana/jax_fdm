@@ -21,8 +21,8 @@ from jax_fdm.goals import NodeResidualForceGoal
 from jax_fdm.losses import Loss
 from jax_fdm.losses import SquaredError
 from jax_fdm.optimization import SLSQP
-from jax_fdm.optimization import EdgeForceDensityParameter
 from jax_fdm.optimization import OptimizationRecorder
+from jax_fdm.parameters import EdgeForceDensityParameter
 from jax_fdm.visualization import LossPlotter
 from jax_fdm.visualization import Viewer
 
@@ -209,7 +209,7 @@ if export:
 # Export optimization history
 # ==========================================================================
 
-if record and export:
+if recorder is not None and export:
     FILE_OUT = os.path.join(HERE, f"../../data/json/{name}_history.json")
     recorder.to_json(FILE_OUT)
     print("Optimization history exported to", FILE_OUT)
@@ -218,7 +218,7 @@ if record and export:
 # Plot loss components
 # ==========================================================================
 
-if record:
+if recorder is not None:
     plotter = LossPlotter(loss, network, dpi=150, figsize=(8, 4))
     plotter.plot(recorder.history)
     plotter.show()

@@ -5,7 +5,6 @@ Solve a constrained force density problem using gradient-based optimization.
 # compas
 from compas.colors import Color
 from compas.datastructures import Network
-from compas.geometry import Line
 from compas.geometry import Polygon
 from compas.geometry import add_vectors
 from compas.geometry import offset_polygon
@@ -176,7 +175,7 @@ goals = []
 if add_horizontal_projection_goal:
     for node in network.nodes_free():
         xyz = network.node_coordinates(node)
-        line = Line(xyz, add_vectors(xyz, [0.0, 0.0, 1.0]))
+        line = [xyz, add_vectors(xyz, [0.0, 0.0, 1.0])]
         goal = NodeLineGoal(node, target=line)
         goals.append(goal)
 

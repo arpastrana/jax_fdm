@@ -5,13 +5,26 @@ from typing import Any
 
 import numpy as np
 
-from jax_fdm.optimization.optimizers import ConstrainedOptimizer
-from jax_fdm.optimization.optimizers import Optimizer
-from jax_fdm.optimization.optimizers import SecondOrderOptimizer
+from jax_fdm.optimization.optimizers.constrained import ConstrainedOptimizer
+from jax_fdm.optimization.optimizers.optimizer import Optimizer
+from jax_fdm.optimization.optimizers.second_order import SecondOrderOptimizer
 
 # ==========================================================================
 # Optimizers
 # ==========================================================================
+
+__all__ = [
+    "BFGS",
+    "LBFGSB",
+    "LBFGSBS",
+    "SLSQP",
+    "NewtonCG",
+    "TruncatedNewton",
+    "TrustRegionConstrained",
+    "TrustRegionExact",
+    "TrustRegionKrylov",
+    "TrustRegionNewton",
+]
 
 
 class SLSQP(ConstrainedOptimizer):
@@ -49,7 +62,7 @@ class LBFGSB(Optimizer):
         maxls: int | None = None,
         maxcor: int | None = None,
         **kwargs: Any,
-    ):
+    ) -> None:
         super().__init__(disp=disp, **kwargs)
         self.maxfun = maxfun
         self.maxls = maxls

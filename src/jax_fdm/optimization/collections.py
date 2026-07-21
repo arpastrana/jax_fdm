@@ -1,7 +1,18 @@
 import inspect
 from collections import defaultdict
+from collections.abc import Sequence
 from itertools import groupby
+from typing import TYPE_CHECKING
 from typing import Any
+
+# Annotation-only imports: pulling jax_fdm.goals or jax_fdm.constraints at
+# runtime would close the package cycle through equilibrium back to
+# optimization.
+if TYPE_CHECKING:
+    from jax_fdm.constraints import Constraint
+    from jax_fdm.goals import Goal
+
+__all__ = ["Collection", "collect_goals", "collect_constraints"]
 
 
 class Collection:
@@ -72,7 +83,7 @@ class Collection:
         return collection
 
 
-def collect_goals(goals: list[Any]) -> list[Any]:
+def collect_goals(goals: Sequence["Goal"]) -> list["Goal"]:
     """
     Group goals by type into vectorized collections.
 
@@ -112,7 +123,7 @@ def collect_goals(goals: list[Any]) -> list[Any]:
     return collections
 
 
-def collect_constraints(constraints: list[Any]) -> list[Any]:
+def collect_constraints(constraints: Sequence["Constraint"]) -> list["Constraint"]:
     """
     Group constraints by type into vectorized collections.
 

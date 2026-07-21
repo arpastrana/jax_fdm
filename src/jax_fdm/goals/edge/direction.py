@@ -4,8 +4,10 @@ from jaxtyping import Int
 
 from jax_fdm.equilibrium import EquilibriumState
 from jax_fdm.geometry import normalize_vector
-from jax_fdm.goals import VectorGoal
-from jax_fdm.goals.edge import EdgeGoal
+from jax_fdm.goals.edge.edge import EdgeGoal
+from jax_fdm.goals.goal import VectorGoal
+
+__all__ = ["EdgeDirectionGoal"]
 
 
 class EdgeDirectionGoal(VectorGoal, EdgeGoal):

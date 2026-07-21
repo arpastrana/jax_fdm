@@ -4,6 +4,11 @@ from jaxtyping import Float
 
 from jax_fdm.equilibrium import EquilibriumParametersState
 
+__all__ = [
+    "L2Regularizer",
+    "Regularizer",
+]
+
 
 class Regularizer:
     """

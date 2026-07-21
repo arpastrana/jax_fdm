@@ -17,14 +17,14 @@ from jax_fdm.visualization.style import ARROW_BODYWIDTH
 from jax_fdm.visualization.style import ARROW_HEADPORTION
 from jax_fdm.visualization.style import ARROW_HEADWIDTH
 from jax_fdm.visualization.style import COLOR_LOAD
-from jax_fdm.visualization.style import EdgeColorSpec
-from jax_fdm.visualization.style import EdgeWidthSpec
 from jax_fdm.visualization.style import LOAD_SCALE
 from jax_fdm.visualization.style import LOAD_TOL
-from jax_fdm.visualization.style import PointColorSpec
-from jax_fdm.visualization.style import PointSizeSpec
 from jax_fdm.visualization.style import REACTION_SCALE
 from jax_fdm.visualization.style import REACTION_TOL
+from jax_fdm.visualization.style import EdgeColorSpec
+from jax_fdm.visualization.style import EdgeWidthSpec
+from jax_fdm.visualization.style import PointColorSpec
+from jax_fdm.visualization.style import PointSizeSpec
 from jax_fdm.visualization.style import edge_colors
 from jax_fdm.visualization.style import edge_widths
 from jax_fdm.visualization.style import load_arrows
@@ -33,10 +33,12 @@ from jax_fdm.visualization.style import point_sizes
 from jax_fdm.visualization.style import reaction_arrows
 from jax_fdm.visualization.style import reaction_color_default
 
-__all__ = ["ThreeFDDatastructureObject",
-           "ThreeFDNetworkObject",
-           "ThreeFDMeshObject",
-           "register_notebook_scene_objects"]
+__all__ = [
+    "ThreeFDDatastructureObject",
+    "ThreeFDNetworkObject",
+    "ThreeFDMeshObject",
+    "register_notebook_scene_objects",
+]
 
 
 class ThreeFDDatastructureObject(ThreeSceneObject):
@@ -95,10 +97,14 @@ class ThreeFDDatastructureObject(ThreeSceneObject):
         # item is always populated before draw()
         self.datastructure: FDNetwork | FDMesh = item  # pyright: ignore[reportAttributeAccessIssue]
 
-        self.points: list[int] = list(points) if points is not None else list(self.point_keys())
+        self.points: list[int] = (
+            list(points) if points is not None else list(self.point_keys())
+        )
         # item is always populated before draw(); edges() with data=False always
         # yields plain (u, v) keys
-        self.edges: list[tuple[int, int]] = list(edges) if edges is not None else list(item.edges())  # pyright: ignore[reportOptionalMemberAccess,reportArgumentType,reportAttributeAccessIssue]
+        self.edges: list[tuple[int, int]] = (
+            list(edges) if edges is not None else list(item.edges())  # pyright: ignore[reportOptionalMemberAccess,reportArgumentType,reportAttributeAccessIssue]
+        )
 
         # The point-edge adjacency is cached once at construction, so drawing
         # never re-derives it from the datastructure (Mesh.vertex_edges scans
@@ -171,10 +177,16 @@ class ThreeFDDatastructureObject(ThreeSceneObject):
                 radii.append(edge_width[edge] / 2.0)
                 colors.append(edge_color[edge].rgba)
 
-            guids.append(self.soup_to_mesh(cylinders_buffer(starts, ends, radii, colors, u=self.shape_u)))
+            guids.append(
+                self.soup_to_mesh(
+                    cylinders_buffer(starts, ends, radii, colors, u=self.shape_u),
+                ),
+            )
 
         if self.show_points:
-            is_support = self.point_is_support if self.show_supports else (lambda key: False)
+            is_support = (
+                self.point_is_support if self.show_supports else (lambda key: False)
+            )
             # point_colors treats a str spec as an unrecognized dict/Color and
             # falls back to default
             point_color = point_colors(self.points, is_support, self.pointcolor_spec)  # pyright: ignore[reportArgumentType]
@@ -184,43 +196,79 @@ class ThreeFDDatastructureObject(ThreeSceneObject):
             radii = [point_size[point] / 2.0 for point in self.points]
             colors = [point_color[point].rgba for point in self.points]
 
-            guids.append(self.soup_to_mesh(spheres_buffer(centers, radii, colors, u=self.shape_u, v=self.shape_u)))
+            guids.append(
+                self.soup_to_mesh(
+                    spheres_buffer(
+                        centers,
+                        radii,
+                        colors,
+                        u=self.shape_u,
+                        v=self.shape_u,
+                    ),
+                ),
+            )
 
         if self.show_loads:
             origins = [self.point_coordinates(point) for point in self.points]
             loads = [self.point_load(point) for point in self.points]
-            clearances = [max((edge_width.get(edge, 0.0) for edge in self.adjacency[point]), default=0.0)
-                          for point in self.points]
+            clearances = [
+                max(
+                    (edge_width.get(edge, 0.0) for edge in self.adjacency[point]),
+                    default=0.0,
+                )
+                for point in self.points
+            ]
 
-            anchors, vectors = load_arrows(origins, loads, clearances,
-                                           self.load_scale, self.load_tol)
+            anchors, vectors = load_arrows(
+                origins,
+                loads,
+                clearances,
+                self.load_scale,
+                self.load_tol,
+            )
             guids.append(self.arrows_to_mesh(anchors, vectors, self.load_color))
 
         if self.show_reactions:
             points = [point for point in self.points if self.adjacency[point]]
             origins = [self.point_coordinates(point) for point in points]
             reactions = [self.point_reaction(point) for point in points]
-            forces = [[datastructure.edge_force(edge) for edge in self.adjacency[point]]
-                      for point in points]
+            forces = [
+                [datastructure.edge_force(edge) for edge in self.adjacency[point]]
+                for point in points
+            ]
 
-            anchors, vectors = reaction_arrows(origins, reactions, forces,
-                                               self.reaction_scale, self.reaction_tol)
+            anchors, vectors = reaction_arrows(
+                origins,
+                reactions,
+                forces,
+                self.reaction_scale,
+                self.reaction_tol,
+            )
             guids.append(self.arrows_to_mesh(anchors, vectors, self.reaction_color))
 
         self._guids = guids
 
         return self.guids
 
-    def arrows_to_mesh(self, anchors: list[list[float]], vectors: list[list[float]], color: Color) -> three.Mesh:
+    def arrows_to_mesh(
+        self,
+        anchors: list[list[float]],
+        vectors: list[list[float]],
+        color: Color,
+    ) -> three.Mesh:
         """
         Batch one arrow category into a pythreejs mesh.
         """
         colors = [color.rgba] * len(anchors)
-        soup = arrows_buffer(anchors, vectors, colors,
-                             head_portion=ARROW_HEADPORTION,
-                             head_width=ARROW_HEADWIDTH,
-                             body_width=ARROW_BODYWIDTH,
-                             u=self.arrow_u)
+        soup = arrows_buffer(
+            anchors,
+            vectors,
+            colors,
+            head_portion=ARROW_HEADPORTION,
+            head_width=ARROW_HEADWIDTH,
+            body_width=ARROW_BODYWIDTH,
+            u=self.arrow_u,
+        )
 
         return self.soup_to_mesh(soup)
 
@@ -235,10 +283,17 @@ class ThreeFDDatastructureObject(ThreeSceneObject):
             attributes={
                 "position": three.BufferAttribute(positions, normalized=False),
                 # pythreejs consumes rgb; the soup kernels emit rgba
-                "color": three.BufferAttribute(soup_colors_rgb(soup), normalized=False, itemSize=3),
-            }
+                "color": three.BufferAttribute(
+                    soup_colors_rgb(soup),
+                    normalized=False,
+                    itemSize=3,
+                ),
+            },
         )
-        material = three.MeshBasicMaterial(side="DoubleSide", vertexColors="VertexColors")
+        material = three.MeshBasicMaterial(
+            side="DoubleSide",
+            vertexColors="VertexColors",
+        )
 
         return three.Mesh(geometry, material)
 
@@ -257,9 +312,15 @@ class ThreeFDNetworkObject(ThreeFDDatastructureObject):
     # type-check against the right datastructure.
     datastructure: FDNetwork
 
-    def __init__(self, item: FDNetwork | None = None, nodes: list[int] | None = None,
-                 nodecolor: PointColorSpec = None, nodesize: PointSizeSpec = None,
-                 show_nodes: bool | None = None, **kwargs: Any) -> None:
+    def __init__(
+        self,
+        item: FDNetwork | None = None,
+        nodes: list[int] | None = None,
+        nodecolor: PointColorSpec = None,
+        nodesize: PointSizeSpec = None,
+        show_nodes: bool | None = None,
+        **kwargs: Any,
+    ) -> None:
         # Map the node vocabulary onto the neutral point parameters of the
         # base. The scene backend injects the neutral names with explicit None
         # values (meaning "default"), so they are popped and only kept when
@@ -268,12 +329,14 @@ class ThreeFDNetworkObject(ThreeFDDatastructureObject):
         pointcolor = kwargs.pop("pointcolor", None)
         pointsize = kwargs.pop("pointsize", None)
         show_points = kwargs.pop("show_points", None)
-        super().__init__(item=item,
-                         points=nodes if nodes is not None else points,
-                         pointcolor=nodecolor if nodecolor is not None else pointcolor,
-                         pointsize=nodesize if nodesize is not None else pointsize,
-                         show_points=show_nodes if show_nodes is not None else show_points,
-                         **kwargs)
+        super().__init__(
+            item=item,
+            points=nodes if nodes is not None else points,
+            pointcolor=nodecolor if nodecolor is not None else pointcolor,
+            pointsize=nodesize if nodesize is not None else pointsize,
+            show_points=show_nodes if show_nodes is not None else show_points,
+            **kwargs,
+        )
 
     def point_keys(self) -> list[int]:
         # the data=False getter always yields plain node keys
@@ -316,14 +379,16 @@ class ThreeFDMeshObject(ThreeFDDatastructureObject):
     # type-check against the right datastructure.
     datastructure: FDMesh
 
-    def __init__(self,
-                 item: FDMesh | None = None,
-                 vertices: list[int] | None = None,
-                 vertexcolor: PointColorSpec = None,
-                 vertexsize: PointSizeSpec = None,
-                 show_vertices: bool | None = None,
-                 show_faces: bool = True,
-                 **kwargs: Any) -> None:
+    def __init__(
+        self,
+        item: FDMesh | None = None,
+        vertices: list[int] | None = None,
+        vertexcolor: PointColorSpec = None,
+        vertexsize: PointSizeSpec = None,
+        show_vertices: bool | None = None,
+        show_faces: bool = True,
+        **kwargs: Any,
+    ) -> None:
         # Map the vertex vocabulary onto the neutral point parameters of the
         # base. The scene backend injects the neutral names with explicit None
         # values (meaning "default"), so they are popped and only kept when
@@ -332,12 +397,14 @@ class ThreeFDMeshObject(ThreeFDDatastructureObject):
         pointcolor = kwargs.pop("pointcolor", None)
         pointsize = kwargs.pop("pointsize", None)
         show_points = kwargs.pop("show_points", None)
-        super().__init__(item=item,
-                         points=vertices if vertices is not None else points,
-                         pointcolor=vertexcolor if vertexcolor is not None else pointcolor,
-                         pointsize=vertexsize if vertexsize is not None else pointsize,
-                         show_points=show_vertices if show_vertices is not None else show_points,
-                         **kwargs)
+        super().__init__(
+            item=item,
+            points=vertices if vertices is not None else points,
+            pointcolor=vertexcolor if vertexcolor is not None else pointcolor,
+            pointsize=vertexsize if vertexsize is not None else pointsize,
+            show_points=show_vertices if show_vertices is not None else show_points,
+            **kwargs,
+        )
         self.show_faces = show_faces if show_faces is not None else True
 
     def point_keys(self) -> list[int]:
@@ -371,11 +438,13 @@ class ThreeFDMeshObject(ThreeFDDatastructureObject):
             # sceneobject_type pins the native mesh scene object: the FDMesh is
             # registered with compas.scene, so an unpinned construction would
             # dispatch right back to this class and recurse.
-            obj = ThreeMeshObject(item=self.datastructure,
-                                  sceneobject_type=ThreeMeshObject,
-                                  context="Notebook",
-                                  show_edges=True,
-                                  show_vertices=False)
+            obj = ThreeMeshObject(
+                item=self.datastructure,
+                sceneobject_type=ThreeMeshObject,
+                context="Notebook",
+                show_edges=True,
+                show_vertices=False,
+            )
             guids += obj.draw()
             self._guids = guids
 

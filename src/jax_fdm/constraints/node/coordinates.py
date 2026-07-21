@@ -2,8 +2,14 @@ from jaxtyping import Array
 from jaxtyping import Float
 from jaxtyping import Int
 
-from jax_fdm.constraints.node import NodeConstraint
+from jax_fdm.constraints.node.node import NodeConstraint
 from jax_fdm.equilibrium import EquilibriumState
+
+__all__ = [
+    "NodeXCoordinateConstraint",
+    "NodeYCoordinateConstraint",
+    "NodeZCoordinateConstraint",
+]
 
 
 class NodeXCoordinateConstraint(NodeConstraint):

@@ -178,9 +178,7 @@ for i, cross_ring in enumerate(edges_cross_rings):
 
     for u, v in cross_ring:
         edge = (u, v)
-        xyz = network.node_coordinates(
-            u,
-        )  # xyz of first node, assumes it is the lowermost
+        xyz = network.node_coordinates(u)  # first node, assumes it is the lowermost
         normal = cross_vectors(network.edge_vector((u, v)), angle_vector)
 
         point = add_vectors(xyz, angle_vector)
@@ -222,16 +220,16 @@ for config in sweep_configs:
     print()
     print(config["msg"])
 
-    if fofin_method == fdm:
+    if fofin_method is fdm:
         network = fofin_method(network)
     else:
-        optimizer = optimizer()
+        opt = optimizer()
 
-        recorder = OptimizationRecorder(optimizer) if config.get("record") else None
+        recorder = OptimizationRecorder(opt) if config.get("record") else None
 
         network = fofin_method(
             network,
-            optimizer=optimizer,
+            optimizer=opt,
             parameters=parameters,
             loss=loss,
             constraints=config.get("constraints", []),
@@ -251,7 +249,7 @@ for config in sweep_configs:
     # Export optimization history
     # ==========================================================================
 
-    if record and export and fofin_method != fdm:
+    if fofin_method is not fdm and recorder is not None and export:
         FILE_OUT = os.path.join(HERE, f"../data/json/{name}_history.json")
         recorder.to_json(FILE_OUT)
         print("Optimization history exported to", FILE_OUT)
@@ -260,7 +258,7 @@ for config in sweep_configs:
     # Plot loss components
     # ==========================================================================
 
-    if record and fofin_method != fdm:
+    if fofin_method is not fdm and recorder is not None:
         plotter = LossPlotter(loss, network, dpi=150, figsize=(8, 4))
         plotter.plot(recorder.history)
         plotter.show()

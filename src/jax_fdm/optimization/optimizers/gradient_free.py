@@ -1,9 +1,11 @@
 """SciPy-backed gradient-free optimizers."""
 
 from collections.abc import Callable
+from collections.abc import Sequence
 from time import perf_counter
 from typing import TYPE_CHECKING
 
+import jax.numpy as jnp
 from jax import jit
 from jaxtyping import Array
 from jaxtyping import Float
@@ -14,8 +16,8 @@ from jax_fdm.equilibrium import EquilibriumModel
 from jax_fdm.equilibrium import EquilibriumStructure
 from jax_fdm.equilibrium import LoadState
 from jax_fdm.losses import Loss
-from jax_fdm.optimization.optimizers import Optimizer
-from jax_fdm.optimization.optimizers import OptProblem
+from jax_fdm.optimization.optimizers.optimizer import Optimizer
+from jax_fdm.optimization.optimizers.optimizer import OptProblem
 from jax_fdm.parameters import EdgeForceDensityParameter
 from jax_fdm.parameters import Parameter
 from jax_fdm.parameters import ParameterManager
@@ -24,6 +26,8 @@ if TYPE_CHECKING:
     # Annotation-only import: pulling jax_fdm.constraints at runtime would form a
     # cycle (constraints -> equilibrium -> optimization).
     from jax_fdm.constraints import Constraint
+
+__all__ = ["GradientFreeOptimizer", "Powell", "NelderMead"]
 
 # ==========================================================================
 # Optimizers
@@ -46,8 +50,8 @@ class GradientFreeOptimizer(Optimizer):
         structure: EquilibriumStructure,
         datastructure: FDNetwork | FDMesh,
         loss: Loss,
-        parameters: list[Parameter] | None = None,
-        constraints: list["Constraint"] | None = None,
+        parameters: Sequence[Parameter] | None = None,
+        constraints: Sequence["Constraint"] | None = None,
         maxiter: int = 100,
         tol: float = 1e-6,
         callback: Callable | None = None,
@@ -173,7 +177,9 @@ class GradientFreeOptimizer(Optimizer):
         )
         print(f"Optimization elapsed time: {end_time - start_time} seconds")
 
-        return res_q.x
+        # SciPy hands back a NumPy result vector; return a jax array to match
+        # the signature and the differentiable pipeline downstream.
+        return jnp.asarray(res_q.x)
 
 
 class Powell(GradientFreeOptimizer):

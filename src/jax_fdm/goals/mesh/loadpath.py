@@ -1,7 +1,7 @@
-from jaxtyping import Array
-from jaxtyping import Float
+from jax_fdm.goals.goal import TargetLike
+from jax_fdm.goals.network.loadpath import NetworkLoadPathGoal
 
-from jax_fdm.goals import NetworkLoadPathGoal
+__all__ = ["MeshLoadPathGoal"]
 
 
 class MeshLoadPathGoal(NetworkLoadPathGoal):
@@ -17,7 +17,7 @@ class MeshLoadPathGoal(NetworkLoadPathGoal):
 
     def __init__(
         self,
-        target: float | Float[Array, "..."] = 0.0,
+        target: TargetLike = 0.0,
         weight: float = 1.0,
     ) -> None:
         super().__init__(key=-1, target=target, weight=weight)

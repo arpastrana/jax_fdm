@@ -1,7 +1,9 @@
-from jax_fdm.constraints.node import NodeCurvatureConstraint
-from jax_fdm.constraints.vertex import VertexConstraint
+from jax_fdm.constraints.node.curvature import NodeCurvatureConstraint
+from jax_fdm.constraints.vertex.vertex import VertexConstraint
 from jax_fdm.equilibrium import EquilibriumMeshStructure
 from jax_fdm.equilibrium import EquilibriumStructure
+
+__all__ = ["VertexCurvatureConstraint"]
 
 
 class VertexCurvatureConstraint(VertexConstraint, NodeCurvatureConstraint):

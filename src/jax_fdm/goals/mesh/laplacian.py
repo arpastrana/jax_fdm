@@ -7,9 +7,12 @@ from jaxtyping import Int
 from jax_fdm.equilibrium import EquilibriumMeshStructure
 from jax_fdm.equilibrium import EquilibriumModel
 from jax_fdm.equilibrium import EquilibriumState
-from jax_fdm.goals import ScalarGoal
-from jax_fdm.goals.mesh import MeshGoal
-from jax_fdm.goals.network import NetworkXYZLaplacianGoal
+from jax_fdm.goals.goal import ScalarGoal
+from jax_fdm.goals.goal import TargetLike
+from jax_fdm.goals.mesh.mesh import MeshGoal
+from jax_fdm.goals.network.laplacian import NetworkXYZLaplacianGoal
+
+__all__ = ["MeshXYZLaplacianGoal", "MeshXYZFaceLaplacianGoal"]
 
 
 class MeshXYZLaplacianGoal(NetworkXYZLaplacianGoal):
@@ -25,7 +28,7 @@ class MeshXYZLaplacianGoal(NetworkXYZLaplacianGoal):
 
     def __init__(
         self,
-        target: float | Float[Array, "..."] = 0.0,
+        target: TargetLike = 0.0,
         weight: float = 1.0,
     ) -> None:
         super().__init__(key=-1, target=target, weight=weight)
@@ -49,7 +52,7 @@ class MeshXYZFaceLaplacianGoal(ScalarGoal, MeshGoal):
 
     def __init__(
         self,
-        target: float | Float[Array, "..."] = 0.0,
+        target: TargetLike = 0.0,
         weight: float = 1.0,
     ) -> None:
         super().__init__(key=-1, target=target, weight=weight)
@@ -109,11 +112,12 @@ class MeshXYZFaceLaplacianGoal(ScalarGoal, MeshGoal):
 
         faces_centroid = connectivity @ xyz
 
-        # upstream types the sparse transpose as optional; it is None only for
-        # arrays of dimension > 2, unreachable for a rank-2 incidence matrix
-        connectivity_t = connectivity.T  # pyright: ignore[reportOptionalOperand]
-        weights = connectivity_t @ jnp.ones(connectivity.shape[0])  # pyright: ignore[reportOptionalOperand]
-        nbrs_centroid = (connectivity_t @ faces_centroid) / weights[:, None]  # pyright: ignore[reportOptionalOperand]
+        # Use .transpose() rather than the .T property: on the sparse union the
+        # untyped .T property infers as None, while .transpose() is typed to
+        # return the matrix. They are identical for this rank-2 incidence matrix.
+        connectivity_t = connectivity.transpose()
+        weights = connectivity_t @ jnp.ones(connectivity.shape[0])
+        nbrs_centroid = (connectivity_t @ faces_centroid) / weights[:, None]
 
         return jnp.sum(jnp.square(xyz - nbrs_centroid), axis=-1)
 

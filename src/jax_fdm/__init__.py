@@ -12,8 +12,6 @@ jax_fdm
 
 """
 
-from __future__ import print_function
-
 import os
 from importlib.util import find_spec
 

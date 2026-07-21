@@ -7,8 +7,13 @@ from jaxtyping import Int
 from jax_fdm.equilibrium import EquilibriumMeshStructure
 from jax_fdm.equilibrium import EquilibriumModel
 from jax_fdm.equilibrium import EquilibriumState
-from jax_fdm.goals import ScalarGoal
-from jax_fdm.goals.mesh import MeshGoal
+from jax_fdm.goals.goal import ScalarGoal
+from jax_fdm.goals.mesh.mesh import MeshGoal
+
+__all__ = [
+    "MeshSmoothGoal",
+    "vertices_nbrs_fairness",
+]
 
 
 class MeshSmoothGoal(ScalarGoal, MeshGoal):
@@ -31,7 +36,7 @@ class MeshSmoothGoal(ScalarGoal, MeshGoal):
         self.adjacency: (
             Float[Array, "vertices vertices"] | Float[BCOO, "vertices vertices"]
         )
-        self.indices_free: Int[Array, "nodes_free"]
+        self.indices_free: Int[Array, "vertices_free"]
 
     def init(
         self,

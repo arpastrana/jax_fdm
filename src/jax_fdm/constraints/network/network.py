@@ -1,8 +1,10 @@
 from jaxtyping import Array
 from jaxtyping import Float
 
-from jax_fdm.constraints import Constraint
+from jax_fdm.constraints.constraint import Constraint
 from jax_fdm.equilibrium import EquilibriumStructure
+
+__all__ = ["NetworkConstraint"]
 
 
 class NetworkConstraint(Constraint):

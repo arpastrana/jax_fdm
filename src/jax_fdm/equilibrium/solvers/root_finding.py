@@ -7,12 +7,17 @@ from lineax import SVD
 from optimistix import Newton
 from optimistix import root_find
 
-from jax_fdm.equilibrium.solvers import solver_optimistix
+from jax_fdm.equilibrium.solvers.optimistix import solver_optimistix
 from jax_fdm.equilibrium.solvers.types import SolverIterParams
 
 # ==========================================================================
 # Optimistix solvers
 # ==========================================================================
+
+__all__ = [
+    "is_solver_root_finding",
+    "solver_newton",
+]
 
 
 def solver_newton(

@@ -1,3 +1,5 @@
+from collections.abc import Sequence
+
 import jax.numpy as jnp
 from jaxtyping import Array
 from jaxtyping import Float
@@ -9,6 +11,18 @@ from jax_fdm.goals import GoalState
 # ==========================================================================
 # Error
 # ==========================================================================
+
+__all__ = [
+    "AbsoluteError",
+    "Error",
+    "LogMaxError",
+    "MeanAbsoluteError",
+    "MeanPredictionError",
+    "MeanSquaredError",
+    "PredictionError",
+    "RootMeanSquaredError",
+    "SquaredError",
+]
 
 
 class Error:
@@ -32,7 +46,7 @@ class Error:
 
     def __init__(
         self,
-        goals: list[Goal],
+        goals: Sequence[Goal],
         alpha: float = 1.0,
         name: str | None = None,
         *args,

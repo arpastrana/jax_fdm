@@ -7,8 +7,13 @@ from jaxtyping import Int
 from jax_fdm.equilibrium import EquilibriumModel
 from jax_fdm.equilibrium import EquilibriumState
 from jax_fdm.equilibrium import EquilibriumStructure
-from jax_fdm.goals import ScalarGoal
-from jax_fdm.goals.network import NetworkGoal
+from jax_fdm.goals.goal import ScalarGoal
+from jax_fdm.goals.network.network import NetworkGoal
+
+__all__ = [
+    "NetworkSmoothGoal",
+    "nodes_nbrs_fairness",
+]
 
 
 class NetworkSmoothGoal(ScalarGoal, NetworkGoal):

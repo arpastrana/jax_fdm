@@ -21,12 +21,9 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
-        python-version: ['3.10']
-        # Cover the supported ceiling (3.11, 3.12) on one runner each without
-        # fanning them out across every OS.
+        python-version: ['3.11']
+        # Cover the supported ceiling (3.12) on one runner OS.
         include:
-          - os: ubuntu-latest
-            python-version: '3.11'
           - os: ubuntu-latest
             python-version: '3.12'
 

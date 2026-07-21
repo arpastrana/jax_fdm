@@ -1,3 +1,5 @@
+from collections.abc import Sequence
+
 import jax.numpy as jnp
 import numpy as np
 from jax import vmap
@@ -11,8 +13,11 @@ from jax_fdm.equilibrium import EquilibriumState
 from jax_fdm.geometry import angle_vectors
 from jax_fdm.geometry import normal_polygon
 from jax_fdm.geometry import normalize_vector
-from jax_fdm.goals import ScalarGoal
-from jax_fdm.goals.vertex import VertexGoal
+from jax_fdm.goals.goal import ScalarGoal
+from jax_fdm.goals.goal import TargetLike
+from jax_fdm.goals.vertex.vertex import VertexGoal
+
+__all__ = ["VertexNormalAngleGoal"]
 
 
 class VertexNormalAngleGoal(ScalarGoal, VertexGoal):
@@ -49,8 +54,8 @@ class VertexNormalAngleGoal(ScalarGoal, VertexGoal):
     def __init__(
         self,
         key: int,
-        vector: Float[Array, "..."],
-        target: float | Float[Array, "..."],
+        vector: Float[Array, "..."] | Sequence[float],
+        target: TargetLike,
         weight: float = 1.0,
     ) -> None:
         super().__init__(key=key, target=target, weight=weight)
@@ -68,7 +73,7 @@ class VertexNormalAngleGoal(ScalarGoal, VertexGoal):
         return self._vector
 
     @vector.setter
-    def vector(self, vector: Float[Array, "..."]) -> None:
+    def vector(self, vector: Float[Array, "..."] | Sequence[float]) -> None:
         self._vector = jnp.reshape(jnp.asarray(vector), (-1, 3))
 
     def vectors(self) -> Float[Array, "vectors 3"]:
@@ -104,7 +109,7 @@ class VertexNormalAngleGoal(ScalarGoal, VertexGoal):
         self.vector = self.vectors()
         self.faces_indexed = structure.faces_indexed
 
-    def face_normals(self, xyz: Float[Array, "nodes 3"]) -> Float[Array, "faces 3"]:
+    def face_normals(self, xyz: Float[Array, "vertices 3"]) -> Float[Array, "faces 3"]:
         """
         Compute the unnormalized normal of every face in the mesh.
 
@@ -122,7 +127,7 @@ class VertexNormalAngleGoal(ScalarGoal, VertexGoal):
 
         def face_normal(
             face: Int[Array, "vertices"],
-            xyz: Float[Array, "nodes 3"],
+            xyz: Float[Array, "vertices 3"],
         ) -> Float[Array, "3"]:
             face = jnp.ravel(face)
             xyz_face = xyz[face, :]

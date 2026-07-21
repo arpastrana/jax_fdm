@@ -7,12 +7,14 @@ from jaxtyping import Float
 from jax_fdm.equilibrium import EquilibriumModel
 from jax_fdm.equilibrium import EquilibriumParametersState
 from jax_fdm.equilibrium import EquilibriumStructure
-from jax_fdm.losses import Error
-from jax_fdm.losses import Regularizer
+from jax_fdm.losses.errors import Error
+from jax_fdm.losses.regularizers import Regularizer
 
 # ==========================================================================
 # Loss
 # ==========================================================================
+
+__all__ = ["Loss"]
 
 
 class Loss:

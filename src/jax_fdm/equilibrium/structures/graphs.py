@@ -16,6 +16,13 @@ from jax_fdm import DTYPE_NP
 # Graph
 # ==========================================================================
 
+__all__ = [
+    "Graph",
+    "GraphSparse",
+    "adjacency_matrix",
+    "connectivity_matrix",
+]
+
 
 class Graph(eqx.Module):
     """
@@ -38,7 +45,7 @@ class Graph(eqx.Module):
         self,
         nodes: Int[np.ndarray, "nodes"],
         edges: Int[np.ndarray, "edges 2"],
-    ):
+    ) -> None:
         self.nodes = nodes
 
         assert edges.shape[1] == 2, "Edges in graph must connect exactly 2 nodes"
@@ -93,7 +100,7 @@ class Graph(eqx.Module):
         """
         The signed edge-node incidence matrix of the graph.
         """
-        C = connectivity_matrix(self.edges_indexed).toarray()
+        C = connectivity_matrix(self.edges_indexed, self.num_nodes).toarray()
 
         return jnp.asarray(C, dtype=DTYPE_JAX)
 
@@ -103,7 +110,10 @@ class Graph(eqx.Module):
         """
         edges_indexed = self.edges_indexed
 
-        return jnp.asarray(adjacency_matrix(edges_indexed).toarray(), dtype=DTYPE_JAX)
+        return jnp.asarray(
+            adjacency_matrix(edges_indexed, self.num_nodes).toarray(),
+            dtype=DTYPE_JAX,
+        )
 
 
 # ==========================================================================
@@ -118,10 +128,10 @@ class GraphSparse(Graph):
 
     # The sparse subclass deliberately swaps the dense matrices for JAX sparse
     # arrays; the narrowed fields and builders are the point, not a slip
-    connectivity: Float[BCOO, "edges nodes"]  # pyright: ignore[reportIncompatibleVariableOverride]
-    adjacency: Float[BCOO, "nodes nodes"]  # pyright: ignore[reportIncompatibleVariableOverride]
+    connectivity: Float[BCOO, "edges nodes"]
+    adjacency: Float[BCOO, "nodes nodes"]
 
-    def _connectivity_matrix(self) -> Float[BCOO, "edges nodes"]:  # pyright: ignore[reportIncompatibleMethodOverride]
+    def _connectivity_matrix(self) -> Float[BCOO, "edges nodes"]:
         """
         The signed edge-node incidence matrix, in sparse format.
         """
@@ -145,15 +155,15 @@ class GraphSparse(Graph):
         pointer reads) that JAX sparse arrays do not provide. Rebuilt on every
         access, which costs fractions of a millisecond.
         """
-        return connectivity_matrix(self.edges_indexed)
+        return connectivity_matrix(self.edges_indexed, self.num_nodes)
 
-    def _adjacency_matrix(self) -> Float[BCOO, "nodes nodes"]:  # pyright: ignore[reportIncompatibleMethodOverride]
+    def _adjacency_matrix(self) -> Float[BCOO, "nodes nodes"]:
         """
         The symmetric node-node adjacency matrix, in sparse format.
         """
         edges_indexed = self.edges_indexed
 
-        A = adjacency_matrix(edges_indexed)
+        A = adjacency_matrix(edges_indexed, self.num_nodes)
 
         return BCOO.from_scipy_sparse(A)
 
@@ -163,7 +173,10 @@ class GraphSparse(Graph):
 # ==========================================================================
 
 
-def connectivity_matrix(edges: Int[Array, "edges 2"]) -> csc_matrix:
+def connectivity_matrix(
+    edges: Int[Array, "edges 2"],
+    num_nodes: int | None = None,
+) -> csc_matrix:
     """
     Build the signed edge-node incidence matrix from indexed edges.
 
@@ -171,6 +184,10 @@ def connectivity_matrix(edges: Int[Array, "edges 2"]) -> csc_matrix:
     ----------
     edges :
         The node index pair of each edge.
+    num_nodes :
+        The total number of nodes, fixing the column count. When omitted, it is
+        inferred as the largest node index plus one, which undercounts columns
+        if the highest-indexed node touches no edge.
 
     Returns
     -------
@@ -186,12 +203,18 @@ def connectivity_matrix(edges: Int[Array, "edges 2"]) -> csc_matrix:
     rows = np.concatenate((np.arange(m), np.arange(m)))
     cols = np.concatenate((edges_np[:, 0], edges_np[:, 1]))
 
+    n = num_nodes if num_nodes is not None else int(np.max(edges_np)) + 1
+    shape = (m, n)
+
     # coo_matrix.tocsc() yields a csc_matrix at runtime; scipy's bundled stubs
     # widen the return to csc_array
-    return coo_matrix((data, (rows, cols))).tocsc()  # pyright: ignore[reportReturnType]
+    return coo_matrix((data, (rows, cols)), shape=shape).tocsc()  # pyright: ignore[reportReturnType]
 
 
-def adjacency_matrix(edges: Int[Array, "edges 2"]) -> csc_matrix:
+def adjacency_matrix(
+    edges: Int[Array, "edges 2"],
+    num_nodes: int | None = None,
+) -> csc_matrix:
     """
     Build the symmetric node-node adjacency matrix from indexed edges.
 
@@ -199,20 +222,19 @@ def adjacency_matrix(edges: Int[Array, "edges 2"]) -> csc_matrix:
     ----------
     edges :
         The node index pair of each edge.
+    num_nodes :
+        The total number of nodes, fixing the matrix size. When omitted, it is
+        inferred as the largest node index plus one, which undersizes the matrix
+        if the highest-indexed node touches no edge.
 
     Returns
     -------
     adjacency :
         The symmetric adjacency matrix in sparse format, with a one wherever
         two nodes share an edge.
-
-    Notes
-    -----
-    Assumes nodes are contiguously indexed from ``0``, so the matrix size is the
-    largest node index plus one.
     """
     edges_np = np.asarray(edges)
-    num_vertices = np.max(np.ravel(edges_np)) + 1
+    n = num_nodes if num_nodes is not None else int(np.max(np.ravel(edges_np))) + 1
 
     # add edges in both directions for undirected graph
     rows = np.concatenate((edges_np[:, 0], edges_np[:, 1]))
@@ -221,7 +243,7 @@ def adjacency_matrix(edges: Int[Array, "edges 2"]) -> csc_matrix:
     # data to fill in (all 1s for the existence of edges)
     data = np.ones(len(rows), dtype=DTYPE_NP)
 
-    A = coo_matrix((data, (rows, cols)), shape=(num_vertices, num_vertices))
+    A = coo_matrix((data, (rows, cols)), shape=(n, n))
 
     # coo_matrix.tocsc() yields a csc_matrix at runtime; scipy's bundled stubs
     # widen the return to csc_array

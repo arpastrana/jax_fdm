@@ -1,20 +1,38 @@
 """A force density datastructure."""
 
+from collections.abc import Iterable
 from collections.abc import Iterator
 from collections.abc import Sequence
 from math import fabs
 from statistics import stdev
+from typing import overload
+
+from jax_fdm.datastructures.types import FDDatastructureType
+
+__all__ = ["FDDatastructure"]
 
 
-class FDDatastructure:
+class FDDatastructure(FDDatastructureType):
     """
     A force density datastructure.
 
     This is a mixin of force-density-specific methods layered onto a concrete
     COMPAS datastructure. ``FDNetwork`` and ``FDMesh`` reach ``Datastructure``
     through ``Network`` and ``Mesh`` respectively, so this class does not
-    inherit from it to avoid a redundant inheritance diamond.
+    inherit from it to avoid a redundant inheritance diamond. The typing-only
+    base declares the COMPAS accessors this mixin calls.
     """
+
+    # Force-density edge defaults shared by every FD datastructure, registered
+    # via `update_default_edge_attributes` in each subclass constructor.
+    edge_attributes_default: dict[str, float] = {
+        "q": 0.0,
+        "length": 0.0,
+        "force": 0.0,
+        "px": 0.0,
+        "py": 0.0,
+        "pz": 0.0,
+    }
 
     # ----------------------------------------------------------------------
     # Edges
@@ -23,7 +41,7 @@ class FDDatastructure:
     def edge_load(
         self,
         key: tuple[int, int],
-        load: list[float] | None = None,
+        load: Iterable[float] | None = None,
     ) -> list[float] | None:
         """
         Get or set the load vector on a single edge.
@@ -42,6 +60,10 @@ class FDDatastructure:
         """
         return self.edge_attributes(key, names=("px", "py", "pz"), values=load)
 
+    @overload
+    def edge_forcedensity(self, key: tuple[int, int]) -> float: ...
+    @overload
+    def edge_forcedensity(self, key: tuple[int, int], q: float) -> None: ...
     def edge_forcedensity(
         self,
         key: tuple[int, int],
@@ -100,8 +122,8 @@ class FDDatastructure:
 
     def edges_forcedensities(
         self,
-        q: list[float] | None = None,
-        keys: Sequence[tuple[int, int]] | None = None,
+        q: float | None = None,
+        keys: Iterable[tuple[int, int]] | None = None,
     ) -> list[float] | None:
         """
         Get or set the force densities on many edges.
@@ -109,7 +131,8 @@ class FDDatastructure:
         Parameters
         ----------
         q :
-            The force densities to set. If None, the current values are returned.
+            The force density to set on every edge. If None, the current values
+            are returned.
         keys :
             The edges to access. If None, all edges are used.
 
@@ -122,7 +145,7 @@ class FDDatastructure:
 
     def edges_forces(
         self,
-        keys: Sequence[tuple[int, int]] | None = None,
+        keys: Iterable[tuple[int, int]] | None = None,
     ) -> list[float]:
         """
         Get the internal forces of many edges.
@@ -141,7 +164,7 @@ class FDDatastructure:
 
     def edges_lengths(
         self,
-        keys: Sequence[tuple[int, int]] | None = None,
+        keys: Iterable[tuple[int, int]] | None = None,
     ) -> list[float]:
         """
         Get the lengths of many edges.
@@ -160,8 +183,8 @@ class FDDatastructure:
 
     def edges_loads(
         self,
-        load: list[float] | None = None,
-        keys: Sequence[tuple[int, int]] | None = None,
+        load: Sequence[float] | None = None,
+        keys: Iterable[tuple[int, int]] | None = None,
     ) -> list[list[float]] | None:
         """
         Get or set the load vectors on many edges.
@@ -182,7 +205,7 @@ class FDDatastructure:
 
     def edges_loadpaths(
         self,
-        keys: Sequence[tuple[int, int]] | None = None,
+        keys: Iterable[tuple[int, int]] | None = None,
     ) -> Iterator[float]:
         """
         Iterate over the load path of many edges.
@@ -197,8 +220,8 @@ class FDDatastructure:
         loadpath :
             The load path of each edge.
         """
-        keys = keys or self.edges()
-        for key in keys:
+        edges = self.edges() if keys is None else keys
+        for key in edges:
             yield self.edge_loadpath(key)
 
     # ----------------------------------------------------------------------
@@ -235,8 +258,7 @@ class FDDatastructure:
         edges_neg = []
         for edge in self.edges():
             _edges = edges_neg
-            # getter-mode call always returns float
-            if self.edge_forcedensity(edge) > 0.0:  # pyright: ignore[reportOptionalOperand]
+            if self.edge_forcedensity(edge) > 0.0:
                 _edges = edges_pos
             _edges.append(edge)
 

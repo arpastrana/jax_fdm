@@ -17,6 +17,8 @@ from jax_fdm.equilibrium import EquilibriumParametersState
 from jax_fdm.equilibrium import structure_from_datastructure
 from jax_fdm.losses import Loss
 
+__all__ = ["LossPlotter"]
+
 
 class LossPlotter:
     """

@@ -1,6 +1,11 @@
-from jax_fdm.goals.node import NodesColinearGoal
-from jax_fdm.goals.node import NodesCurvatureGoal
-from jax_fdm.goals.vertex import VertexGoal
+from jax_fdm.goals.node.colinear import NodesColinearGoal
+from jax_fdm.goals.node.colinear import NodesCurvatureGoal
+from jax_fdm.goals.vertex.vertex import VertexGoal
+
+__all__ = [
+    "VerticesColinearGoal",
+    "VerticesCurvatureGoal",
+]
 
 
 class VerticesColinearGoal(VertexGoal, NodesColinearGoal):

@@ -9,8 +9,11 @@ from jax_fdm.equilibrium import EquilibriumModel
 from jax_fdm.equilibrium import EquilibriumState
 from jax_fdm.geometry import planarity_polygon
 from jax_fdm.geometry import planarity_triangle
-from jax_fdm.goals import ScalarGoal
-from jax_fdm.goals.mesh import MeshGoal
+from jax_fdm.goals.goal import ScalarGoal
+from jax_fdm.goals.goal import TargetLike
+from jax_fdm.goals.mesh.mesh import MeshGoal
+
+__all__ = ["MeshPlanarityGoal", "face_xyz", "face_planarity", "faces_planarity"]
 
 
 class MeshPlanarityGoal(ScalarGoal, MeshGoal):
@@ -35,7 +38,7 @@ class MeshPlanarityGoal(ScalarGoal, MeshGoal):
 
     def __init__(
         self,
-        target: float | Float[Array, "..."] = 0.0,
+        target: TargetLike = 0.0,
         weight: float = 1.0,
     ) -> None:
         super().__init__(key=-1, target=target, weight=weight)
@@ -92,7 +95,7 @@ class MeshPlanarityGoal(ScalarGoal, MeshGoal):
 
 def face_xyz(
     face: Int[Array, "vertices"],
-    xyz: Float[Array, "nodes 3"],
+    xyz: Float[Array, "vertices 3"],
 ) -> Float[Array, "vertices 3"]:
     """
     Gather the coordinates of a face's vertices, padding safely for gradients.
@@ -123,7 +126,7 @@ def face_xyz(
 
 def face_planarity(
     face: Int[Array, "vertices"],
-    xyz: Float[Array, "nodes 3"],
+    xyz: Float[Array, "vertices 3"],
 ) -> Float[Array, ""]:
     """
     Compute a face's planarity, dispatching on its vertex count.
@@ -166,7 +169,7 @@ def face_planarity(
 
 def faces_planarity(
     faces: Int[Array, "faces vertices"],
-    xyz: Float[Array, "nodes 3"],
+    xyz: Float[Array, "vertices 3"],
 ) -> Float[Array, "faces"]:
     """
     Compute the planarity of every face in a mesh.

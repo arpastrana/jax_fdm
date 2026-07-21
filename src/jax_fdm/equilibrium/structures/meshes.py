@@ -17,6 +17,14 @@ from jax_fdm.equilibrium.structures.graphs import GraphSparse
 # Mesh
 # ==========================================================================
 
+__all__ = [
+    "Mesh",
+    "MeshSparse",
+    "face_matrix",
+    "mesh_connectivity_edges_faces",
+    "mesh_edges_faces",
+]
+
 
 class Mesh(Graph):
     """
@@ -48,7 +56,7 @@ class Mesh(Graph):
         edges: Int[np.ndarray, "edges 2"] | None = None,
         face_keys: Int[np.ndarray, "faces"] | None = None,
         **kwargs,
-    ):
+    ) -> None:
 
         if edges is None:
             edges = self._edges_from_faces(faces)
@@ -257,10 +265,10 @@ class MeshSparse(Mesh, GraphSparse):
 
     # The sparse subclass deliberately swaps the dense matrices for JAX sparse
     # arrays; the narrowed fields and builders are the point, not a slip
-    connectivity_faces_vertices: Float[BCOO, "faces vertices"]  # pyright: ignore[reportIncompatibleVariableOverride]
-    connectivity_edges_faces: Float[BCOO, "edges faces"]  # pyright: ignore[reportIncompatibleVariableOverride]
+    connectivity_faces_vertices: Float[BCOO, "faces vertices"]
+    connectivity_edges_faces: Float[BCOO, "edges faces"]
 
-    def _connectivity_faces_matrix(self) -> Float[BCOO, "faces vertices"]:  # pyright: ignore[reportIncompatibleMethodOverride]
+    def _connectivity_faces_matrix(self) -> Float[BCOO, "faces vertices"]:
         """
         The row-normalized face-vertex incidence matrix, in sparse format.
         """
@@ -268,7 +276,7 @@ class MeshSparse(Mesh, GraphSparse):
 
         return BCOO.from_scipy_sparse(F)
 
-    def _connectivity_edges_faces_matrix(self) -> Float[BCOO, "edges faces"]:  # pyright: ignore[reportIncompatibleMethodOverride]
+    def _connectivity_edges_faces_matrix(self) -> Float[BCOO, "edges faces"]:
         """
         The edge-face incidence matrix of the mesh, in sparse format.
         """

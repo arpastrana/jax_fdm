@@ -30,6 +30,26 @@ SystemSolution = Float[Array, "unknowns rhs"]
 # Sparse linear solver on GPU
 # ==========================================================================
 
+__all__ = [
+    "SparseSolveResidual",
+    "SystemMatrixLHS",
+    "SystemMatrixRHS",
+    "SystemSolution",
+    "blockdiag_matrix_sparse",
+    "register_sparse_solver",
+    "sparse_solve",
+    "sparse_solve_bwd",
+    "sparse_solve_fwd",
+    "splu_clear",
+    "splu_cpu",
+    "splu_solve_cpu",
+    "spsolve",
+    "spsolve_cpu",
+    "spsolve_gpu",
+    "spsolve_gpu_ravel",
+    "spsolve_gpu_stack",
+]
+
 
 def spsolve_gpu_ravel(A: SystemMatrixLHS, b: SystemMatrixRHS) -> SystemSolution:
     """
@@ -172,9 +192,11 @@ def register_sparse_solver(solvers: dict[str, Callable]) -> Callable:
     return sparse_solver
 
 
-solvers = {"cpu": spsolve_cpu, "gpu": spsolve_gpu}
+# leading underscore so the mapping stays module-private and never collides
+# with the sibling `solvers` subpackage in the equilibrium namespace
+_solvers = {"cpu": spsolve_cpu, "gpu": spsolve_gpu}
 
-spsolve = register_sparse_solver(solvers)
+spsolve = register_sparse_solver(_solvers)
 
 
 # ==========================================================================

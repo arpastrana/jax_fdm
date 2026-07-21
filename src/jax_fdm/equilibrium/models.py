@@ -37,6 +37,12 @@ StiffnessMatrix = (
 # Equilibrium model
 # ==========================================================================
 
+__all__ = [
+    "EquilibriumModel",
+    "EquilibriumModelSparse",
+    "StiffnessMatrix",
+]
+
 
 class EquilibriumModel:
     """
@@ -75,7 +81,7 @@ class EquilibriumModel:
         iterload_fn: Callable | None = None,
         implicit_diff: bool = True,
         verbose: bool = False,
-    ):
+    ) -> None:
         self.tmax = tmax
         self.eta = eta
         self.is_load_local = is_load_local
@@ -181,9 +187,10 @@ class EquilibriumModel:
         residuals :
             The residual force at each node, zero at nodes in equilibrium.
         """
-        # upstream types the sparse transpose as optional; it is None only for
-        # arrays of dimension > 2, unreachable for a rank-2 incidence matrix
-        return loads - connectivity.T @ (q[:, None] * vectors)  # pyright: ignore[reportOptionalOperand]
+        # Use .transpose() rather than the .T property: on the sparse union the
+        # untyped .T property infers as None, while .transpose() is typed to
+        # return the matrix. They are identical for this rank-2 connectivity matrix.
+        return loads - connectivity.transpose() @ (q[:, None] * vectors)
 
     @staticmethod
     def nodes_positions(
@@ -322,15 +329,16 @@ class EquilibriumModel:
                 )
                 nodes_load = nodes_load + edges_load_
 
-        if isinstance(faces_load, jax.Array):
+        # A non-scalar faces_load only occurs for meshes
+        # (LoadState.from_datastructure sets faces=0.0 for networks), so
+        # structure is always an EquilibriumMeshStructure in this branch.
+        is_mesh = isinstance(structure, EquilibriumMeshStructure)
+        if isinstance(faces_load, jax.Array) and is_mesh:
             if faces_load.size > 1:
-                # A non-scalar faces_load only occurs for meshes
-                # (LoadState.from_datastructure sets faces=0.0 for networks), so
-                # structure is always an EquilibriumMeshStructure in this branch.
                 faces_load_ = self.faces_load(
                     xyz,
                     faces_load,
-                    structure,  # pyright: ignore[reportArgumentType]
+                    structure,
                     self.is_load_local,
                 )
                 nodes_load = nodes_load + faces_load_
@@ -1022,7 +1030,7 @@ class EquilibriumModelSparse(EquilibriumModel):
     system is solved with a sparse solver, which scales to larger structures.
     """
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
         self.linearsolve_fn = spsolve
 

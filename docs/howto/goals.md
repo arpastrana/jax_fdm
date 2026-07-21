@@ -80,7 +80,7 @@ from jax_fdm.equilibrium import constrained_fdm
 from jax_fdm.losses import Loss
 from jax_fdm.losses import SquaredError
 from jax_fdm.optimization import LBFGSB
-from jax_fdm.optimization import EdgeForceDensityParameter
+from jax_fdm.parameters import EdgeForceDensityParameter
 
 
 goals = [EdgeRiseGoal(edge, target=0.5) for edge in network.edges()]

@@ -134,7 +134,7 @@ network = constrained_fdm(
 # Export optimization history
 # ==========================================================================
 
-if record and export:
+if recorder is not None and export:
     FILE_OUT = os.path.join(HERE, f"../../data/json/{name}_history.json")
     recorder.to_json(FILE_OUT)
     print("Optimization history exported to", FILE_OUT)
@@ -143,7 +143,7 @@ if record and export:
 # Plot loss components
 # ==========================================================================
 
-if record:
+if recorder is not None:
     plotter = LossPlotter(loss, network, dpi=150, figsize=(8, 4))
     plotter.plot(recorder.history)
     plotter.show()
