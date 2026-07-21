@@ -120,6 +120,7 @@ nav:
   - Examples:
       - Arch optimization: examples/arch.md
       - Shape matching: examples/shape_matching.md
+      - Equal-force truss: examples/truss_equal_force.md
       - More examples: examples/more.md
   - How-to Guides:
       - Form-finding: howto/form_finding.md
