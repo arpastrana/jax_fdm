@@ -89,10 +89,10 @@ where = ["src"]
 [tool.ruff]
 line-length = 88
 target-version = "py311"
-# The Colab notebooks carry !pip magics and notebook-style cells. Anchored to
-# the repo-root directory so it does not also match the visualization/notebooks
-# source subpackage, which must stay linted.
-extend-exclude = ["/notebooks"]
+# The Colab notebooks carry !pip magics and notebook-style cells. Matched by the
+# root .ipynb glob so the visualization/notebooks source subpackage, which holds
+# only .py files, stays linted.
+extend-exclude = ["notebooks/*.ipynb"]
 
 [tool.ruff.format]
 # Format code inside docstrings too. On its own, ruff format packs a wrapped
