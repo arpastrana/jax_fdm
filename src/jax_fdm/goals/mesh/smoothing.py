@@ -36,7 +36,7 @@ class MeshSmoothGoal(ScalarGoal, MeshGoal):
         self.adjacency: (
             Float[Array, "vertices vertices"] | Float[BCOO, "vertices vertices"]
         )
-        self.indices_free: Int[Array, "nodes_free"]
+        self.indices_free: Int[Array, "vertices_free"]
 
     def init(
         self,

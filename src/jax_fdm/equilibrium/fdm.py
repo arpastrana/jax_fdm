@@ -363,18 +363,14 @@ def structure_from_datastructure(
     ValueError
         If the datastructure is neither a network nor a mesh.
     """
+    # Call each factory inside its own isinstance branch so the narrowed
+    # datastructure type flows into the matching factory signature.
     if isinstance(datastructure, FDNetwork):
-        structure_factory = structure_from_network
+        return structure_from_network(datastructure, sparse)
     elif isinstance(datastructure, FDMesh):
-        structure_factory = structure_from_mesh
+        return structure_from_mesh(datastructure, sparse)
     else:
         raise ValueError(f"Input datastructure {datastructure} is invalid")
-
-    # structure_factory is narrowed to structure_from_network/structure_from_mesh by
-    # the isinstance checks above, but pyright does not carry that correlation across
-    # the reassigned datastructure param; the two branches match datastructure's
-    # actual runtime type
-    return structure_factory(datastructure, sparse)  # pyright: ignore[reportArgumentType]
 
 
 def structure_from_network(network: FDNetwork, sparse: bool) -> EquilibriumStructure:

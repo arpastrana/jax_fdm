@@ -1,8 +1,8 @@
 from types import ModuleType as _ModuleType
 
-from .errors import *  # noqa F403
-from .loss import *  # noqa F403
-from .regularizers import *  # noqa F403
+from .errors import *  # noqa: F403
+from .loss import *  # noqa: F403
+from .regularizers import *  # noqa: F403
 
 __all__ = [
     name

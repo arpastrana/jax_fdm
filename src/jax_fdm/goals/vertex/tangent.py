@@ -50,7 +50,7 @@ class VertexTangentAngleGoal(VertexNormalAngleGoal):
         self,
         eq_state: EquilibriumState,
         index: Int[Array, ""],
-    ) -> Float[Array, "1"]:
+    ) -> Float[Array, ""]:
         """
         The angle between the vertex tangent and the reference vector.
 

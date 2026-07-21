@@ -5,6 +5,7 @@ from collections.abc import Sequence
 from time import perf_counter
 from typing import TYPE_CHECKING
 
+import jax.numpy as jnp
 from jax import jit
 from jaxtyping import Array
 from jaxtyping import Float
@@ -176,7 +177,9 @@ class GradientFreeOptimizer(Optimizer):
         )
         print(f"Optimization elapsed time: {end_time - start_time} seconds")
 
-        return res_q.x
+        # SciPy hands back a NumPy result vector; return a jax array to match
+        # the signature and the differentiable pipeline downstream.
+        return jnp.asarray(res_q.x)
 
 
 class Powell(GradientFreeOptimizer):

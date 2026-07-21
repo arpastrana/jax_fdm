@@ -2,12 +2,16 @@ from collections.abc import Callable
 from typing import Any
 
 import numpy as np
+from jaxtyping import Array
 from jaxtyping import Float
 from scipy.optimize import OptimizeResult
 from scipy.optimize import approx_fprime
 
 from jax_fdm.optimization.optimizers.optimizer import Optimizer
 from jax_fdm.optimization.optimizers.optimizer import OptProblem
+
+# A parameter vector crossing the scipy boundary: jax on the way in, numpy back out.
+ParamVector = Float[Array, "parameters"] | Float[np.ndarray, "parameters"]
 
 # ==========================================================================
 # Gradient descent
@@ -31,7 +35,7 @@ class GradientDescent(Optimizer):
 
     name = "gradient-descent"
 
-    def __init__(self, learning_rate: float = 0.01, **kwargs: Any):
+    def __init__(self, learning_rate: float = 0.01, **kwargs: Any) -> None:
         super().__init__(**kwargs)
         self.learning_rate = learning_rate
 
@@ -124,9 +128,11 @@ def gradient_descent(
     njev = 0
 
     # Consolidate function and gradient evaluation
+    # The loss and gradient flow through the untyped fun/jac callables, so the
+    # returned element types are Any.
     if jac is True:
         # fun returns (f, grad)
-        def eval_fun_and_grad(x_local):  # pyright: ignore[reportRedeclaration]
+        def eval_fun_and_grad(x_local: ParamVector) -> tuple[Any, Any]:
             nonlocal nfev, njev
             nfev += 1
             njev += 1
@@ -134,7 +140,7 @@ def gradient_descent(
 
     elif callable(jac):
         # fun returns f, jac returns grad
-        def eval_fun_and_grad(x_local):  # pyright: ignore[reportRedeclaration]
+        def eval_fun_and_grad(x_local: ParamVector) -> tuple[Any, Any]:
             nonlocal nfev, njev
             nfev += 1
             f_val = fun(x_local, *args)
@@ -144,7 +150,7 @@ def gradient_descent(
 
     else:
         # No jacobian provided: use finite differences via approx_fprime
-        def eval_fun_and_grad(x_local):
+        def eval_fun_and_grad(x_local: ParamVector) -> tuple[Any, Any]:
             nonlocal nfev, njev
             x_arr = np.asarray(x_local)
 
@@ -176,11 +182,10 @@ def gradient_descent(
     status = 1
     message = "Maximum number of iterations reached."
 
+    # Bind k so nit is well-defined when maxiter is zero and the loop never runs.
+    k = -1
     for k in range(maxiter):
-        # scipy's approx_fprime stub resolves to an unrelated sparse-linalg overload
-        # (LinearOperator/csr_array union) here;
-        # at runtime it always returns a dense ndarray gradient
-        grad_norm = np.linalg.norm(grad, ord=np.inf)  # pyright: ignore[reportArgumentType]
+        grad_norm = np.linalg.norm(grad, ord=np.inf)
 
         # Gradient-based stopping
         if tol is not None and grad_norm < tol:

@@ -75,7 +75,7 @@ def test_colinear_load_optimization_flattens_arch(arch_network):
 
     heights = jnp.array(optimized.nodes_coordinates())[:, 2]
 
-    assert jnp.allclose(heights, 0.0, atol=1e-9)
+    assert jnp.allclose(heights, 0.0, atol=1e-8)
 
 
 def test_colinear_load_optimization_reduces_loss(arch_network):

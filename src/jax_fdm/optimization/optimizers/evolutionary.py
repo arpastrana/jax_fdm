@@ -52,7 +52,7 @@ class DifferentialEvolution(GradientFreeOptimizer):
         num_workers: int = 1,
         seed: int = 43,
         **kwargs: Any,
-    ):
+    ) -> None:
         super().__init__(**kwargs)
         self.popsize = popsize
         self.vectorized = vectorized
@@ -121,7 +121,7 @@ class DualAnnealing(GradientFreeOptimizer):
         no_local_search: bool = True,
         seed: int = 42,
         **kwargs: Any,
-    ):
+    ) -> None:
         super().__init__(**kwargs)
         self.no_local_search = no_local_search
         self.seed = seed

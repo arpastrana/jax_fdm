@@ -105,7 +105,7 @@ class Optimizer:
 
     name: str = ""
 
-    def __init__(self, disp: bool = False, **kwargs: Any):
+    def __init__(self, disp: bool = False, **kwargs: Any) -> None:
         # `name` is the fixed scipy method identity of each optimizer, so it is a
         # class attribute rather than a constructor argument. `disp` toggles the
         # backend's own console output; jax_fdm already prints its own progress,
@@ -493,7 +493,9 @@ class Optimizer:
         )
         print(f"Optimization elapsed time: {perf_counter() - start_time} seconds")
 
-        return res_q.x
+        # SciPy hands back a NumPy result vector; return a jax array to match
+        # the signature and the differentiable pipeline downstream.
+        return jnp.asarray(res_q.x)
 
     def _minimize(self, opt_problem: OptProblem) -> OptimizeResult:
         """

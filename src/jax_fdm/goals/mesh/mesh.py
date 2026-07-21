@@ -31,7 +31,7 @@ class MeshGoal(Goal):
         key: int = -1,
         target: TargetLike = 0.0,
         weight: float = 1.0,
-    ):
+    ) -> None:
         super().__init__(key=key, target=target, weight=weight)
 
     def index_from_structure(

@@ -1,7 +1,7 @@
 from types import ModuleType as _ModuleType
 
-from .face import *  # noqa F403
-from .rectangle import *  # noqa F403
+from .face import *  # noqa: F403
+from .rectangle import *  # noqa: F403
 
 __all__ = [
     name

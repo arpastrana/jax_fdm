@@ -95,7 +95,7 @@ class MeshPlanarityGoal(ScalarGoal, MeshGoal):
 
 def face_xyz(
     face: Int[Array, "vertices"],
-    xyz: Float[Array, "nodes 3"],
+    xyz: Float[Array, "vertices 3"],
 ) -> Float[Array, "vertices 3"]:
     """
     Gather the coordinates of a face's vertices, padding safely for gradients.
@@ -126,7 +126,7 @@ def face_xyz(
 
 def face_planarity(
     face: Int[Array, "vertices"],
-    xyz: Float[Array, "nodes 3"],
+    xyz: Float[Array, "vertices 3"],
 ) -> Float[Array, ""]:
     """
     Compute a face's planarity, dispatching on its vertex count.
@@ -169,7 +169,7 @@ def face_planarity(
 
 def faces_planarity(
     faces: Int[Array, "faces vertices"],
-    xyz: Float[Array, "nodes 3"],
+    xyz: Float[Array, "vertices 3"],
 ) -> Float[Array, "faces"]:
     """
     Compute the planarity of every face in a mesh.

@@ -109,7 +109,7 @@ class VertexNormalAngleGoal(ScalarGoal, VertexGoal):
         self.vector = self.vectors()
         self.faces_indexed = structure.faces_indexed
 
-    def face_normals(self, xyz: Float[Array, "nodes 3"]) -> Float[Array, "faces 3"]:
+    def face_normals(self, xyz: Float[Array, "vertices 3"]) -> Float[Array, "faces 3"]:
         """
         Compute the unnormalized normal of every face in the mesh.
 
@@ -127,7 +127,7 @@ class VertexNormalAngleGoal(ScalarGoal, VertexGoal):
 
         def face_normal(
             face: Int[Array, "vertices"],
-            xyz: Float[Array, "nodes 3"],
+            xyz: Float[Array, "vertices 3"],
         ) -> Float[Array, "3"]:
             face = jnp.ravel(face)
             xyz_face = xyz[face, :]

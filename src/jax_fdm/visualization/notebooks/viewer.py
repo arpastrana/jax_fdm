@@ -30,6 +30,7 @@ class NotebookViewer(CompasNotebookViewer):
     directly and folds them into a `compas_notebook.config.Config`, so
     the common setup does not require building a config by hand.
     """
+
     def __init__(
         self,
         width: int | None = None,
@@ -45,15 +46,27 @@ class NotebookViewer(CompasNotebookViewer):
             config = Config()
             # Config.view is a shared class attribute in compas_notebook 0.11;
             # assign a fresh ViewConfig so settings do not leak across viewers.
-            config.view = ViewConfig(viewport=viewport or "perspective",
-                                     width=width or 1100,
-                                     height=height or 580,
-                                     show_grid=show_grid if show_grid is not None else True)
+            config.view = ViewConfig(
+                viewport=viewport or "perspective",
+                width=width or 1100,
+                height=height or 580,
+                show_grid=show_grid if show_grid is not None else True,
+            )
             if camera_position or camera_target:
                 # ViewConfig.__post_init__ resets the camera from the viewport,
                 # so the camera overrides land after construction.
-                config.view.camera = CameraConfig(position=list(camera_position) if camera_position else config.view.camera.position,
-                                                  target=list(camera_target) if camera_target else config.view.camera.target)
+                config.view.camera = CameraConfig(
+                    position=(
+                        list(camera_position)
+                        if camera_position
+                        else config.view.camera.position
+                    ),
+                    target=(
+                        list(camera_target)
+                        if camera_target
+                        else config.view.camera.target
+                    ),
+                )
 
         super().__init__(config=config, **kwargs)
 
@@ -67,7 +80,8 @@ class NotebookViewer(CompasNotebookViewer):
 
         Dispatch is purely by type. To draw a force density datastructure as plain
         geometry instead, convert it to its COMPAS base first and add that, e.g.
-        ``viewer.add(mesh.copy(cls=Mesh))`` or ``viewer.add(network.copy(cls=Network))``.
+        ``viewer.add(mesh.copy(cls=Mesh))`` or
+        ``viewer.add(network.copy(cls=Network))``.
 
         Parameters
         ----------
@@ -83,7 +97,11 @@ class NotebookViewer(CompasNotebookViewer):
         """
         # COMPAS 2.x aliases ``Network`` to ``Graph``; default the display name
         # to "Network" to mirror the 3D viewer wrapper.
-        if isinstance(data, Graph) and not isinstance(data, (FDMesh, FDNetwork)) and "name" not in kwargs:
+        if (
+            isinstance(data, Graph)
+            and not isinstance(data, (FDMesh, FDNetwork))
+            and "name" not in kwargs
+        ):
             kwargs["name"] = "Network"
 
         return self.scene.add(data, **kwargs)

@@ -1,8 +1,8 @@
 from types import ModuleType as _ModuleType
 
-from .collections import *  # noqa F403
-from .optimizers import *  # noqa F403
-from .recorders import *  # noqa F403
+from .collections import *  # noqa: F403
+from .optimizers import *  # noqa: F403
+from .recorders import *  # noqa: F403
 
 __all__ = [
     name

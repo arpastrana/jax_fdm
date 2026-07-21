@@ -688,7 +688,7 @@ def colinearity_points(points: Float[Array, "points 3"]) -> Float[Array, ""]:
 
     dt = line_vectors[1:] - line_vectors[:-1]
     dtdt = jnp.sum(dt**2, axis=-1)
-    lbar = 0.5 * (lengths_squared[1:] + lengths_squared[:-1])
+    lbar = 0.5 * (lengths_squared[1:] + lengths_squared[:-1]).ravel()
     n_interior = dt.shape[0]
 
     return jnp.sum(dtdt / lbar) / jnp.maximum(n_interior, 1)

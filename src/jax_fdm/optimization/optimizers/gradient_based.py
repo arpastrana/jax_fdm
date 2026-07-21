@@ -62,7 +62,7 @@ class LBFGSB(Optimizer):
         maxls: int | None = None,
         maxcor: int | None = None,
         **kwargs: Any,
-    ):
+    ) -> None:
         super().__init__(disp=disp, **kwargs)
         self.maxfun = maxfun
         self.maxls = maxls

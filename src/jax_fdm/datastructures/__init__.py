@@ -1,8 +1,8 @@
 from types import ModuleType as _ModuleType
 
-from .datastructure import *  # noqa F403
-from .mesh import *  # noqa F403
-from .network import *  # noqa F403
+from .datastructure import *  # noqa: F403
+from .mesh import *  # noqa: F403
+from .network import *  # noqa: F403
 
 __all__ = [
     name

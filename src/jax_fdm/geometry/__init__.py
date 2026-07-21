@@ -1,6 +1,6 @@
 from types import ModuleType as _ModuleType
 
-from .geometry import *  # noqa F403
+from .geometry import *  # noqa: F403
 
 __all__ = [
     name

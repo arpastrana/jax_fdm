@@ -1,9 +1,9 @@
 from types import ModuleType as _ModuleType
 
-from .angle import *  # noqa F403
-from .edge import *  # noqa F403
-from .force import *  # noqa F403
-from .length import *  # noqa F403
+from .angle import *  # noqa: F403
+from .edge import *  # noqa: F403
+from .force import *  # noqa: F403
+from .length import *  # noqa: F403
 
 __all__ = [
     name

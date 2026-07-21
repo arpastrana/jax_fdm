@@ -56,7 +56,7 @@ class EquilibriumStructure(Graph):
         edges: Int[np.ndarray, "edges 2"],
         supports: Int[np.ndarray, "nodes"],
         **kwargs,
-    ):
+    ) -> None:
         super().__init__(nodes=nodes, edges=edges, **kwargs)
 
         self.supports = supports
@@ -153,9 +153,10 @@ class EquilibriumStructure(Graph):
         """
         The indices of the free (unsupported) nodes in the structure.
         """
-        # jnp.flatnonzero's size kwarg accepts a traced/static int; self.num_free
-        # is a 0-d jax.Array consistent with the rest of this class's usage
-        indices = jnp.flatnonzero(self.supports == 0, size=self.num_free)  # pyright: ignore[reportArgumentType]
+        # jnp.flatnonzero's size kwarg must be a static int; num_free is a
+        # concrete 0-d array here (supports is a static NumPy array), so int()
+        # is eager and exact.
+        indices = jnp.flatnonzero(self.supports == 0, size=int(self.num_free))
 
         return indices
 
@@ -163,9 +164,10 @@ class EquilibriumStructure(Graph):
         """
         The indices of the fixed (supported) nodes in the structure.
         """
-        # jnp.flatnonzero's size kwarg accepts a traced/static int;
-        # self.num_supports is a 0-d jax.Array consistent with this class's usage
-        indices = jnp.flatnonzero(self.supports, size=self.num_supports)  # pyright: ignore[reportArgumentType]
+        # jnp.flatnonzero's size kwarg must be a static int; num_supports is a
+        # concrete 0-d array here (supports is a static NumPy array), so int()
+        # is eager and exact.
+        indices = jnp.flatnonzero(self.supports, size=int(self.num_supports))
 
         return indices
 
@@ -205,6 +207,8 @@ class EquilibriumStructureSparse(EquilibriumStructure, GraphSparse):
     indexing rather than rebuilding its structure at every solve.
     """
 
+    connectivity_free: Float[BCOO, "edges nodes_free"]
+    connectivity_fixed: Float[BCOO, "edges nodes_fixed"]
     diag_indices: Int[Array, "nodes_free"]
     index_array: Int[CSC, "nodes_free nodes_free"]
     diags: Float[BCSR, "nodes_free edges"]
@@ -215,7 +219,7 @@ class EquilibriumStructureSparse(EquilibriumStructure, GraphSparse):
         edges: Int[np.ndarray, "edges 2"],
         supports: Int[np.ndarray, "nodes"],
         **kwargs,
-    ):
+    ) -> None:
         super().__init__(nodes=nodes, edges=edges, supports=supports, **kwargs)
 
         # Do some precomputation to be able to construct
@@ -373,7 +377,7 @@ class EquilibriumMeshStructure(EquilibriumStructure, Mesh):
         edges: Int[np.ndarray, "edges 2"],
         supports: Int[np.ndarray, "vertices"],
         **kwargs,
-    ):
+    ) -> None:
         super().__init__(
             nodes=vertices,
             edges=edges,
@@ -494,7 +498,7 @@ class EquilibriumMeshStructureSparse(
         edges: Int[np.ndarray, "edges 2"],
         supports: Int[np.ndarray, "vertices"],
         **kwargs,
-    ):
+    ) -> None:
         super().__init__(
             vertices=vertices,
             faces=faces,

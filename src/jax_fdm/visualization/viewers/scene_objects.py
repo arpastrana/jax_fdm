@@ -258,8 +258,8 @@ class FDEdgeObject(FDObject):
         # edge_coordinates always returns plain xyz lists, not compas attribute
         # views.
         return cylinders_buffer(
-            [start],  # pyright: ignore[reportArgumentType]
-            [end],  # pyright: ignore[reportArgumentType]
+            [start],
+            [end],
             [parent.edge_width[self.key] / 2.0],
             [parent.edge_color[self.key].rgba],
             u=parent.shape_u,

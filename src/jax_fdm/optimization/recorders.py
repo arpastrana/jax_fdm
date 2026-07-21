@@ -47,7 +47,7 @@ class OptimizationRecorder(Data):
         def from_json(cls, filepath: str | PathLike[str]) -> Self:
             raise NotImplementedError
 
-    def __init__(self, optimizer: Optimizer | None = None):
+    def __init__(self, optimizer: Optimizer | None = None) -> None:
         super().__init__()
         self.optimizer = optimizer
         self.history = self._init_history()

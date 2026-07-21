@@ -54,7 +54,7 @@ class IPOPT(ConstrainedOptimizer, SecondOrderOptimizer):
 
     name = "IPOPT"
 
-    def __init__(self, acc_tol: float = 1e-9, **kwargs: Any):
+    def __init__(self, acc_tol: float = 1e-9, **kwargs: Any) -> None:
         super().__init__(**kwargs)
         self.acceptable_tol = acc_tol
 
@@ -175,7 +175,7 @@ class IPOPT(ConstrainedOptimizer, SecondOrderOptimizer):
         x: Float[Array, "parameters"],
         v: Float[Array, "constraints"],
         f: Callable,
-    ) -> Float[Array, "parameters"]:
+    ) -> Float[Array, "parameters parameters"]:
         """
         The constraint hessian contracted with the Lagrange multipliers.
 
