@@ -1,29 +1,29 @@
 # Constraints
 
-Goals express *soft* preference: get as close to the target as you can.
+Goals express *soft* preference: get as close to the target as we can.
 Constraints express *hard* restrictions: stay between these bounds, or the optimizer does not go home.
 
 This guide is about what a constraint *is* and how it differs from a goal.
-It assumes you have read [goals](goals.md). Constraints reuse most of that machinery, so here we focus on what changes.
-Once the anatomy is clear, [custom constraints](custom_constraints.md) shows you how to write your own, and for how goals and constraints slot into a full optimization problem, see [constrained form-finding](constrained_form_finding.md).
+It assumes we have read [goals](goals.md). Constraints reuse most of that machinery, so here we focus on what changes.
+Once the anatomy is clear, [custom constraints](custom_constraints.md) shows how to write our own, and for how goals and constraints slot into a full optimization problem, see [constrained form-finding](constrained_form_finding.md).
 
 ## The anatomy of a constraint
 
 We take a constraint apart the same top-down way the [goals](goals.md#the-anatomy-of-a-goal) guide takes apart `EdgeLengthGoal`.
-Suppose that instead of *nudging* a quantity toward a target, you want a hard floor and ceiling: no node in the network may sink below zero or rise above three.
-You grab `NodeZCoordinateConstraint`, one per node, and hand each a pair of bounds:
+Suppose that instead of *nudging* a quantity toward a target, we want a hard floor and ceiling: no node in the network may sink below zero or rise above three.
+We grab `NodeZCoordinateConstraint`, one per node, and hand each a pair of bounds:
 
 ```python
 from jax_fdm.constraints import NodeZCoordinateConstraint
 
 
-constraints = [NodeZCoordinateConstraint(node, 0.0, 3.0) for node in network.nodes()]
+constraints = [NodeZCoordinateConstraint(node, bound_low=0.0, bound_up=3.0) for node in network.nodes()]
 ```
 
 One constraint per node, each pinning that node's height between 0.0 and 3.0.
-Set that call beside a goal's and the first difference is already visible: where the goal took a `target`, the constraint takes two bounds.
+The most evident difference with respect to a goal is already visible: where the goal took a `target`, the constraint takes two bounds.
 
-### What you see
+### What we pass in
 
 Every constraint is built from a key and two bounds, defined once on the base `Constraint` and inherited by every constraint in the library:
 
@@ -37,14 +37,15 @@ class Constraint:
 ```
 
 The `key` behaves exactly as a goal's: stored as given, the node key here, then resolved to an integer `index` when `constrained_fdm` calls `init`.
-But **the target and weight are gone**, replaced by two bounds:
+But **the target and weight are gone**.
+They are replaced by two bounds:
 
-- **`bound_low`** and **`bound_up`** are the limits the optimizer must keep the quantity between. Pass `None` for either and it normalizes to the matching infinity, so a one-sided constraint (a floor with no ceiling, say) costs you nothing.
+- **`bound_low`** and **`bound_up`** are the limits the optimizer must keep the quantity between. If we pass `None` for either, the constraint will convert it to the matching infinity, so a one-sided constraint (a floor with no ceiling, say) is straightforward to set up.
 - There is **no weight**, because a constraint is not weighed against anything. It is satisfied or the solution is rejected, full stop.
 
 ### What is under the hood
 
-Even less than a goal. Here is the whole class, straight from the library:
+Even less than a goal. Here is the whole class:
 
 ```python
 from jax_fdm.constraints.node import NodeConstraint
@@ -62,22 +63,23 @@ class NodeZCoordinateConstraint(NodeConstraint):
 Two moving parts, mirroring the goal with two deliberate differences:
 
 - **One base class, not two.** A constraint subclasses only an element family (`NodeConstraint`). There is no scalar-versus-vector choice to make, because a constraint has no target shape to declare: its quantity is simply whatever number `constraint` returns.
-- **The `constraint` method is the one thing you write.** It plays the exact role `prediction` plays for a goal, same signature, same job: given an `eq_state` and the `index` your key resolved to, return the quantity of interest, here the node's Z coordinate pulled from the `xyz` array. Only the name differs.
+- **The `constraint` method is the one thing we write.** It plays the exact role `prediction` plays for a goal, same signature, same job: given an `eq_state` and the `index` our key resolved to, return the quantity of interest, here the node's Z coordinate pulled from the `xyz` array. Only the name differs.
 
 So a constraint is a goal with the target-and-weight swapped for bounds and a single-family base class.
 The next section makes those differences precise.
 
+!!! note "Where the equilibrium state comes from"
+
+    A goal is handed a ready-made `eq_state` by the loss, but a constraint is not. Its `__call__(params, model, structure)` solves for equilibrium itself, `eqstate = model(params, structure)`, before slicing the quantity with `constraint`. This is because the optimizer evaluates constraints on its own schedule, apart from the loss, which is exactly why only optimizers like `SLSQP` built to do that can enforce them.
+
 ## How a constraint works
 
 A constraint lives the same two-phase life as a goal.
-You construct it with an element key and two bounds, and when you call `constrained_fdm`, its `init` resolves the key to an integer index inside the equilibrium structure.
+We construct it with an element key and two bounds, and when we call `constrained_fdm`, its `init` resolves the key to an integer index inside the equilibrium structure.
 Keys at construction, array rows at evaluation, `init` in between — the [same translation step](goals.md#goals-in-action) goals go through.
 
-The differences are three.
+The differences are twofold.
 
-- **Bounds instead of a target.**
-A constraint carries no target and no weight. It carries `bound_low` and `bound_up`, and the optimizer keeps the constrained quantity between them.
-Leave either bound as `None` and it becomes an infinity of the appropriate sign, so one-sided constraints cost you nothing.
 - **Law needs an enforcer.**
 Constraints are honored only by optimizers that support them, `SLSQP` and `IPOPT`.
 Hand constraints to any other optimizer and they are politely ignored.
