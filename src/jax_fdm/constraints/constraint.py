@@ -11,7 +11,7 @@ from jax_fdm.equilibrium import EquilibriumModel
 from jax_fdm.equilibrium import EquilibriumParametersState
 from jax_fdm.equilibrium import EquilibriumState
 from jax_fdm.equilibrium import EquilibriumStructure
-from jax_fdm.equilibrium import equilibrium_state_from_datastructure
+from jax_fdm.equilibrium import datastructure_state
 from jax_fdm.equilibrium import indices_from_keys
 
 __all__ = ["Constraint"]
@@ -320,7 +320,7 @@ class Constraint:
         Unlike `__call__`, it consumes the datastructure's current state directly
         rather than solving for equilibrium from raw parameters.
         """
-        equilibrium = equilibrium_state_from_datastructure(datastructure, sparse)
+        equilibrium = datastructure_state(datastructure, sparse)
 
         return self._constraint(equilibrium.eq_state, equilibrium.structure)
 

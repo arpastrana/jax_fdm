@@ -8,7 +8,7 @@ from jax_fdm.datastructures import FDMesh
 from jax_fdm.datastructures import FDNetwork
 from jax_fdm.equilibrium import EquilibriumState
 from jax_fdm.equilibrium import EquilibriumStructure
-from jax_fdm.equilibrium import equilibrium_state_from_datastructure
+from jax_fdm.equilibrium import datastructure_state
 from jax_fdm.goals import Goal
 from jax_fdm.goals import GoalState
 
@@ -150,7 +150,7 @@ class Error:
         has grouped them. The goal count is unchanged, so a mean-style term
         divides by the same number of goals it would during an optimization.
         """
-        equilibrium = equilibrium_state_from_datastructure(datastructure, sparse)
+        equilibrium = datastructure_state(datastructure, sparse)
 
         return self.evaluate_state(equilibrium.eq_state, equilibrium.structure)
 

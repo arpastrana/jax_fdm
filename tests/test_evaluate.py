@@ -2,7 +2,7 @@
 Tests for the `evaluate` family: goals, constraints, errors, losses, and
 parameters evaluated straight off a datastructure, with no optimization.
 
-`evaluate` builds the equilibrium state, structure, and model from the
+`evaluate` reads the equilibrium state, structure, and parameters off the
 high-level COMPAS layer, then reads the quantity of interest off the
 datastructure's current geometry as-is (no form-finding). These tests pin that
 the shortcut reproduces the manual pipeline, keeps dense and sparse in parity,
@@ -17,8 +17,8 @@ import pytest
 from jax_fdm.constraints import EdgeAngleConstraint
 from jax_fdm.constraints import EdgeLengthConstraint
 from jax_fdm.datastructures import FDNetwork
-from jax_fdm.equilibrium import DatastructureEquilibrium
-from jax_fdm.equilibrium import equilibrium_state_from_datastructure
+from jax_fdm.equilibrium import DatastructureState
+from jax_fdm.equilibrium import datastructure_state
 from jax_fdm.equilibrium import fdm
 from jax_fdm.goals import EdgeAngleGoal
 from jax_fdm.goals import EdgeLengthGoal
@@ -60,9 +60,9 @@ def test_factory_returns_named_tuple(arch):
     """
     The factory returns a typed bundle whose state matches the datastructure.
     """
-    equilibrium = equilibrium_state_from_datastructure(arch, sparse=False)
+    equilibrium = datastructure_state(arch, sparse=False)
 
-    assert isinstance(equilibrium, DatastructureEquilibrium)
+    assert isinstance(equilibrium, DatastructureState)
 
     xyz = jnp.asarray(arch.nodes_coordinates())
     assert jnp.allclose(equilibrium.eq_state.xyz, xyz)
@@ -72,12 +72,52 @@ def test_factory_dense_sparse_parity(arch):
     """
     The dense and sparse factories assemble the same equilibrium state.
     """
-    dense = equilibrium_state_from_datastructure(arch, sparse=False)
-    sparse = equilibrium_state_from_datastructure(arch, sparse=True)
+    dense = datastructure_state(arch, sparse=False)
+    sparse = datastructure_state(arch, sparse=True)
 
     assert jnp.allclose(dense.eq_state.lengths, sparse.eq_state.lengths)
     assert jnp.allclose(dense.eq_state.forces, sparse.eq_state.forces)
     assert jnp.allclose(dense.eq_state.residuals, sparse.eq_state.residuals)
+
+
+def test_factory_state_mirrors_stored_attributes(arch):
+    """
+    The state is read off the datastructure's stored attributes, not recomputed.
+    """
+    eq_state = datastructure_state(arch, sparse=False).eq_state
+
+    lengths = jnp.reshape(jnp.asarray(arch.edges_lengths()), (-1, 1))
+    forces = jnp.reshape(jnp.asarray(arch.edges_forces()), (-1, 1))
+
+    assert jnp.allclose(eq_state.xyz, jnp.asarray(arch.nodes_coordinates()))
+    assert jnp.allclose(eq_state.lengths, lengths)
+    assert jnp.allclose(eq_state.forces, forces)
+    assert jnp.allclose(eq_state.residuals, jnp.asarray(arch.nodes_residual()))
+
+
+def test_factory_fresh_datastructure_reads_zero_state():
+    """
+    A never-solved datastructure reads back zero lengths, forces, and residuals.
+
+    The factory reflects stored attributes rather than form-finding, so the
+    edge and residual defaults (0.0) survive until ``fdm`` writes a solved state.
+    The edge vectors still follow from the node coordinates, and so stay nonzero.
+    """
+    network = FDNetwork()
+    for k in range(3):
+        network.add_node(k, x=float(k), y=0.0, z=0.0)
+    for edge in [(0, 1), (1, 2)]:
+        network.add_edge(*edge)
+    network.node_support(0)
+    network.node_support(2)
+    network.edges_forcedensities(-1.0)
+
+    eq_state = datastructure_state(network, sparse=False).eq_state
+
+    assert jnp.allclose(eq_state.lengths, 0.0)
+    assert jnp.allclose(eq_state.forces, 0.0)
+    assert jnp.allclose(eq_state.residuals, 0.0)
+    assert not jnp.allclose(eq_state.vectors, 0.0)
 
 
 # ==============================================================================
@@ -214,7 +254,7 @@ def test_loss_evaluate_sums_terms_and_regularizers(arch):
     loss = Loss(error, loadpath, regularizer)
     value = loss.evaluate(arch, sparse=False)
 
-    equilibrium = equilibrium_state_from_datastructure(arch, sparse=False)
+    equilibrium = datastructure_state(arch, sparse=False)
     expected = (
         error.evaluate(arch, sparse=False)
         + loadpath.evaluate(arch, sparse=False)

@@ -13,7 +13,7 @@ from jax_fdm.datastructures import FDMesh
 from jax_fdm.datastructures import FDNetwork
 from jax_fdm.equilibrium import EquilibriumState
 from jax_fdm.equilibrium import EquilibriumStructure
-from jax_fdm.equilibrium import equilibrium_state_from_datastructure
+from jax_fdm.equilibrium import datastructure_state
 from jax_fdm.equilibrium import indices_from_keys
 from jax_fdm.goals.state import GoalState
 
@@ -382,10 +382,10 @@ class Goal:
         Notes
         -----
         A convenience for prototyping a goal on the high-level COMPAS layer: it
-        builds the equilibrium state, structure, and model from the datastructure
-        and evaluates the goal against them in one call.
+        reads the equilibrium state and structure off the datastructure and
+        evaluates the goal against them in one call.
         """
-        equilibrium = equilibrium_state_from_datastructure(datastructure, sparse)
+        equilibrium = datastructure_state(datastructure, sparse)
 
         return self(equilibrium.eq_state, equilibrium.structure)
 

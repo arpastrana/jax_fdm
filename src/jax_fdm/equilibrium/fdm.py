@@ -1,10 +1,8 @@
 from collections.abc import Callable
 from collections.abc import Sequence
 from typing import TYPE_CHECKING
-from typing import NamedTuple
 from typing import TypeVar
 
-import jax.numpy as jnp
 import numpy as np
 
 from jax_fdm import DTYPE_JAX
@@ -12,6 +10,7 @@ from jax_fdm.datastructures import FDMesh
 from jax_fdm.datastructures import FDNetwork
 from jax_fdm.equilibrium.models import EquilibriumModel
 from jax_fdm.equilibrium.models import EquilibriumModelSparse
+from jax_fdm.equilibrium.states import DatastructureState
 from jax_fdm.equilibrium.states import EquilibriumParametersState
 from jax_fdm.equilibrium.states import EquilibriumState
 from jax_fdm.equilibrium.structures import EquilibriumMeshStructure
@@ -31,12 +30,11 @@ if TYPE_CHECKING:
 __all__ = [
     "fdm",
     "constrained_fdm",
-    "DatastructureEquilibrium",
-    "equilibrium_state_from_datastructure",
     "model_from_sparsity",
     "structure_from_datastructure",
     "structure_from_network",
     "structure_from_mesh",
+    "datastructure_state",
     "datastructure_validate",
     "datastructure_updated",
     "datastructure_update",
@@ -285,89 +283,6 @@ def constrained_fdm(
 
 
 # ==========================================================================
-# Equilibrium state from a datastructure
-# ==========================================================================
-
-
-class DatastructureEquilibrium(NamedTuple):
-    """
-    The equilibrium of a datastructure and the objects used to compute it.
-
-    Attributes
-    ----------
-    eq_state :
-        The equilibrium state read off the datastructure as-is, without solving.
-    structure :
-        The structure carrying the connectivity the state was assembled on.
-    model :
-        The model that assembled the state.
-    parameters :
-        The force densities, fixed coordinates, and loads read off the
-        datastructure.
-    """
-
-    eq_state: EquilibriumState
-    structure: EquilibriumStructure
-    model: EquilibriumModel
-    parameters: EquilibriumParametersState
-
-
-def equilibrium_state_from_datastructure(
-    datastructure: FDNetwork | FDMesh,
-    sparse: bool = True,
-) -> DatastructureEquilibrium:
-    """
-    Assemble an equilibrium state from a datastructure without solving.
-
-    Parameters
-    ----------
-    datastructure :
-        The network or mesh to read geometry, force densities, and loads from.
-    sparse :
-        If True, build the sparse structure and model variants.
-
-    Returns
-    -------
-    equilibrium :
-        The equilibrium state, structure, model, and parameters. The state
-        reflects the datastructure's current geometry as-is; it is the input a
-        goal or constraint reads, not a form-found result.
-
-    Notes
-    -----
-    Bundles the model, structure, and parameter state a goal or constraint needs
-    to evaluate against the high-level COMPAS layer, for quick prototyping without
-    running an optimization. The node loads are read back as-is; edge and face
-    tributary loads are not re-aggregated, since a form-found datastructure
-    already carries them in its node loads and re-aggregating would double-count.
-    """
-    structure = structure_from_datastructure(datastructure, sparse)
-    model = model_from_sparsity(sparse=sparse, tmax=1, eta=1e-6)
-    parameters = EquilibriumParametersState.from_datastructure(
-        datastructure,
-        dtype=DTYPE_JAX,
-    )
-
-    if isinstance(datastructure, FDNetwork):
-        xyz = datastructure.nodes_coordinates()
-    elif isinstance(datastructure, FDMesh):
-        xyz = datastructure.vertices_coordinates()
-    else:
-        raise ValueError(f"Input datastructure {datastructure} is invalid")
-
-    xyz = jnp.asarray(xyz, dtype=DTYPE_JAX)
-
-    eq_state = model.equilibrium_state(
-        parameters.q,
-        xyz,
-        parameters.loads.nodes,
-        structure,
-    )
-
-    return DatastructureEquilibrium(eq_state, structure, model, parameters)
-
-
-# ==========================================================================
 # Helpers
 # ==========================================================================
 
@@ -504,6 +419,52 @@ def structure_from_mesh(mesh: FDMesh, sparse: bool) -> EquilibriumMeshStructure:
         structure = EquilibriumMeshStructureSparse
 
     return structure.from_mesh(mesh)
+
+
+def datastructure_state(
+    datastructure: FDNetwork | FDMesh,
+    sparse: bool = True,
+) -> DatastructureState:
+    """
+    Read an equilibrium state off a datastructure without solving.
+
+    Parameters
+    ----------
+    datastructure :
+        The network or mesh to read geometry, force densities, and loads from.
+    sparse :
+        If True, build the sparse structure variant.
+
+    Returns
+    -------
+    equilibrium :
+        The equilibrium state, structure, and parameters. The state reflects the
+        datastructure's current geometry as-is; it is the input a goal or
+        constraint reads, not a form-found result.
+
+    Notes
+    -----
+    Bundles the structure and parameter state a goal or constraint needs to
+    evaluate against the high-level COMPAS layer, for quick prototyping without
+    running an optimization. The equilibrium state is read off the datastructure's
+    stored attributes, not recomputed, so it is only a genuine equilibrium once
+    the datastructure has been solved: run ``fdm`` (or ``constrained_fdm``) first.
+    The node loads are read back as-is; edge and face tributary loads are not
+    re-aggregated, since a form-found datastructure already carries them in its
+    node loads and re-aggregating would double-count.
+    """
+    structure = structure_from_datastructure(datastructure, sparse)
+    parameters = EquilibriumParametersState.from_datastructure(
+        datastructure,
+        dtype=DTYPE_JAX,
+    )
+    eq_state = EquilibriumState.from_datastructure(
+        datastructure,
+        structure,
+        dtype=DTYPE_JAX,
+    )
+
+    return DatastructureState(eq_state, structure, parameters)
 
 
 def datastructure_validate(datastructure: FDNetwork | FDMesh) -> None:

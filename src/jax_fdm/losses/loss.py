@@ -9,7 +9,7 @@ from jax_fdm.datastructures import FDNetwork
 from jax_fdm.equilibrium import EquilibriumModel
 from jax_fdm.equilibrium import EquilibriumParametersState
 from jax_fdm.equilibrium import EquilibriumStructure
-from jax_fdm.equilibrium import equilibrium_state_from_datastructure
+from jax_fdm.equilibrium import datastructure_state
 from jax_fdm.losses.errors import Error
 from jax_fdm.losses.regularizers import Regularizer
 
@@ -107,7 +107,7 @@ class Loss:
         the loss works before ``constrained_fdm`` has grouped them into
         collections.
         """
-        equilibrium = equilibrium_state_from_datastructure(datastructure, sparse)
+        equilibrium = datastructure_state(datastructure, sparse)
 
         loss = jnp.asarray(0.0)
         for error_term in self.terms_error:
