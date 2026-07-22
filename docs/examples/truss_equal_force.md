@@ -20,11 +20,9 @@ The truss lives in a vertical plane. We build three families of members:
 - a **bottom chord**, a second line of nodes below it,
 - **struts**, verticals tying each bottom node up to a top node.
 
-We start from a straight top chord and divide it into segments.
+Since every node sits at an evenly spaced station along the x axis, we can place the points by hand, no geometry library needed. The top chord runs along `y=0`, and the bottom chord hangs below it at `y=depth`. Its two ends are dropped so the bottom chord meets the supports directly.
 
 ```python
-from compas.geometry import Polyline
-from compas.geometry import add_vectors
 from compas.itertools import pairwise
 
 from jax_fdm.datastructures import FDNetwork
@@ -34,45 +32,45 @@ length = 5.0
 num_segments = 11
 depth = -2.0
 
-top_line = Polyline([[-length / 2.0, 0.0, 0.0], [length / 2.0, 0.0, 0.0]])
-points = top_line.divide(num_segments)
-network = FDNetwork.from_lines(Polyline(points).lines)
+step = length / num_segments
+xs = [-length / 2.0 + i * step for i in range(num_segments + 1)]
+
+top_points = [[x, 0.0, 0.0] for x in xs]
+bottom_points = [[x, depth, 0.0] for x in xs[1:-1]]  # interior only; the ends meet the supports
 ```
 
-The two ends are the supports, and every free top node carries a small downward load. The top-chord edges get a compressive (negative) force density, the bottom chord a tensile (positive) one, and the struts a mild compressive one, our starting guess.
+With the points in hand, we add the nodes to an empty network (top chord first, then the bottom chord) and wire up the three families of edges: the top and bottom chords, and the struts between them. The bottom chord runs support to support, so its end segments meet the top-chord supports directly.
 
 ```python
-network.node_anchor(key=0)
-network.node_anchor(key=num_segments)
-network.nodes_loads([0.0, 0.0, -0.2], keys=network.nodes_free())
+network = FDNetwork()
 
-for edge in network.edges():
+top_nodes = [network.add_node(x=x, y=y, z=z) for x, y, z in top_points]
+top_nodes_free = top_nodes[1:-1]  # every top node but the two supports
+bottom_nodes = [network.add_node(x=x, y=y, z=z) for x, y, z in bottom_points]
+
+bottom_chord = [top_nodes[0]] + bottom_nodes + [top_nodes[-1]]
+top_edges = [network.add_edge(u, v) for u, v in pairwise(top_nodes)]
+bottom_edges = [network.add_edge(u, v) for u, v in pairwise(bottom_chord)]
+strut_edges = [network.add_edge(u, v) for u, v in zip(bottom_nodes, top_nodes_free)]
+```
+
+The two chord ends are the supports, and every free top node carries a small downward load. The top-chord edges get a compressive (negative) force density, the bottom chord a tensile (positive) one, and the struts a mild compressive one, our starting guess.
+
+```python
+network.node_support(top_nodes[0])
+network.node_support(top_nodes[-1])
+
+for node in top_nodes_free:
+    network.node_load(node, [0.0, 0.0, -0.2])
+
+for edge in top_edges:
     network.edge_forcedensity(edge, -1.0)
-```
 
-We keep a handle on the top nodes and edges before adding the rest, then build the bottom chord and the struts.
-
-```python
-top_nodes = sorted(network.nodes())
-top_edges = list(network.edges())
-top_nodes_free = list(network.nodes_free())
-
-# bottom-chord nodes, offset below the top chord
-bottom_line = Polyline([[-length / 2.0, depth, 0.0], [length / 2.0, depth, 0.0]])
-offsets = bottom_line.divide(num_segments)
-bottom_nodes = [network.add_node(x=p[0], y=p[1], z=p[2]) for p in offsets[1:-1]]
-
-# bottom-chord edges (tension), spanning support to support
-bottom_edges = []
-for u, v in pairwise([0] + bottom_nodes + [num_segments]):
-    edge = network.add_edge(u, v)
+for edge in bottom_edges:
     network.edge_forcedensity(edge, 2.0)
-    bottom_edges.append(edge)
 
-# struts tying each bottom node to a top node
-for u, v in zip(bottom_nodes, top_nodes_free):
-    network.add_edge(u, v)
-    network.edge_forcedensity((u, v), -0.5)
+for edge in strut_edges:
+    network.edge_forcedensity(edge, -0.5)
 ```
 
 ## Before: uneven force along the bottom chord

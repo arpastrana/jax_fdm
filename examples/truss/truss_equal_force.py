@@ -8,7 +8,6 @@ from compas_viewer.config import WindowConfig
 
 # compas
 from compas.datastructures import Network
-from compas.geometry import Polyline
 from compas.itertools import pairwise
 
 # jax fdm
@@ -34,42 +33,56 @@ depth = -2.0
 target_force = 1.5
 
 # ==========================================================================
-# Build the truss: top chord, bottom chord, and struts
+# Create the spaced points along x
 # ==========================================================================
 
-top_line = Polyline([[-length / 2.0, 0.0, 0.0], [length / 2.0, 0.0, 0.0]])
-points = top_line.divide(num_segments)
-network = FDNetwork.from_lines(Polyline(points).lines)
+step = length / num_segments
+xs = [-length / 2.0 + i * step for i in range(num_segments + 1)]
 
-# supports at both ends, a downward load on every free top node, compressive q
-network.node_anchor(key=0)
-network.node_anchor(key=num_segments)
-network.nodes_loads([0.0, 0.0, -0.2], keys=network.nodes_free())
+top_points = [[x, 0.0, 0.0] for x in xs]  # with supports at both ends
+bottom_points = [[x, depth, 0.0] for x in xs[1:-1]]  # without supports
 
-for edge in network.edges():
+# ==========================================================================
+# Build the truss network: top chord, bottom chord, and struts
+# ==========================================================================
+
+# create an empty network
+network = FDNetwork()
+
+# add the nodes
+top_nodes = [network.add_node(x=x, y=y, z=z) for x, y, z in top_points]
+top_nodes_free = top_nodes[1:-1]
+bottom_nodes = [network.add_node(x=x, y=y, z=z) for x, y, z in bottom_points]
+
+# top chord, bottom chord, and struts between them
+bottom_chord = [top_nodes[0]] + bottom_nodes + [top_nodes[-1]]
+top_edges = [network.add_edge(u, v) for u, v in pairwise(top_nodes)]
+bottom_edges = [network.add_edge(u, v) for u, v in pairwise(bottom_chord)]
+strut_edges = [network.add_edge(u, v) for u, v in zip(bottom_nodes, top_nodes_free)]
+
+# ==========================================================================
+# Assemble the structural system
+# ==========================================================================
+
+# supports at both ends
+network.node_support(top_nodes[0])
+network.node_support(top_nodes[-1])
+
+# downard load on every free top node
+for node in top_nodes_free:
+    network.node_load(node, [0.0, 0.0, -0.2])
+
+# top chord in compression
+for edge in top_edges:
     network.edge_forcedensity(edge, -1.0)
 
-# keep a handle on the top chord before adding the rest
-top_nodes = sorted(network.nodes())
-top_edges = list(network.edges())
-top_nodes_free = list(network.nodes_free())
-
-# bottom-chord nodes, offset below the top chord
-bottom_line = Polyline([[-length / 2.0, depth, 0.0], [length / 2.0, depth, 0.0]])
-offsets = bottom_line.divide(num_segments)
-bottom_nodes = [network.add_node(x=p[0], y=p[1], z=p[2]) for p in offsets[1:-1]]
-
-# bottom-chord edges (tension), spanning support to support
-bottom_edges = []
-for u, v in pairwise([0] + bottom_nodes + [num_segments]):
-    edge = network.add_edge(u, v)
+# bottom chord in tension
+for edge in bottom_edges:
     network.edge_forcedensity(edge, 2.0)
-    bottom_edges.append(edge)
 
-# struts tying each bottom node to a top node
-for u, v in zip(bottom_nodes, top_nodes_free):
-    network.add_edge(u, v)
-    network.edge_forcedensity((u, v), -0.5)
+# struts mildly in compression
+for edge in strut_edges:
+    network.edge_forcedensity(edge, -0.5)
 
 # ==========================================================================
 # Form-find the truss for a first guess
@@ -145,8 +158,7 @@ config = Config(
 )
 viewer = Viewer(config=config)
 
-# compas_viewer's camera constructor hardcodes the perspective view, ignoring
-# the configured one; reset the camera so it picks up renderer.view ("front").
+# reset the camera so it picks up renderer.view ("front").
 viewer.renderer.camera.reset_position()
 
 # modify view
@@ -156,7 +168,7 @@ viewer.renderer.camera.position = (0.0, -2.6, -0.5)
 # initial guess as plain wireframe
 viewer.add(network_guess.copy(cls=Network))
 
-# optimized truss colored by member force
+# optimized truss colored by member force with variable edge width
 viewer.add(
     network_equalforce,
     edgewidth=(0.01, 0.05),
