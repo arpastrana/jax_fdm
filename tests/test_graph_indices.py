@@ -14,7 +14,9 @@ sized to the canonical edges alone would let alias onto a real edge.
 import numpy as np
 import pytest
 
+from jax_fdm.constraints import EdgeLengthConstraint
 from jax_fdm.equilibrium import indices_from_keys
+from jax_fdm.goals import NodesColinearGoal
 
 
 def _dict_nodes(canonical, query):
@@ -154,3 +156,43 @@ def test_edges_fuzz_matches_dict_and_raises_on_absent():
             else:
                 with pytest.raises(KeyError):
                     indices_from_keys(canonical, query)
+
+
+# ==============================================================================
+# Goal / constraint method: scalar-vs-tuple dispatch
+# ==============================================================================
+
+
+def test_aggregate_goal_resolves_tuple_key_like_list():
+    """
+    A multi-element key resolves to every index, whether given as a tuple or a
+    list. Discriminating on the key's Python type (``isinstance(key, list)``)
+    once dropped a tuple key to its first index; the count of resolved elements
+    decides the scalar-vs-tuple return instead.
+    """
+    nodes = np.array([10, 3, 7, 99, 42, 5])
+
+    # A multi-element tuple is off-contract: the key type models multi-element
+    # keys as lists, and only a two-element edge key is a tuple. The dispatch
+    # must still resolve every entry rather than silently keep the first, so the
+    # test feeds the tuple on purpose to guard that.
+    resolved_tuple = NodesColinearGoal(
+        key=(10, 7, 42),  # pyright: ignore[reportArgumentType]
+    )._indices_from_keys(nodes)
+    resolved_list = NodesColinearGoal(key=[10, 7, 42])._indices_from_keys(nodes)
+
+    assert resolved_tuple == (0, 2, 4)
+    assert resolved_tuple == resolved_list
+
+
+def test_single_edge_key_stays_scalar():
+    """
+    A single edge key is itself a ``(u, v)`` tuple, yet resolves to one element,
+    so it must come back as a scalar index rather than a tuple of indices.
+    """
+    edges = np.array([[10, 3], [3, 7], [7, 99]])
+
+    resolved = EdgeLengthConstraint(key=(3, 7))._indices_from_keys(edges)
+
+    assert resolved == 1
+    assert isinstance(resolved, int)

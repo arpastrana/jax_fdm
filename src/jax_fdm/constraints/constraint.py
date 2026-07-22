@@ -172,17 +172,25 @@ class Constraint:
         Returns
         -------
         index :
-            A single index for a scalar key, or a tuple of indices for a list key.
+            A single index when the key resolves to one element, or a tuple of
+            indices when it resolves to several.
+
+        Notes
+        -----
+        The scalar-vs-tuple choice follows the number of resolved elements, not
+        the Python type of the key, so a list, tuple, or array of several keys
+        all yield a tuple. A single edge key ``(u, v)`` resolves to one element
+        and stays a scalar.
         """
         key = self.key
         if key is None:
             raise ValueError(f"{type(self).__name__} has no key to resolve.")
 
         resolved = indices_from_keys(keys_canonical, key)
-        if isinstance(key, list):
-            return tuple(int(index) for index in resolved)
+        if len(resolved) == 1:
+            return int(resolved[0])
 
-        return int(resolved[0])
+        return tuple(int(index) for index in resolved)
 
     def indices(self, structure: EquilibriumStructure) -> Int[np.ndarray, "elements"]:
         """
