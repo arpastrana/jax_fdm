@@ -1,7 +1,6 @@
 from types import ModuleType as _ModuleType
 
 from .coordinates import *  # noqa: F403
-from .curvature import *  # noqa: F403
 from .node import *  # noqa: F403
 
 __all__ = [
