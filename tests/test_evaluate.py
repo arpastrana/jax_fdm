@@ -16,10 +16,14 @@ import pytest
 
 from jax_fdm.constraints import EdgeAngleConstraint
 from jax_fdm.constraints import EdgeLengthConstraint
+from jax_fdm.datastructures import FDMesh
 from jax_fdm.datastructures import FDNetwork
 from jax_fdm.equilibrium import DatastructureState
+from jax_fdm.equilibrium import EquilibriumParametersState
 from jax_fdm.equilibrium import datastructure_state
 from jax_fdm.equilibrium import fdm
+from jax_fdm.equilibrium import model_from_sparsity
+from jax_fdm.equilibrium import structure_from_datastructure
 from jax_fdm.goals import EdgeAngleGoal
 from jax_fdm.goals import EdgeLengthGoal
 from jax_fdm.goals import EdgesLengthEqualGoal
@@ -30,6 +34,7 @@ from jax_fdm.losses import Loss
 from jax_fdm.losses import MeanSquaredError
 from jax_fdm.losses import PredictionError
 from jax_fdm.losses import SquaredError
+from jax_fdm.optimization import collect_goals
 from jax_fdm.parameters import EdgeForceDensityParameter
 
 
@@ -49,6 +54,68 @@ def arch():
     network.edges_forcedensities(-1.5)
 
     return fdm(network)
+
+
+# The maximum iteration count and tolerance the mesh fixtures form-find under, so
+# the __call__ reference re-solves with the model settings that produced them.
+MESH_TMAX = 10
+MESH_ETA = 1e-6
+
+# `evaluate` and `__call__` run the identical deterministic solve, and the
+# datastructure round-trips its coordinates through float64 losslessly, so the
+# two paths agree to the last bit (measured: exactly zero). Compare with rtol=0
+# and a near-exact atol that admits only ULP-scale drift, never solver slack.
+ATOL_EXACT = 1e-9
+
+
+def assert_bit_close(actual, expected):
+    """
+    Assert two evaluations agree to the last bit, up to ULP-scale drift.
+    """
+    assert jnp.allclose(actual, expected, rtol=0.0, atol=ATOL_EXACT)
+
+
+def _face_loaded_mesh():
+    """
+    A boundary-supported quad meshgrid carrying a vertical area load per face.
+    """
+    mesh = FDMesh.from_meshgrid(dx=2, nx=4)
+    for vertex in mesh.vertices_on_boundary():
+        mesh.vertex_support(vertex)
+    mesh.edges_forcedensities(-2.0)
+    mesh.faces_loads([0.0, 0.0, -0.5])
+
+    return mesh
+
+
+@pytest.fixture(params=[False, True], ids=["global_load", "local_load"])
+def face_loaded_mesh(request):
+    """
+    A form-found mesh with shape-dependent face area loads, and how it was solved.
+
+    Yields the original mesh, the form-found copy, and the solve settings. The
+    fixture is parametrized over ``is_load_local`` so both the global and the
+    face-local load paths are exercised.
+
+    A shape-dependent face load only reaches the nodes when ``tmax`` exceeds one,
+    so the mesh is form-found iteratively. The original mesh is kept alongside the
+    solved one because its parameters are what the iterative solve consumed: the
+    form-found copy has already absorbed the distributed face load into its node
+    loads, and `evaluate` reads those back as-is without re-aggregating. Solving
+    the `__call__` reference from the original parameters is therefore the only
+    way to reproduce `evaluate` without double-counting the face load.
+    """
+    is_load_local = request.param
+    original = _face_loaded_mesh()
+    form_found = fdm(
+        original,
+        sparse=False,
+        tmax=MESH_TMAX,
+        eta=MESH_ETA,
+        is_load_local=is_load_local,
+    )
+
+    return original, form_found, is_load_local
 
 
 # ==============================================================================
@@ -274,7 +341,11 @@ def test_loss_evaluate_dense_sparse_parity(arch):
     dense = loss.evaluate(arch, sparse=False)
     sparse = loss.evaluate(arch, sparse=True)
 
-    assert jnp.allclose(dense, sparse, atol=1e-5)
+    # Cross-backend rather than same-solve: dense and sparse assemble the state
+    # differently, so this is a genuine float tolerance, not bit-equality. It
+    # still lands near the float64 floor because the edge lengths this loss reads
+    # come from stored attributes, never the differing connectivity matvec.
+    assert jnp.allclose(dense, sparse, rtol=0.0, atol=ATOL_EXACT)
 
 
 # ==============================================================================
@@ -291,3 +362,271 @@ def test_parameter_evaluate_matches_value(arch):
 
     assert parameter.evaluate(arch) == parameter.value(arch)
     assert np.allclose(parameter.evaluate(arch), -1.5)
+
+
+# ==============================================================================
+# evaluate() equals __call__()
+# ==============================================================================
+#
+# `evaluate` reads the equilibrium state off the datastructure's stored
+# attributes; `__call__` consumes (goals, errors) or re-solves for (constraints,
+# losses) an equilibrium state. On a form-found datastructure the two paths see
+# the same equilibrium, so `evaluate` must reproduce `__call__` field for field.
+
+
+def _call_ingredients(
+    datastructure,
+    sparse,
+    tmax=1,
+    eta=1e-6,
+    is_load_local=False,
+    params_source=None,
+):
+    """
+    The model, structure, params, and equilibrium state the __call__ paths take.
+
+    Solves with the given model settings so the reference reproduces however the
+    datastructure was form-found. `params_source` overrides where the parameters
+    are read from; it defaults to `datastructure`, but a form-found mesh must
+    pass its pre-solve original so the face load is not distributed twice.
+    """
+    model = model_from_sparsity(
+        sparse=sparse,
+        tmax=tmax,
+        eta=eta,
+        is_load_local=is_load_local,
+    )
+    structure = structure_from_datastructure(datastructure, sparse)
+    params = EquilibriumParametersState.from_datastructure(
+        params_source or datastructure,
+    )
+    eqstate = model(params, structure)
+
+    return model, structure, params, eqstate
+
+
+@pytest.mark.parametrize("sparse", [False, True])
+@pytest.mark.parametrize(
+    "make_goal",
+    [
+        lambda: EdgeLengthGoal((1, 2), 2.0),
+        lambda: EdgeAngleGoal((1, 2), [0.0, 0.0, 1.0], 0.0),
+        lambda: NodeResidualForceGoal(2, 0.0),
+        lambda: EdgesLengthEqualGoal([(0, 1), (1, 2), (2, 3), (3, 4)]),
+        lambda: NetworkLoadPathGoal(),
+    ],
+    ids=["length", "angle", "residual", "aggregate", "loadpath"],
+)
+def test_goal_evaluate_matches_call(arch, sparse, make_goal):
+    """
+    A goal's `evaluate` reproduces `__call__` on the same equilibrium state.
+
+    Covers a scalar, a vector, an aggregate, and a whole-network goal so the
+    operand, index, and reshape machinery is exercised on both pipelines.
+    """
+    goal = make_goal()
+    _, structure, _, eqstate = _call_ingredients(arch, sparse)
+
+    called = goal(eqstate, structure)
+    evaluated = goal.evaluate(arch, sparse=sparse)
+
+    assert_bit_close(called.goal, evaluated.goal)
+    assert_bit_close(called.prediction, evaluated.prediction)
+    assert_bit_close(called.weight, evaluated.weight)
+
+
+@pytest.mark.parametrize("sparse", [False, True])
+def test_error_evaluate_matches_call(arch, sparse):
+    """
+    An error term's `evaluate` reproduces `__call__` on the same equilibrium.
+
+    `__call__` reduces over the goal collections the optimizer batches, while
+    `evaluate` reduces over the raw goals; both must land on the same scalar.
+    """
+    goals = [EdgeLengthGoal(edge, 1.0) for edge in arch.edges()]
+    error = SquaredError(goals)
+    error.collections = collect_goals(error.goals)
+
+    _, structure, _, eqstate = _call_ingredients(arch, sparse)
+
+    called = error(eqstate, structure)
+    evaluated = error.evaluate(arch, sparse=sparse)
+
+    assert_bit_close(called, evaluated)
+
+
+@pytest.mark.parametrize("sparse", [False, True])
+def test_constraint_evaluate_matches_call(arch, sparse):
+    """
+    A constraint's `evaluate` reproduces `__call__` on the same equilibrium.
+
+    `__call__` solves for equilibrium from raw parameters; `evaluate` reads the
+    stored state. On a form-found arch the two agree.
+    """
+    constraint = EdgeLengthConstraint((2, 3), 0.5, 2.0)
+    model, structure, params, _ = _call_ingredients(arch, sparse)
+
+    called = constraint(params, model, structure)
+    evaluated = constraint.evaluate(arch, sparse=sparse)
+
+    assert_bit_close(called, evaluated)
+
+
+@pytest.mark.parametrize("sparse", [False, True])
+def test_loss_evaluate_matches_call(arch, sparse):
+    """
+    A loss's `evaluate` reproduces `__call__` on the same equilibrium.
+
+    Exercises both an error term and a regularizer, so the loss agrees across
+    the solving and state-reading paths on both pipelines.
+    """
+    goals = [EdgeLengthGoal(edge, 1.0) for edge in arch.edges()]
+    loss = Loss(SquaredError(goals), L2Regularizer(alpha=0.1))
+    for term in loss.terms_error:
+        term.collections = collect_goals(term.goals)
+
+    model, structure, params, _ = _call_ingredients(arch, sparse)
+
+    called = loss(params, model, structure)
+    evaluated = loss.evaluate(arch, sparse=sparse)
+
+    assert_bit_close(called, evaluated)
+
+
+# ==============================================================================
+# evaluate() equals __call__() with shape-dependent face loads and tmax > 1
+# ==============================================================================
+#
+# When a mesh carries face area loads and is form-found iteratively, the load
+# reaching each node depends on the deformed geometry. `evaluate` reads the
+# solved node loads straight off the mesh, so it must still match a `__call__`
+# that re-runs the same iterative solve from the original parameters. The
+# `face_loaded_mesh` fixture spans is_load_local False and True.
+
+
+def test_face_load_goal_evaluate_matches_call(face_loaded_mesh):
+    """
+    A goal on a face-loaded, iteratively solved mesh matches its `__call__`.
+    """
+    original, form_found, is_load_local = face_loaded_mesh
+    goal = EdgeLengthGoal(list(form_found.edges())[5], 1.0)
+
+    _, structure, _, eqstate = _call_ingredients(
+        form_found,
+        sparse=False,
+        tmax=MESH_TMAX,
+        eta=MESH_ETA,
+        is_load_local=is_load_local,
+        params_source=original,
+    )
+
+    called = goal(eqstate, structure)
+    evaluated = goal.evaluate(form_found, sparse=False)
+
+    assert_bit_close(called.prediction, evaluated.prediction)
+
+
+def test_face_load_error_evaluate_matches_call(face_loaded_mesh):
+    """
+    An error term on a face-loaded, iteratively solved mesh matches its `__call__`.
+    """
+    original, form_found, is_load_local = face_loaded_mesh
+    goals = [EdgeLengthGoal(edge, 1.0) for edge in form_found.edges()]
+    error = SquaredError(goals)
+    error.collections = collect_goals(error.goals)
+
+    _, structure, _, eqstate = _call_ingredients(
+        form_found,
+        sparse=False,
+        tmax=MESH_TMAX,
+        eta=MESH_ETA,
+        is_load_local=is_load_local,
+        params_source=original,
+    )
+
+    called = error(eqstate, structure)
+    evaluated = error.evaluate(form_found, sparse=False)
+
+    assert_bit_close(called, evaluated)
+
+
+def test_face_load_constraint_evaluate_matches_call(face_loaded_mesh):
+    """
+    A constraint on a face-loaded, iteratively solved mesh matches its `__call__`.
+    """
+    original, form_found, is_load_local = face_loaded_mesh
+    constraint = EdgeLengthConstraint(list(form_found.edges())[5], 0.1, 5.0)
+
+    model, structure, params, _ = _call_ingredients(
+        form_found,
+        sparse=False,
+        tmax=MESH_TMAX,
+        eta=MESH_ETA,
+        is_load_local=is_load_local,
+        params_source=original,
+    )
+
+    called = constraint(params, model, structure)
+    evaluated = constraint.evaluate(form_found, sparse=False)
+
+    assert_bit_close(called, evaluated)
+
+
+def test_face_load_loss_evaluate_matches_call(face_loaded_mesh):
+    """
+    A loss on a face-loaded, iteratively solved mesh matches its `__call__`.
+    """
+    original, form_found, is_load_local = face_loaded_mesh
+    goals = [EdgeLengthGoal(edge, 1.0) for edge in form_found.edges()]
+    loss = Loss(SquaredError(goals), L2Regularizer(alpha=0.1))
+    for term in loss.terms_error:
+        term.collections = collect_goals(term.goals)
+
+    model, structure, params, _ = _call_ingredients(
+        form_found,
+        sparse=False,
+        tmax=MESH_TMAX,
+        eta=MESH_ETA,
+        is_load_local=is_load_local,
+        params_source=original,
+    )
+
+    called = loss(params, model, structure)
+    evaluated = loss.evaluate(form_found, sparse=False)
+
+    assert_bit_close(called, evaluated)
+
+
+def test_face_load_double_count_guard(face_loaded_mesh):
+    """
+    Re-reading parameters off the form-found mesh double-counts the face load.
+
+    Pins the fixture's reason for keeping the original mesh: solving from the
+    form-found mesh's own parameters redistributes the face load a second time,
+    so `evaluate` and that mistaken `__call__` must visibly disagree. If this
+    ever stops disagreeing, the fixture no longer tests the tmax > 1 face-load
+    path and the other assertions here go slack.
+    """
+    _, form_found, is_load_local = face_loaded_mesh
+    goals = [EdgeLengthGoal(edge, 1.0) for edge in form_found.edges()]
+    loss = Loss(SquaredError(goals), L2Regularizer(alpha=0.1))
+    for term in loss.terms_error:
+        term.collections = collect_goals(term.goals)
+
+    # params_source defaults to the form-found mesh: the wrong reference.
+    model, structure, params, _ = _call_ingredients(
+        form_found,
+        sparse=False,
+        tmax=MESH_TMAX,
+        eta=MESH_ETA,
+        is_load_local=is_load_local,
+    )
+
+    called_double = loss(params, model, structure)
+    evaluated = loss.evaluate(form_found, sparse=False)
+
+    # The gap is the doubly-distributed face load, not numerical noise: assert it
+    # is a substantial fraction of the loss, so a shrinking face load can never
+    # let this pass by accident.
+    gap = jnp.abs(called_double - evaluated)
+    assert gap > 1e-3 * jnp.abs(evaluated)
