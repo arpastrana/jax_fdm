@@ -85,6 +85,15 @@ def _fdm(
     -------
     datastructure :
         A copy of the input datastructure updated with the equilibrium state.
+
+    Notes
+    -----
+    The returned copy carries the model-aggregated node loads: each node's load
+    is the combined node, edge, and face tributary load at equilibrium. The
+    original edge and face loads are retained, so reading the parameters back off
+    the output and form-finding again redistributes those tributary loads a
+    second time. Solve from the original datastructure, never from an already
+    form-found one.
     """
     # compute static equilibrium
     eq_state = model(params, structure)
@@ -135,6 +144,13 @@ def fdm(
     -------
     datastructure :
         A copy of the input datastructure in static equilibrium.
+
+    Notes
+    -----
+    In the returned copy each node load is the model-aggregated tributary load
+    (node, edge, and face) at equilibrium, while the original edge and face loads
+    are retained. Form-finding the output again therefore redistributes those
+    tributary loads a second time; always solve from the original datastructure.
     """
     datastructure_validate(datastructure)
 
@@ -239,6 +255,11 @@ def constrained_fdm(
     -----
     Constraints are not yet supported for sparse inputs; passing constraints with
     ``sparse=True`` switches the solve to dense and prints a warning.
+
+    In the returned copy each node load is the model-aggregated tributary load
+    (node, edge, and face) at equilibrium, while the original edge and face loads
+    are retained. Form-finding the output again therefore redistributes those
+    tributary loads a second time; always solve from the original datastructure.
     """
     datastructure_validate(datastructure)
 
@@ -525,6 +546,16 @@ def datastructure_updated(
     -------
     datastructure :
         A copy of the input datastructure with updated node and edge attributes.
+
+    Notes
+    -----
+    With the default ``use_loadsfromparams=False``, the node loads written to the
+    copy are the model-aggregated tributary loads (node, edge, and face) from the
+    equilibrium state, while the original edge and face loads are retained.
+    Reading the parameters back off the output and form-finding again therefore
+    redistributes those tributary loads a second time. Passing
+    ``use_loadsfromparams=True`` writes the raw node loads from ``params`` instead
+    and avoids the redistribution.
     """
     datastructure = datastructure.copy()
     datastructure_update(datastructure, eq_state, params, use_loadsfromparams)
@@ -551,6 +582,16 @@ def datastructure_update(
         The parameter state, used as the load source when requested.
     use_loadsfromparams :
         If True, take node loads from ``params`` instead of the equilibrium state.
+
+    Notes
+    -----
+    With the default ``use_loadsfromparams=False``, the node loads written are the
+    model-aggregated tributary loads (node, edge, and face) from the equilibrium
+    state, while the original edge and face loads are retained. Reading the
+    parameters back off the datastructure and form-finding again therefore
+    redistributes those tributary loads a second time. Passing
+    ``use_loadsfromparams=True`` writes the raw node loads from ``params`` instead
+    and avoids the redistribution.
     """
     # unpack equilibrium state
     xyz = eq_state.xyz.tolist()
