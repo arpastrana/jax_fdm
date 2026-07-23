@@ -4,8 +4,10 @@ from collections.abc import Sequence
 from typing import TYPE_CHECKING
 from typing import Any
 
+import jax.numpy as jnp
 from jax import jacfwd
 from jax import jit
+from jax import vmap
 from jaxtyping import Array
 from jaxtyping import Float
 from scipy.optimize import NonlinearConstraint
@@ -123,8 +125,17 @@ class ConstrainedOptimizer(Optimizer):
         Returns
         -------
         values :
-            The constrained quantity for each element.
+            The constrained quantity for each element, flattened.
+
+        Notes
+        -----
+        A constraint maps one element to one value, so a collection is reduced the
+        equinox way: solve for equilibrium once, then `vmap` the single-element
+        constraint over the collection's leading axis and flatten. The optimizer
+        owns the `vmap`, mirroring how `Error` maps a goal over its collection.
         """
         params: EquilibriumParametersState = self.parameters_fdm(params_opt)
+        eqstate = model(params, structure)
+        values = vmap(lambda c: c(eqstate, structure))(constraint)
 
-        return constraint(params, model, structure)
+        return jnp.ravel(values)

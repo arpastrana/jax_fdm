@@ -1,5 +1,5 @@
 """
-Tests for `_indices_from_keys`, the loop-free key resolver behind the constraints.
+Tests for `_indices_from_keys`, the loop-free off-trace key resolver.
 
 The resolver replaced a per-key dict lookup with a vectorized `argsort` +
 `searchsorted`. These tests pin that it matches the dict on valid keys, keeps
@@ -13,7 +13,6 @@ sized to the canonical edges alone would let alias onto a real edge.
 import numpy as np
 import pytest
 
-from jax_fdm.constraints import EdgeLengthConstraint
 from jax_fdm.equilibrium.indexing import _indices_from_keys
 from jax_fdm.goals import NodesColinearGoal
 
@@ -187,14 +186,13 @@ def test_aggregate_goal_resolves_tuple_key_like_list():
     assert np.array_equal(resolved_tuple, resolved_list)
 
 
-def test_single_edge_key_stays_scalar():
+def test_single_edge_key_resolves_to_one_element():
     """
     A single edge key is itself a ``(u, v)`` tuple, yet resolves to one element,
-    so it must come back as a scalar index rather than a tuple of indices.
+    so the resolver returns a length-one array holding that element's index.
     """
     edges = np.array([[10, 3], [3, 7], [7, 99]])
 
-    resolved = EdgeLengthConstraint(key=(3, 7))._indices_from_keys(edges)
+    resolved = _indices_from_keys(edges, (3, 7))
 
-    assert resolved == 1
-    assert isinstance(resolved, int)
+    assert resolved.tolist() == [1]

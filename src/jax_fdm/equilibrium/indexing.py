@@ -12,6 +12,7 @@ __all__ = [
 def _indices_from_keys(
     keys_canonical: Int[np.ndarray, "elements ..."],
     keys_query: Int[np.ndarray, "..."]
+    | Int[Array, "..."]
     | int
     | tuple[int, int]
     | list[int]
@@ -41,9 +42,10 @@ def _indices_from_keys(
 
     Notes
     -----
-    A legacy pure-NumPy resolver that runs off-trace on concrete keys, kept for
-    the constraints, which still resolve their keys at build time. Goals use the
-    traceable `indices_from_keys` instead.
+    A pure-NumPy resolver that runs off-trace on concrete keys, raising a
+    trace-time `KeyError` on an absent key. Goals and constraints resolve their
+    keys under the evaluation trace via `indices_from_keys` instead; this twin
+    stays for the off-trace lookups where a concrete array is in hand.
 
     Vectorized with ``argsort`` + ``searchsorted`` rather than a per-key dict
     lookup. Edge pairs are folded to a single integer code ``u * base + v`` so

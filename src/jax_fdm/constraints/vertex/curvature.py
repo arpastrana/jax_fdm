@@ -1,18 +1,40 @@
 from collections.abc import Sequence
 
+import equinox as eqx
 import jax.numpy as jnp
-import numpy as np
 from jaxtyping import Array
 from jaxtyping import Float
 from jaxtyping import Int
 
+from jax_fdm import DTYPE_INT_JAX
+from jax_fdm.constraints.constraint import BoundLike
 from jax_fdm.constraints.vertex.vertex import VertexConstraint
 from jax_fdm.equilibrium import EquilibriumMeshStructure
 from jax_fdm.equilibrium import EquilibriumState
-from jax_fdm.equilibrium.indexing import _indices_from_keys
+from jax_fdm.equilibrium import indices_from_keys
 from jax_fdm.geometry import curvature_point_polygon
 
 __all__ = ["VertexCurvatureConstraint"]
+
+
+def _as_polygon(
+    polygon: Int[Array, "neighbors"] | Sequence[int],
+) -> Int[Array, "neighbors"]:
+    """
+    Coerce a neighbor ring to a JAX integer array.
+
+    Parameters
+    ----------
+    polygon :
+        The ordered neighboring vertex keys forming the ring around the vertex.
+
+    Returns
+    -------
+    polygon :
+        The neighbor keys as a JAX integer array, unbatched like the constraint's
+        other leaves.
+    """
+    return jnp.asarray(polygon, dtype=DTYPE_INT_JAX)
 
 
 class VertexCurvatureConstraint(VertexConstraint):
@@ -41,47 +63,30 @@ class VertexCurvatureConstraint(VertexConstraint):
     constraint is mesh only.
     """
 
+    # kw_only lets this required leaf follow the base's defaulted bounds (the
+    # dataclass "non-default after default" rule) without a default of its own.
+    # The neighbor ring is stored as raw vertex keys, unbatched like the
+    # constraint's other leaves, and resolved to structure indices inside
+    # `constraint` where the query rides the evaluation vmap.
+    polygon: Int[Array, "neighbors"] = eqx.field(kw_only=True)
+
     def __init__(
         self,
         key: int,
-        polygon: Int[Array, "vertices neighbors"] | Sequence[int],
-        bound_low: float | Float[Array, "..."] | None,
-        bound_up: float | Float[Array, "..."] | None,
+        polygon: Int[Array, "neighbors"] | Sequence[int],
+        bound_low: BoundLike = None,
+        bound_up: BoundLike = None,
     ) -> None:
-        super().__init__(key, bound_low, bound_up)
-        self.polygon = jnp.asarray(polygon)
-
-    def operand(
-        self,
-        structure: EquilibriumMeshStructure,
-    ) -> tuple[Int[np.ndarray, "vertices"], Int[np.ndarray, "vertices neighbors"]]:
-        """
-        The per-element payload: the vertex indices paired with polygon neighbors.
-
-        Parameters
-        ----------
-        structure :
-            The mesh structure whose vertex ordering defines the indices.
-
-        Returns
-        -------
-        payload :
-            The constrained-vertex index array and, per vertex, the structure
-            indices of its neighborhood polygon, both collection ordered so vmap
-            zips each vertex's index with its own neighbor row.
-        """
-        index = self.indices(structure)
-        polygon = np.atleast_2d(np.asarray(self.polygon))
-        neighbors = _indices_from_keys(structure.vertices, polygon.ravel())
-        neighbors = neighbors.reshape(polygon.shape)
-
-        return index, neighbors
+        self.key = key
+        self.polygon = _as_polygon(polygon)
+        self.bound_low = bound_low
+        self.bound_up = bound_up
 
     def constraint(
         self,
         eq_state: EquilibriumState,
         structure: EquilibriumMeshStructure,
-        payload: tuple[Int[Array, ""], Int[Array, "neighbors"]],
+        index: Int[Array, ""],
     ) -> Float[Array, ""]:
         """
         The discrete curvature at the vertex over its one-hop neighborhood.
@@ -91,16 +96,24 @@ class VertexCurvatureConstraint(VertexConstraint):
         eq_state :
             The equilibrium state to read the vertex coordinates from.
         structure :
-            The structure the constraint is evaluated against; unused.
-        payload :
-            The vertex index and its polygon neighbor indices for this element.
+            The mesh structure whose vertex ordering resolves the neighbor ring.
+        index :
+            The index of the vertex.
 
         Returns
         -------
         constraint :
             The discrete curvature at the vertex given its neighbors' coordinates.
+
+        Notes
+        -----
+        The neighbor ring is stored as raw vertex keys, so it is resolved to
+        structure indices here, inside the evaluation vmap, in a second
+        `indices_from_keys` call whose ``(neighbors,)`` query rides the map. The
+        canonical vertex ordering is static, so only the query search runs in
+        JAX.
         """
-        index, neighbors = payload
+        neighbors = indices_from_keys(structure.vertices, self.polygon)
         point = eq_state.xyz[index, :]
         polygon = eq_state.xyz[neighbors, :]
 

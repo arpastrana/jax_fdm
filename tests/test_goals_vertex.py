@@ -6,10 +6,9 @@ the quantity logic is inherited unchanged and only the key-to-index resolution
 switches from `node_index` to `vertex_index`. These tests pin (1) that the
 resolution really goes through the vertex vocabulary, (2) that the inherited
 predictions and goal projections stay numerically identical to computing the
-quantities directly, (3) that the optimizer's `Collection` machinery keeps node
-and vertex classes apart, and (4) that borrowing a Node* goal or constraint on
-a mesh structure — which silently worked when both index dicts coincided — is
-now a `TypeError` in both directions.
+quantities directly, and (3) that borrowing a Node* goal or constraint on a mesh
+structure — which silently worked when both index dicts coincided — is now a
+`TypeError` in both directions.
 """
 
 import jax
@@ -26,6 +25,7 @@ from jax_fdm.equilibrium import EquilibriumMeshStructure
 from jax_fdm.equilibrium import EquilibriumParametersState
 from jax_fdm.equilibrium import EquilibriumStructure
 from jax_fdm.equilibrium import constrained_fdm
+from jax_fdm.equilibrium import indices_from_keys
 from jax_fdm.equilibrium.fdm import model_from_sparsity
 from jax_fdm.geometry import closest_point_on_line
 from jax_fdm.geometry import closest_point_on_plane
@@ -47,7 +47,6 @@ from jax_fdm.goals.vertex import VertexGoal
 from jax_fdm.losses import Loss
 from jax_fdm.losses import SquaredError
 from jax_fdm.optimization import LBFGSB
-from jax_fdm.optimization.collections import Collection
 from jax_fdm.optimization.collections import collect_goals
 from jax_fdm.parameters import EdgeForceDensityParameter
 
@@ -350,13 +349,13 @@ def test_node_goal_on_network_still_works(arch_network):
 
 def test_node_constraint_on_mesh_raises(meshgrid_mesh):
     """
-    A node constraint refuses to initialize against a mesh structure.
+    A node constraint refuses to resolve against a mesh structure.
     """
     model, structure, _ = _fixed_mesh_state(meshgrid_mesh)
     constraint = NodeXCoordinateConstraint(0, bound_low=0.0, bound_up=1.0)
 
     with pytest.raises(TypeError, match="Vertex"):
-        constraint.index_from_structure(structure)
+        constraint.index(structure)
 
 
 # ==============================================================================
@@ -378,8 +377,8 @@ def test_vertex_coordinate_constraints(meshgrid_mesh):
         (VertexZCoordinateConstraint, 2),
     ]:
         constraint = constraint_cls(vkey, bound_low=-1.0, bound_up=1.0)
-        assert constraint.index_from_structure(structure) == index
-        value = constraint._constraint(eqstate, structure)
+        assert int(constraint.index(structure)) == index
+        value = constraint(eqstate, structure)
         assert jnp.allclose(value, eqstate.xyz[index, axis])
 
 
@@ -405,14 +404,15 @@ def test_vertex_curvature_constraint(meshgrid_mesh):
     )
 
     index = structure.vertex_index[vkey]
-    assert constraint.index_from_structure(structure) == index
+    assert int(constraint.index(structure)) == index
 
-    _, neighbors = constraint.operand(structure)
-    index_polygon = neighbors[0]
+    # the neighbor ring is stored as raw vertex keys and resolved to indices
+    # inside `constraint`; resolve it the same way here to pin the mapping
+    index_polygon = indices_from_keys(structure.vertices, constraint.polygon)
     expected_polygon = tuple(structure.vertex_index[nbr] for nbr in polygon)
     assert tuple(int(i) for i in index_polygon) == expected_polygon
 
-    value = constraint._constraint(eqstate, structure)
+    value = constraint(eqstate, structure)
     expected = curvature_point_polygon(
         eqstate.xyz[index, :],
         eqstate.xyz[index_polygon, :],
@@ -423,29 +423,6 @@ def test_vertex_curvature_constraint(meshgrid_mesh):
 # ==============================================================================
 # Contract-teaching error messages
 # ==============================================================================
-
-
-def test_collection_names_missing_attribute():
-    """
-    A constraint whose init parameter is not stored under the same name gets a
-    teaching error from the collection machinery.
-
-    Goals build their collections by stacking pytree leaves (`tree_stack`), so
-    this init-signature reflection lives only on the constraint path now.
-    """
-
-    class ForgetfulZConstraint(NodeXCoordinateConstraint):
-        def __init__(self, key, bound_low, bound_up, stiffness):
-            super().__init__(key, bound_low, bound_up)
-            self._stiffness = stiffness
-
-    constraints = [
-        ForgetfulZConstraint(0, -1.0, 1.0, stiffness=1.0),
-        ForgetfulZConstraint(1, -1.0, 1.0, stiffness=2.0),
-    ]
-
-    with pytest.raises(AttributeError, match="stored as attribute 'self.stiffness'"):
-        Collection(constraints)
 
 
 def test_scalar_prediction_may_return_a_bare_scalar(meshgrid_mesh):
@@ -476,12 +453,20 @@ def test_scalar_prediction_may_return_a_bare_scalar(meshgrid_mesh):
     assert jnp.allclose(gstate.prediction[0], eqstate.xyz[index, 2])
 
 
-def test_multi_key_constraint_raises_teaching_error():
+def test_multi_key_constraint_raises_teaching_error(meshgrid_mesh):
     """
-    A constraint rejects a list of keys at construction.
+    A per-element constraint given a list of keys fails at evaluation.
+
+    Like a goal, a constraint stores a list key cleanly at construction and
+    declares its arity by what its `constraint` hook returns; a per-element
+    constraint fed several keys then returns a non-scalar value, which the shape
+    guard in `__call__` catches with a teaching error.
     """
-    with pytest.raises(TypeError, match="single element key"):
-        VertexZCoordinateConstraint([0, 1], bound_low=-1.0, bound_up=1.0)
+    model, structure, eqstate = _fixed_mesh_state(meshgrid_mesh)
+    constraint = VertexZCoordinateConstraint([0, 1], bound_low=-1.0, bound_up=1.0)
+
+    with pytest.raises(ValueError, match="single element key"):
+        constraint(eqstate, structure)
 
 
 def test_goal_sees_structured_prediction(meshgrid_mesh):

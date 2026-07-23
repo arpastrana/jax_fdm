@@ -308,10 +308,10 @@ def test_edge_angle_constraint_evaluate_leaves_original_unmutated(arch):
     Evaluating a vector constraint does not mutate its reference vector.
     """
     constraint = EdgeAngleConstraint((1, 2), [0.0, 0.0, 1.0], 0.0, 1.0)
-    assert constraint.vector.shape == (1, 3)
+    assert constraint.vector.shape == (3,)
 
     first = constraint.evaluate(arch, sparse=False)
-    assert constraint.vector.shape == (1, 3)
+    assert constraint.vector.shape == (3,)
 
     second = constraint.evaluate(arch, sparse=False)
     assert jnp.allclose(first, second)
@@ -499,13 +499,15 @@ def test_constraint_evaluate_matches_call(arch, sparse):
     """
     A constraint's `evaluate` reproduces `__call__` on the same equilibrium.
 
-    `__call__` solves for equilibrium from raw parameters; `evaluate` reads the
-    stored state. On a form-found arch the two agree.
+    The optimizer solves for equilibrium from raw parameters and calls the
+    constraint on that state; `evaluate` reads the stored state. On a form-found
+    arch the two agree.
     """
     constraint = EdgeLengthConstraint((2, 3), 0.5, 2.0)
     model, structure, params, _ = _call_ingredients(arch, sparse)
 
-    called = constraint(params, model, structure)
+    eqstate = model(params, structure)
+    called = constraint(eqstate, structure)
     evaluated = constraint.evaluate(arch, sparse=sparse)
 
     assert_bit_close(called, evaluated)
@@ -605,7 +607,8 @@ def test_face_load_constraint_evaluate_matches_call(face_loaded_mesh):
         params_source=original,
     )
 
-    called = constraint(params, model, structure)
+    eqstate = model(params, structure)
+    called = constraint(eqstate, structure)
     evaluated = constraint.evaluate(form_found, sparse=False)
 
     assert_bit_close(called, evaluated)
