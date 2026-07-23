@@ -6,12 +6,11 @@ from jaxtyping import Int
 from jax_fdm.equilibrium import EquilibriumState
 from jax_fdm.equilibrium import EquilibriumStructure
 from jax_fdm.goals.edge.edge import EdgeGoal
-from jax_fdm.goals.goal import ScalarGoal
 
 __all__ = ["EdgeLoadPathGoal"]
 
 
-class EdgeLoadPathGoal(ScalarGoal, EdgeGoal):
+class EdgeLoadPathGoal(EdgeGoal):
     """
     Drive an edge's load path toward a target value.
     """
@@ -21,7 +20,7 @@ class EdgeLoadPathGoal(ScalarGoal, EdgeGoal):
         eq_state: EquilibriumState,
         structure: EquilibriumStructure,
         index: Int[Array, ""],
-    ) -> Float[Array, "1"]:
+    ) -> Float[Array, ""]:
         """
         The load path of the edge.
 
@@ -39,4 +38,4 @@ class EdgeLoadPathGoal(ScalarGoal, EdgeGoal):
         prediction :
             The edge load path, the product of absolute force and length.
         """
-        return jnp.abs(eq_state.forces[index]) * eq_state.lengths[index]
+        return jnp.abs(eq_state.forces[index, 0]) * eq_state.lengths[index, 0]

@@ -6,7 +6,6 @@ from jaxtyping import Int
 
 from jax_fdm.equilibrium import EquilibriumState
 from jax_fdm.equilibrium import EquilibriumStructure
-from jax_fdm.goals.goal import ScalarGoal
 from jax_fdm.goals.network.network import NetworkGoal
 
 __all__ = [
@@ -15,7 +14,7 @@ __all__ = [
 ]
 
 
-class NetworkSmoothGoal(ScalarGoal, NetworkGoal):
+class NetworkSmoothGoal(NetworkGoal):
     """
     Smudge a network based on the fairness of its nodes.
 

@@ -1,6 +1,5 @@
 """
-Tests for `indices_from_keys`, the loop-free key resolver behind goals and
-constraints.
+Tests for `_indices_from_keys`, the loop-free key resolver behind the constraints.
 
 The resolver replaced a per-key dict lookup with a vectorized `argsort` +
 `searchsorted`. These tests pin that it matches the dict on valid keys, keeps
@@ -15,7 +14,7 @@ import numpy as np
 import pytest
 
 from jax_fdm.constraints import EdgeLengthConstraint
-from jax_fdm.equilibrium import indices_from_keys
+from jax_fdm.equilibrium.indexing import _indices_from_keys
 from jax_fdm.goals import NodesColinearGoal
 
 
@@ -50,7 +49,7 @@ def test_nodes_match_dict_on_shuffled_noncontiguous_keys():
     nodes = np.array([10, 3, 7, 99, 42, 5])
 
     for query in [10, 5, 99, [42, 3, 7], [5, 5, 10]]:
-        resolved = np.atleast_1d(np.asarray(indices_from_keys(nodes, query)))
+        resolved = np.atleast_1d(np.asarray(_indices_from_keys(nodes, query)))
         assert resolved.tolist() == _dict_nodes(nodes, query)
 
 
@@ -61,7 +60,7 @@ def test_nodes_preserve_query_order():
     nodes = np.array([10, 3, 7, 99, 42, 5])
     query = [99, 3, 42]
 
-    resolved = np.asarray(indices_from_keys(nodes, query)).tolist()
+    resolved = np.asarray(_indices_from_keys(nodes, query)).tolist()
 
     assert resolved == _dict_nodes(nodes, query)
 
@@ -74,7 +73,7 @@ def test_absent_node_raises(absent):
     nodes = np.array([10, 3, 7, 99, 42, 5])
 
     with pytest.raises(KeyError):
-        indices_from_keys(nodes, absent)
+        _indices_from_keys(nodes, absent)
 
 
 # ==============================================================================
@@ -89,7 +88,7 @@ def test_edges_match_dict_and_are_order_sensitive():
     edges = np.array([[0, 1], [1, 2], [2, 3], [3, 0], [10, 2]])
 
     for query in [(1, 2), [(0, 1), (10, 2), (3, 0)], (2, 3)]:
-        resolved = np.atleast_1d(np.asarray(indices_from_keys(edges, query)))
+        resolved = np.atleast_1d(np.asarray(_indices_from_keys(edges, query)))
         assert resolved.tolist() == _dict_edges(edges, query)
 
 
@@ -100,7 +99,7 @@ def test_reversed_edge_raises():
     edges = np.array([[0, 1], [1, 2], [2, 3], [3, 0]])
 
     with pytest.raises(KeyError):
-        indices_from_keys(edges, (2, 1))
+        _indices_from_keys(edges, (2, 1))
 
 
 def test_absent_edge_past_canonical_max_raises():
@@ -115,7 +114,7 @@ def test_absent_edge_past_canonical_max_raises():
     edges = np.array([[0, 1], [2, 0]])
 
     with pytest.raises(KeyError):
-        indices_from_keys(edges, (1, 3))
+        _indices_from_keys(edges, (1, 3))
 
 
 def test_edges_fuzz_matches_dict_and_raises_on_absent():
@@ -142,7 +141,7 @@ def test_edges_fuzz_matches_dict_and_raises_on_absent():
         canonical = np.array(list(seen.keys()))
 
         for key, index in list(seen.items())[:3]:
-            resolved = int(np.asarray(indices_from_keys(canonical, key))[0])
+            resolved = int(np.asarray(_indices_from_keys(canonical, key))[0])
             assert resolved == index
 
         for _ in range(5):
@@ -151,11 +150,11 @@ def test_edges_fuzz_matches_dict_and_raises_on_absent():
                 int(rng.integers(0, num_nodes + 5)),
             )
             if query in seen:
-                resolved = int(np.asarray(indices_from_keys(canonical, query))[0])
+                resolved = int(np.asarray(_indices_from_keys(canonical, query))[0])
                 assert resolved == seen[query]
             else:
                 with pytest.raises(KeyError):
-                    indices_from_keys(canonical, query)
+                    _indices_from_keys(canonical, query)
 
 
 # ==============================================================================
@@ -167,22 +166,25 @@ def test_aggregate_goal_resolves_tuple_key_like_list():
     """
     A multi-element key resolves to every index, whether given as a tuple or a
     list. Discriminating on the key's Python type (``isinstance(key, list)``)
-    once dropped a tuple key to its first index; the count of resolved elements
-    decides the scalar-vs-tuple return instead.
+    once dropped a tuple key to its first index; the resolver returns the
+    position of every entry instead, as a one-dimensional array.
     """
     nodes = np.array([10, 3, 7, 99, 42, 5])
 
     # A multi-element tuple is off-contract: the key type models multi-element
-    # keys as lists, and only a two-element edge key is a tuple. The dispatch
-    # must still resolve every entry rather than silently keep the first, so the
-    # test feeds the tuple on purpose to guard that.
-    resolved_tuple = NodesColinearGoal(
-        key=(10, 7, 42),  # pyright: ignore[reportArgumentType]
-    )._indices_from_keys(nodes)
-    resolved_list = NodesColinearGoal(key=[10, 7, 42])._indices_from_keys(nodes)
+    # keys as lists, and only a two-element edge key is a tuple. The aggregate
+    # goal must accept the key either way and resolve every entry rather than
+    # silently keep the first, so the test feeds the tuple on purpose to guard
+    # that. The goal stores the key, so the resolution is exercised on the
+    # stored key directly.
+    goal_tuple = NodesColinearGoal(key=(10, 7, 42))  # pyright: ignore[reportArgumentType]
+    goal_list = NodesColinearGoal(key=[10, 7, 42])
 
-    assert resolved_tuple == (0, 2, 4)
-    assert resolved_tuple == resolved_list
+    resolved_tuple = _indices_from_keys(nodes, goal_tuple.key)
+    resolved_list = _indices_from_keys(nodes, goal_list.key)
+
+    assert resolved_tuple.tolist() == [0, 2, 4]
+    assert np.array_equal(resolved_tuple, resolved_list)
 
 
 def test_single_edge_key_stays_scalar():

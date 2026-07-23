@@ -1,3 +1,5 @@
+from collections.abc import Sequence
+
 from jaxtyping import Array
 from jaxtyping import Float
 from jaxtyping import Int
@@ -6,7 +8,6 @@ from jax_fdm.equilibrium import EquilibriumState
 from jax_fdm.equilibrium import EquilibriumStructure
 from jax_fdm.geometry import colinearity_points
 from jax_fdm.geometry import curvature_points
-from jax_fdm.goals.goal import ScalarGoal
 from jax_fdm.goals.node.node import NodeGoal
 
 __all__ = [
@@ -15,7 +16,7 @@ __all__ = [
 ]
 
 
-class NodesColinearGoal(ScalarGoal, NodeGoal):
+class NodesColinearGoal(NodeGoal):
     """
     Minimize length-normalized colinearity energy for an ordered sequence of points.
     This goal favors solutions where points are evenly spaced.
@@ -28,7 +29,7 @@ class NodesColinearGoal(ScalarGoal, NodeGoal):
 
     is_aggregate = True
 
-    def __init__(self, key: list[int], weight: float = 1.0) -> None:
+    def __init__(self, key: Sequence[int], weight: float = 1.0) -> None:
         super().__init__(key=key, target=0.0, weight=weight)
 
     def prediction(
@@ -59,7 +60,7 @@ class NodesColinearGoal(ScalarGoal, NodeGoal):
         return colinearity_points(P)
 
 
-class NodesCurvatureGoal(ScalarGoal, NodeGoal):
+class NodesCurvatureGoal(NodeGoal):
     """
     Minimize curvature energy (i.e., the turning angle) for an ordered sequence
     of points.
@@ -72,7 +73,7 @@ class NodesCurvatureGoal(ScalarGoal, NodeGoal):
 
     is_aggregate = True
 
-    def __init__(self, key: list[int], weight: float = 1.0) -> None:
+    def __init__(self, key: Sequence[int], weight: float = 1.0) -> None:
         super().__init__(key=key, target=0.0, weight=weight)
 
     def prediction(

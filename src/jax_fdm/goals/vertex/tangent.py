@@ -3,6 +3,7 @@ from collections.abc import Sequence
 import numpy as np
 from jaxtyping import Array
 from jaxtyping import Float
+from jaxtyping import Int
 
 from jax_fdm.equilibrium import EquilibriumMeshStructure
 from jax_fdm.equilibrium import EquilibriumState
@@ -20,12 +21,14 @@ class VertexTangentAngleGoal(VertexNormalAngleGoal):
     ----------
     key :
         The key of the vertex the goal acts on.
-    vector :
-        The reference vector each vertex tangent's angle is measured against.
     target :
         The target angle, in radians.
     weight :
         The relative importance of the goal in the loss.
+    vector :
+        The reference vector each vertex tangent's angle is measured against.
+        Keyword-only and required, since there is no meaningful default
+        reference direction.
 
     Notes
     -----
@@ -40,17 +43,18 @@ class VertexTangentAngleGoal(VertexNormalAngleGoal):
     def __init__(
         self,
         key: int,
-        vector: Float[Array, "..."] | Sequence[float],
         target: TargetLike,
         weight: float = 1.0,
+        *,
+        vector: Float[Array, "..."] | Sequence[float],
     ) -> None:
-        super().__init__(key=key, vector=vector, target=target, weight=weight)
+        super().__init__(key=key, target=target, weight=weight, vector=vector)
 
     def prediction(
         self,
         eq_state: EquilibriumState,
         structure: EquilibriumMeshStructure,
-        payload: tuple[Float[Array, ""], Float[Array, "3"]],
+        index: Int[Array, ""],
     ) -> Float[Array, ""]:
         """
         The angle between the vertex tangent and the reference vector.
@@ -61,8 +65,8 @@ class VertexTangentAngleGoal(VertexNormalAngleGoal):
             The equilibrium state to read the vertex coordinates from.
         structure :
             The mesh structure providing the face topology.
-        payload :
-            The vertex index and its reference vector for this element.
+        index :
+            The index of the vertex.
 
         Returns
         -------
@@ -70,7 +74,7 @@ class VertexTangentAngleGoal(VertexNormalAngleGoal):
             The signed tangent angle, 90 degrees minus the vertex normal angle, in
             radians.
         """
-        angle_normal = super().prediction(eq_state, structure, payload)
+        angle_normal = super().prediction(eq_state, structure, index)
 
         angle_tangent = np.pi * 0.5 - angle_normal
 

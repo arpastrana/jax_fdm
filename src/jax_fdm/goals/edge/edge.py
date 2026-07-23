@@ -1,3 +1,6 @@
+import numpy as np
+from jaxtyping import Int
+
 from jax_fdm.equilibrium import EquilibriumStructure
 from jax_fdm.goals.goal import Goal
 
@@ -9,12 +12,12 @@ class EdgeGoal(Goal):
     The base class for goals defined on the edges of a network.
     """
 
-    def index_from_structure(
+    def keys_from_structure(
         self,
         structure: EquilibriumStructure,
-    ) -> int | tuple[int, ...]:
+    ) -> Int[np.ndarray, "edges 2"]:
         """
-        Resolve the goal's edge key to an index in a structure.
+        The structure's edge keys, the vocabulary an edge goal resolves against.
 
         Parameters
         ----------
@@ -23,7 +26,7 @@ class EdgeGoal(Goal):
 
         Returns
         -------
-        index :
-            The index, or tuple of indices, of the goal's edge(s).
+        keys_canonical :
+            The structure's edge key pairs, one row per edge.
         """
-        return self._indices_from_keys(structure.edges)
+        return structure.edges

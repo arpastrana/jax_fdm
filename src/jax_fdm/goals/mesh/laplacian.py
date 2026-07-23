@@ -5,7 +5,6 @@ from jaxtyping import Int
 
 from jax_fdm.equilibrium import EquilibriumMeshStructure
 from jax_fdm.equilibrium import EquilibriumState
-from jax_fdm.goals.goal import ScalarGoal
 from jax_fdm.goals.goal import TargetLike
 from jax_fdm.goals.mesh.mesh import MeshGoal
 from jax_fdm.goals.network.laplacian import NetworkXYZLaplacianGoal
@@ -29,10 +28,10 @@ class MeshXYZLaplacianGoal(NetworkXYZLaplacianGoal):
         target: TargetLike = 0.0,
         weight: float = 1.0,
     ) -> None:
-        super().__init__(key=-1, target=target, weight=weight)
+        super().__init__(target=target, weight=weight)
 
 
-class MeshXYZFaceLaplacianGoal(ScalarGoal, MeshGoal):
+class MeshXYZFaceLaplacianGoal(MeshGoal):
     """
     Minimize the Laplacian energy of the XYZ faces coordinates of a mesh.
 

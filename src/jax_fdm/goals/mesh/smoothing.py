@@ -6,7 +6,6 @@ from jaxtyping import Int
 
 from jax_fdm.equilibrium import EquilibriumMeshStructure
 from jax_fdm.equilibrium import EquilibriumState
-from jax_fdm.goals.goal import ScalarGoal
 from jax_fdm.goals.mesh.mesh import MeshGoal
 
 __all__ = [
@@ -15,7 +14,7 @@ __all__ = [
 ]
 
 
-class MeshSmoothGoal(ScalarGoal, MeshGoal):
+class MeshSmoothGoal(MeshGoal):
     """
     Smudge a mesh based on the smoothness energy of its vertices.
 

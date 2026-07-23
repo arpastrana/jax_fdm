@@ -222,29 +222,68 @@ def test_vector_goal_evaluate_leaves_original_unmutated(arch):
 
     Regression for the stateful `init`, which scattered `self.vector` into a
     per-index table on the user's own object; a second evaluation then read the
-    corrupted table.
+    corrupted table. The vector is an unbatched leaf, so a lone goal carries it
+    at shape (3,); evaluation must leave that shape untouched.
     """
-    goal = EdgeAngleGoal((1, 2), [0.0, 0.0, 1.0], 0.0)
-    assert goal.vector.shape == (1, 3)
+    goal = EdgeAngleGoal((1, 2), target=0.0, vector=[0.0, 0.0, 1.0])
+    assert goal.vector.shape == (3,)
 
     first = goal.evaluate(arch, sparse=False)
-    assert goal.vector.shape == (1, 3)
+    assert goal.vector.shape == (3,)
 
     second = goal.evaluate(arch, sparse=False)
-    assert goal.vector.shape == (1, 3)
+    assert goal.vector.shape == (3,)
     assert jnp.allclose(first.prediction, second.prediction)
 
 
-def test_aggregate_goal_evaluate(arch):
+@pytest.mark.parametrize(
+    "key",
+    [
+        [(0, 1), (1, 2), (2, 3), (3, 4)],
+        ((0, 1), (1, 2), (2, 3), (3, 4)),
+    ],
+    ids=["list", "tuple"],
+)
+def test_aggregate_goal_evaluate(arch, key):
     """
-    An aggregate goal reduces over its whole key list in one evaluation.
+    An aggregate goal reduces over its whole key sequence in one evaluation.
+
+    Its keys may be a list or a tuple: the aggregate-vs-single distinction is the
+    goal's is_aggregate flag, not the key's Python type, so a tuple of edge keys
+    must resolve every edge rather than collapse to the first (a single edge key
+    is itself a two-int tuple).
     """
-    goal = EdgesLengthEqualGoal([(0, 1), (1, 2), (2, 3), (3, 4)])
+    goal = EdgesLengthEqualGoal(key)
 
     gstate = goal.evaluate(arch, sparse=False)
 
-    assert gstate.prediction.shape == (1, 1)
+    # a lone goal returns the raw per-element shape; this scalar aggregate
+    # reduces its whole key sequence to a single () value
+    assert gstate.prediction.shape == ()
     assert jnp.all(jnp.isfinite(gstate.prediction))
+
+
+def test_aggregate_goal_rejects_non_sequence_key(recwarn):
+    """
+    A one-shot iterable key fails at construction, not silently later.
+
+    A generator is not a valid JAX array type, so the key converter's
+    `jnp.asarray` rejects it with a `TypeError` right at construction, before
+    equinox flattens the goal. The key never reaches `jax.tree_util`, so no
+    "treated as a leaf" warning leaks (which a future JAX would turn into an
+    error). The converter carries no teaching guard of its own: an off-contract
+    key is left to fail on JAX's own terms.
+    """
+    # A generator is off-contract on purpose: the key type is a sequence, and
+    # this guards that the runtime rejects the one-shot iterable cleanly.
+    with pytest.raises(TypeError, match="generator"):
+        EdgesLengthEqualGoal(
+            edge
+            for edge in [(0, 1), (1, 2)]  # pyright: ignore[reportArgumentType]
+        )
+
+    leaked = [w for w in recwarn if "treated as a leaf" in str(w.message)]
+    assert not leaked
 
 
 # ==============================================================================
@@ -410,7 +449,7 @@ def _call_ingredients(
     "make_goal",
     [
         lambda: EdgeLengthGoal((1, 2), 2.0),
-        lambda: EdgeAngleGoal((1, 2), [0.0, 0.0, 1.0], 0.0),
+        lambda: EdgeAngleGoal((1, 2), target=0.0, vector=[0.0, 0.0, 1.0]),
         lambda: NodeResidualForceGoal(2, 0.0),
         lambda: EdgesLengthEqualGoal([(0, 1), (1, 2), (2, 3), (3, 4)]),
         lambda: NetworkLoadPathGoal(),

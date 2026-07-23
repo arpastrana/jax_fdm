@@ -1,10 +1,13 @@
 """
 Regression tests for angle goals.
 
-`angle_vectors` returns a scalar, but a `ScalarGoal` target is shaped `(N, 1)`.
-The two must agree inside `Goal.__call__`, so an angle goal's prediction has to
-carry a trailing axis. These tests pin that contract for edge and vertex angle
-goals, which once regressed to a `(N,) vs (N, 1)` shape mismatch.
+`angle_vectors` returns a scalar, so an angle goal is a scalar goal: its
+prediction is shaped `()` per element (a vector goal would return `(target,)`
+instead). A lone goal returns that raw `()` shape; a collection is a stacked goal
+that `vmap`s over its elements, so the batched state lands at `(N,)` with goal and
+prediction in agreement. These tests pin that contract for edge and vertex angle
+goals, which once regressed to a shape mismatch when `angle_vectors` became scalar
+and the prediction was force-fit to a trailing axis.
 
 The vertex angle goals additionally compute a vertex normal from the faces
 surrounding a vertex. That normal averages the incident face normals, and on a
@@ -49,9 +52,9 @@ def test_edge_angle_goal_optimizes(arch_network):
     """
     Constrained form finding with edge angle goals runs to completion.
 
-    Before angle predictions carried a trailing axis, the goal target `(N, 1)`
-    and the prediction `(N,)` disagreed and `Goal.__call__` raised on the shape
-    assertion. This drives the exact multi-edge path that regressed.
+    A scalar angle prediction batches to `(N,)` over N edges; a past regression
+    force-fit the prediction to a trailing axis and `Goal.__call__` raised on the
+    shape assertion. This drives the exact multi-edge path that regressed.
     """
     goals = [
         EdgeAngleGoal(edge, vector=[0.0, 0.0, 1.0], target=TARGET_ANGLE)
@@ -180,7 +183,7 @@ def test_edge_angle_collection_zips_each_edge_with_its_own_vector(arch_network):
     )
 
     collection = collect_goals(goals)[0]
-    collected = collection(eqstate, structure).prediction.ravel()
+    collected = jax.vmap(lambda g: g(eqstate, structure))(collection).prediction.ravel()
 
     # the collection reproduces the per-edge singletons, in edge order
     assert jnp.allclose(collected, singletons, atol=1e-6)
@@ -193,7 +196,9 @@ def test_edge_angle_collection_zips_each_edge_with_its_own_vector(arch_network):
         for edge, vector in zip(edges, shuffled)
     ]
     collection_shuffled = collect_goals(goals_shuffled)[0]
-    collected_shuffled = collection_shuffled(eqstate, structure).prediction.ravel()
+    collected_shuffled = jax.vmap(lambda g: g(eqstate, structure))(
+        collection_shuffled,
+    ).prediction.ravel()
 
     assert not jnp.allclose(collected_shuffled, singletons, atol=1e-6)
 

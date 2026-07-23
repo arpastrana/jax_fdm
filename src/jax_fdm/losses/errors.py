@@ -1,6 +1,7 @@
 from collections.abc import Sequence
 
 import jax.numpy as jnp
+from jax import vmap
 from jaxtyping import Array
 from jaxtyping import Float
 
@@ -44,8 +45,10 @@ class Error:
 
     Notes
     -----
-    Goals are grouped into collections in ``collections``; the term evaluates one
-    error per collection and aggregates them via `errors`.
+    Goals are grouped into collections in ``collections``: one collection per goal
+    type, its leaves carrying a leading element axis. A goal maps one element to
+    one error, so the term `vmap`s that per-element error over a collection, sums
+    the mapped result, and aggregates one such sum per collection via `errors`.
     """
 
     def __init__(
@@ -113,14 +116,23 @@ class Error:
         -------
         error :
             The aggregated error scaled by ``alpha``.
+
+        Notes
+        -----
+        A goal maps one element to one goal state, so each collection is reduced
+        the equinox way: `vmap` the per-element error over the collection's leading
+        axis and sum the mapped scalars, exactly as one maps any module over a
+        batch. The weight, one scalar per element, broadcasts against the
+        prediction at each element, so no rank alignment is needed. This is the
+        same per-element reduction as `evaluate_state`, over the batched
+        collections rather than the raw goals.
         """
         errors = []
-        for goal_collection in self.collections:
-            gstate = goal_collection(eqstate, structure)
-            error = self.error(gstate)
-            errors.append(error)
+        for collection in self.collections:
+            per_element = vmap(lambda g: self.error(g(eqstate, structure)))(collection)
+            errors.append(jnp.sum(per_element))
 
-        return self.errors(jnp.array(errors)) * self.alpha
+        return self.errors(jnp.asarray(errors)) * self.alpha
 
     def evaluate(
         self,
@@ -178,11 +190,14 @@ class Error:
         -----
         The state-consuming core shared by `evaluate` and `Loss.evaluate`. It
         evaluates the term's raw goals as singletons rather than the collections
-        the optimizer batches them into.
+        the optimizer batches them into. A lone goal's `__call__` already returns
+        an unbatched state whose scalar weight broadcasts against the prediction,
+        and the error kernels sum over every axis, so a raw goal state feeds them
+        directly without the collection's `(elements, features)` formatting.
         """
         errors = [self.error(goal(eqstate, structure)) for goal in self.goals]
 
-        return self.errors(jnp.array(errors)) * self.alpha
+        return self.errors(jnp.asarray(errors)) * self.alpha
 
     def number_of_goals(self) -> int:
         """

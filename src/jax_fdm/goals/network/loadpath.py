@@ -5,13 +5,12 @@ from jaxtyping import Int
 
 from jax_fdm.equilibrium import EquilibriumState
 from jax_fdm.equilibrium import EquilibriumStructure
-from jax_fdm.goals.goal import ScalarGoal
 from jax_fdm.goals.network.network import NetworkGoal
 
 __all__ = ["NetworkLoadPathGoal"]
 
 
-class NetworkLoadPathGoal(ScalarGoal, NetworkGoal):
+class NetworkLoadPathGoal(NetworkGoal):
     """
     Drive the total load path of a network toward a target magnitude.
 

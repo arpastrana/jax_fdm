@@ -165,7 +165,7 @@ def test_vertex_residual_plane_goal(meshgrid_mesh):
     goal = VertexResidualPlaneGoal(vkey, target=normal)
 
     index = structure.vertex_index[vkey]
-    assert goal.index_from_structure(structure) == index
+    assert goal.index(structure).tolist() == index
 
     gstate = goal(eqstate, structure)
     direction = normalize_vector(eqstate.residuals[index, :])
@@ -182,7 +182,7 @@ def test_vertex_residual_plane_goal_on_network_raises(arch_network):
     goal = VertexResidualPlaneGoal(0, target=[0.0, 0.0, 1.0])
 
     with pytest.raises(TypeError, match="Node"):
-        goal.index_from_structure(structure)
+        goal.index(structure)
 
 
 # ==============================================================================

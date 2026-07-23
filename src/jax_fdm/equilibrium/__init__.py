@@ -1,6 +1,7 @@
 from types import ModuleType as _ModuleType
 
 from .fdm import *  # noqa: F403
+from .indexing import *  # noqa: F403
 from .loads import *  # noqa: F403
 from .models import *  # noqa: F403
 from .solvers import *  # noqa: F403

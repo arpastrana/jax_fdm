@@ -4,7 +4,6 @@ from jaxtyping import Int
 
 from jax_fdm.equilibrium import EquilibriumState
 from jax_fdm.equilibrium import EquilibriumStructure
-from jax_fdm.goals.goal import ScalarGoal
 from jax_fdm.goals.node.node import NodeGoal
 
 __all__ = [
@@ -14,7 +13,7 @@ __all__ = [
 ]
 
 
-class NodeXCoordinateGoal(ScalarGoal, NodeGoal):
+class NodeXCoordinateGoal(NodeGoal):
     """
     Drive a node toward a target X coordinate.
     """
@@ -24,7 +23,7 @@ class NodeXCoordinateGoal(ScalarGoal, NodeGoal):
         eq_state: EquilibriumState,
         structure: EquilibriumStructure,
         index: Int[Array, ""],
-    ) -> Float[Array, "1"]:
+    ) -> Float[Array, ""]:
         """
         The current X coordinate of the node.
 
@@ -42,10 +41,10 @@ class NodeXCoordinateGoal(ScalarGoal, NodeGoal):
         prediction :
             The node's X coordinate.
         """
-        return eq_state.xyz[index, :1]
+        return eq_state.xyz[index, 0]
 
 
-class NodeYCoordinateGoal(ScalarGoal, NodeGoal):
+class NodeYCoordinateGoal(NodeGoal):
     """
     Drive a node toward a target Y coordinate.
     """
@@ -55,7 +54,7 @@ class NodeYCoordinateGoal(ScalarGoal, NodeGoal):
         eq_state: EquilibriumState,
         structure: EquilibriumStructure,
         index: Int[Array, ""],
-    ) -> Float[Array, "1"]:
+    ) -> Float[Array, ""]:
         """
         The current Y coordinate of the node.
 
@@ -73,10 +72,10 @@ class NodeYCoordinateGoal(ScalarGoal, NodeGoal):
         prediction :
             The node's Y coordinate.
         """
-        return eq_state.xyz[index, 1:2]
+        return eq_state.xyz[index, 1]
 
 
-class NodeZCoordinateGoal(ScalarGoal, NodeGoal):
+class NodeZCoordinateGoal(NodeGoal):
     """
     Drive a node toward a target Z coordinate.
     """
@@ -86,7 +85,7 @@ class NodeZCoordinateGoal(ScalarGoal, NodeGoal):
         eq_state: EquilibriumState,
         structure: EquilibriumStructure,
         index: Int[Array, ""],
-    ) -> Float[Array, "1"]:
+    ) -> Float[Array, ""]:
         """
         The current Z coordinate of the node.
 
@@ -104,4 +103,4 @@ class NodeZCoordinateGoal(ScalarGoal, NodeGoal):
         prediction :
             The node's Z coordinate.
         """
-        return eq_state.xyz[index, 2:]
+        return eq_state.xyz[index, 2]

@@ -9,7 +9,7 @@ from jaxtyping import Int
 from jax_fdm.constraints.vertex.vertex import VertexConstraint
 from jax_fdm.equilibrium import EquilibriumMeshStructure
 from jax_fdm.equilibrium import EquilibriumState
-from jax_fdm.equilibrium import indices_from_keys
+from jax_fdm.equilibrium.indexing import _indices_from_keys
 from jax_fdm.geometry import curvature_point_polygon
 
 __all__ = ["VertexCurvatureConstraint"]
@@ -72,7 +72,7 @@ class VertexCurvatureConstraint(VertexConstraint):
         """
         index = self.indices(structure)
         polygon = np.atleast_2d(np.asarray(self.polygon))
-        neighbors = indices_from_keys(structure.vertices, polygon.ravel())
+        neighbors = _indices_from_keys(structure.vertices, polygon.ravel())
         neighbors = neighbors.reshape(polygon.shape)
 
         return index, neighbors

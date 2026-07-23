@@ -5,14 +5,42 @@ from itertools import groupby
 from typing import TYPE_CHECKING
 from typing import Any
 
-# Annotation-only imports: pulling jax_fdm.goals or jax_fdm.constraints at
-# runtime would close the package cycle through equilibrium back to
-# optimization.
+import jax.numpy as jnp
+from jax.tree_util import tree_map
+
 if TYPE_CHECKING:
     from jax_fdm.constraints import Constraint
     from jax_fdm.goals import Goal
 
 __all__ = ["Collection", "collect_goals", "collect_constraints"]
+
+
+def tree_stack(goals: Sequence["Goal"]) -> "Goal":
+    """
+    Stack same-type goals into one vectorized goal by stacking their leaves.
+
+    Parameters
+    ----------
+    goals :
+        The goals to vectorize; all must share one type.
+
+    Returns
+    -------
+    collection :
+        A single goal of the shared type whose dynamic leaves carry a leading
+        element axis holding the whole group, so it evaluates in one vmapped
+        call.
+
+    Notes
+    -----
+    A goal's key is a dynamic array leaf, not a static field, so same-type goals
+    differing only in their key share one pytree structure and `tree_map` stacks
+    them leaf by leaf. Each goal stores one element's values unbatched, so
+    `jnp.stack` adds a new leading axis of the group size with no frozen-module
+    escape hatch. Stacking one goal (`tree_stack([g])`) still adds the axis, so a
+    lone goal becomes a collection of one.
+    """
+    return tree_map(lambda *leaves: jnp.stack(leaves), *goals)
 
 
 class Collection:
@@ -97,6 +125,12 @@ def collect_goals(goals: Sequence["Goal"]) -> list["Goal"]:
     collections :
         One collection per type of per-element goal, plus a singleton collection
         for each aggregate goal, which is already a batch of its own.
+
+    Notes
+    -----
+    A collection is built by `tree_stack`, which stacks the goals' array leaves
+    into one vectorized goal evaluated in a single vmapped call. An aggregate goal
+    reduces over its elements on its own, so each becomes a batch of one.
     """
     goals_element = []
     goals_aggregate = []
@@ -114,11 +148,11 @@ def collect_goals(goals: Sequence["Goal"]) -> list["Goal"]:
         groups = groupby(goals_sorted, lambda g: type(g))
 
         for _, group in groups:
-            collection = Collection(list(group))
+            collection = tree_stack(list(group))
             collections.append(collection)
 
     for goal in goals_aggregate:
-        collections.append(Collection([goal]))
+        collections.append(tree_stack([goal]))
 
     return collections
 

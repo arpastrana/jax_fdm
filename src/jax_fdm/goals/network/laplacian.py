@@ -5,13 +5,12 @@ from jaxtyping import Int
 
 from jax_fdm.equilibrium import EquilibriumState
 from jax_fdm.equilibrium import EquilibriumStructure
-from jax_fdm.goals.goal import ScalarGoal
 from jax_fdm.goals.network.network import NetworkGoal
 
 __all__ = ["NetworkXYZLaplacianGoal"]
 
 
-class NetworkXYZLaplacianGoal(ScalarGoal, NetworkGoal):
+class NetworkXYZLaplacianGoal(NetworkGoal):
     """
     Minimize the Laplacian energy of the XYZ coordinates of a network.
 

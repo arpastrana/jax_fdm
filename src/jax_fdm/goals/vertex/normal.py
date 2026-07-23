@@ -1,7 +1,7 @@
 from collections.abc import Sequence
 
+import equinox as eqx
 import jax.numpy as jnp
-import numpy as np
 from jax import vmap
 from jaxtyping import Array
 from jaxtyping import Float
@@ -12,14 +12,31 @@ from jax_fdm.equilibrium import EquilibriumState
 from jax_fdm.geometry import angle_vectors
 from jax_fdm.geometry import normal_polygon
 from jax_fdm.geometry import normalize_vector
-from jax_fdm.goals.goal import ScalarGoal
 from jax_fdm.goals.goal import TargetLike
 from jax_fdm.goals.vertex.vertex import VertexGoal
 
 __all__ = ["VertexNormalAngleGoal"]
 
 
-class VertexNormalAngleGoal(ScalarGoal, VertexGoal):
+def _as_vector(vector: Float[Array, "..."] | Sequence[float]) -> Float[Array, "3"]:
+    """
+    Coerce a reference vector to a JAX array.
+
+    Parameters
+    ----------
+    vector :
+        The reference vector; a flat xyz sequence or array.
+
+    Returns
+    -------
+    vector :
+        The reference vector as a JAX array, unbatched like the goal's other
+        leaves.
+    """
+    return jnp.asarray(vector)
+
+
+class VertexNormalAngleGoal(VertexGoal):
     """
     Drive the angle between a vertex normal and a reference vector toward a target.
 
@@ -27,12 +44,14 @@ class VertexNormalAngleGoal(ScalarGoal, VertexGoal):
     ----------
     key :
         The key of the vertex the goal acts on.
-    vector :
-        The reference vector each vertex normal's angle is measured against.
     target :
         The target angle, in radians.
     weight :
         The relative importance of the goal in the loss.
+    vector :
+        The reference vector each vertex normal's angle is measured against.
+        Keyword-only and required, since there is no meaningful default
+        reference direction.
 
     Notes
     -----
@@ -50,47 +69,26 @@ class VertexNormalAngleGoal(ScalarGoal, VertexGoal):
     the winding of a mesh upfront if needed.
     """
 
+    # kw_only lets this required leaf follow the base's defaulted weight (the
+    # dataclass "non-default after default" rule) without a default of its own.
+    # A normal init field (not init=False), so equinox does not warn about a
+    # differentiable leaf; the custom __init__ below sets and coerces it. Stored
+    # unbatched like the goal's other leaves, so it is a plain (3,) vector this
+    # element's prediction reads directly.
+    vector: Float[Array, "3"] = eqx.field(kw_only=True)
+
     def __init__(
         self,
         key: int,
-        vector: Float[Array, "..."] | Sequence[float],
         target: TargetLike,
         weight: float = 1.0,
+        *,
+        vector: Float[Array, "..."] | Sequence[float],
     ) -> None:
-        super().__init__(key=key, target=target, weight=weight)
-        self._vector: Float[Array, "vectors 3"]
-        self.vector = vector
-
-    @property
-    def vector(self) -> Float[Array, "vectors 3"]:
-        """
-        The reference vector each vertex normal's angle is measured against.
-        """
-        return self._vector
-
-    @vector.setter
-    def vector(self, vector: Float[Array, "..."] | Sequence[float]) -> None:
-        self._vector = jnp.reshape(jnp.asarray(vector), (-1, 3))
-
-    def operand(
-        self,
-        structure: EquilibriumMeshStructure,
-    ) -> tuple[Int[np.ndarray, "vertices"], Float[Array, "vertices 3"]]:
-        """
-        The per-element payload: the vertex indices paired with reference vectors.
-
-        Parameters
-        ----------
-        structure :
-            The mesh structure whose vertex ordering defines the indices.
-
-        Returns
-        -------
-        payload :
-            The vertex index array and the reference vectors, both collection
-            ordered, so vmap zips each vertex's index with its reference vector.
-        """
-        return self.indices(structure), self.vector
+        self.key = key
+        self.target = target
+        self.weight = weight
+        self.vector = _as_vector(vector)
 
     @staticmethod
     def face_normals(
@@ -173,7 +171,7 @@ class VertexNormalAngleGoal(ScalarGoal, VertexGoal):
         self,
         eq_state: EquilibriumState,
         structure: EquilibriumMeshStructure,
-        payload: tuple[Float[Array, ""], Float[Array, "3"]],
+        index: Int[Array, ""],
     ) -> Float[Array, ""]:
         """
         The angle between the vertex normal and the reference vector.
@@ -184,18 +182,21 @@ class VertexNormalAngleGoal(ScalarGoal, VertexGoal):
             The equilibrium state to read the vertex coordinates from.
         structure :
             The mesh structure providing the face topology.
-        payload :
-            The vertex index and its reference vector for this element.
+        index :
+            The index of the vertex.
 
         Returns
         -------
         prediction :
             The signed angle between the vertex normal and its reference vector, in
             radians.
+
+        Notes
+        -----
+        The reference vector is read off `self.vector`, this element's own vector.
         """
-        index, vector = payload
         normal = self.vertex_normal(eq_state, structure.faces_indexed, index)
 
         # the signed angle is covariant with the normal's orientation, which
         # the winding of the incident faces determines
-        return angle_vectors(normal, vector)
+        return angle_vectors(normal, self.vector)

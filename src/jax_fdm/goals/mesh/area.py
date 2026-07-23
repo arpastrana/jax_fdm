@@ -7,13 +7,12 @@ from jaxtyping import Int
 from jax_fdm.equilibrium import EquilibriumMeshStructure
 from jax_fdm.equilibrium import EquilibriumState
 from jax_fdm.geometry import area_polygon
-from jax_fdm.goals.goal import ScalarGoal
 from jax_fdm.goals.mesh.mesh import MeshGoal
 
 __all__ = ["MeshAreaGoal", "MeshFacesAreaEqualizeGoal"]
 
 
-class MeshAreaGoal(ScalarGoal, MeshGoal):
+class MeshAreaGoal(MeshGoal):
     """
     Drive the total surface area of a mesh toward a target.
 
@@ -84,7 +83,7 @@ class MeshAreaGoal(ScalarGoal, MeshGoal):
         return jnp.sum(areas) * -1.0
 
 
-class MeshFacesAreaEqualizeGoal(ScalarGoal, MeshGoal):
+class MeshFacesAreaEqualizeGoal(MeshGoal):
     """
     Equalize the areas of the faces of a mesh.
 

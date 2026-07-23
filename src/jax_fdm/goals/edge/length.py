@@ -1,3 +1,5 @@
+from collections.abc import Sequence
+
 import jax.numpy as jnp
 from jaxtyping import Array
 from jaxtyping import Float
@@ -6,7 +8,6 @@ from jaxtyping import Int
 from jax_fdm.equilibrium import EquilibriumState
 from jax_fdm.equilibrium import EquilibriumStructure
 from jax_fdm.goals.edge.edge import EdgeGoal
-from jax_fdm.goals.goal import ScalarGoal
 
 __all__ = [
     "EdgeLengthGoal",
@@ -14,7 +15,7 @@ __all__ = [
 ]
 
 
-class EdgeLengthGoal(ScalarGoal, EdgeGoal):
+class EdgeLengthGoal(EdgeGoal):
     """
     Drive an edge toward a target length.
     """
@@ -24,7 +25,7 @@ class EdgeLengthGoal(ScalarGoal, EdgeGoal):
         eq_state: EquilibriumState,
         structure: EquilibriumStructure,
         index: Int[Array, ""],
-    ) -> Float[Array, "1"]:
+    ) -> Float[Array, ""]:
         """
         The current length of the edge.
 
@@ -42,10 +43,10 @@ class EdgeLengthGoal(ScalarGoal, EdgeGoal):
         prediction :
             The edge's length.
         """
-        return eq_state.lengths[index]
+        return eq_state.lengths[index, 0]
 
 
-class EdgesLengthEqualGoal(ScalarGoal, EdgeGoal):
+class EdgesLengthEqualGoal(EdgeGoal):
     """
     Equalize the lengths of a selection of edges.
 
@@ -57,7 +58,7 @@ class EdgesLengthEqualGoal(ScalarGoal, EdgeGoal):
 
     is_aggregate = True
 
-    def __init__(self, key: list[tuple[int, int]], weight: float = 1.0) -> None:
+    def __init__(self, key: Sequence[tuple[int, int]], weight: float = 1.0) -> None:
         super().__init__(key=key, target=0.0, weight=weight)
 
     def prediction(

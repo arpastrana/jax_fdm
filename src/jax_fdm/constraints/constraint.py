@@ -12,7 +12,7 @@ from jax_fdm.equilibrium import EquilibriumParametersState
 from jax_fdm.equilibrium import EquilibriumState
 from jax_fdm.equilibrium import EquilibriumStructure
 from jax_fdm.equilibrium import datastructure_state
-from jax_fdm.equilibrium import indices_from_keys
+from jax_fdm.equilibrium.indexing import _indices_from_keys
 
 __all__ = ["Constraint"]
 
@@ -186,7 +186,7 @@ class Constraint:
         if key is None:
             raise ValueError(f"{type(self).__name__} has no key to resolve.")
 
-        resolved = indices_from_keys(keys_canonical, key)
+        resolved = _indices_from_keys(keys_canonical, key)
         if len(resolved) == 1:
             return int(resolved[0])
 

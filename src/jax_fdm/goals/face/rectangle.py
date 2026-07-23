@@ -7,13 +7,12 @@ from jax_fdm.equilibrium import EquilibriumMeshStructure
 from jax_fdm.equilibrium import EquilibriumState
 from jax_fdm.geometry import cosines_angles_polygon
 from jax_fdm.goals.face.face import FaceGoal
-from jax_fdm.goals.goal import ScalarGoal
 from jax_fdm.goals.goal import TargetLike
 
 __all__ = ["FaceRectangularGoal"]
 
 
-class FaceRectangularGoal(ScalarGoal, FaceGoal):
+class FaceRectangularGoal(FaceGoal):
     """
     Make the internal angles of a quadrilateral mesh face reach 90 degrees.
 

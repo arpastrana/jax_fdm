@@ -6,12 +6,11 @@ from jax_fdm.equilibrium import EquilibriumState
 from jax_fdm.equilibrium import EquilibriumStructure
 from jax_fdm.geometry import normalize_vector
 from jax_fdm.goals.edge.edge import EdgeGoal
-from jax_fdm.goals.goal import VectorGoal
 
 __all__ = ["EdgeDirectionGoal"]
 
 
-class EdgeDirectionGoal(VectorGoal, EdgeGoal):
+class EdgeDirectionGoal(EdgeGoal):
     """
     Align an edge's direction with a target vector.
 
