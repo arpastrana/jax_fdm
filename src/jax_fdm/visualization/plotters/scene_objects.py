@@ -20,6 +20,7 @@ from jax_fdm.visualization.style import REACTION_SCALE
 from jax_fdm.visualization.style import REACTION_TOL
 from jax_fdm.visualization.style import EdgeColorSpec
 from jax_fdm.visualization.style import EdgeWidthSpec
+from jax_fdm.visualization.style import FaceColorSpec
 from jax_fdm.visualization.style import PointColorSpec
 from jax_fdm.visualization.style import PointSizeSpec
 from jax_fdm.visualization.style import edge_colors
@@ -430,7 +431,8 @@ class FDMeshPlotterObject(FDPlotterObject, MeshObject):
     A scene object that draws a force density mesh in a plotter.
 
     On top of the shared edge/load/reaction categories, the mesh faces are
-    drawn by the inherited compas_plotter face pass.
+    drawn by the inherited compas_plotter face pass, which takes ``facecolor``
+    (one color for the whole mesh or a per-face map).
 
     The mesh points are filtered with the ``vertices`` keyword argument and
     styled with ``vertexcolor``, ``vertexsize`` and ``show_vertices``,
@@ -452,6 +454,7 @@ class FDMeshPlotterObject(FDPlotterObject, MeshObject):
         vertexcolor: PointColorSpec = None,
         vertexsize: PointSizeSpec = None,
         show_vertices: bool | None = None,
+        facecolor: FaceColorSpec = None,
         **kwargs: Any,
     ) -> None:
         # Map the vertex vocabulary onto the neutral point parameters of the
@@ -466,6 +469,11 @@ class FDMeshPlotterObject(FDPlotterObject, MeshObject):
         size = vertexsize if vertexsize is not None else pointsize
         if size is not None:
             kwargs["vertexsize"] = size
+
+        # The inherited compas_plotter face pass reads facecolor off its own
+        # kwarg. Only forward it when set, so the default surface shade holds.
+        if facecolor is not None:
+            kwargs["facecolor"] = facecolor
 
         super().__init__(
             item=item,

@@ -25,6 +25,7 @@ __all__ = [
     "PointSizes",
     "EdgeColorSpec",
     "EdgeWidthSpec",
+    "FaceColorSpec",
     "PointColorSpec",
     "PointSizeSpec",
 ]
@@ -34,10 +35,11 @@ __all__ = [
 # ==========================================================================
 
 # Per-element style maps: an edge is keyed by its (u, v) node pair, a point (a
-# node or a vertex) by a single key. These are the shapes the style functions
-# return and the scene objects store.
+# node or a vertex) or a face by a single key. These are the shapes the style
+# functions return and the scene objects store.
 EdgeColors = dict[tuple[int, int], Color]
 EdgeWidths = dict[tuple[int, int], float]
+FaceColors = dict[int, Color]
 PointColors = dict[int, Color]
 PointSizes = dict[int, float]
 
@@ -46,6 +48,7 @@ PointSizes = dict[int, float]
 # edge-width (low, high) range, or None to fall back to the defaults.
 EdgeColorSpec = Color | EdgeColors | str | None
 EdgeWidthSpec = float | EdgeWidths | tuple[float, float] | None
+FaceColorSpec = Color | FaceColors | None
 PointColorSpec = Color | PointColors | str | None
 PointSizeSpec = float | PointSizes | None
 
