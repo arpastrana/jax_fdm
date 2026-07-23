@@ -31,22 +31,26 @@ Let us go one step at a time.
 
 ### What we pass in
 
-Every goal is built from the same three inputs, defined once on the base `Goal` and inherited by every goal in the library:
+Every goal is built from the same three inputs, defined once as fields on the base `Goal` and inherited by every goal in the library:
 
 ```python
-class Goal:
+import equinox as eqx
 
-    def __init__(self, key, target, weight=1.0):
-        self.key = key        # which element (resolved to an index at init time)
-        self.target = target  # the value to drive the quantity toward
-        self.weight = weight  # how much this goal matters in the loss
+
+class Goal(eqx.Module):
+
+    key: Array     # which element (resolved to an index at evaluation time)
+    target: Array  # the value to drive the quantity toward
+    weight: Array  # how much this goal matters in the loss
 ```
 
-Those three arguments are what we supply, and each has a destination:
+Those three fields are what we supply, and each has a destination:
 
 - **`key`** names the element the goal acts on, the edge tuple `(u, v)` in the call above.
 - **`target`** is the value we want the structure to reach in its equilibrium state, `2.0` here. The loss later measures how far each prediction is from it.
 - **`weight`** (default `1.0`) scales this goal's contribution to the loss, so a heavier weight makes the optimizer favor satisfying this goal over lighter ones.
+
+A goal is an [equinox](https://docs.kidger.site/equinox/) module, the same pytree flavor as the [structure](form_finding.md#the-structure) we met earlier: its fields are the leaves of a registered JAX pytree, and the constructor that fills them is synthesized from their declaration. That is why the goals we write declare no `__init__` of their own, they inherit these three fields for free, and it is what lets JAX FDM stack a list of same-type goals and vectorize them in one differentiable call (see [Goals in action](#goals-in-action)).
 
 So instantiating a goal costs us almost nothing, which is the point.
 But that begs a question: what *is* an `EdgeLengthGoal`, and what happens under the hood?
@@ -56,28 +60,22 @@ But that begs a question: what *is* an `EdgeLengthGoal`, and what happens under 
 Surprisingly little. An `EdgeLengthGoal` looks like this:
 
 ```python
-import jax.numpy as jnp
+from jaxtyping import Array
 
-from jax_fdm.goals import ScalarGoal
 from jax_fdm.goals.edge import EdgeGoal
 from jax_fdm.goals import GoalState
 
 
-class EdgeLengthGoal(ScalarGoal, EdgeGoal):
+class EdgeLengthGoal(EdgeGoal):
     """
     Drive an edge toward a target length.
     """
 
-    def __init__(self, key, target, weight=1.0):
-        self.key = key        # which edge (resolved to an index at init time)
-        self.target = target  # the length to drive the edge toward
-        self.weight = weight  # how much this goal matters in the loss
-
-    def prediction(self, eq_state, index):
+    def prediction(self, eq_state, structure, index):
         """
         The edge's current length in the equilibrium state.
         """
-        return eq_state.lengths[index]
+        return eq_state.lengths[index, 0]
 
     def goal(self, target, prediction):
         """
@@ -85,55 +83,56 @@ class EdgeLengthGoal(ScalarGoal, EdgeGoal):
         """
         return target
 
-    def __call__(self, eq_state):
+    def __call__(self, eq_state, structure):
         """
         Evaluate the goal at an equilibrium state.
         """
-        prediction = self.prediction(eq_state, self.index)
+        index = self.index(structure)
+        prediction = self.prediction(eq_state, structure, index)
         goal = self.goal(self.target, prediction)
 
         return GoalState(goal=goal, prediction=prediction, weight=self.weight)
 ```
 
-There are five parts underpinning how any goal works:
+There are four parts underpinning how any goal works:
 
-- **The base classes say *what* and *where*.** `ScalarGoal` fixes the shape of the quantity, one number per element, and `EdgeGoal` fixes the element it lives on, an edge. Every goal picks one from each of these two families, and that pair is what wires up the target storage and the key resolution we would otherwise write by hand. See [Goal families](#goal-families) below for a complete taxonomy.
-- **The constructor says *which* and *how much*.** It stores the three inputs from the section above: the `key` of the edge, the `target` length, and the `weight`. Most goals in the library skip writing this out and simply inherit it from the base `Goal`, since it is the same three lines every time. We spell it out here to show where our inputs land.
-- **The `prediction` method says *how*.** Given an `eq_state` and the `index` the edge `key` was resolved to, it returns the quantity the goal cares about, here the edge's length, read straight out of the equilibrium state's `lengths` array. That single method is what makes an `EdgeLengthGoal` an *edge length* goal rather than any other kind.
+- **The base class says *where*.** `EdgeGoal` fixes the element the goal lives on, an edge, and with it the vocabulary the goal's key is resolved against. Every goal picks one such element family, and that choice is what wires up the key resolution we would otherwise write by hand. See [Goal families](#goal-families) below for a complete taxonomy.
+- **The `prediction` method says *what* and *how*.** Given an `eq_state`, the `structure`, and the `index` the edge `key` was resolved to, it returns the quantity the goal cares about, here the edge's length, read straight out of the equilibrium state's `lengths` array. That single method is what makes an `EdgeLengthGoal` an *edge length* goal rather than any other kind. Its return shape is also what fixes the goal's *rank*: one number per element makes this a scalar goal, an xyz triple would make it a vector goal. We never declare the rank separately, the prediction speaks for it.
 - **The `goal` method says *toward what*.** An error term in the loss measures the gap between a goal's *prediction* and its *goal* value. Here `goal` just hands back the `target` unchanged: reach the target length, plain and simple. But it receives the current `prediction` too, and some goals use it to compare against a *moving* reference rather than a fixed target, the trick behind `NodeLineGoal` and `NodePlaneGoal`. [Custom goals](custom_goals.md#recipe-2-a-custom-vector-goal-with-a-moving-target) puts it to work.
-- **The `__call__` method says *put it together*.** A goal is a callable object: `__call__` is the one method that runs the other two. It asks `prediction` for the current value, hands that to `goal` to get the reference to compare against, and bundles the two with the `weight` into a `GoalState`, a small record carrying exactly the three numbers an error term needs. We never call this ourselves, but it is the seam where a goal plugs into the rest of the library's workflow.
+- **The `__call__` method says *put it together*.** A goal is a callable object: `__call__` is the one method that runs the others. It resolves the element `index` from the structure, asks `prediction` for the current value, hands that to `goal` to get the reference to compare against, and bundles the two with the `weight` into a `GoalState`, a small record carrying exactly the three numbers an error term needs. We never call this ourselves, but it is the seam where a goal plugs into the rest of the library's workflow.
 
-Here is how those pieces compose in a single evaluation. Given an `eq_state`, calling the goal reads the quantity, resolves the reference, and packages both with the weight:
+Here is how those pieces compose in a single evaluation. Given an `eq_state` and the `structure` it was solved on, calling the goal resolves the index, reads the quantity, resolves the reference, and packages both with the weight:
 
 ```python
-goal_state = goal(eq_state)   # -> GoalState(goal=..., prediction=..., weight=...)
+goal_state = goal(eq_state, structure)   # -> GoalState(goal=..., prediction=..., weight=...)
 ```
 
 A goal turns three separate concerns, *what to read*, *what to aim at*, and *how much it matters*, into one uniform `GoalState` that downstream loss code can consume without knowing anything about edges or lengths.
 And downstream code is exactly a **loss**.
 A loss holds a list of **errors**, which in turn hold a sequence of goals.
-To score an equilibrium state, each error calls each goal via `goal(eq_state)`, collects the returned `GoalState` records, and feeds their `prediction`, `goal`, and `weight` to measure the gap.
+To score an equilibrium state, each error calls each goal via `goal(eq_state, structure)`, collects the returned `GoalState` records, and feeds their `prediction`, `goal`, and `weight` to measure the gap.
 So the goal never computes an error itself. It only reports its three numbers, and the loss composes them into the single scalar the optimizer minimizes.
 (We will meet the loss and its error terms in [constrained form-finding](constrained_form_finding.md).)
 
 To recapitulate:
 
-- The base classes pick a rank (scalar or vector) and an element (edge, node, mesh).
-- The constructor stores a `key`, `target`, and `weight`.
-- The `prediction` reads and processes the quantity of interest from an equilibrium state.
+- The base class picks an element (edge, node, vertex, face, network, mesh).
+- The fields store a `key`, `target`, and `weight`.
+- The `prediction` reads and processes the quantity of interest from an equilibrium state, and its return shape sets the goal's rank.
 - The `goal` method decides what to compare it against.
-- `__call__` composes the three into a `GoalState` the error and the loss consumes.
+- `__call__` resolves the index and composes the three into a `GoalState` the error and the loss consumes.
 
 ## Goal families
 
-The `EdgeLengthGoal` above made two choices, `ScalarGoal` and `EdgeGoal`, and those are the two axes every goal is built along:
+The `EdgeLengthGoal` above made one choice, `EdgeGoal`, and that is the axis every goal is built along, its **element family**:
 
 | Choice | Options |
 | --- | --- |
-| What is the rank of the attribute? | `ScalarGoal` (one number per element) or `VectorGoal` (one 3D vector per element) |
 | What element does it live on? | `NodeGoal`, `VertexGoal`, `EdgeGoal`, `FaceGoal`, `NetworkGoal`, `MeshGoal` |
 
-The rank choice polices our target: a scalar goal stores whatever we pass as one number per element, while a vector goal expects an (x, y, z) triple and stops us with a `TypeError` if we hand it a lone float, a nudge toward the scalar variant we probably meant.
+The family fixes the vocabulary the goal's key is resolved against: an `EdgeGoal` resolves its key against the structure's edges, a `NodeGoal` against its nodes, and so on.
+
+A goal's *rank*, one number per element (scalar) or one xyz vector per element (vector), is not a second choice we make up front. It falls straight out of what the `prediction` returns: hand back a lone value and the goal is scalar, hand back a triple and it is a vector. The two must agree with the target we stored, and `__call__` checks exactly that, raising a `ValueError` if a goal's prediction shape and its target shape disagree, the usual sign that a scalar target was handed to a vector goal or the other way around.
 
 ## Goals in action
 
@@ -143,14 +142,17 @@ A goal lives a two-phase life, and the split explains why we can build one befor
 This is the `EdgeLengthGoal(edge, target=2.0)` call from the anatomy: we store a `key`, a `target`, and a `weight`, and nothing more.
 No structure is involved yet, so we can create goals anywhere, in any order, before or after form-finding.
 One goal, one key.
-To target many elements, create one goal per element, and the machinery batches same-type goals into a single vectorized call.
+To target many elements, create one goal per element, and the machinery stacks same-type goals into a single vectorized call.
 The exception is the [aggregate goal](custom_goals.md#recipe-3-an-aggregate-goal), which judges a group as a whole and takes the whole list.
 
-**Phase two: initialization.**
-When we call `constrained_fdm`, the optimizer invokes `goal.init(model, structure)` behind the scenes.
-This resolves our element key into an integer `index` inside a [structure](form_finding.md#the-structure)'s topology, the object that carries the connectivity and the index tables.
-Once the `index` is known, the goal reads its quantity of interest by `index` straight out of the `EquilibriumState` the FDM produces.
-We speak in keys at construction, the machinery speaks in array rows at evaluation, and `init` is the translation step between the two.
+**Phase two: evaluation.**
+When we call `constrained_fdm`, each loss evaluation calls the goal against the solved `eq_state` and the [structure](form_finding.md#the-structure), the object that carries the connectivity and the index tables.
+The goal resolves its element key into an integer `index` against the structure's element ordering, then reads its quantity of interest by that `index` straight out of the `EquilibriumState` the FDM produces.
+We speak in keys at construction, the machinery speaks in array rows at evaluation, and the key-to-index resolution happens on the fly each time the goal is called, with no separate initialization step to remember.
+
+!!! note "Goals are stateless"
+
+    A goal never stores a resolved index or caches a structure. It holds only its key, target, and weight, and resolves the key afresh from whatever structure it is called against. That is what makes a goal a plain, immutable pytree: the same goal object evaluates against any compatible structure, and JAX can stack, vectorize, and differentiate through a whole list of them without any hidden state getting in the way.
 
 ## Keys versus indices
 

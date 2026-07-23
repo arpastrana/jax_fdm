@@ -20,7 +20,7 @@ class EdgeForceMagnitudeConstraint(EdgeConstraint):
     Bound the absolute internal force of an edge.
     """
 
-    def constraint(self, eq_state, index):
+    def constraint(self, eq_state, structure, index):
         return jnp.abs(eq_state.forces[index, 0])
 ```
 

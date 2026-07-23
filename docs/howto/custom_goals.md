@@ -16,24 +16,25 @@ A magnitude goal that ignores the sign is not in the bank, so we write one from 
 ```python
 import jax.numpy as jnp
 
-from jax_fdm.goals import ScalarGoal
 from jax_fdm.goals.edge import EdgeGoal
 
 
-class EdgeForceMagnitudeGoal(ScalarGoal, EdgeGoal):
+class EdgeForceMagnitudeGoal(EdgeGoal):
     """
     Drive the absolute internal force of an edge toward a target value.
     """
 
-    def prediction(self, eq_state, index):
-        return jnp.abs(eq_state.forces[index])
+    def prediction(self, eq_state, structure, index):
+        return jnp.abs(eq_state.forces[index, 0])
 ```
 
 That is the whole class.
-Let us unpack the two arguments that matter.
+We subclass a single element family, `EdgeGoal`, which fixes the goal to edges and resolves its key against them. There is no rank to declare: the prediction returns one number per edge, so the goal is scalar automatically.
+Let us unpack the three arguments the prediction receives.
 
 - `eq_state` is an [`EquilibriumState`](form_finding.md#the-equilibrium-state), the array bundle a form-finding solve produces. It holds the solved geometry and force state: `xyz`, `residuals`, `lengths`, `forces`, `loads`, and `vectors`. Our prediction slices what it needs out of these arrays, here the edge `forces`.
-- `index` is the integer row our edge key was resolved to when the goal was initialized: the row of *one* edge inside those arrays.
+- `structure` is the [structure](form_finding.md#the-structure) the goal is evaluated against, carrying the connectivity and topology. Most goals ignore it, ours included, but it is there when a goal needs to reach for whole-structure data.
+- `index` is the integer row our edge key resolves to against the structure: the row of *one* edge inside those arrays.
 We write the prediction for a single element, and JAX FDM vectorizes it across every edge we attach the goal to.
 
 Now we use it like any built-in goal:
@@ -80,16 +81,15 @@ Here we pull a node onto a vertical line through a target point, so the node end
 ```python
 import jax.numpy as jnp
 
-from jax_fdm.goals import VectorGoal
 from jax_fdm.goals.node import NodeGoal
 
 
-class NodeVerticalLineGoal(VectorGoal, NodeGoal):
+class NodeVerticalLineGoal(NodeGoal):
     """
     Pull a node onto the vertical line through a target point.
     """
 
-    def prediction(self, eq_state, index):
+    def prediction(self, eq_state, structure, index):
         return eq_state.xyz[index, :]
 
     def goal(self, target, prediction):
@@ -98,6 +98,8 @@ class NodeVerticalLineGoal(VectorGoal, NodeGoal):
 
         return jnp.concatenate((target_xy, node_z))
 ```
+
+This one is a *vector* goal, and again we never say so out loud: the prediction returns the node's three coordinates, so both prediction and target are xyz triples and the goal is a vector goal by construction.
 
 ```python
 goals = [NodeVerticalLineGoal(node, target=[2.0, 3.0, 0.0]) for node in network.nodes_free()]
@@ -118,18 +120,17 @@ Aggregates deviate from the standard recipe by one line:
 ```python
 import jax.numpy as jnp
 
-from jax_fdm.goals import ScalarGoal
 from jax_fdm.goals.edge import EdgeGoal
 
 
-class EdgesTotalLengthGoal(ScalarGoal, EdgeGoal):
+class EdgesTotalLengthGoal(EdgeGoal):
     """
     Drive the combined length of a group of edges toward a target value.
     """
 
     is_aggregate = True
 
-    def prediction(self, eq_state, index):
+    def prediction(self, eq_state, structure, index):
         lengths = eq_state.lengths[index]
 
         return jnp.sum(lengths)
@@ -140,8 +141,8 @@ goal = EdgesTotalLengthGoal(list(network.edges()), target=12.0)
 ```
 
 `is_aggregate = True` does two things for us.
-It unlocks the list of keys (a per-element goal insists on exactly one key, and tells us so with a `TypeError`), and it tells the vectorizer to hand our prediction the *whole* row of indices in a single call, instead of one index at a time.
-`index` is then an array of edge positions (`numpy` broadcasting rules apply), and we reduce across it however our quantity demands: a sum here, a variance in `EdgesLengthEqualGoal`, a colinearity energy in `NodesColinearGoal`.
+It marks the goal as taking a whole list of keys rather than a single one (hand a per-element goal a list and it stores it, then trips a shape error at evaluation once the mismatch is known), and it tells the machinery to hand our prediction the *whole* row of indices in a single call, instead of one index at a time.
+`index` is then an array of edge positions, and we reduce across it however our quantity demands: a sum here, a variance in `EdgesLengthEqualGoal`, a colinearity energy in `NodesColinearGoal`.
 The whole-structure goals (`Network*`, `Mesh*`) are aggregates too, just ones whose group is the entire structure, so they take no key list at all.
 
 ## Recipe 4: Retargeting a goal from nodes to vertices

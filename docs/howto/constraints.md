@@ -25,18 +25,21 @@ The most evident difference with respect to a goal is already visible: where the
 
 ### What we pass in
 
-Every constraint is built from a key and two bounds, defined once on the base `Constraint` and inherited by every constraint in the library:
+Every constraint is built from a key and two bounds, defined once as fields on the base `Constraint` and inherited by every constraint in the library:
 
 ```python
-class Constraint:
+import equinox as eqx
 
-    def __init__(self, key, bound_low=None, bound_up=None):
-        self.key = key              # which element (resolved to an index at init time)
-        self.bound_low = bound_low  # lower limit; None becomes -inf
-        self.bound_up = bound_up    # upper limit; None becomes +inf
+
+class Constraint(eqx.Module):
+
+    key: Array        # which element (resolved to an index at evaluation time)
+    bound_low: Array  # lower limit; None becomes -inf
+    bound_up: Array   # upper limit; None becomes +inf
 ```
 
-The `key` behaves exactly as a goal's: stored as given, the node key here, then resolved to an integer `index` when `constrained_fdm` calls `init`.
+Like a goal, a constraint is an [equinox](https://docs.kidger.site/equinox/) module: its fields are the leaves of a registered pytree, the constructor is synthesized, and a `None` bound is normalized to the matching infinity as it is stored. So, as with goals, the constraints we write declare no `__init__` of their own.
+The `key` behaves exactly as a goal's: stored as given, the node key here, then resolved to an integer `index` against the structure when the optimizer evaluates the constraint.
 But **the target and weight are gone**.
 They are replaced by two bounds:
 
@@ -56,27 +59,27 @@ class NodeZCoordinateConstraint(NodeConstraint):
     Bound the Z coordinate of a node between a lower and an upper value.
     """
 
-    def constraint(self, eq_state, index):
+    def constraint(self, eq_state, structure, index):
         return eq_state.xyz[index, 2]
 ```
 
 Two moving parts, mirroring the goal with two deliberate differences:
 
-- **One base class, not two.** A constraint subclasses only an element family (`NodeConstraint`). There is no scalar-versus-vector choice to make, because a constraint has no target shape to declare: its quantity is simply whatever number `constraint` returns.
-- **The `constraint` method is the one thing we write.** It plays the exact role `prediction` plays for a goal, same signature, same job: given an `eq_state` and the `index` our key resolved to, return the quantity of interest, here the node's Z coordinate pulled from the `xyz` array. Only the name differs.
+- **One base class, and no rank at all.** A constraint subclasses only an element family (`NodeConstraint`). There is nothing like a goal's scalar-versus-vector distinction to worry about: a constraint always reduces to a single number per element, so its `constraint` returns one scalar and `__call__` checks that it did.
+- **The `constraint` method is the one thing we write.** It plays the exact role `prediction` plays for a goal, same signature, same job: given an `eq_state`, the `structure`, and the `index` our key resolved to, return the quantity of interest, here the node's Z coordinate pulled from the `xyz` array. Only the name differs.
 
 So a constraint is a goal with the target-and-weight swapped for bounds and a single-family base class.
 The next section makes those differences precise.
 
 !!! note "Where the equilibrium state comes from"
 
-    A goal is handed a ready-made `eq_state` by the loss, but a constraint is not. Its `__call__(params, model, structure)` solves for equilibrium itself, `eqstate = model(params, structure)`, before slicing the quantity with `constraint`. This is because the optimizer evaluates constraints on its own schedule, apart from the loss, which is exactly why only optimizers like `SLSQP` built to do that can enforce them.
+    A goal and a constraint both take a ready-made `eq_state`: their `__call__(eq_state, structure)` slices the quantity out of it and never solves for equilibrium itself. The difference is *who* does the solving. A goal is evaluated inside the loss, on the state the loss already has in hand. A constraint is evaluated by the optimizer on its own schedule, apart from the loss: the optimizer solves for equilibrium once per step, `eqstate = model(params, structure)`, then vectorizes the constraint over that shared state. This separate evaluation path is exactly why only optimizers like `SLSQP` built to do it can enforce constraints.
 
 ## How a constraint works
 
 A constraint lives the same two-phase life as a goal.
-We construct it with an element key and two bounds, and when we call `constrained_fdm`, its `init` resolves the key to an integer index inside the equilibrium structure.
-Keys at construction, array rows at evaluation, `init` in between — the [same translation step](goals.md#goals-in-action) goals go through.
+We construct it with an element key and two bounds, and when we call `constrained_fdm`, the constraint resolves that key to an integer index inside the equilibrium structure at evaluation time.
+Keys at construction, array rows at evaluation, resolved on the fly against the structure — the [same translation step](goals.md#goals-in-action) goals go through, and like a goal a constraint is a stateless pytree that caches nothing.
 
 The differences are twofold.
 
@@ -88,7 +91,7 @@ Where a goal implements `prediction`, a constraint implements `constraint`.
 Same signature, same job: slice the quantity of interest for one element out of an `EquilibriumState`.
 
 One constraint, one key, same as goals.
-To bound many elements, create one constraint per element, and the machinery batches same-type constraints into a single vectorized call.
+To bound many elements, create one constraint per element, and the machinery stacks same-type constraints into a single vectorized call.
 
 ## Where to next
 

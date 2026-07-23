@@ -184,7 +184,7 @@ The **geometry** lives in `xyz`, `lengths`, and `vectors`, while the **force sta
 The residuals do double duty: they are our equilibrium check (a free node with a non-zero residual has not settled) and our reactions (a support's residual *is* the force it feeds back into the structure).
 
 This is the object `fdm` unpacks to update the datastructure it returns.
-It is also, verbatim, the `eq_state` that a goal's or constraint's `prediction(eq_state, index)` slices into, where `index` is the row of the element the goal acts on.
+It is also, verbatim, the `eq_state` that a goal's `prediction(eq_state, structure, index)` (or a constraint's `constraint(eq_state, structure, index)`) slices into, where `index` is the row of the element the goal acts on.
 When we write a [custom goal](custom_goals.md), we are reading one row out of these `EquilibriumState` arrays, whether we care about a coordinate, a length, or a force.
 The numerical core and the [goals](goals.md) guide meet right here.
 

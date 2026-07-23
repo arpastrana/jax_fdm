@@ -28,7 +28,7 @@ A **parameter** marks one quantity as a design variable, something the optimizer
 The most common one is the force density of an edge:
 
 ```python
-from jax_fdm.optimization import EdgeForceDensityParameter
+from jax_fdm.parameters import EdgeForceDensityParameter
 
 
 edge = (6, 7)
