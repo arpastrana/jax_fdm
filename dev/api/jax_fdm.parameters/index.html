@@ -969,6 +969,17 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#jax_fdm.parameters.Parameter.evaluate" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;evaluate
+      
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -2006,6 +2017,17 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#jax_fdm.parameters.Parameter.evaluate" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;evaluate
+      
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -3024,6 +3046,59 @@ Missing bounds normalize to negative or positive infinity rather than None.</p>
         </li>
     </ul>
 
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h5 id="jax_fdm.parameters.Parameter.evaluate" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <span class="doc doc-object-name doc-function-name">evaluate</span>
+
+
+<a href="#jax_fdm.parameters.Parameter.evaluate" class="headerlink" title="Permanent link">¤</a></h5>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">evaluate</span><span class="p">(</span><span class="n">datastructure</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="            FDNetwork (jax_fdm.datastructures.FDNetwork)" href="../jax_fdm.datastructures/#jax_fdm.datastructures.FDNetwork">FDNetwork</a></span> <span class="o">|</span> <span class="n"><a class="autorefs autorefs-internal" title="            FDMesh (jax_fdm.datastructures.FDMesh)" href="../jax_fdm.datastructures/#jax_fdm.datastructures.FDMesh">FDMesh</a></span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a></span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Evaluate the parameter directly on a datastructure.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>datastructure</code></b>
+              (<code><a class="autorefs autorefs-internal" title="            FDNetwork (jax_fdm.datastructures.FDNetwork)" href="../jax_fdm.datastructures/#jax_fdm.datastructures.FDNetwork">FDNetwork</a> | <a class="autorefs autorefs-internal" title="            FDMesh (jax_fdm.datastructures.FDMesh)" href="../jax_fdm.datastructures/#jax_fdm.datastructures.FDMesh">FDMesh</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>The network or mesh to read the parametrized attribute from.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>value</code></b> (              <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a></code>
+)          –
+          <div class="doc-md-description">
+            <p>The current value of the parametrized attribute.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<details class="note" open>
+  <summary>Notes</summary>
+  <p>A parameter reads straight off the datastructure, so this is a thin alias
+for <code>value</code>; it needs no structure, model, or <code>sparse</code> flag. It rounds
+out the <code>evaluate</code> family so goals, constraints, and parameters share one
+prototyping entry point.</p>
+</details>
 
     </div>
 

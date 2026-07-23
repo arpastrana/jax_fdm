@@ -1113,6 +1113,23 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label=" EquilibriumState">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#jax_fdm.equilibrium.states.EquilibriumState.from_datastructure" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;from_datastructure
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
         
           <li class="md-nav__item">
@@ -2346,6 +2363,23 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label=" EquilibriumState">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#jax_fdm.equilibrium.states.EquilibriumState.from_datastructure" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;from_datastructure
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
         
           <li class="md-nav__item">
@@ -3017,6 +3051,14 @@ is used.</p>
     </ul>
 
 
+<details class="note" open>
+  <summary>Notes</summary>
+  <p>In the returned copy each node load is the model-aggregated tributary load
+(node, edge, and face) at equilibrium, while the original edge and face loads
+are retained. Form-finding the output again therefore redistributes those
+tributary loads a second time; always solve from the original datastructure.</p>
+</details>
+
     </div>
 
 </div>
@@ -3237,6 +3279,10 @@ is used.</p>
   <summary>Notes</summary>
   <p>Constraints are not yet supported for sparse inputs; passing constraints with
 <code>sparse=True</code> switches the solve to dense and prints a warning.</p>
+<p>In the returned copy each node load is the model-aggregated tributary load
+(node, edge, and face) at equilibrium, while the original edge and face loads
+are retained. Form-finding the output again therefore redistributes those
+tributary loads a second time; always solve from the original datastructure.</p>
 </details>
 
     </div>
@@ -5172,6 +5218,99 @@ incident force densities.</p>
 
 
 
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="jax_fdm.equilibrium.states.EquilibriumState.from_datastructure" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <span class="doc doc-object-name doc-function-name">from_datastructure</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-classmethod"><code>classmethod</code></small>
+  </span>
+
+<a href="#jax_fdm.equilibrium.states.EquilibriumState.from_datastructure" class="headerlink" title="Permanent link">¤</a></h4>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">from_datastructure</span><span class="p">(</span><span class="n">datastructure</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="            FDNetwork (jax_fdm.datastructures.FDNetwork)" href="../jax_fdm.datastructures/#jax_fdm.datastructures.FDNetwork">FDNetwork</a></span> <span class="o">|</span> <span class="n"><a class="autorefs autorefs-internal" title="            FDMesh (jax_fdm.datastructures.FDMesh)" href="../jax_fdm.datastructures/#jax_fdm.datastructures.FDMesh">FDMesh</a></span><span class="p">,</span> <span class="n">structure</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="            EquilibriumStructure (jax_fdm.equilibrium.structures.EquilibriumStructure)" href="#jax_fdm.equilibrium.structures.structures.EquilibriumStructure">EquilibriumStructure</a></span><span class="p">,</span> <span class="n">dtype</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="jax.typing.DTypeLike" href="https://docs.jax.dev/en/latest/_autosummary/jax.typing.DTypeLike.html#jax.typing.DTypeLike">DTypeLike</a></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-internal" title="            EquilibriumState (jax_fdm.equilibrium.states.EquilibriumState)" href="#jax_fdm.equilibrium.states.EquilibriumState">EquilibriumState</a></span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Read an equilibrium state off a datastructure's stored attributes.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>datastructure</code></b>
+              (<code><a class="autorefs autorefs-internal" title="            FDNetwork (jax_fdm.datastructures.FDNetwork)" href="../jax_fdm.datastructures/#jax_fdm.datastructures.FDNetwork">FDNetwork</a> | <a class="autorefs autorefs-internal" title="            FDMesh (jax_fdm.datastructures.FDMesh)" href="../jax_fdm.datastructures/#jax_fdm.datastructures.FDMesh">FDMesh</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>The network or mesh to read coordinates, residuals, lengths, forces,
+and loads from.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>structure</code></b>
+              (<code><a class="autorefs autorefs-internal" title="            EquilibriumStructure (jax_fdm.equilibrium.structures.EquilibriumStructure)" href="#jax_fdm.equilibrium.structures.structures.EquilibriumStructure">EquilibriumStructure</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>The structure whose connectivity derives the edge vectors, the one
+state field the datastructure does not store.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>dtype</code></b>
+              (<code><a class="autorefs autorefs-external" title="jax.typing.DTypeLike" href="https://docs.jax.dev/en/latest/_autosummary/jax.typing.DTypeLike.html#jax.typing.DTypeLike">DTypeLike</a> | None</code>, default:
+                  <code>None</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>The floating-point dtype for the state arrays. If None, uses
+<code>DTYPE_JAX</code>.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>eq_state</code></b> (              <code><a class="autorefs autorefs-internal" title="            EquilibriumState (jax_fdm.equilibrium.states.EquilibriumState)" href="#jax_fdm.equilibrium.states.EquilibriumState">EquilibriumState</a></code>
+)          –
+          <div class="doc-md-description">
+            <p>The equilibrium state mirroring the datastructure's attributes.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Raises:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+              <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/exceptions.html#ValueError">ValueError</a></code>
+            –
+          <div class="doc-md-description">
+            <p>If the datastructure is neither a network nor a mesh.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<details class="note" open>
+  <summary>Notes</summary>
+  <p>The state is read as-is, without form-finding: every field but the edge
+vectors comes straight from a stored attribute, so it is only a genuine
+equilibrium once the datastructure has been solved. Run <code>fdm</code> (or
+<code>constrained_fdm</code>) on the datastructure first; on a fresh, never-solved
+input the lengths, forces, and residuals default to zero. The edge
+vectors are derived as <code>connectivity @ xyz</code> since the datastructure
+never persists them.</p>
+</details>
+
+    </div>
+
+</div>
 
 
 

@@ -1020,6 +1020,17 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#jax_fdm.visualization.viewers.viewer.Viewer.update" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;update
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#jax_fdm.visualization.viewers.viewer.Viewer.show" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1187,6 +1198,17 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#jax_fdm.visualization.viewers.viewer.Viewer.update" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;update
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#jax_fdm.visualization.viewers.viewer.Viewer.show" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1333,6 +1355,40 @@ for step in steps:
 scene objects this also drops the picking-color registrations, which
 the parent scene never prunes.</p>
 
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="jax_fdm.visualization.viewers.viewer.Viewer.update" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <span class="doc doc-object-name doc-function-name">update</span>
+
+
+<a href="#jax_fdm.visualization.viewers.viewer.Viewer.update" class="headerlink" title="Permanent link">¤</a></h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">update</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kc">None</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Repaint the viewer window immediately.</p>
+<p>Schedules a repaint and drains the event queue so it happens now,
+painting whatever the scene objects currently hold. This acts at the
+window layer: it does not touch scene data, so refresh the buffers of
+any mutated object first (e.g. <code>scene_object.update()</code>).</p>
+
+
+<details class="note" open>
+  <summary>Notes</summary>
+  <p>The intended use is animating a blocking computation that runs on the
+GUI thread. Because the computation blocks Qt's event loop, a normally
+scheduled repaint would not be serviced until it returns and every frame
+would collapse into one. Calling this per step forces each frame to
+paint while the computation is still running. A computation on a worker
+thread does not need it: the viewer repaints on its own timer.</p>
+</details>
 
     </div>
 

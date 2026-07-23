@@ -914,6 +914,17 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#jax_fdm.losses.Loss.evaluate" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;evaluate
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#jax_fdm.losses.Loss.number_of_goals" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1024,6 +1035,28 @@
     <span class="md-ellipsis">
       
         <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;__call__
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#jax_fdm.losses.Error.evaluate" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;evaluate
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#jax_fdm.losses.Error.evaluate_state" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;evaluate_state
       
     </span>
   </a>
@@ -1729,6 +1762,17 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#jax_fdm.losses.Loss.evaluate" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;evaluate
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#jax_fdm.losses.Loss.number_of_goals" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1839,6 +1883,28 @@
     <span class="md-ellipsis">
       
         <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;__call__
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#jax_fdm.losses.Error.evaluate" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;evaluate
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#jax_fdm.losses.Error.evaluate_state" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;evaluate_state
       
     </span>
   </a>
@@ -2459,6 +2525,72 @@ parameters.</p>
 <div class="doc doc-object doc-function">
 
 
+<h5 id="jax_fdm.losses.Loss.evaluate" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <span class="doc doc-object-name doc-function-name">evaluate</span>
+
+
+<a href="#jax_fdm.losses.Loss.evaluate" class="headerlink" title="Permanent link">¤</a></h5>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">evaluate</span><span class="p">(</span><span class="n">datastructure</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="            FDNetwork (jax_fdm.datastructures.FDNetwork)" href="../jax_fdm.datastructures/#jax_fdm.datastructures.FDNetwork">FDNetwork</a></span> <span class="o">|</span> <span class="n"><a class="autorefs autorefs-internal" title="            FDMesh (jax_fdm.datastructures.FDMesh)" href="../jax_fdm.datastructures/#jax_fdm.datastructures.FDMesh">FDMesh</a></span><span class="p">,</span> <span class="n">sparse</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><span title="jaxtyping.Float">Float</span></span><span class="p">[</span><span class="n"><span title="jaxtyping.Array">Array</span></span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">]</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Evaluate the loss directly on a datastructure, without an optimization.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>datastructure</code></b>
+              (<code><a class="autorefs autorefs-internal" title="            FDNetwork (jax_fdm.datastructures.FDNetwork)" href="../jax_fdm.datastructures/#jax_fdm.datastructures.FDNetwork">FDNetwork</a> | <a class="autorefs autorefs-internal" title="            FDMesh (jax_fdm.datastructures.FDMesh)" href="../jax_fdm.datastructures/#jax_fdm.datastructures.FDMesh">FDMesh</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>The network or mesh to read the equilibrium state from. Its geometry
+is used as-is; no form-finding is run.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>sparse</code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></code>, default:
+                  <code>True</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>If True, assemble the equilibrium state with the sparse model.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>loss</code></b> (              <code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, &#39;&#39;]</code>
+)          –
+          <div class="doc-md-description">
+            <p>The scalar loss, the sum of the error terms evaluated on the
+datastructure's equilibrium state and the regularization terms
+evaluated on its parameters.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<details class="note" open>
+  <summary>Notes</summary>
+  <p>Builds the equilibrium state once and reuses it across every error term
+and regularizer. Error terms evaluate their raw goals as singletons, so
+the loss works before <code>constrained_fdm</code> has grouped them into
+collections.</p>
+</details>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
 <h5 id="jax_fdm.losses.Loss.number_of_goals" class="doc doc-heading">
 <code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <span class="doc doc-object-name doc-function-name">number_of_goals</span>
 
@@ -2620,8 +2752,10 @@ parameters.</p>
 
 <details class="note" open>
   <summary>Notes</summary>
-  <p>Goals are grouped into collections in <code>collections</code>; the term evaluates one
-error per collection and aggregates them via <code>errors</code>.</p>
+  <p>Goals are grouped into collections in <code>collections</code>: one collection per goal
+type, its leaves carrying a leading element axis. A goal maps one element to
+one error, so the term <code>vmap</code>s that per-element error over a collection, sums
+the mapped result, and aggregates one such sum per collection via <code>errors</code>.</p>
 </details>
 
 
@@ -2746,7 +2880,7 @@ error per collection and aggregates them via <code>errors</code>.</p>
 
 
 <a href="#jax_fdm.losses.Error.__call__" class="headerlink" title="Permanent link">¤</a></h5>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">__call__</span><span class="p">(</span><span class="n">eqstate</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="            EquilibriumState (jax_fdm.equilibrium.EquilibriumState)" href="../jax_fdm.equilibrium/#jax_fdm.equilibrium.states.EquilibriumState">EquilibriumState</a></span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><span title="jaxtyping.Float">Float</span></span><span class="p">[</span><span class="n"><span title="jaxtyping.Array">Array</span></span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">]</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">__call__</span><span class="p">(</span><span class="n">eqstate</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="            EquilibriumState (jax_fdm.equilibrium.EquilibriumState)" href="../jax_fdm.equilibrium/#jax_fdm.equilibrium.states.EquilibriumState">EquilibriumState</a></span><span class="p">,</span> <span class="n">structure</span><span class="p">:</span> <span class="n"><span title="jax_fdm.equilibrium.EquilibriumStructure">EquilibriumStructure</span></span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><span title="jaxtyping.Float">Float</span></span><span class="p">[</span><span class="n"><span title="jaxtyping.Array">Array</span></span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">]</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -2764,6 +2898,14 @@ error per collection and aggregates them via <code>errors</code>.</p>
             <p>The equilibrium state to evaluate the goals on.</p>
           </div>
         </li>
+        <li class="doc-section-item field-body">
+            <b><code>structure</code></b>
+              (<code><span title="jax_fdm.equilibrium.EquilibriumStructure">EquilibriumStructure</span></code>)
+          –
+          <div class="doc-md-description">
+            <p>The structure whose element ordering resolves the goals' indices.</p>
+          </div>
+        </li>
     </ul>
 
 
@@ -2778,6 +2920,144 @@ error per collection and aggregates them via <code>errors</code>.</p>
         </li>
     </ul>
 
+
+<details class="note" open>
+  <summary>Notes</summary>
+  <p>A goal maps one element to one goal state, so each collection is reduced
+the equinox way: <code>vmap</code> the per-element error over the collection's leading
+axis and sum the mapped scalars, exactly as one maps any module over a
+batch. The weight, one scalar per element, broadcasts against the
+prediction at each element, so no rank alignment is needed. This is the
+same per-element reduction as <code>evaluate_state</code>, over the batched
+collections rather than the raw goals.</p>
+</details>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h5 id="jax_fdm.losses.Error.evaluate" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <span class="doc doc-object-name doc-function-name">evaluate</span>
+
+
+<a href="#jax_fdm.losses.Error.evaluate" class="headerlink" title="Permanent link">¤</a></h5>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">evaluate</span><span class="p">(</span><span class="n">datastructure</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="            FDNetwork (jax_fdm.datastructures.FDNetwork)" href="../jax_fdm.datastructures/#jax_fdm.datastructures.FDNetwork">FDNetwork</a></span> <span class="o">|</span> <span class="n"><a class="autorefs autorefs-internal" title="            FDMesh (jax_fdm.datastructures.FDMesh)" href="../jax_fdm.datastructures/#jax_fdm.datastructures.FDMesh">FDMesh</a></span><span class="p">,</span> <span class="n">sparse</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><span title="jaxtyping.Float">Float</span></span><span class="p">[</span><span class="n"><span title="jaxtyping.Array">Array</span></span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">]</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Evaluate the error term directly on a datastructure, without an optimization.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>datastructure</code></b>
+              (<code><a class="autorefs autorefs-internal" title="            FDNetwork (jax_fdm.datastructures.FDNetwork)" href="../jax_fdm.datastructures/#jax_fdm.datastructures.FDNetwork">FDNetwork</a> | <a class="autorefs autorefs-internal" title="            FDMesh (jax_fdm.datastructures.FDMesh)" href="../jax_fdm.datastructures/#jax_fdm.datastructures.FDMesh">FDMesh</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>The network or mesh to read the equilibrium state from. Its geometry
+is used as-is; no form-finding is run.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>sparse</code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></code>, default:
+                  <code>True</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>If True, assemble the equilibrium state with the sparse model.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>error</code></b> (              <code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, &#39;&#39;]</code>
+)          –
+          <div class="doc-md-description">
+            <p>The aggregated error scaled by <code>alpha</code>.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<details class="note" open>
+  <summary>Notes</summary>
+  <p>Evaluates the term's raw goals one by one, rather than the collections
+the optimizer batches them into, so it works before <code>constrained_fdm</code>
+has grouped them. The goal count is unchanged, so a mean-style term
+divides by the same number of goals it would during an optimization.</p>
+</details>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h5 id="jax_fdm.losses.Error.evaluate_state" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <span class="doc doc-object-name doc-function-name">evaluate_state</span>
+
+
+<a href="#jax_fdm.losses.Error.evaluate_state" class="headerlink" title="Permanent link">¤</a></h5>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">evaluate_state</span><span class="p">(</span><span class="n">eqstate</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="            EquilibriumState (jax_fdm.equilibrium.EquilibriumState)" href="../jax_fdm.equilibrium/#jax_fdm.equilibrium.states.EquilibriumState">EquilibriumState</a></span><span class="p">,</span> <span class="n">structure</span><span class="p">:</span> <span class="n"><span title="jax_fdm.equilibrium.EquilibriumStructure">EquilibriumStructure</span></span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><span title="jaxtyping.Float">Float</span></span><span class="p">[</span><span class="n"><span title="jaxtyping.Array">Array</span></span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">]</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Evaluate the error term's raw goals on a precomputed equilibrium state.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>eqstate</code></b>
+              (<code><a class="autorefs autorefs-internal" title="            EquilibriumState (jax_fdm.equilibrium.EquilibriumState)" href="../jax_fdm.equilibrium/#jax_fdm.equilibrium.states.EquilibriumState">EquilibriumState</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>The equilibrium state to evaluate the goals on.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>structure</code></b>
+              (<code><span title="jax_fdm.equilibrium.EquilibriumStructure">EquilibriumStructure</span></code>)
+          –
+          <div class="doc-md-description">
+            <p>The structure whose element ordering resolves the goals' indices.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>error</code></b> (              <code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, &#39;&#39;]</code>
+)          –
+          <div class="doc-md-description">
+            <p>The aggregated error scaled by <code>alpha</code>.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<details class="note" open>
+  <summary>Notes</summary>
+  <p>The state-consuming core shared by <code>evaluate</code> and <code>Loss.evaluate</code>. It
+evaluates the term's raw goals as singletons rather than the collections
+the optimizer batches them into. A lone goal's <code>__call__</code> already returns
+an unbatched state whose scalar weight broadcasts against the prediction,
+and the error kernels sum over every axis, so a raw goal state feeds them
+directly without the collection's <code>(elements, features)</code> formatting.</p>
+</details>
 
     </div>
 

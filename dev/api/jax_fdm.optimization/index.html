@@ -1557,34 +1557,6 @@
   
 </li>
         
-          <li class="md-nav__item">
-  <a href="#jax_fdm.optimization.Collection" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        <code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;Collection
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label=" Collection">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#jax_fdm.optimization.Collection.__new__" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;__new__
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-        
       </ul>
     </nav>
   
@@ -2530,34 +2502,6 @@
   
 </li>
         
-          <li class="md-nav__item">
-  <a href="#jax_fdm.optimization.Collection" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        <code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;Collection
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label=" Collection">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#jax_fdm.optimization.Collection.__new__" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;__new__
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-        
       </ul>
     </nav>
   
@@ -2990,8 +2934,8 @@ so the optimizer can work in the reduced parameter space.</p>
 
 <details class="note" open>
   <summary>Notes</summary>
-  <p>Goals are batched into collections and each collection is initialized once,
-so the per-iteration objective avoids re-resolving goal indices.</p>
+  <p>Goals are batched into collections; each collection resolves its own index
+against the structure inside the jitted objective, once at trace time.</p>
 </details>
 
     </div>
@@ -3527,11 +3471,19 @@ constraint dictionaries instead.</p>
 <b><code>values</code></b> (              <code><span title="jaxtyping.Float">Float</span>[<span title="jaxtyping.Array">Array</span>, <a class="autorefs autorefs-internal" title="            constraints (jax_fdm.optimization.optimizers.constrained.ConstrainedOptimizer.constraints)" href="#jax_fdm.optimization.optimizers.constrained.ConstrainedOptimizer.constraints">constraints</a>]</code>
 )          –
           <div class="doc-md-description">
-            <p>The constrained quantity for each element.</p>
+            <p>The constrained quantity for each element, flattened.</p>
           </div>
         </li>
     </ul>
 
+
+<details class="note" open>
+  <summary>Notes</summary>
+  <p>A constraint maps one element to one value, so a collection is reduced the
+equinox way: solve for equilibrium once, then <code>vmap</code> the single-element
+constraint over the collection's leading axis and flatten. The optimizer
+owns the <code>vmap</code>, mirroring how <code>Error</code> maps a goal over its collection.</p>
+</details>
 
     </div>
 
@@ -5453,124 +5405,6 @@ optimization run can be saved and replayed.</p>
             <p>The parameters to store. With an optimizer, a parameter state whose
 leaves are appended into the history's matching leaves; without one, a
 single value appended to the flat history list.</p>
-          </div>
-        </li>
-    </ul>
-
-
-    </div>
-
-</div>
-
-
-
-  </div>
-
-    </div>
-
-</div>
-
-<div class="doc doc-object doc-class">
-
-
-
-<h4 id="jax_fdm.optimization.Collection" class="doc doc-heading">
-<code class="doc-symbol doc-symbol-heading doc-symbol-class"></code>            <span class="doc doc-object-name doc-class-name">Collection</span>
-
-
-<a href="#jax_fdm.optimization.Collection" class="headerlink" title="Permanent link">¤</a></h4>
-
-
-    <div class="doc doc-contents ">
-
-
-
-        <p>A vectorized stand-in for many same-type goals or constraints.</p>
-
-
-<details class="note" open>
-  <summary>Notes</summary>
-  <p>Instantiating a Collection returns a single object of the collectibles' own
-class whose init arguments are the stacked per-object values, so the whole group
-evaluates in one vmapped call. A <code>_iscollection</code> flag marks the result.</p>
-</details>
-
-
-
-
-
-
-
-
-
-
-<div class="doc doc-children">
-
-
-
-
-
-
-
-
-
-
-<div class="doc doc-object doc-function">
-
-
-<h5 id="jax_fdm.optimization.Collection.__new__" class="doc doc-heading">
-<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <span class="doc doc-object-name doc-function-name">__new__</span>
-
-
-<a href="#jax_fdm.optimization.Collection.__new__" class="headerlink" title="Permanent link">¤</a></h5>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">__new__</span><span class="p">(</span><span class="n">collectibles</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#list">list</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" title="typing.Any" href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a></span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-external" title="typing.Any" href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a></span>
-</code></pre></div>
-
-    <div class="doc doc-contents ">
-
-        <p>Stack same-type objects into one vectorized object of their class.</p>
-
-
-<p><span class="doc-section-title">Parameters:</span></p>
-    <ul>
-        <li class="doc-section-item field-body">
-            <b><code>collectibles</code></b>
-              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#list">list</a>[<a class="autorefs autorefs-external" title="typing.Any" href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a>]</code>)
-          –
-          <div class="doc-md-description">
-            <p>The objects to vectorize; all must share one type.</p>
-          </div>
-        </li>
-    </ul>
-
-
-<p><span class="doc-section-title">Returns:</span></p>
-    <ul>
-        <li class="doc-section-item field-body">
-<b><code>collection</code></b> (              <code><a class="autorefs autorefs-external" title="typing.Any" href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a></code>
-)          –
-          <div class="doc-md-description">
-            <p>A single object of the shared class, built from the per-object init
-arguments gathered across the group.</p>
-          </div>
-        </li>
-    </ul>
-
-
-<p><span class="doc-section-title">Raises:</span></p>
-    <ul>
-        <li class="doc-section-item field-body">
-              <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/exceptions.html#TypeError">TypeError</a></code>
-            –
-          <div class="doc-md-description">
-            <p>If the collectibles are not all of the same type.</p>
-          </div>
-        </li>
-        <li class="doc-section-item field-body">
-              <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/exceptions.html#AttributeError">AttributeError</a></code>
-            –
-          <div class="doc-md-description">
-            <p>If an init parameter is not stored as a same-named attribute.</p>
           </div>
         </li>
     </ul>
