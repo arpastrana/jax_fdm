@@ -1,8 +1,9 @@
+import equinox as eqx
 from jaxtyping import Array
 from jaxtyping import Int
 
-from jax_fdm.constraints.constraint import BoundLike
 from jax_fdm.constraints.constraint import Constraint
+from jax_fdm.constraints.constraint import as_key
 from jax_fdm.equilibrium import EquilibriumStructure
 
 __all__ = ["NetworkConstraint"]
@@ -22,21 +23,15 @@ class NetworkConstraint(Constraint):
     Notes
     -----
     A network constraint spans all edges or nodes at once rather than one element,
-    so it is an aggregate that always carries the sentinel key ``-1``. The custom
-    constructor sets that sentinel itself and hides the key from the signature,
-    so the whole network-constraint family constructs from bounds alone.
+    so it is an aggregate that always carries the sentinel key ``-1``. The key is
+    fixed with ``init=False``, so it is hidden from the constructor rather than
+    exposed as a passable-but-ignored argument, and the whole network-constraint
+    family constructs from bounds alone.
     """
 
     is_aggregate = True
 
-    def __init__(
-        self,
-        bound_low: BoundLike = None,
-        bound_up: BoundLike = None,
-    ) -> None:
-        self.key = -1
-        self.bound_low = bound_low
-        self.bound_up = bound_up
+    key: Int[Array, "..."] = eqx.field(converter=as_key, default=-1, init=False)  # pyright: ignore[reportAssignmentType]
 
     def index(
         self,
