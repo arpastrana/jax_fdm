@@ -23,6 +23,7 @@ from jax_fdm.visualization.style import REACTION_SCALE
 from jax_fdm.visualization.style import REACTION_TOL
 from jax_fdm.visualization.style import EdgeColorSpec
 from jax_fdm.visualization.style import EdgeWidthSpec
+from jax_fdm.visualization.style import FaceColorSpec
 from jax_fdm.visualization.style import PointColorSpec
 from jax_fdm.visualization.style import PointSizeSpec
 from jax_fdm.visualization.style import edge_colors
@@ -757,8 +758,9 @@ class FDMeshObject(FDDatastructureObject):
     A scene object that renders a force density mesh in a compas_viewer scene.
 
     On top of the shared edge/vertex/load/reaction categories, the mesh faces
-    are drawn as one shaded surface (the mesh itself), so the surface toggles
-    independently from the wireframe.
+    are drawn as their own surface, so it toggles independently from the
+    wireframe. The surface takes ``facecolor`` (one color for the whole mesh or
+    a per-face map) and ``faceopacity``.
 
     The mesh points are filtered with the ``vertices`` keyword argument and
     styled with ``vertexcolor``, ``vertexsize`` and ``show_vertices``,
@@ -782,6 +784,7 @@ class FDMeshObject(FDDatastructureObject):
         vertexcolor: PointColorSpec = None,
         vertexsize: PointSizeSpec = None,
         show_vertices: bool | None = None,
+        facecolor: FaceColorSpec = None,
         faceopacity: float | None = None,
         show_faces: bool = True,
         **kwargs: Any,
@@ -804,6 +807,14 @@ class FDMeshObject(FDDatastructureObject):
         )
 
         if show_faces or show_faces is None:
+            # Only forward a color when set, so the default surface shade (the
+            # compas mesh object's own default) is left untouched. facecolor
+            # rides the mesh object's **kwargs, so it is carried in a plain dict
+            # rather than passed by name.
+            face_kwargs: dict[str, Any] = {}
+            if facecolor is not None:
+                face_kwargs["facecolor"] = facecolor
+
             # sceneobject_type pins the native mesh scene object: the FDMesh is
             # registered with compas.scene, so an unpinned construction would
             # dispatch right back to this class and recurse.
@@ -815,6 +826,7 @@ class FDMeshObject(FDDatastructureObject):
                 show_points=False,
                 show_lines=False,
                 opacity=faceopacity or self.default_faceopacity,
+                **face_kwargs,
             )
             self.add(faces)
 

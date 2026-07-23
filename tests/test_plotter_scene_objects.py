@@ -356,3 +356,29 @@ def test_mesh_draws_faces_by_default(plotter, mesh):
 def test_mesh_faces_can_be_hidden(plotter, mesh):
     obj = plotter.add(mesh, show_faces=False, show_loads=False, show_reactions=False)
     assert not arrow_collections(obj)
+
+
+def test_mesh_facecolor_paints_the_faces(plotter, mesh):
+    """
+    A per-face color map reaches the inherited face pass, so the drawn face
+    patch collection carries the requested colors.
+    """
+    facecolor = {face: Color.red() for face in mesh.faces()}
+    obj = plotter.add(
+        mesh,
+        facecolor=facecolor,
+        show_loads=False,
+        show_reactions=False,
+    )
+
+    (faces,) = arrow_collections(obj)  # the face patch collection
+    assert all(tuple(color[:3]) == Color.red().rgb for color in faces.get_facecolor())
+
+
+def test_mesh_facecolor_default_stays_the_upstream_shade(plotter, mesh):
+    """
+    Without a facecolor the faces fall back to the compas_plotter default,
+    so the object carries no per-face override.
+    """
+    obj = plotter.add(mesh, show_loads=False, show_reactions=False)
+    assert len(obj.facecolor) == 0
