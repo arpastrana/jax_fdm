@@ -3,7 +3,6 @@ import numpy as np
 
 # compas
 from compas.colors import ColorMap
-from compas.datastructures import Mesh
 from compas.geometry import Translation
 
 # jax fdm
@@ -246,25 +245,29 @@ def face_colors(scaled):
     return {face: cmap((value - lo) / (hi - lo)) for face, value in scaled.items()}
 
 
-# the initial shell on the left, colored by its (large) face planarity
-mesh_shell = shell.copy(Mesh)
-mesh_shell.transform(Translation.from_vector([0.0, -1.1 * length, 0.0]))
+# the initial shell on the left, colored by its (large) face planarity. we copy
+# it only to shift it aside for the comparison, not to recolor it.
+shell_shifted = shell.copy()
+shell_shifted.transform(Translation.from_vector([0.0, -1.1 * length, 0.0]))
 viewer.add(
-    mesh_shell,
+    shell_shifted,
     facecolor=face_colors(scaled_shell),
-    show_points=False,
-    show_lines=True,
-    linecolor=(0.2, 0.2, 0.2),
+    faceopacity=1.0,
+    show_vertices=False,
+    edgecolor=(0.2, 0.2, 0.2),
+    show_loads=False,
+    show_reactions=False,
 )
 
 # the planarized shell on the right, colored by its (small) face planarity
-mesh_planar = shell_planar.copy(Mesh)
 viewer.add(
-    mesh_planar,
+    shell_planar,
     facecolor=face_colors(scaled_planar),
-    show_points=False,
-    show_lines=True,
-    linecolor=(0.2, 0.2, 0.2),
+    faceopacity=1.0,
+    show_vertices=False,
+    edgecolor=(0.2, 0.2, 0.2),
+    show_loads=False,
+    show_reactions=False,
 )
 
 viewer.show()
