@@ -23,6 +23,7 @@ from jax_fdm.visualization.style import REACTION_SCALE
 from jax_fdm.visualization.style import REACTION_TOL
 from jax_fdm.visualization.style import EdgeColorSpec
 from jax_fdm.visualization.style import EdgeWidthSpec
+from jax_fdm.visualization.style import FaceColorSpec
 from jax_fdm.visualization.style import PointColorSpec
 from jax_fdm.visualization.style import PointSizeSpec
 from jax_fdm.visualization.style import edge_colors
@@ -364,7 +365,8 @@ class ThreeFDMeshObject(ThreeFDDatastructureObject):
     A scene object that renders a force density mesh in a notebook scene.
 
     On top of the shared edge/vertex/load/reaction categories, the mesh faces
-    are drawn as one shaded surface (the mesh itself).
+    are drawn as their own surface, which takes ``facecolor`` (one color for
+    the whole mesh or a per-face map).
 
     The mesh points are filtered with the ``vertices`` keyword argument and
     styled with ``vertexcolor``, ``vertexsize`` and ``show_vertices``,
@@ -386,6 +388,7 @@ class ThreeFDMeshObject(ThreeFDDatastructureObject):
         vertexcolor: PointColorSpec = None,
         vertexsize: PointSizeSpec = None,
         show_vertices: bool | None = None,
+        facecolor: FaceColorSpec = None,
         show_faces: bool = True,
         **kwargs: Any,
     ) -> None:
@@ -406,6 +409,7 @@ class ThreeFDMeshObject(ThreeFDDatastructureObject):
             **kwargs,
         )
         self.show_faces = show_faces if show_faces is not None else True
+        self.facecolor = facecolor
 
     def point_keys(self) -> list[int]:
         # the data=False getter always yields plain vertex keys
@@ -435,6 +439,13 @@ class ThreeFDMeshObject(ThreeFDDatastructureObject):
         guids = super().draw()
 
         if self.show_faces:
+            # Only forward a color when set, so the default surface shade is
+            # left untouched. facecolor rides the mesh object's **kwargs, so it
+            # is carried in a plain dict rather than passed by name.
+            face_kwargs: dict[str, Any] = {}
+            if self.facecolor is not None:
+                face_kwargs["facecolor"] = self.facecolor
+
             # sceneobject_type pins the native mesh scene object: the FDMesh is
             # registered with compas.scene, so an unpinned construction would
             # dispatch right back to this class and recurse.
@@ -444,6 +455,7 @@ class ThreeFDMeshObject(ThreeFDDatastructureObject):
                 context="Notebook",
                 show_edges=True,
                 show_vertices=False,
+                **face_kwargs,
             )
             guids += obj.draw()
             self._guids = guids

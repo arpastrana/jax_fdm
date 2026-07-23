@@ -17,6 +17,7 @@ import pytest  # noqa: E402
 
 pytest.importorskip("compas_viewer")
 
+from compas.colors import Color  # noqa: E402
 from jax_fdm.datastructures import FDMesh  # noqa: E402
 from jax_fdm.datastructures import FDNetwork  # noqa: E402
 from jax_fdm.visualization import Viewer  # noqa: E402
@@ -328,3 +329,29 @@ def test_adjacency_is_frozen_and_complete(network, mesh):
         assert set(obj.adjacency) == set(obj.points)
         for point, edges in obj.adjacency.items():
             assert sorted(edges) == sorted(obj.point_edges(point))
+
+
+def faces_child(obj):
+    return next(child for child in obj.children if child.name == "Faces")
+
+
+def test_facecolor_reaches_the_faces_surface(mesh):
+    """
+    A per-face color map lands on the inner faces object, so the surface
+    paints per face instead of one flat shade.
+    """
+    facecolor = {face: Color.red() for face in mesh.faces()}
+    obj = FDMeshObject(item=mesh, context="Viewer", facecolor=facecolor)
+
+    colors = faces_child(obj).facecolor
+    assert {int(key) for key in colors} == set(mesh.faces())
+    assert all(color.rgb == Color.red().rgb for color in colors.values())
+
+
+def test_facecolor_default_leaves_the_surface_unstyled(mesh):
+    """
+    Without a facecolor the inner faces object carries no per-face override,
+    so it falls back to the backend's default surface shade.
+    """
+    obj = FDMeshObject(item=mesh, context="Viewer")
+    assert len(faces_child(obj).facecolor) == 0
