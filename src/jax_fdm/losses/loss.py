@@ -79,7 +79,7 @@ class Loss:
 
     def evaluate(
         self,
-        datastructure: FDMesh | FDNetwork,
+        datastructure: FDNetwork | FDMesh,
         sparse: bool = True,
     ) -> Float[Array, ""]:
         """

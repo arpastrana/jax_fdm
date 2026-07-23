@@ -102,9 +102,9 @@ def as_key(key: KeyLike) -> Int[Array, "..."]:
     Returns
     -------
     key :
-        The key as a JAX integer array, its shape unchanged: a scalar for a
-        per-element goal, a ``(2,)`` pair for an edge, or a whole ``(points,)``
-        row for an aggregate.
+        The key as a JAX integer array, its shape unchanged from the input: one
+        element's key for a per-element goal, the whole selection for an
+        aggregate.
 
     Notes
     -----
@@ -138,7 +138,7 @@ class Goal(eqx.Module):
     """
     The base class for all goals, targets an equilibrium quantity reaches.
 
-    Parameters
+    Attributes
     ----------
     key :
         The key of the element the goal acts on; a sequence of keys (a list or
@@ -246,8 +246,8 @@ class Goal(eqx.Module):
         -------
         keys_canonical :
             The node, edge, vertex, or face key ordering the goal's key is
-            resolved against: a 1-D array of node/vertex/face keys, or a 2-D
-            array of edge key pairs, one row per element.
+            resolved against, one entry per element: a node/vertex/face key, or
+            an edge key pair.
 
         Notes
         -----
@@ -365,8 +365,8 @@ class Goal(eqx.Module):
         Returns
         -------
         goal_state :
-            The goal state bundling the reference values, the predictions, and the
-            weights.
+            The goal state bundling the reference value, the prediction, and the
+            weight for this one element.
 
         Notes
         -----

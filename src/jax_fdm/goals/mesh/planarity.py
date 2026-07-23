@@ -37,7 +37,7 @@ class MeshPlanarityGoal(MeshGoal):
         self,
         eq_state: EquilibriumState,
         structure: EquilibriumMeshStructure,
-        index: Int[Array, "1"],
+        index: Int[Array, ""],
     ) -> Float[Array, ""]:
         """
         The average planarity of the mesh faces.

@@ -93,7 +93,7 @@ class MeshXYZFaceLaplacianGoal(MeshGoal):
         self,
         eq_state: EquilibriumState,
         structure: EquilibriumMeshStructure,
-        index: Int[Array, "1"],
+        index: Int[Array, ""],
     ) -> Float[Array, ""]:
         """
         The mean per-vertex Laplacian energy of the mesh.

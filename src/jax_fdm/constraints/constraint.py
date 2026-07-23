@@ -46,9 +46,9 @@ def as_key(key: KeyLike) -> Int[Array, "..."]:
     Returns
     -------
     key :
-        The key as a JAX integer array, its shape unchanged: a scalar for a
-        per-element constraint, a ``(2,)`` pair for an edge, or a whole
-        ``(points,)`` row for an aggregate.
+        The key as a JAX integer array, its shape unchanged from the input: one
+        element's key for a per-element constraint, the whole selection for an
+        aggregate.
 
     Notes
     -----
@@ -139,7 +139,7 @@ class Constraint(eqx.Module):
     """
     The base class for all constraints, bounds an equilibrium quantity must obey.
 
-    Parameters
+    Attributes
     ----------
     key :
         The key of the element the constraint acts on; a sequence of keys (a list
@@ -193,8 +193,8 @@ class Constraint(eqx.Module):
         -------
         keys_canonical :
             The node, edge, or vertex key ordering the constraint's key is
-            resolved against: a 1-D array of node/vertex keys, or a 2-D array of
-            edge key pairs, one row per element.
+            resolved against, one entry per element: a node/vertex key, or an
+            edge key pair.
 
         Notes
         -----

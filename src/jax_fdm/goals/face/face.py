@@ -16,7 +16,7 @@ class FaceGoal(Goal):
     def keys_from_structure(
         self,
         structure: EquilibriumStructure,
-    ) -> Int[np.ndarray, "faces ..."]:
+    ) -> Int[np.ndarray, "faces"]:
         """
         The structure's face keys, the vocabulary a face goal resolves against.
 

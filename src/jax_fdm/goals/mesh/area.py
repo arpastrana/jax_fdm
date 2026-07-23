@@ -26,7 +26,7 @@ class MeshAreaGoal(MeshGoal):
         self,
         eq_state: EquilibriumState,
         structure: EquilibriumMeshStructure,
-        index: Int[Array, "1"],
+        index: Int[Array, ""],
     ) -> Float[Array, ""]:
         """
         The negated total surface area of the mesh.
@@ -96,7 +96,7 @@ class MeshFacesAreaEqualizeGoal(MeshGoal):
         self,
         eq_state: EquilibriumState,
         structure: EquilibriumMeshStructure,
-        index: Int[Array, "1"],
+        index: Int[Array, ""],
     ) -> Float[Array, ""]:
         """
         The variance of the face areas, normalized by their mean.

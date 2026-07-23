@@ -46,7 +46,7 @@ class NetworkXYZLaplacianGoal(NetworkGoal):
         self,
         eq_state: EquilibriumState,
         structure: EquilibriumStructure,
-        index: Int[Array, "1"],
+        index: Int[Array, ""],
     ) -> Float[Array, ""]:
         """
         The Laplacian energy of the network coordinates.
