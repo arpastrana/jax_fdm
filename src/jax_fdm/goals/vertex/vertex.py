@@ -1,3 +1,6 @@
+import numpy as np
+from jaxtyping import Int
+
 from jax_fdm.equilibrium import EquilibriumMeshStructure
 from jax_fdm.equilibrium import EquilibriumStructure
 from jax_fdm.goals.goal import Goal
@@ -10,12 +13,12 @@ class VertexGoal(Goal):
     The base class for goals defined on the vertices of a mesh.
     """
 
-    def index_from_structure(
+    def keys_from_structure(
         self,
         structure: EquilibriumStructure,
-    ) -> int | tuple[int, ...]:
+    ) -> Int[np.ndarray, "vertices"]:
         """
-        Resolve the goal's vertex key to an index in a structure.
+        The structure's vertex keys, the vocabulary a vertex goal resolves against.
 
         Parameters
         ----------
@@ -24,8 +27,8 @@ class VertexGoal(Goal):
 
         Returns
         -------
-        index :
-            The index, or tuple of indices, of the goal's vertex(es).
+        keys_canonical :
+            The mesh structure's vertex keys, one per vertex.
 
         Raises
         ------
@@ -39,4 +42,4 @@ class VertexGoal(Goal):
                 "Use its Node* counterpart on a network.",
             )
 
-        return self._index_from_key(structure.vertex_index)
+        return structure.vertices

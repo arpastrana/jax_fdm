@@ -270,14 +270,11 @@ class Optimizer:
 
         Notes
         -----
-        Goals are batched into collections and each collection is initialized once,
-        so the per-iteration objective avoids re-resolving goal indices.
+        Goals are batched into collections; each collection resolves its own index
+        against the structure inside the jitted objective, once at trace time.
         """
         for term in loss.terms_error:
-            goal_collections = collect_goals(term.goals)
-            for goal_collection in goal_collections:
-                goal_collection.init(model, structure)
-            term.collections = goal_collections
+            term.collections = collect_goals(term.goals)
 
     # ==========================================================================
     # Minimization

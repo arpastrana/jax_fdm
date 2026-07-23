@@ -10,6 +10,7 @@ from jax_fdm.datastructures import FDMesh
 from jax_fdm.datastructures import FDNetwork
 from jax_fdm.equilibrium.models import EquilibriumModel
 from jax_fdm.equilibrium.models import EquilibriumModelSparse
+from jax_fdm.equilibrium.states import DatastructureState
 from jax_fdm.equilibrium.states import EquilibriumParametersState
 from jax_fdm.equilibrium.states import EquilibriumState
 from jax_fdm.equilibrium.structures import EquilibriumMeshStructure
@@ -33,6 +34,7 @@ __all__ = [
     "structure_from_datastructure",
     "structure_from_network",
     "structure_from_mesh",
+    "datastructure_state",
     "datastructure_validate",
     "datastructure_updated",
     "datastructure_update",
@@ -83,6 +85,15 @@ def _fdm(
     -------
     datastructure :
         A copy of the input datastructure updated with the equilibrium state.
+
+    Notes
+    -----
+    The returned copy carries the model-aggregated node loads: each node's load
+    is the combined node, edge, and face tributary load at equilibrium. The
+    original edge and face loads are retained, so reading the parameters back off
+    the output and form-finding again redistributes those tributary loads a
+    second time. Solve from the original datastructure, never from an already
+    form-found one.
     """
     # compute static equilibrium
     eq_state = model(params, structure)
@@ -133,6 +144,13 @@ def fdm(
     -------
     datastructure :
         A copy of the input datastructure in static equilibrium.
+
+    Notes
+    -----
+    In the returned copy each node load is the model-aggregated tributary load
+    (node, edge, and face) at equilibrium, while the original edge and face loads
+    are retained. Form-finding the output again therefore redistributes those
+    tributary loads a second time; always solve from the original datastructure.
     """
     datastructure_validate(datastructure)
 
@@ -237,6 +255,11 @@ def constrained_fdm(
     -----
     Constraints are not yet supported for sparse inputs; passing constraints with
     ``sparse=True`` switches the solve to dense and prints a warning.
+
+    In the returned copy each node load is the model-aggregated tributary load
+    (node, edge, and face) at equilibrium, while the original edge and face loads
+    are retained. Form-finding the output again therefore redistributes those
+    tributary loads a second time; always solve from the original datastructure.
     """
     datastructure_validate(datastructure)
 
@@ -419,6 +442,52 @@ def structure_from_mesh(mesh: FDMesh, sparse: bool) -> EquilibriumMeshStructure:
     return structure.from_mesh(mesh)
 
 
+def datastructure_state(
+    datastructure: FDNetwork | FDMesh,
+    sparse: bool = True,
+) -> DatastructureState:
+    """
+    Read an equilibrium state off a datastructure without solving.
+
+    Parameters
+    ----------
+    datastructure :
+        The network or mesh to read geometry, force densities, and loads from.
+    sparse :
+        If True, build the sparse structure variant.
+
+    Returns
+    -------
+    equilibrium :
+        The equilibrium state, structure, and parameters. The state reflects the
+        datastructure's current geometry as-is; it is the input a goal or
+        constraint reads, not a form-found result.
+
+    Notes
+    -----
+    Bundles the structure and parameter state a goal or constraint needs to
+    evaluate against the high-level COMPAS layer, for quick prototyping without
+    running an optimization. The equilibrium state is read off the datastructure's
+    stored attributes, not recomputed, so it is only a genuine equilibrium once
+    the datastructure has been solved: run ``fdm`` (or ``constrained_fdm``) first.
+    The node loads are read back as-is; edge and face tributary loads are not
+    re-aggregated, since a form-found datastructure already carries them in its
+    node loads and re-aggregating would double-count.
+    """
+    structure = structure_from_datastructure(datastructure, sparse)
+    parameters = EquilibriumParametersState.from_datastructure(
+        datastructure,
+        dtype=DTYPE_JAX,
+    )
+    eq_state = EquilibriumState.from_datastructure(
+        datastructure,
+        structure,
+        dtype=DTYPE_JAX,
+    )
+
+    return DatastructureState(eq_state, structure, parameters)
+
+
 def datastructure_validate(datastructure: FDNetwork | FDMesh) -> None:
     """
     Assert that a datastructure is well-posed for form-finding.
@@ -477,6 +546,16 @@ def datastructure_updated(
     -------
     datastructure :
         A copy of the input datastructure with updated node and edge attributes.
+
+    Notes
+    -----
+    With the default ``use_loadsfromparams=False``, the node loads written to the
+    copy are the model-aggregated tributary loads (node, edge, and face) from the
+    equilibrium state, while the original edge and face loads are retained.
+    Reading the parameters back off the output and form-finding again therefore
+    redistributes those tributary loads a second time. Passing
+    ``use_loadsfromparams=True`` writes the raw node loads from ``params`` instead
+    and avoids the redistribution.
     """
     datastructure = datastructure.copy()
     datastructure_update(datastructure, eq_state, params, use_loadsfromparams)
@@ -503,6 +582,16 @@ def datastructure_update(
         The parameter state, used as the load source when requested.
     use_loadsfromparams :
         If True, take node loads from ``params`` instead of the equilibrium state.
+
+    Notes
+    -----
+    With the default ``use_loadsfromparams=False``, the node loads written are the
+    model-aggregated tributary loads (node, edge, and face) from the equilibrium
+    state, while the original edge and face loads are retained. Reading the
+    parameters back off the datastructure and form-finding again therefore
+    redistributes those tributary loads a second time. Passing
+    ``use_loadsfromparams=True`` writes the raw node loads from ``params`` instead
+    and avoids the redistribution.
     """
     # unpack equilibrium state
     xyz = eq_state.xyz.tolist()

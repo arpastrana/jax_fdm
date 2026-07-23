@@ -1,9 +1,7 @@
-import jax.numpy as jnp
 from jaxtyping import Array
 from jaxtyping import Float
 
 from jax_fdm.geometry import closest_point_on_line
-from jax_fdm.goals.goal import TargetLike
 from jax_fdm.goals.node.point import NodePointGoal
 
 __all__ = ["NodeLineGoal"]
@@ -12,18 +10,12 @@ __all__ = ["NodeLineGoal"]
 class NodeLineGoal(NodePointGoal):
     """
     Pull a node onto a target line, defined by two points.
+
+    Notes
+    -----
+    The target is the two points of the line, one ``(2, 3)`` array per element;
+    `tree_stack` adds the leading element axis when goals are grouped.
     """
-
-    @property
-    def target(self) -> Float[Array, "elements 2 3"]:
-        """
-        The two points defining the target line of each element.
-        """
-        return self._target
-
-    @target.setter
-    def target(self, target: TargetLike) -> None:
-        self._target = jnp.reshape(jnp.asarray(target), (-1, 2, 3))
 
     def goal(
         self,

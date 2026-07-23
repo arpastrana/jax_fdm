@@ -1,3 +1,6 @@
+import numpy as np
+from jaxtyping import Int
+
 from jax_fdm.equilibrium import EquilibriumMeshStructure
 from jax_fdm.equilibrium import EquilibriumStructure
 from jax_fdm.goals.goal import Goal
@@ -10,12 +13,12 @@ class NodeGoal(Goal):
     The base class for goals defined on the nodes of a network.
     """
 
-    def index_from_structure(
+    def keys_from_structure(
         self,
         structure: EquilibriumStructure,
-    ) -> int | tuple[int, ...]:
+    ) -> Int[np.ndarray, "nodes"]:
         """
-        Resolve the goal's node key to an index in a structure.
+        The structure's node keys, the vocabulary a node goal resolves against.
 
         Parameters
         ----------
@@ -24,8 +27,8 @@ class NodeGoal(Goal):
 
         Returns
         -------
-        index :
-            The index, or tuple of indices, of the goal's node(s).
+        keys_canonical :
+            The structure's node keys, one per node.
 
         Raises
         ------
@@ -39,4 +42,4 @@ class NodeGoal(Goal):
                 "Use its Vertex* counterpart on a mesh.",
             )
 
-        return self._index_from_key(structure.node_index)
+        return structure.nodes

@@ -180,12 +180,9 @@ class EquilibriumStructure(Graph):
         Inverts the free-then-fixed permutation: indexing a free-fixed-stacked
         array by this map restores the structure's native node order.
         """
-        freefixed = np.concatenate(
-            [
-                np.asarray(self.indices_free),
-                np.asarray(self.indices_fixed),
-            ],
-        )
+        free = np.asarray(self.indices_free)
+        fixed = np.asarray(self.indices_fixed)
+        freefixed = np.concatenate([free, fixed])
 
         # argsort of a permutation is its inverse
         return jnp.asarray(np.argsort(freefixed), dtype=DTYPE_INT_JAX)

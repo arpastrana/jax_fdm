@@ -4,6 +4,7 @@ from jaxtyping import Int
 
 from jax_fdm.constraints.node.node import NodeConstraint
 from jax_fdm.equilibrium import EquilibriumState
+from jax_fdm.equilibrium import EquilibriumStructure
 
 __all__ = [
     "NodeXCoordinateConstraint",
@@ -20,6 +21,7 @@ class NodeXCoordinateConstraint(NodeConstraint):
     def constraint(
         self,
         eq_state: EquilibriumState,
+        structure: EquilibriumStructure,
         index: Int[Array, ""],
     ) -> Float[Array, ""]:
         """
@@ -29,6 +31,8 @@ class NodeXCoordinateConstraint(NodeConstraint):
         ----------
         eq_state :
             The equilibrium state to read the coordinate from.
+        structure :
+            The structure the constraint is evaluated against; unused.
         index :
             The index of the node.
 
@@ -48,6 +52,7 @@ class NodeYCoordinateConstraint(NodeConstraint):
     def constraint(
         self,
         eq_state: EquilibriumState,
+        structure: EquilibriumStructure,
         index: Int[Array, ""],
     ) -> Float[Array, ""]:
         """
@@ -57,6 +62,8 @@ class NodeYCoordinateConstraint(NodeConstraint):
         ----------
         eq_state :
             The equilibrium state to read the coordinate from.
+        structure :
+            The structure the constraint is evaluated against; unused.
         index :
             The index of the node.
 
@@ -76,6 +83,7 @@ class NodeZCoordinateConstraint(NodeConstraint):
     def constraint(
         self,
         eq_state: EquilibriumState,
+        structure: EquilibriumStructure,
         index: Int[Array, ""],
     ) -> Float[Array, ""]:
         """
@@ -85,6 +93,8 @@ class NodeZCoordinateConstraint(NodeConstraint):
         ----------
         eq_state :
             The equilibrium state to read the coordinate from.
+        structure :
+            The structure the constraint is evaluated against; unused.
         index :
             The index of the node.
 

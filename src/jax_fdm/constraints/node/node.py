@@ -1,3 +1,6 @@
+import numpy as np
+from jaxtyping import Int
+
 from jax_fdm.constraints.constraint import Constraint
 from jax_fdm.equilibrium import EquilibriumMeshStructure
 from jax_fdm.equilibrium import EquilibriumStructure
@@ -10,12 +13,12 @@ class NodeConstraint(Constraint):
     The base class for constraints defined on the nodes of a network.
     """
 
-    def index_from_structure(
+    def keys_from_structure(
         self,
         structure: EquilibriumStructure,
-    ) -> int | tuple[int, ...]:
+    ) -> Int[np.ndarray, "nodes"]:
         """
-        Resolve the constraint's node key to an index in a structure.
+        The structure's node keys, the vocabulary a node constraint resolves against.
 
         Parameters
         ----------
@@ -24,8 +27,8 @@ class NodeConstraint(Constraint):
 
         Returns
         -------
-        index :
-            The index, or tuple of indices, of the constraint's node(s).
+        keys_canonical :
+            The structure's node keys, one per node.
 
         Raises
         ------
@@ -39,4 +42,4 @@ class NodeConstraint(Constraint):
                 "Use its Vertex* counterpart on a mesh.",
             )
 
-        return self._index_from_key(structure.node_index)
+        return structure.nodes

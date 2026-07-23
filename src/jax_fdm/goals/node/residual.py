@@ -6,10 +6,9 @@ from jaxtyping import Float
 from jaxtyping import Int
 
 from jax_fdm.equilibrium import EquilibriumState
+from jax_fdm.equilibrium import EquilibriumStructure
 from jax_fdm.geometry import length_vector
 from jax_fdm.geometry import normalize_vector
-from jax_fdm.goals.goal import ScalarGoal
-from jax_fdm.goals.goal import VectorGoal
 from jax_fdm.goals.node.node import NodeGoal
 
 __all__ = [
@@ -20,7 +19,7 @@ __all__ = [
 ]
 
 
-class NodeResidualForceGoal(ScalarGoal, NodeGoal):
+class NodeResidualForceGoal(NodeGoal):
     """
     Drive the residual force magnitude at a node toward a target value.
     """
@@ -28,8 +27,9 @@ class NodeResidualForceGoal(ScalarGoal, NodeGoal):
     def prediction(
         self,
         eq_state: EquilibriumState,
+        structure: EquilibriumStructure,
         index: Int[Array, ""],
-    ) -> Float[Array, "1"]:
+    ) -> Float[Array, ""]:
         """
         The magnitude of the residual force at the node.
 
@@ -37,6 +37,8 @@ class NodeResidualForceGoal(ScalarGoal, NodeGoal):
         ----------
         eq_state :
             The equilibrium state to read the residual from.
+        structure :
+            The structure the goal is evaluated against; unused.
         index :
             The index of the node.
 
@@ -47,10 +49,10 @@ class NodeResidualForceGoal(ScalarGoal, NodeGoal):
         """
         residual = eq_state.residuals[index, :]
 
-        return length_vector(residual)
+        return length_vector(residual)[0]
 
 
-class NodeResidualVectorGoal(VectorGoal, NodeGoal):
+class NodeResidualVectorGoal(NodeGoal):
     """
     Drive the residual force at a node toward a target vector.
     """
@@ -58,6 +60,7 @@ class NodeResidualVectorGoal(VectorGoal, NodeGoal):
     def prediction(
         self,
         eq_state: EquilibriumState,
+        structure: EquilibriumStructure,
         index: Int[Array, ""],
     ) -> Float[Array, "3"]:
         """
@@ -67,6 +70,8 @@ class NodeResidualVectorGoal(VectorGoal, NodeGoal):
         ----------
         eq_state :
             The equilibrium state to read the residual from.
+        structure :
+            The structure the goal is evaluated against; unused.
         index :
             The index of the node.
 
@@ -78,7 +83,7 @@ class NodeResidualVectorGoal(VectorGoal, NodeGoal):
         return eq_state.residuals[index, :]
 
 
-class NodeResidualDirectionGoal(VectorGoal, NodeGoal):
+class NodeResidualDirectionGoal(NodeGoal):
     """
     Drive the residual force at a node toward a target direction.
 
@@ -93,6 +98,7 @@ class NodeResidualDirectionGoal(VectorGoal, NodeGoal):
     def prediction(
         self,
         eq_state: EquilibriumState,
+        structure: EquilibriumStructure,
         index: Int[Array, ""],
     ) -> Float[Array, "3"]:
         """
@@ -102,6 +108,8 @@ class NodeResidualDirectionGoal(VectorGoal, NodeGoal):
         ----------
         eq_state :
             The equilibrium state to read the residual from.
+        structure :
+            The structure the goal is evaluated against; unused.
         index :
             The index of the node.
 
@@ -137,7 +145,7 @@ class NodeResidualDirectionGoal(VectorGoal, NodeGoal):
         return normalize_vector(target)
 
 
-class NodeResidualPlaneGoal(VectorGoal, NodeGoal):
+class NodeResidualPlaneGoal(NodeGoal):
     """
     Drive the residual vector at a node to lie in a target plane.
 
@@ -162,6 +170,7 @@ class NodeResidualPlaneGoal(VectorGoal, NodeGoal):
     def prediction(
         self,
         eq_state: EquilibriumState,
+        structure: EquilibriumStructure,
         index: Int[Array, ""],
     ) -> Float[Array, "3"]:
         """
@@ -171,6 +180,8 @@ class NodeResidualPlaneGoal(VectorGoal, NodeGoal):
         ----------
         eq_state :
             The equilibrium state to read the residual from.
+        structure :
+            The structure the goal is evaluated against; unused.
         index :
             The index of the node.
 

@@ -1,3 +1,6 @@
+import numpy as np
+from jaxtyping import Int
+
 from jax_fdm.constraints.constraint import Constraint
 from jax_fdm.equilibrium import EquilibriumMeshStructure
 from jax_fdm.equilibrium import EquilibriumStructure
@@ -10,12 +13,12 @@ class VertexConstraint(Constraint):
     The base class for constraints defined on the vertices of a mesh.
     """
 
-    def index_from_structure(
+    def keys_from_structure(
         self,
         structure: EquilibriumStructure,
-    ) -> int | tuple[int, ...]:
+    ) -> Int[np.ndarray, "vertices"]:
         """
-        Resolve the constraint's vertex key to an index in a structure.
+        The structure's vertex keys, the vocabulary a vertex constraint resolves.
 
         Parameters
         ----------
@@ -24,8 +27,8 @@ class VertexConstraint(Constraint):
 
         Returns
         -------
-        index :
-            The index, or tuple of indices, of the constraint's vertex(es).
+        keys_canonical :
+            The structure's vertex keys, one per vertex.
 
         Raises
         ------
@@ -39,4 +42,4 @@ class VertexConstraint(Constraint):
                 "Use its Node* counterpart on a network.",
             )
 
-        return self._index_from_key(structure.vertex_index)
+        return structure.vertices

@@ -8,12 +8,14 @@ from jaxtyping import Float
 from jax_fdm import DTYPE_JAX
 from jax_fdm.datastructures import FDMesh
 from jax_fdm.datastructures import FDNetwork
+from jax_fdm.equilibrium.structures import EquilibriumStructure
 
 # ==========================================================================
 # Equilibrium state
 # ==========================================================================
 
 __all__ = [
+    "DatastructureState",
     "EquilibriumParametersState",
     "EquilibriumState",
     "LoadState",
@@ -46,6 +48,80 @@ class EquilibriumState(NamedTuple):
     forces: Float[Array, "edges 1"]
     loads: Float[Array, "nodes 3"]
     vectors: Float[Array, "edges 3"]
+
+    @classmethod
+    def from_datastructure(
+        cls,
+        datastructure: FDNetwork | FDMesh,
+        structure: EquilibriumStructure,
+        dtype: DTypeLike | None = None,
+    ) -> "EquilibriumState":
+        """
+        Read an equilibrium state off a datastructure's stored attributes.
+
+        Parameters
+        ----------
+        datastructure :
+            The network or mesh to read coordinates, residuals, lengths, forces,
+            and loads from.
+        structure :
+            The structure whose connectivity derives the edge vectors, the one
+            state field the datastructure does not store.
+        dtype :
+            The floating-point dtype for the state arrays. If None, uses
+            ``DTYPE_JAX``.
+
+        Returns
+        -------
+        eq_state :
+            The equilibrium state mirroring the datastructure's attributes.
+
+        Raises
+        ------
+        ValueError
+            If the datastructure is neither a network nor a mesh.
+
+        Notes
+        -----
+        The state is read as-is, without form-finding: every field but the edge
+        vectors comes straight from a stored attribute, so it is only a genuine
+        equilibrium once the datastructure has been solved. Run ``fdm`` (or
+        ``constrained_fdm``) on the datastructure first; on a fresh, never-solved
+        input the lengths, forces, and residuals default to zero. The edge
+        vectors are derived as ``connectivity @ xyz`` since the datastructure
+        never persists them.
+        """
+        if dtype is None:
+            dtype = DTYPE_JAX
+
+        if isinstance(datastructure, FDNetwork):
+            xyz = datastructure.nodes_coordinates()
+            residuals = datastructure.nodes_residual()
+            loads = datastructure.nodes_loads()
+        elif isinstance(datastructure, FDMesh):
+            xyz = datastructure.vertices_coordinates()
+            residuals = datastructure.vertices_residual()
+            loads = datastructure.vertices_loads()
+        else:
+            raise ValueError(f"Input datastructure {datastructure} is invalid")
+
+        xyz = jnp.asarray(xyz, dtype)
+        vectors = structure.connectivity @ xyz
+
+        lengths = jnp.asarray(datastructure.edges_lengths(), dtype)
+        lengths = jnp.reshape(lengths, (-1, 1))
+
+        forces = jnp.asarray(datastructure.edges_forces(), dtype)
+        forces = jnp.reshape(forces, (-1, 1))
+
+        return cls(
+            xyz=xyz,
+            residuals=jnp.asarray(residuals, dtype),
+            lengths=lengths,
+            forces=forces,
+            loads=jnp.asarray(loads, dtype),
+            vectors=vectors,
+        )
 
 
 # ==========================================================================
@@ -186,3 +262,28 @@ class EquilibriumParametersState(NamedTuple):
             xyz_fixed=jnp.asarray(xyz_fixed, dtype),
             loads=LoadState.from_datastructure(datastructure),
         )
+
+
+# ==========================================================================
+# State bundled from a datastructure
+# ==========================================================================
+
+
+class DatastructureState(NamedTuple):
+    """
+    The equilibrium of a datastructure and the objects read off it.
+
+    Attributes
+    ----------
+    eq_state :
+        The equilibrium state read off the datastructure as-is, without solving.
+    structure :
+        The structure carrying the connectivity the state was assembled on.
+    parameters :
+        The force densities, fixed coordinates, and loads read off the
+        datastructure.
+    """
+
+    eq_state: EquilibriumState
+    structure: EquilibriumStructure
+    parameters: EquilibriumParametersState
