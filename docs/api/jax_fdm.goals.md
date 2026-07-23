@@ -11,8 +11,6 @@ Goals are collected into an error term of a [loss function](jax_fdm.losses.md).
       heading_level: 3
       members:
         - Goal
-        - ScalarGoal
-        - VectorGoal
         - GoalState
 
 ---

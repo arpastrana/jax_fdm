@@ -1,11 +1,13 @@
+from collections.abc import Sequence
+
 import jax.numpy as jnp
 from jaxtyping import Array
 from jaxtyping import Float
 from jaxtyping import Int
 
 from jax_fdm.equilibrium import EquilibriumState
+from jax_fdm.equilibrium import EquilibriumStructure
 from jax_fdm.goals.edge.edge import EdgeGoal
-from jax_fdm.goals.goal import ScalarGoal
 
 __all__ = [
     "EdgeForceGoal",
@@ -13,7 +15,7 @@ __all__ = [
 ]
 
 
-class EdgeForceGoal(ScalarGoal, EdgeGoal):
+class EdgeForceGoal(EdgeGoal):
     """
     Drive an edge toward a target internal force.
     """
@@ -21,8 +23,9 @@ class EdgeForceGoal(ScalarGoal, EdgeGoal):
     def prediction(
         self,
         eq_state: EquilibriumState,
+        structure: EquilibriumStructure,
         index: Int[Array, ""],
-    ) -> Float[Array, "1"]:
+    ) -> Float[Array, ""]:
         """
         The current internal force in the edge.
 
@@ -30,6 +33,8 @@ class EdgeForceGoal(ScalarGoal, EdgeGoal):
         ----------
         eq_state :
             The equilibrium state to read the force from.
+        structure :
+            The structure the goal is evaluated against; unused.
         index :
             The index of the edge.
 
@@ -38,10 +43,10 @@ class EdgeForceGoal(ScalarGoal, EdgeGoal):
         prediction :
             The edge's internal force, signed positive in tension.
         """
-        return eq_state.forces[index]
+        return eq_state.forces[index, 0]
 
 
-class EdgesForceEqualGoal(ScalarGoal, EdgeGoal):
+class EdgesForceEqualGoal(EdgeGoal):
     """
     Equalize the internal forces of a selection of edges.
 
@@ -53,12 +58,13 @@ class EdgesForceEqualGoal(ScalarGoal, EdgeGoal):
 
     is_aggregate = True
 
-    def __init__(self, key: list[tuple[int, int]], weight: float = 1.0) -> None:
+    def __init__(self, key: Sequence[tuple[int, int]], weight: float = 1.0) -> None:
         super().__init__(key=key, target=0.0, weight=weight)
 
     def prediction(
         self,
         eq_state: EquilibriumState,
+        structure: EquilibriumStructure,
         index: Int[Array, "elements"],
     ) -> Float[Array, ""]:
         """
@@ -68,6 +74,8 @@ class EdgesForceEqualGoal(ScalarGoal, EdgeGoal):
         ----------
         eq_state :
             The equilibrium state to read the forces from.
+        structure :
+            The structure the goal is evaluated against; unused.
         index :
             The indices of the edges.
 

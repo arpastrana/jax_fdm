@@ -20,4 +20,4 @@ class MeshLoadPathGoal(NetworkLoadPathGoal):
         target: TargetLike = 0.0,
         weight: float = 1.0,
     ) -> None:
-        super().__init__(key=-1, target=target, weight=weight)
+        super().__init__(target=target, weight=weight)

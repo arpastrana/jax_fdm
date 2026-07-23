@@ -106,7 +106,9 @@ class LossPlotter:
         errors_all: dict[str, Float[Array, "iterations"]] = {}
 
         for error_term in self.loss.terms_error:
-            errors = vmap(error_term)(eq_states)
+            # structure is held out of the vmap (in_axes=None): it carries the
+            # element ordering each goal resolves against, not a batched operand.
+            errors = vmap(error_term, in_axes=(0, None))(eq_states, self.structure)
             errors_all[error_term.name] = errors
 
         for reg_term in self.loss.terms_regularization:

@@ -5,6 +5,7 @@ from jaxtyping import Int
 
 from jax_fdm.constraints.network.network import NetworkConstraint
 from jax_fdm.equilibrium import EquilibriumState
+from jax_fdm.equilibrium import EquilibriumStructure
 
 __all__ = ["NetworkEdgesLengthConstraint"]
 
@@ -17,6 +18,7 @@ class NetworkEdgesLengthConstraint(NetworkConstraint):
     def constraint(
         self,
         eq_state: EquilibriumState,
+        structure: EquilibriumStructure,
         index: Int[Array, ""],
     ) -> Float[Array, "edges"]:
         """
@@ -26,6 +28,8 @@ class NetworkEdgesLengthConstraint(NetworkConstraint):
         ----------
         eq_state :
             The equilibrium state to read the lengths from.
+        structure :
+            The structure the constraint is evaluated against; unused.
         index :
             The sentinel index, unused.
 

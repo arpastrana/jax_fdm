@@ -1,3 +1,6 @@
+import numpy as np
+from jaxtyping import Int
+
 from jax_fdm.constraints.constraint import Constraint
 from jax_fdm.equilibrium import EquilibriumStructure
 
@@ -9,12 +12,12 @@ class EdgeConstraint(Constraint):
     The base class for constraints defined on the edges of a network.
     """
 
-    def index_from_structure(
+    def keys_from_structure(
         self,
         structure: EquilibriumStructure,
-    ) -> int | tuple[int, ...]:
+    ) -> Int[np.ndarray, "edges 2"]:
         """
-        Resolve the constraint's edge key to an index in a structure.
+        The structure's edge keys, the vocabulary an edge constraint resolves against.
 
         Parameters
         ----------
@@ -23,7 +26,7 @@ class EdgeConstraint(Constraint):
 
         Returns
         -------
-        index :
-            The index, or tuple of indices, of the constraint's edge(s).
+        keys_canonical :
+            The structure's edge key pairs, one row per edge.
         """
-        return self._index_from_key(structure.edge_index)
+        return structure.edges

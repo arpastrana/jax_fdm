@@ -58,16 +58,17 @@ def test_collected_rectangle_goals_match_individual_predictions(skewed_mesh_stat
 
     goals = [FaceRectangularGoal(fkey) for fkey in fkeys]
     (collection,) = collect_goals(goals)
-    collection.init(model, structure)
 
-    goal_state = collection(eqstate)
+    # a collection is a stacked goal, evaluated the equinox way: vmap the
+    # single-element goal over its leading element axis
+    goal_state = jax.vmap(lambda g: g(eqstate, structure))(collection)
 
     predictions_individual = []
     for fkey in fkeys:
         goal = FaceRectangularGoal(fkey)
-        goal.init(model, structure)
-        predictions_individual.append(goal(eqstate).prediction)
-    predictions_individual = jnp.concatenate(predictions_individual)
+        # a lone goal returns the raw () rectangularity measure
+        predictions_individual.append(goal(eqstate, structure).prediction)
+    predictions_individual = jnp.stack(predictions_individual)
 
     assert goal_state.prediction.shape == predictions_individual.shape
     assert jnp.allclose(goal_state.prediction, predictions_individual)
@@ -84,13 +85,12 @@ def test_collected_rectangle_goal_gradient_stays_per_face(skewed_mesh_state):
     fkeys = list(mesh.faces())[:2]
 
     (collection,) = collect_goals([FaceRectangularGoal(fkey) for fkey in fkeys])
-    collection.init(model, structure)
 
-    for index in collection.index.ravel():
+    for index in collection.index(structure).ravel():
 
         def prediction_of_xyz(xyz, index=int(index)):
             eq_state = eqstate._replace(xyz=xyz)
-            return collection.prediction(eq_state, jnp.asarray(index))
+            return collection.prediction(eq_state, structure, jnp.asarray(index))
 
         grad_xyz = jax.jit(jax.grad(prediction_of_xyz))(eqstate.xyz)
         rows_hit = {int(r) for r in jnp.flatnonzero(jnp.any(grad_xyz != 0.0, axis=1))}

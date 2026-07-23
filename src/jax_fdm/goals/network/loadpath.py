@@ -4,13 +4,13 @@ from jaxtyping import Float
 from jaxtyping import Int
 
 from jax_fdm.equilibrium import EquilibriumState
-from jax_fdm.goals.goal import ScalarGoal
+from jax_fdm.equilibrium import EquilibriumStructure
 from jax_fdm.goals.network.network import NetworkGoal
 
 __all__ = ["NetworkLoadPathGoal"]
 
 
-class NetworkLoadPathGoal(ScalarGoal, NetworkGoal):
+class NetworkLoadPathGoal(NetworkGoal):
     """
     Drive the total load path of a network toward a target magnitude.
 
@@ -23,7 +23,8 @@ class NetworkLoadPathGoal(ScalarGoal, NetworkGoal):
     def prediction(
         self,
         eq_state: EquilibriumState,
-        index: Int[Array, "1"],
+        structure: EquilibriumStructure,
+        index: Int[Array, ""],
     ) -> Float[Array, ""]:
         """
         The total load path of the network.
@@ -32,6 +33,8 @@ class NetworkLoadPathGoal(ScalarGoal, NetworkGoal):
         ----------
         eq_state :
             The equilibrium state to read edge forces and lengths from.
+        structure :
+            The structure the goal is evaluated against; unused.
         index :
             The sentinel index, unused.
 

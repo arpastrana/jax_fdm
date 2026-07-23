@@ -44,19 +44,17 @@ upper limit during constrained form-finding with
     options:
       heading_level: 3
 
-::: jax_fdm.constraints.node.curvature.NodeCurvatureConstraint
-    options:
-      heading_level: 3
-
 ---
 
 ## Vertex constraints
 
-Vertex constraints are thin counterparts of the node constraints above: the
-constraint logic is inherited unchanged, while keys resolve against the
+Most vertex constraints are thin counterparts of the node constraints above:
+the constraint logic is inherited unchanged, while keys resolve against the
 vertices of a mesh instead of the nodes of a network. Applying one to a
 network raises a `TypeError` pointing to the `Node*` counterpart, and vice
-versa.
+versa. `VertexCurvatureConstraint` is mesh only and has no node counterpart:
+its angle-deficit curvature needs the ordered neighbor ring that a mesh's face
+winding supplies and a plain network lacks.
 
 ::: jax_fdm.constraints.vertex.coordinates.VertexXCoordinateConstraint
     options:

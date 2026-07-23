@@ -1,9 +1,7 @@
-import jax.numpy as jnp
 from jaxtyping import Array
 from jaxtyping import Float
 
 from jax_fdm.geometry import closest_point_on_plane
-from jax_fdm.goals.goal import TargetLike
 from jax_fdm.goals.node.point import NodePointGoal
 
 __all__ = ["NodePlaneGoal"]
@@ -12,18 +10,12 @@ __all__ = ["NodePlaneGoal"]
 class NodePlaneGoal(NodePointGoal):
     """
     Pull a node onto a target plane, defined by a point and a normal.
+
+    Notes
+    -----
+    The target is the plane's origin and normal, one ``(2, 3)`` array per
+    element; `tree_stack` adds the leading element axis when goals are grouped.
     """
-
-    @property
-    def target(self) -> Float[Array, "elements 2 3"]:
-        """
-        The origin and normal defining the target plane of each element.
-        """
-        return self._target
-
-    @target.setter
-    def target(self, target: TargetLike) -> None:
-        self._target = jnp.reshape(jnp.asarray(target), (-1, 2, 3))
 
     def goal(
         self,

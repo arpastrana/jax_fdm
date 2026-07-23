@@ -1,10 +1,15 @@
 from collections.abc import Sequence
 
 import jax.numpy as jnp
+from jax import vmap
 from jaxtyping import Array
 from jaxtyping import Float
 
+from jax_fdm.datastructures import FDMesh
+from jax_fdm.datastructures import FDNetwork
 from jax_fdm.equilibrium import EquilibriumState
+from jax_fdm.equilibrium import EquilibriumStructure
+from jax_fdm.equilibrium import datastructure_state
 from jax_fdm.goals import Goal
 from jax_fdm.goals import GoalState
 
@@ -40,8 +45,10 @@ class Error:
 
     Notes
     -----
-    Goals are grouped into collections in ``collections``; the term evaluates one
-    error per collection and aggregates them via `errors`.
+    Goals are grouped into collections in ``collections``: one collection per goal
+    type, its leaves carrying a leading element axis. A goal maps one element to
+    one error, so the term `vmap`s that per-element error over a collection, sums
+    the mapped result, and aggregates one such sum per collection via `errors`.
     """
 
     def __init__(
@@ -90,7 +97,11 @@ class Error:
         """
         return jnp.sum(errors)
 
-    def __call__(self, eqstate: EquilibriumState) -> Float[Array, ""]:
+    def __call__(
+        self,
+        eqstate: EquilibriumState,
+        structure: EquilibriumStructure,
+    ) -> Float[Array, ""]:
         """
         Evaluate the error term against an equilibrium state.
 
@@ -98,19 +109,95 @@ class Error:
         ----------
         eqstate :
             The equilibrium state to evaluate the goals on.
+        structure :
+            The structure whose element ordering resolves the goals' indices.
 
         Returns
         -------
         error :
             The aggregated error scaled by ``alpha``.
+
+        Notes
+        -----
+        A goal maps one element to one goal state, so each collection is reduced
+        the equinox way: `vmap` the per-element error over the collection's leading
+        axis and sum the mapped scalars, exactly as one maps any module over a
+        batch. The weight, one scalar per element, broadcasts against the
+        prediction at each element, so no rank alignment is needed. This is the
+        same per-element reduction as `evaluate_state`, over the batched
+        collections rather than the raw goals.
         """
         errors = []
-        for goal_collection in self.collections:
-            gstate = goal_collection(eqstate)
-            error = self.error(gstate)
-            errors.append(error)
+        for collection in self.collections:
+            per_element = vmap(lambda g: self.error(g(eqstate, structure)))(collection)
+            errors.append(jnp.sum(per_element))
 
-        return self.errors(jnp.array(errors)) * self.alpha
+        return self.errors(jnp.asarray(errors)) * self.alpha
+
+    def evaluate(
+        self,
+        datastructure: FDNetwork | FDMesh,
+        sparse: bool = True,
+    ) -> Float[Array, ""]:
+        """
+        Evaluate the error term directly on a datastructure, without an optimization.
+
+        Parameters
+        ----------
+        datastructure :
+            The network or mesh to read the equilibrium state from. Its geometry
+            is used as-is; no form-finding is run.
+        sparse :
+            If True, assemble the equilibrium state with the sparse model.
+
+        Returns
+        -------
+        error :
+            The aggregated error scaled by ``alpha``.
+
+        Notes
+        -----
+        Evaluates the term's raw goals one by one, rather than the collections
+        the optimizer batches them into, so it works before ``constrained_fdm``
+        has grouped them. The goal count is unchanged, so a mean-style term
+        divides by the same number of goals it would during an optimization.
+        """
+        equilibrium = datastructure_state(datastructure, sparse)
+
+        return self.evaluate_state(equilibrium.eq_state, equilibrium.structure)
+
+    def evaluate_state(
+        self,
+        eqstate: EquilibriumState,
+        structure: EquilibriumStructure,
+    ) -> Float[Array, ""]:
+        """
+        Evaluate the error term's raw goals on a precomputed equilibrium state.
+
+        Parameters
+        ----------
+        eqstate :
+            The equilibrium state to evaluate the goals on.
+        structure :
+            The structure whose element ordering resolves the goals' indices.
+
+        Returns
+        -------
+        error :
+            The aggregated error scaled by ``alpha``.
+
+        Notes
+        -----
+        The state-consuming core shared by `evaluate` and `Loss.evaluate`. It
+        evaluates the term's raw goals as singletons rather than the collections
+        the optimizer batches them into. A lone goal's `__call__` already returns
+        an unbatched state whose scalar weight broadcasts against the prediction,
+        and the error kernels sum over every axis, so a raw goal state feeds them
+        directly without the collection's `(elements, features)` formatting.
+        """
+        errors = [self.error(goal(eqstate, structure)) for goal in self.goals]
+
+        return self.errors(jnp.asarray(errors)) * self.alpha
 
     def number_of_goals(self) -> int:
         """

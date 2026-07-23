@@ -1,44 +1,148 @@
 from collections.abc import Sequence
-from typing import Any
+from typing import ClassVar
 from typing import TypeAlias
 
+import equinox as eqx
 import jax.numpy as jnp
 import numpy as np
-from jax import vmap
 from jaxtyping import Array
 from jaxtyping import Float
 from jaxtyping import Int
 
+from jax_fdm import DTYPE_INT_JAX
 from jax_fdm import DTYPE_JAX
-from jax_fdm.equilibrium import EquilibriumModel
+from jax_fdm.datastructures import FDMesh
+from jax_fdm.datastructures import FDNetwork
 from jax_fdm.equilibrium import EquilibriumState
 from jax_fdm.equilibrium import EquilibriumStructure
+from jax_fdm.equilibrium import datastructure_state
+from jax_fdm.equilibrium import indices_from_keys
 from jax_fdm.goals.state import GoalState
 
-__all__ = ["Goal", "ScalarGoal", "VectorGoal"]
+__all__ = ["Goal", "as_key", "as_target"]
 
-# What the target setters accept: a scalar, an existing array, or any nesting
-# of float sequences (the setters run the input through jnp.asarray + reshape).
-# COMPAS geometry objects are deliberately excluded; convert them to plain
-# lists at the call site.
+# What the target converters accept: a scalar, an existing array, or any nesting
+# of float sequences (the converters run the input through jnp.asarray). COMPAS
+# geometry objects are deliberately excluded; convert them to plain lists at the
+# call site.
 TargetLike: TypeAlias = (
     float | Float[Array, "..."] | Sequence[float] | Sequence[Sequence[float]]
 )
+
+# A goal's key: one element key (a node/vertex/face int, or an edge (u, v) pair),
+# or a sequence of them for an aggregate goal. Aggregate keys are any sequence,
+# a list or a tuple alike, since a single edge key is itself a two-int tuple and
+# the aggregate-vs-single distinction is the goal's is_aggregate flag, never the
+# key's Python type.
+KeyLike: TypeAlias = int | tuple[int, int] | Sequence[int] | Sequence[tuple[int, int]]
+
+
+def as_target(target: TargetLike) -> Float[Array, "..."]:
+    """
+    Coerce a goal's target to a JAX array.
+
+    Parameters
+    ----------
+    target :
+        The target value: a scalar, an xyz vector, or an arbitrary per-element
+        array.
+
+    Returns
+    -------
+    target :
+        The target as a JAX array, its shape unchanged.
+
+    Notes
+    -----
+    A single converter for every goal, so the field type it feeds the pytree is
+    uniform. A goal holds one element's value, unbatched: a collection stacks
+    same-type goals along a new leading axis at `tree_stack`. A goal's target
+    shape (a scalar, an xyz vector, or an arbitrary array) is whatever its
+    `prediction` returns; the only invariant, that the goal and prediction shapes
+    agree, is checked at evaluation, not coerced here.
+    """
+    return jnp.asarray(target, dtype=DTYPE_JAX)
+
+
+def as_weight(weight: float | Float[Array, "..."]) -> Float[Array, "..."]:
+    """
+    Coerce a goal's weight to a JAX array.
+
+    Parameters
+    ----------
+    weight :
+        The importance of the goal.
+
+    Returns
+    -------
+    weight :
+        The scalar weight as a JAX array.
+
+    Notes
+    -----
+    A weight is one scalar per element, stored unbatched like the goal's other
+    leaves. The error term composes it with the prediction, so it is the error
+    term, not this converter, that lifts the weight to the prediction's rank and
+    broadcasts it down the feature axis.
+    """
+    return jnp.asarray(weight, dtype=DTYPE_JAX)
+
+
+def as_key(key: KeyLike) -> Int[Array, "..."]:
+    """
+    Coerce a goal's key to a JAX array.
+
+    Parameters
+    ----------
+    key :
+        The element key of a per-element goal (a node/vertex/face int, or an
+        edge (u, v) pair), or the sequence of keys an aggregate goal reduces
+        over (a list or a tuple alike, or the ``-1`` whole-structure sentinel).
+
+    Returns
+    -------
+    key :
+        The key as a JAX integer array, its shape unchanged from the input: one
+        element's key for a per-element goal, the whole selection for an
+        aggregate.
+
+    Notes
+    -----
+    One converter for every goal, so the field it feeds the pytree is uniform
+    and no goal declares its own: an author sets `is_aggregate` and inherits the
+    base key field unchanged. The per-element-vs-aggregate distinction is that
+    flag alone, never the key's Python type, so this converter neither knows nor
+    needs to know which it is coercing.
+
+    The key is a dynamic array leaf, not a static field. Two goals of one type
+    differing only in their key then share a pytree structure, so `tree_stack`
+    groups them by stacking leaves along a new leading axis. The key stays a
+    compile-time constant (a goal is closed over, never an argument to the jitted
+    step), so resolving it against the structure's canonical ordering is a
+    trace-time constant fold.
+
+    An off-contract key is left to fail on its own terms: a one-shot iterator
+    is not a valid JAX array type and `jnp.asarray` rejects it here, before any
+    tree flatten; a list handed to a per-element goal stores cleanly but trips a
+    `vmap` size mismatch at evaluation, once the element count is known.
+    """
+    return jnp.asarray(key, dtype=DTYPE_INT_JAX)
+
 
 # ==========================================================================
 # Base goal
 # ==========================================================================
 
 
-class Goal:
+class Goal(eqx.Module):
     """
     The base class for all goals, targets an equilibrium quantity reaches.
 
-    Parameters
+    Attributes
     ----------
     key :
-        The key of the element the goal acts on; a list of keys only for
-        aggregate goals.
+        The key of the element the goal acts on; a sequence of keys (a list or
+        a tuple) only for aggregate goals.
     target :
         The value the goal drives its quantity of interest toward.
     weight :
@@ -46,11 +150,15 @@ class Goal:
 
     Notes
     -----
-    A goal is initialized in two phases: construction stores the key, target, and
-    weight, then `init` resolves the key to an index against an equilibrium
-    structure before any prediction runs. Subclasses supply the quantity of
-    interest via `prediction` and mix in [ScalarGoal][jax_fdm.goals.goal.ScalarGoal]
-    or [VectorGoal][jax_fdm.goals.goal.VectorGoal] for the target's shape.
+    A goal is a registered JAX pytree (an equinox Module): its `key`, `target`,
+    and `weight` are dynamic array leaves. Construction stores one element's
+    values unbatched, so a goal is a single-element object; a collection stacks
+    same-type goals along a new leading axis and the error term `vmap`s the goal
+    over it. The key is resolved to an index against an equilibrium structure at
+    evaluation time. Subclasses supply the quantity of interest via `prediction`;
+    the target's shape is whatever that prediction returns (a scalar, an xyz
+    vector, or an arbitrary per-element array), and `__call__` checks the two
+    agree.
 
     A per-element goal takes exactly one element key; to act on many elements,
     create one goal per element and let collections vectorize them. Only
@@ -58,99 +166,17 @@ class Goal:
     keys.
     """
 
+    key: Int[Array, "..."] = eqx.field(converter=as_key)  # pyright: ignore[reportAssignmentType]
+    target: Float[Array, "..."] = eqx.field(converter=as_target)
+    weight: Float[Array, "..."] = eqx.field(converter=as_weight, default=1.0)  # pyright: ignore[reportAssignmentType]
+
     # An aggregate goal reduces over many elements (a key list, or the whole
-    # structure) in one prediction call: init feeds vmap the index row
-    # unsplit, and the goal is never grouped with same-type peers into a
-    # vectorized collection since it is already a batch of its own.
-    is_aggregate: bool = False
-
-    def __init__(
-        self,
-        key: int | tuple[int, int] | list[int] | list[tuple[int, int]],
-        target: TargetLike,
-        weight: float | Float[Array, "..."] = 1.0,
-    ) -> None:
-        self._key: int | tuple[int, int] | list[int] | list[tuple[int, int]] | None = (
-            None
-        )
-        self._weight: Float[Array, "elements 1"]
-        self._target: Float[Array, "..."]
-        # set in init() from the equilibrium structure, before any prediction runs
-        self._index: Int[np.ndarray, "elements"]
-
-        self.key = key
-        self.weight = weight
-        self.target = target
-
-    @property
-    def key(self) -> int | tuple[int, int] | list[int] | list[tuple[int, int]] | None:
-        """
-        The key of an element in a network.
-        """
-        return self._key
-
-    @key.setter
-    def key(
-        self,
-        key: int | tuple[int, int] | list[int] | list[tuple[int, int]],
-    ) -> None:
-        # A single-goal Collection re-wraps an already-list key as [[...]] when
-        # it reconstructs the goal; unwrap that extra nesting so an aggregate
-        # goal (e.g. NodesColinearGoal) keeps its flat list of element keys.
-        if isinstance(key, list) and len(key) == 1 and isinstance(key[0], list):
-            key = key[0]
-        if isinstance(key, list):
-            if not key:
-                raise ValueError(
-                    f"{type(self).__name__} got an empty key list. "
-                    "Pass at least one element key.",
-                )
-            if not self.is_aggregate and not getattr(self, "_iscollection", False):
-                raise TypeError(
-                    f"{type(self).__name__} takes a single element key, got a "
-                    f"list of {len(key)}. Create one goal per element "
-                    "(collections vectorize same-type goals automatically), or "
-                    "use an aggregate goal for group quantities.",
-                )
-        self._key = key
-
-    @property
-    def index(self) -> Int[np.ndarray, "elements"]:
-        """
-        The index of the goal key in the canonical ordering of a structure.
-        """
-        return self._index
-
-    @index.setter
-    def index(self, index: int | tuple[int, ...] | Int[np.ndarray, "elements"]) -> None:
-        if isinstance(index, int):
-            index = (index,)
-        self._index = np.asarray(index)
-
-    @property
-    def weight(self) -> Float[Array, "elements 1"]:
-        """
-        The importance of the goal.
-        """
-        return self._weight
-
-    @weight.setter
-    def weight(self, weight: float | Float[Array, "..."]) -> None:
-        self._weight = jnp.reshape(jnp.asarray(weight, dtype=DTYPE_JAX), (-1, 1))
-
-    @property
-    def target(self) -> Float[Array, "..."]:
-        """
-        The target to achieve.
-        """
-        raise NotImplementedError
-
-    @target.setter
-    def target(self, target: TargetLike) -> None:
-        # Concrete goals provide the setter via the ScalarGoal / VectorGoal
-        # mixins; the base only declares the contract so that Goal.__init__ can
-        # assign self.target without tripping a read-only property.
-        raise NotImplementedError
+    # structure) in one prediction call: its key is the whole list, resolved to a
+    # whole index row that one prediction reads, and the goal is never grouped
+    # with same-type peers into a vectorized collection since it is already a
+    # batch of its own. A ClassVar so it stays a plain class attribute a subclass
+    # overrides, out of the pytree.
+    is_aggregate: ClassVar[bool] = False
 
     def goal(
         self,
@@ -178,6 +204,7 @@ class Goal:
     def prediction(
         self,
         eq_state: EquilibriumState,
+        structure: EquilibriumStructure,
         index: Int[Array, "..."],
     ) -> Float[Array, "..."]:
         """
@@ -187,8 +214,14 @@ class Goal:
         ----------
         eq_state :
             The equilibrium state to read the quantity from.
+        structure :
+            The structure the goal is evaluated against, so a goal can read whole
+            trace-time constants (connectivity, topology) from it. Most goals
+            ignore it.
         index :
-            The index of the element within the equilibrium state.
+            The element index, one for a per-element goal or the whole index row
+            for an aggregate goal. A goal carrying an extra per-element array
+            reads it off `self`.
 
         Returns
         -------
@@ -197,12 +230,12 @@ class Goal:
         """
         raise NotImplementedError
 
-    def index_from_structure(
+    def keys_from_structure(
         self,
         structure: EquilibriumStructure,
-    ) -> int | tuple[int, ...]:
+    ) -> Int[np.ndarray, "elements ..."]:
         """
-        Resolve the goal's key to an index in an equilibrium structure.
+        The structure's canonical keys for this goal's vocabulary.
 
         Parameters
         ----------
@@ -211,94 +244,97 @@ class Goal:
 
         Returns
         -------
-        index :
-            The index, or tuple of indices, of the goal's element(s).
-        """
-        raise NotImplementedError
-
-    def _index_from_key(self, key_index: dict[Any, int]) -> int | tuple[int, ...]:
-        """
-        Look up the goal's key in an element-to-index mapping.
-
-        Parameters
-        ----------
-        key_index :
-            The mapping from element key to index.
-
-        Returns
-        -------
-        index :
-            A single index for a scalar key, or a tuple of indices for a list key.
-        """
-        if isinstance(self.key, list):
-            return tuple(key_index[k] for k in self.key)
-        return key_index[self.key]
-
-    def init(self, model: EquilibriumModel, structure: EquilibriumStructure) -> None:
-        """
-        Bind the goal to a structure by resolving its key to an index.
-
-        Parameters
-        ----------
-        model :
-            The equilibrium model.
-        structure :
-            The structure whose element ordering defines the index.
+        keys_canonical :
+            The node, edge, vertex, or face key ordering the goal's key is
+            resolved against, one entry per element: a node/vertex/face key, or
+            an edge key pair.
 
         Notes
         -----
-        Must be called once before the goal is evaluated; it populates the index
-        that `prediction` reads. The index is always one-dimensional, one entry
-        per element. `__call__` vmaps `prediction` over it: a per-element goal
-        maps each entry, while an aggregate goal maps its whole index as a
-        single batch-of-one row.
+        The only per-subclass part of key resolution: a subclass names the
+        canonical ordering its key belongs to (nodes, vertices, faces, or edge
+        pairs) and raises if the structure is the wrong kind. The resolution
+        itself lives once in `index`, so an author who defines a goal on a new
+        vocabulary overrides this hook alone.
         """
-        self.index = self.index_from_structure(structure)
+        raise NotImplementedError
 
-    def __call__(self, eqstate: EquilibriumState) -> GoalState:
+    def index(self, structure: EquilibriumStructure) -> Int[Array, "..."]:
         """
-        Evaluate the goal against an equilibrium state.
+        The goal's element index, resolved against the structure.
+
+        Parameters
+        ----------
+        structure :
+            The structure whose element ordering defines the index.
+
+        Returns
+        -------
+        index :
+            A single index for a per-element goal, or the whole index row for an
+            aggregate goal, which reads its whole selection in one prediction.
+
+        Notes
+        -----
+        The real work of key resolution: a subclass names its canonical keys via
+        `keys_from_structure`, and this resolves the goal's key against them in
+        one `indices_from_keys` call, never a per-key loop. The key stays a
+        compile-time constant (a goal is closed over, never a jitted argument),
+        so the resolution folds to a constant at trace time. The key's own shape
+        distinguishes a per-element goal from an aggregate, so there is no
+        aggregate special case here.
+        """
+        keys_canonical = self.keys_from_structure(structure)
+
+        return indices_from_keys(keys_canonical, self.key)
+
+    def __call__(
+        self,
+        eqstate: EquilibriumState,
+        structure: EquilibriumStructure,
+    ) -> GoalState:
+        """
+        Evaluate the goal for one element against an equilibrium state.
 
         Parameters
         ----------
         eqstate :
             The equilibrium state to evaluate the goal on.
+        structure :
+            The structure whose element ordering resolves the goal's index.
 
         Returns
         -------
         goal_state :
-            The goal state bundling the reference values, the predictions, and the
-            weights, vmapped over the goal's elements.
+            The goal state bundling the reference value, the prediction, and the
+            weight for this one element, in the raw shape its hooks return.
 
         Raises
         ------
         ValueError
-            If the number of target rows does not match the number of elements,
-            or if the goal and prediction shapes disagree, typically because a
+            If the goal and prediction shapes disagree, typically because a
             scalar goal's prediction returned more than one value per element.
+
+        Notes
+        -----
+        A goal holds one element, so this is the linear per-element body: resolve
+        the index, read the prediction, form the reference, check the two shapes
+        agree, and bundle the state. A standalone call returns one element's
+        unbatched state.
+
+        To evaluate a group of same-type goals, stack them into one pytree and
+        `vmap`, exactly as one maps any equinox module over a batch::
+
+            stacked = tree_stack(goals)
+            states = jax.vmap(lambda g: g(eqstate, structure))(stacked)
+
+        `tree_stack` is a convenience, not a requirement: a plain
+        ``tree_map(lambda *leaves: jnp.stack(leaves), *goals)`` builds the same
+        stacked pytree, so the idiom holds for any stack of a goal's leaves.
         """
-        # self.index is a 1-D numpy index array, one entry per element. vmap
-        # maps its leading axis: a per-element goal maps each entry to a jax
-        # scalar, while an aggregate goal maps its whole index as a single
-        # batch-of-one row, mirrored by the leading axis its target carries.
-        index = self.index[jnp.newaxis, :] if self.is_aggregate else self.index
-        prediction = vmap(self.prediction, in_axes=(None, 0))(eqstate, index)  # pyright: ignore[reportArgumentType]
-
-        if self.target.shape[0] != prediction.shape[0]:
-            raise ValueError(
-                f"{type(self).__name__}: {prediction.shape[0]} element(s) but "
-                f"{self.target.shape[0]} target row(s). Pass one target per "
-                "element.",
-            )
-
-        goal = vmap(self.goal)(self.target, prediction)
-
-        # Flatten per-element shapes to one feature row only after the goal
-        # hook, so a custom goal() sees the prediction's true per-element
-        # shape; a scalar prediction may return () per element, which vmap
-        # stacks to (elements,) and lands here as one value per row.
-        prediction = jnp.reshape(prediction, (prediction.shape[0], -1))
-        goal = jnp.reshape(goal, (goal.shape[0], -1))
+        index = self.index(structure)
+        prediction = self.prediction(eqstate, structure, index)
+        goal = self.goal(self.target, prediction)
 
         if goal.shape != prediction.shape:
             raise ValueError(
@@ -310,61 +346,34 @@ class Goal:
 
         return GoalState(goal=goal, prediction=prediction, weight=self.weight)
 
-
-# ==========================================================================
-# Base goal for a scalar quantity
-# ==========================================================================
-
-
-class ScalarGoal:
-    """
-    A mixin for goals whose target is a scalar quantity per element.
-
-    Notes
-    -----
-    Reshapes the target to a column so each element carries one scalar value.
-    """
-
-    @property
-    def target(self) -> Float[Array, "elements 1"]:
+    def evaluate(
+        self,
+        datastructure: FDNetwork | FDMesh,
+        sparse: bool = True,
+    ) -> GoalState:
         """
-        The scalar target value of each element.
+        Evaluate the goal directly on a datastructure, without an optimization.
+
+        Parameters
+        ----------
+        datastructure :
+            The network or mesh to read the equilibrium state from. Its geometry
+            is used as-is; no form-finding is run.
+        sparse :
+            If True, assemble the equilibrium state with the sparse model.
+
+        Returns
+        -------
+        goal_state :
+            The goal state bundling the reference value, the prediction, and the
+            weight for this one element.
+
+        Notes
+        -----
+        A convenience for prototyping a goal on the high-level COMPAS layer: it
+        reads the equilibrium state and structure off the datastructure and
+        evaluates the goal against them in one call.
         """
-        return self._target
+        equilibrium = datastructure_state(datastructure, sparse)
 
-    @target.setter
-    def target(self, target: TargetLike) -> None:
-        values = [target] if isinstance(target, (int, float)) else target
-        self._target = jnp.reshape(jnp.asarray(values, dtype=DTYPE_JAX), (-1, 1))
-
-
-# ==========================================================================
-# Base goal for vector quantities
-# ==========================================================================
-
-
-class VectorGoal:
-    """
-    A mixin for goals whose target is a 3D vector quantity per element.
-
-    Notes
-    -----
-    Reshapes the target so each element carries one xyz vector.
-    """
-
-    @property
-    def target(self) -> Float[Array, "elements 3"]:
-        """
-        The 3D vector target of each element.
-        """
-        return self._target
-
-    @target.setter
-    def target(self, target: TargetLike) -> None:
-        if isinstance(target, (int, float)):
-            raise TypeError(
-                f"{type(self).__name__} is a vector goal, so its target must be "
-                "an xyz vector (or one per element), not a single number. "
-                "Did you mean the scalar variant of this goal?",
-            )
-        self._target = jnp.reshape(jnp.asarray(target, dtype=DTYPE_JAX), (-1, 3))
+        return self(equilibrium.eq_state, equilibrium.structure)

@@ -155,6 +155,29 @@ class Parameter:
         """
         raise NotImplementedError
 
+    def evaluate(self, datastructure: FDNetwork | FDMesh) -> float:
+        """
+        Evaluate the parameter directly on a datastructure.
+
+        Parameters
+        ----------
+        datastructure :
+            The network or mesh to read the parametrized attribute from.
+
+        Returns
+        -------
+        value :
+            The current value of the parametrized attribute.
+
+        Notes
+        -----
+        A parameter reads straight off the datastructure, so this is a thin alias
+        for `value`; it needs no structure, model, or ``sparse`` flag. It rounds
+        out the `evaluate` family so goals, constraints, and parameters share one
+        prototyping entry point.
+        """
+        return self.value(datastructure)
+
 
 # ==========================================================================
 # Individual parameters

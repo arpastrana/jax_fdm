@@ -254,9 +254,6 @@ class IPOPT(ConstrainedOptimizer, SecondOrderOptimizer):
 
         clist = []
         for constraint in collections:
-            # initialize constraint
-            constraint.init(model, structure)
-
             # select constraint functions
             funs = []
             if jnp.allclose(constraint.bound_low, constraint.bound_up):

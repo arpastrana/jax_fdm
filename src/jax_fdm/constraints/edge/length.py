@@ -4,6 +4,7 @@ from jaxtyping import Int
 
 from jax_fdm.constraints.edge.edge import EdgeConstraint
 from jax_fdm.equilibrium import EquilibriumState
+from jax_fdm.equilibrium import EquilibriumStructure
 
 __all__ = ["EdgeLengthConstraint"]
 
@@ -16,6 +17,7 @@ class EdgeLengthConstraint(EdgeConstraint):
     def constraint(
         self,
         eq_state: EquilibriumState,
+        structure: EquilibriumStructure,
         index: Int[Array, ""],
     ) -> Float[Array, ""]:
         """
@@ -25,6 +27,8 @@ class EdgeLengthConstraint(EdgeConstraint):
         ----------
         eq_state :
             The equilibrium state to read the length from.
+        structure :
+            The structure the constraint is evaluated against; unused.
         index :
             The index of the edge.
 

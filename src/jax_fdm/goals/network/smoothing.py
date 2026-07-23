@@ -4,10 +4,8 @@ from jaxtyping import Array
 from jaxtyping import Float
 from jaxtyping import Int
 
-from jax_fdm.equilibrium import EquilibriumModel
 from jax_fdm.equilibrium import EquilibriumState
 from jax_fdm.equilibrium import EquilibriumStructure
-from jax_fdm.goals.goal import ScalarGoal
 from jax_fdm.goals.network.network import NetworkGoal
 
 __all__ = [
@@ -16,7 +14,7 @@ __all__ = [
 ]
 
 
-class NetworkSmoothGoal(ScalarGoal, NetworkGoal):
+class NetworkSmoothGoal(NetworkGoal):
     """
     Smudge a network based on the fairness of its nodes.
 
@@ -29,29 +27,11 @@ class NetworkSmoothGoal(ScalarGoal, NetworkGoal):
     vector between every node position and their neighbors' centroid.
     """
 
-    def __init__(self) -> None:
-        super().__init__()
-        # set in init() from the network structure, before any prediction runs
-        self.adjacency: Float[Array, "nodes nodes"] | Float[BCOO, "nodes nodes"]
-
-    def init(self, model: EquilibriumModel, structure: EquilibriumStructure) -> None:
-        """
-        Bind the goal to a structure, caching its adjacency matrix.
-
-        Parameters
-        ----------
-        model :
-            The equilibrium model.
-        structure :
-            The structure whose adjacency matrix defines node neighborhoods.
-        """
-        super().init(model, structure)
-        self.adjacency = structure.adjacency
-
     def prediction(
         self,
         eq_state: EquilibriumState,
-        index: Int[Array, "1"],
+        structure: EquilibriumStructure,
+        index: Int[Array, ""],
     ) -> Float[Array, ""]:
         """
         The mean fairness energy over the network's nodes.
@@ -60,6 +40,8 @@ class NetworkSmoothGoal(ScalarGoal, NetworkGoal):
         ----------
         eq_state :
             The equilibrium state to read the node coordinates from.
+        structure :
+            The structure providing the adjacency matrix.
         index :
             The sentinel index, unused.
 
@@ -70,7 +52,7 @@ class NetworkSmoothGoal(ScalarGoal, NetworkGoal):
             neighbors' centroid.
         """
         xyz = eq_state.xyz
-        fairness_nodes = nodes_nbrs_fairness(xyz, self.adjacency)
+        fairness_nodes = nodes_nbrs_fairness(xyz, structure.adjacency)
 
         return jnp.mean(fairness_nodes)
 

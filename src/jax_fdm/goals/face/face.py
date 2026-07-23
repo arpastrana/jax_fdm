@@ -1,3 +1,6 @@
+import numpy as np
+from jaxtyping import Int
+
 from jax_fdm.equilibrium import EquilibriumMeshStructure
 from jax_fdm.equilibrium import EquilibriumStructure
 from jax_fdm.goals.goal import Goal
@@ -10,12 +13,12 @@ class FaceGoal(Goal):
     The base class for goals defined on the faces of a mesh.
     """
 
-    def index_from_structure(
+    def keys_from_structure(
         self,
         structure: EquilibriumStructure,
-    ) -> int | tuple[int, ...]:
+    ) -> Int[np.ndarray, "faces"]:
         """
-        Resolve the goal's face key to an index in a structure.
+        The structure's face keys, the vocabulary a face goal resolves against.
 
         Parameters
         ----------
@@ -24,8 +27,8 @@ class FaceGoal(Goal):
 
         Returns
         -------
-        index :
-            The index, or tuple of indices, of the goal's face(s).
+        keys_canonical :
+            The mesh structure's face keys, one per face.
 
         Raises
         ------
@@ -38,4 +41,4 @@ class FaceGoal(Goal):
                 f"{type(self).__name__} targets mesh faces. Networks have no faces.",
             )
 
-        return self._index_from_key(structure.face_index)
+        return structure.face_keys
