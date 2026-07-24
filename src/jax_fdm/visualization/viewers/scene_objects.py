@@ -350,7 +350,9 @@ class FDDatastructureObject(ViewerSceneObject):
 
     Styling and topology are frozen at add time: the force density keyword
     arguments are constructor parameters, the point-edge adjacency is cached
-    once, and restyling or reconnecting means re-adding the object.
+    once, and restyling or reconnecting means re-adding the object. ``edgeopacity``
+    sets the opacity of the edges alone (so they can read opaque over the faces);
+    points, loads and reactions keep the shared wireframe default.
 
     Subclasses resolve the point vocabulary (a network addresses its points
     as nodes, a mesh as vertices) by implementing the ``point_*`` methods and
@@ -363,6 +365,9 @@ class FDDatastructureObject(ViewerSceneObject):
     points_name = "Points"
     point_name = "Point"
 
+    # The shared wireframe opacity for points, loads and reactions. Edges read
+    # their own ``edge_opacity``, which defaults to this unless ``edgeopacity``
+    # overrides it at add time.
     default_opacity = 0.75
 
     shape_u = 16
@@ -379,6 +384,7 @@ class FDDatastructureObject(ViewerSceneObject):
         edgecolor: EdgeColorSpec = None,
         pointsize: PointSizeSpec = None,
         edgewidth: EdgeWidthSpec = None,
+        edgeopacity: float | None = None,
         loadcolor: Color | None = None,
         loadscale: float | None = None,
         loadtol: float | None = None,
@@ -426,6 +432,9 @@ class FDDatastructureObject(ViewerSceneObject):
         self.edgecolor_spec = edgecolor
         self.pointsize_spec = pointsize
         self.edgewidth_spec = edgewidth
+        # Edges carry their own opacity so they can be made opaque over the
+        # faces; points, loads and reactions stay on the shared default.
+        self.edge_opacity = edgeopacity or self.default_opacity
         self.show_supports = show_supports if show_supports is not None else True
 
         self.load_color = loadcolor or COLOR_LOAD
@@ -453,7 +462,14 @@ class FDDatastructureObject(ViewerSceneObject):
         # values for the show flags, which mean "default".
         self.fuse = fuse
         if show_edges or show_edges is None:
-            self._add_category(FDEdgesObject, FDEdgeObject, "Edges", self.edges, "Edge")
+            self._add_category(
+                FDEdgesObject,
+                FDEdgeObject,
+                "Edges",
+                self.edges,
+                "Edge",
+                opacity=self.edge_opacity,
+            )
         if show_points:
             self._add_category(
                 FDPointsObject,
@@ -498,16 +514,21 @@ class FDDatastructureObject(ViewerSceneObject):
         category_name: str,
         keys: list[int] | list[tuple[int, int]],
         element_name: str,
+        opacity: float | None = None,
     ) -> None:
         """
         Add one category child: a fused soup, or a group of per-element children.
 
         Element children spawn in fused soup order and carry the opacity
         themselves: the shader inherits show, selection and transform through
-        the parent chain, but not opacity.
+        the parent chain, but not opacity. ``opacity`` defaults to the shared
+        wireframe opacity when a category does not override it.
         """
+        if opacity is None:
+            opacity = self.default_opacity
+
         if self.fuse:
-            self.add(fused_cls(name=category_name, opacity=self.default_opacity))
+            self.add(fused_cls(name=category_name, opacity=opacity))
             return
 
         group = FDGroupObject(name=category_name)
@@ -517,7 +538,7 @@ class FDDatastructureObject(ViewerSceneObject):
                 element_cls(
                     key,
                     name=f"{element_name} {key}",
-                    opacity=self.default_opacity,
+                    opacity=opacity,
                 ),
             )
 
@@ -760,7 +781,8 @@ class FDMeshObject(FDDatastructureObject):
     On top of the shared edge/vertex/load/reaction categories, the mesh faces
     are drawn as their own surface, so it toggles independently from the
     wireframe. The surface takes ``facecolor`` (one color for the whole mesh or
-    a per-face map) and ``faceopacity``.
+    a per-face map) and ``faceopacity``, while ``edgeopacity`` (inherited from the
+    base) sets the opacity of the wireframe edges over that surface.
 
     The mesh points are filtered with the ``vertices`` keyword argument and
     styled with ``vertexcolor``, ``vertexsize`` and ``show_vertices``,
