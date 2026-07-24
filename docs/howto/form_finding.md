@@ -83,13 +83,6 @@ The defaults suit most problems, so reach for these only when we need them:
 - **`is_load_local`** (default `False`) applies edge and face loads in their own local frames as the shape changes (follower loads), rather than keeping them fixed in the global frame. The `z` component of an input load vector corresponds to the direction *normal* to the edges and faces.
 - **`eta`** (default `1e-6`) is the convergence tolerance for that iterative solve.
 
-### The constrained sibling
-
-`fdm` finds *an* equilibrium, the one the input force densities produce.
-Often we want a *particular* equilibrium: the shape whose edges stay under a meter, or the one where all the mesh faces are planar for buildability.
-That is the job of `constrained_fdm`, which wraps `fdm` in an optimization loop.
-It is a whole workflow of its own, so it gets its own guide: [constrained form-finding](constrained_form_finding.md).
-
 ## The numerical core
 
 Everything above happens on the mutable datastructure, in the comfortable world of node keys and edge tuples.

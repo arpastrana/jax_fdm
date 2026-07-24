@@ -1,10 +1,10 @@
 # Constrained form-finding
 
-Plain [form-finding](form_finding.md) provides us with *one* funicular geometry for given input parameters.
+Plain [form-finding](form_finding.md) provides us with *one* equilibrium solution for given input parameters.
 But a design brief rarely asks for just any equilibrium state.
-Most often that not, it asks for a gridsheel whose member lengths stay between three-quarters of a meter and a meter, or a roof that touches down exactly on four given points, but where the magnitude of the reaction force at one of the supports must reach a target value.
+Most often that not, it asks for a *particular* equilibrium state to design a slender gridshell whose member lengths stay between three-quarters of a meter and a meter, or a roof that touches down exactly on four given points, but where the magnitude of the reaction force at one of the supports must reach a target value.
 
-Constrained form-finding is how we guide equilibrium computation towards *that* shape.
+Constrained form-finding is how we guide equilibrium computation towards *that* shape (and by extension, to its corresponding full equilibrium state).
 We describe a design specification we want as a loss to minimize and a set of bounds to respect, and `constrained_fdm` searches the space of force densities (and, if we like, supports and loads) for the geometry and the equilibrium configuration that satisfies them.
 
 ```python
@@ -67,7 +67,7 @@ edge = (6, 7)
 goal_force = EdgeForceGoal(edge, target=2.0)
 ```
 
-### 3. The loss: how goals become a single number
+### 3. The loss: translating intent to numbers
 
 An optimizer minimizes one scalar.
 A **loss** is what turns our list of goals into that scalar, by measuring how far each goal's prediction sits from its target and summing the misfit.
@@ -119,7 +119,7 @@ Constraints are covered in [constraints](constraints.md).
 The fine print here is that they render more complex and potentially more expensive optimization problem, so apply them judiciously if you care about solution speed.
 Two things matter when composing a constrained form-finding problem with hard constraints: they are honored only by the optimizers that support them (`SLSQP`, `IPOPT`, and `TrustRegionConstrained`), and they are optional, leave them out for an unconstrained minimization.
 
-### 5. The optimizer: who does the searching
+### 5. The optimizer: searching in parameter space
 
 The **optimizer** is the algorithm that walks the parameter space toward a minimum.
 JAX FDM wraps a spread of them, sorted by what they can do:
@@ -178,7 +178,7 @@ optimized = constrained_fdm(
 Notice there are no explicit `parameters` here: with `parameters=None` the optimizer treats every edge force density as a free variable, which is exactly what this problem wants.
 The `PredictionError` on a `NetworkLoadPathGoal` means "make the load path as small as we can" (no target), while the `EdgeLengthConstraint` list keeps the segments in range.
 
-### Reading the result
+## Reading the result
 
 `constrained_fdm`, like `fdm`, returns a *copy* of the datastructure in equilibrium, leaving the original untouched.
 The optimizer's solution is baked into that copy: every edge reports its optimized force density `q`, along with the resulting `length` and `force`, and every node reports its equilibrium `xyz`, residual, and load.
