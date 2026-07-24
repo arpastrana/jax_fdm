@@ -67,7 +67,7 @@ def distance_vertices(mesh, mesh_target, vertices):
 # ==========================================================================
 
 length = 10.0  # side length of the square gridshell
-nx = 8  # 8, 12 number of quad faces per side
+nx = 8  # number of quad faces per side
 
 q0 = -1.0  # starting force density on the interior edges, negative for compression
 q0_boundary = -5.0  # stiffer force density on the free boundary edges for tautness
@@ -78,11 +78,11 @@ qmax = -0.01
 
 # error weights
 planarity_weight = 1.0
-smooth_weight = 0.0  # smooth the shape, raise to iron out jagged faces
-shape_weight = 0.0  # if 0.0 = modify freely, raise to hold the funicular shape
+smooth_weight = 0.03  # smooth the shape, raise to iron out jagged faces
+shape_weight = 0.07  # if 0.0 = modify freely, raise to hold the funicular shape
 
 pin_side = True  # also pin one full boundary side, not just the four corners
-find_supports = False  # let the pinned side's supports slide along x (needs pin_side)
+find_supports = True  # let the pinned side's supports slide along x (needs pin_side)
 
 # ==========================================================================
 # Build a square quad gridshell
@@ -95,12 +95,12 @@ mesh.transform(Translation.from_vector([-length / 2.0, -length / 2.0, 0.0]))
 # Assemble the structural system: a corner-supported compression shell
 # ==========================================================================
 
-# pin the four corners, and optionally one full boundary side (at x = -length/2)
+# pin the four corners, and optionally one full boundary side (at x = length/2)
 corners = list(mesh.vertices_where(vertex_degree=2))
 supports = list(corners)
 side = []
 if pin_side:
-    side = list(mesh.vertices_where(x=-length / 2.0))
+    side = list(mesh.vertices_where(x=length / 2.0))
     supports += side
 
 for vertex in supports:
@@ -213,7 +213,11 @@ if find_supports and pin_side:
 # Visualization
 # ==========================================================================
 
-viewer = Viewer(show_grid=True)
+viewer = Viewer(width=1200, height=600, show_grid=True)
+
+# update camera position and target
+viewer.renderer.camera.target = [0.4, 0.6, 2.5]
+viewer.renderer.camera.position = [-11.5, -7.5, 1.7]
 
 # paint each face by its flatness, so the panels hardest to clad stand out
 flatness_shell = face_flatness(shell)
@@ -223,21 +227,28 @@ lo = min(*flatness_shell.values(), *flatness_planar.values())
 hi = max(*flatness_shell.values(), *flatness_planar.values())
 
 # the initial shell placed on the left
-shell.transform(Translation.from_vector([0.0, -1.1 * length, 0.0]))
+shell.transform(Translation.from_vector([0.0, 0.55 * length, 0.0]))
 viewer.add(
     shell,
     facecolor=face_colors(flatness_shell, lo, hi),
-    faceopacity=1.0,
+    edgewidth=(0.05, 0.15),
+    vertexsize=0.15,
+    faceopacity=0.9,
+    edgeopacity=1.0,
     show_vertices=True,
     show_loads=False,
     show_reactions=False,
 )
 
-# the planarized shell
+# the planarized shell placed on the right
+shell_planar.transform(Translation.from_vector([0.0, -0.55 * length, 0.0]))
 viewer.add(
     shell_planar,
     facecolor=face_colors(flatness_planar, lo, hi),
-    faceopacity=1.0,
+    edgewidth=(0.05, 0.15),
+    vertexsize=0.15,
+    faceopacity=0.9,
+    edgeopacity=1.0,
     show_vertices=True,
     show_loads=False,
     show_reactions=False,

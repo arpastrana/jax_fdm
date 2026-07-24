@@ -23,7 +23,7 @@ mesh = FDMesh.from_meshgrid(length, nx=nx)
 mesh.transform(Translation.from_vector([-length / 2.0, -length / 2.0, 0.0]))
 ```
 
-We support the four corners and, to make the design a little more interesting, one full boundary side. A downward load hangs on every free vertex, and a negative force density puts the shell to a compressive axial force state. We give the free boundary edges a stiffer force density than the interior, so the perimeter tautens and the shell spreads to cover more area underneath.
+We support the four corners and, to make the design a little more interesting, one full boundary side. A downward load hangs on every free vertex, and a negative force density puts the shell into a compressive axial-force state. We give the free boundary edges a stiffer force density than the interior, so the perimeter tautens and the shell spreads to cover more area underneath.
 
 ```python
 pz = -1.0
@@ -31,7 +31,7 @@ q0 = -1.0
 q0_boundary = -5.0
 
 corners = list(mesh.vertices_where(vertex_degree=2))
-side = list(mesh.vertices_where(x=-length / 2.0))
+side = list(mesh.vertices_where(x=length / 2.0))
 for vertex in corners + side:
     mesh.vertex_support(vertex)
 
@@ -106,7 +106,7 @@ shell_planar = constrained_fdm(
 )
 ```
 
-The faces flatten dramatically, the worst dropping from 12.8 to about **2.4** times the tolerance and **97% of the faces** now under the threshold, up from 28%, and the shell stays compressive. This is awesome news! But look closely and the surface has gone **ragged**: pushing the quads flat one edge-force at a time deforms the net into little peaks and valleys tangent to the gridshell's surface. A planar-but-jagged shell is no easier to build than a smooth-but-warped one because we are just pushing the fabrication complexity to the gridshell nodes and members. Let's do something about it.
+The faces flatten dramatically, the worst dropping from 12.8 to about **2.4** times the tolerance and **97% of the faces** now under the threshold, up from 28%, and the shell stays compressive. This is awesome news! But look closely and the surface has gone **ragged**: the quads are flat but their sides are uneven. A planar-but-ragged gridshell is often no easier to build than a smooth-but-warped one because we are just pushing the fabrication complexity from the cladding to the gridshell nodes and members. Let's do something about it.
 
 ![Gridshell planarization, planarized but ragged](../assets/images/gridshell_planar.png)
 
@@ -175,9 +175,10 @@ for vertex in side:
     parameters.append(VertexSupportXParameter(vertex, x - xtol, x + xtol))
 ```
 
-With the supports free to move, the same three-goal solve finds a better optimum: the worst face drops to about **0.6** of the tolerance, so **100% of the faces** are now within the flatness budget, up from 81%, as the boundary reshapes itself to help the faces lie flat. The supports travel about 0.6 meters on average to get there. Thought we could not do better? Oh well, we just did.
+With the supports free to move, the same three-goal solve finds a better optimum: the worst face drops to about **0.6** of the tolerance, so **100% of the faces** are now within the flatness budget, up from 81%, as the boundary reshapes itself to help the faces lie flat. The supports travel about 0.6 meters on average to get there, morphing the initially linear boundary into a soft arch at the base of the structure. Thought we could not do better? Check out the before and after and see for yourself.
 
-![Gridshell planarization, with support finding](../assets/images/gridshell_supports.png)
+![Gridshell planarization, support-finding](../assets/images/gridshell_supports.png)
+
 
 ## Summary
 
