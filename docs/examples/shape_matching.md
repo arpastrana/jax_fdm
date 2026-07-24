@@ -15,7 +15,8 @@ The approach is the same one that scales to any target: pick a shape, form-find 
 
 ## The target
 
-Our design intent is a `creased_shell` network, a doubly-curved surface with a sharp ridge running across it, and it ships with JAX FDM (swap in your own network whenever you like).
+Our design intent is a `creased_shell` network, a doubly-curved surface with a sharp ridge running across it, and it ships with JAX FDM[^panozzo] (swap in your own network whenever you like).
+
 
 ```python
 from jax_fdm.datastructures import FDNetwork
@@ -54,6 +55,9 @@ What does that constant force density give you on its own?
 We run one plain form-finding pass to see.
 
 ```python
+from compas.colors import Color
+from compas.datastructures import Network
+
 from jax_fdm.equilibrium import fdm
 
 
@@ -70,7 +74,7 @@ viewer.show()
 
 The result is funicular, it hangs in equilibrium, and it even reaches roughly the right overall height, rising to about 4.3 meters against the creased target's 4.5.
 But a shared force density can only produce a smooth, rounded dome, rounding off exactly the features that make the target distinctive, above all its sharp crease.
-So while the silhouette is in the ballpark, the fit node by node is poor: the free nodes sit about 1.2 meters from their targets on average, and the [Hausdorff distance](https://en.wikipedia.org/wiki/Hausdorff_distance), the largest gap between the two, is about 5.2 meters.
+So while the silhouette is in the ballpark, the fit node by node is poor: the free nodes sit about 1.5 meters from their targets on average, and the [Hausdorff distance](https://en.wikipedia.org/wiki/Hausdorff_distance), the largest gap between the two, is about 5.2 meters.
 To sharpen the shape the force densities need to *vary* across the network, and finding that variation by hand is hopeless.
 That is a job for optimization.
 
@@ -80,7 +84,7 @@ We want the force densities that pull the form-found network as close to the tar
 Three pieces express that intent.
 
 **The parameters** are the force densities of every edge, free to move between a lower and an upper bound.
-Keeping both bounds negative holds the whole structure in compression throughout the search.
+Capping the upper bound at zero keeps every edge in compression (or slack at worst), so the structure never flips an edge into tension during the search.
 
 ```python
 from jax_fdm.parameters import EdgeForceDensityParameter
@@ -140,7 +144,8 @@ network_matched = constrained_fdm(
 ![Shape matching, optimized result](../assets/images/shape_matching_optimized.png)
 
 The optimized network now captures the crease the guess had rounded away, and the Hausdorff distance drops from 5.2 meters to 0.70, an order of magnitude closer.
-The force densities follow a non-trivial distribution across the edges, exactly the spread a single constant value could never provide, and every one of them stayed negative, so the match is compression-only as intended.
+As the edge colors show, the force densities follow a non-trivial distribution across the edges, exactly the spread a single constant value could never provide.
+Furthermore, none of them turned positive due to the optimization parameter bounds, so the match stays compression-only as intended.
 
 !!! tip "Why the match matters mechanically"
 
@@ -189,9 +194,12 @@ The red lines, so prominent in the initial guess, shrink to almost nothing after
 
 ## Where to next
 
-- Curious how the loss, goals, and optimizer fit together? Read [constrained form-finding](../howto/constrained_form_finding.md).
+- Curious how goals, losses, and the optimizer fit together? Read [constrained form-finding](../howto/constrained_form_finding.md).
 - Want a target the goal bank does not cover? Write a [custom goal](../howto/custom_goals.md).
 - The runnable script for this example lives in [`examples/creased_shell/creased_shell.py`](https://github.com/arpastrana/jax_fdm/blob/main/examples/creased_shell/creased_shell.py).
 
 [^cmame]:
     The shape-matching task, and the strain-energy analysis behind the efficiency claims, are studied in detail in Pastrana et al., *Differentiable force density method for the design of lightweight structures*, Computer Methods in Applied Mechanics and Engineering (2026). See the [citation page](../citation.md).
+
+[^panozzo]:
+    This surface appears in [Panozzo, et al. (2013)](https://cims.nyu.edu/gcl/papers/designing-unreinforced-masonry-models-siggraph-2013-panozzo-et-al.pdf) and is taken with attribution from their supplementary material.

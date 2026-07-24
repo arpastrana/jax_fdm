@@ -1,6 +1,6 @@
 # Equal-Force Truss
 
-The [shape matching](shape_matching.md) example chased a *geometric* target. This one chases a *force* target: we reshape a truss so that one of its chords carries the same internal force everywhere.
+This example chases a *force* target: we reshape a truss so that one of its chords carries the same internal force everywhere.
 
 Why would we want that? Consider the bottom chord of a planar truss, the tension tie that keeps the two supports from spreading apart. In a typical design its internal force varies from segment to segment, so each segment wants a different cross-section: thicker where the force is high, thinner where it is low. That is a fabrication headache. Every change of section is a detail to design, a splice to connect, and a place where mechanical continuity can go wrong.
 
@@ -146,7 +146,7 @@ network_equalforce = constrained_fdm(
 
 ![Equal-force truss, optimized result](../assets/images/truss_equalforce_optimized.png)
 
-The bottom chord has settled into a shallow curve, and its force is now uniform: every segment carries between 1.494 and 1.500, essentially the 1.5 we asked for, down from the two-to-one spread we started with. The top chord stayed straight, so the truss keeps its Vierendeel character. The morphed bottom chord is now a single-section tie, buildable from one cable, used at its full capacity along its entire length.
+The bottom chord has settled into a shallow curve, and its force is now uniform: every segment carries essentially 1.500, agreeing to within a thousandth of the 1.5 we asked for, down from the two-to-one spread we started with. The top chord stayed straight, so the truss keeps its Vierendeel character. The morphed bottom chord is now a single-section tie, buildable from one cable, used at its full capacity along its entire length.
 
 ![Bottom-chord force, before and after](../assets/images/truss_equalforce_force_plot.png)
 

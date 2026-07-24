@@ -118,7 +118,7 @@ nav:
   - Citation: citation.md
   - License: license.md
   - Examples:
-      - Arch optimization: examples/arch.md
+      - Length optimization: examples/arch.md
       - Shape matching: examples/shape_matching.md
       - Equal-force truss: examples/truss_equal_force.md
       - Cablenet on an arch: examples/cablenet_arch.md
