@@ -117,7 +117,7 @@ constraints = [EdgeLengthConstraint(edge, 0.75, 1.0) for edge in network.edges()
 
 Constraints are covered in [constraints](constraints.md).
 The fine print here is that they render more complex and potentially more expensive optimization problem, so apply them judiciously if you care about solution speed.
-Two things matter when composing a constrained form-finding problem with hard constraints: they are honored only by the optimizers that support them (`SLSQP` and `IPOPT`), and they are optional, leave them out for an unconstrained minimization.
+Two things matter when composing a constrained form-finding problem with hard constraints: they are honored only by the optimizers that support them (`SLSQP`, `IPOPT`, and `TrustRegionConstrained`), and they are optional, leave them out for an unconstrained minimization.
 
 ### 5. The optimizer: who does the searching
 

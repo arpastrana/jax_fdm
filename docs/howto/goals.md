@@ -35,13 +35,16 @@ Every goal is built from the same three inputs, defined once as fields on the ba
 
 ```python
 import equinox as eqx
+from jaxtyping import Array
+from jaxtyping import Float
+from jaxtyping import Int
 
 
 class Goal(eqx.Module):
 
-    key: Array     # which element (resolved to an index at evaluation time)
-    target: Array  # the value to drive the quantity toward
-    weight: Array  # how much this goal matters in the loss
+    key: Int[Array, "..."]       # which element (resolved to an index at evaluation time)
+    target: Float[Array, "..."]  # the value to drive the quantity toward
+    weight: Float[Array, "..."]  # how much this goal matters in the loss
 ```
 
 Those three fields are what we supply, and each has a destination:
@@ -52,16 +55,18 @@ Those three fields are what we supply, and each has a destination:
 
 A goal is an [equinox](https://docs.kidger.site/equinox/) module, the same pytree flavor as the [structure](form_finding.md#the-structure) we met earlier: its fields are the leaves of a registered JAX pytree, and the constructor that fills them is synthesized from their declaration. That is why the goals we write declare no `__init__` of their own, they inherit these three fields for free, and it is what lets JAX FDM stack a list of same-type goals and vectorize them in one differentiable call (see [Goals in action](#goals-in-action)).
 
+!!! note "Reading the type annotations"
+
+    The fields are typed in the [jaxtyping](https://docs.kidger.site/jaxtyping/) style the library uses throughout: `Float[Array, "..."]` is a JAX array of floats and `Int[Array, "..."]` one of integers, with the quoted part naming the shape (`"..."` standing in for "whatever shape this goal needs"). These annotations are not decoration: equinox reads them to register each field as a pytree leaf, and small converters coerce the plain Python values we pass, the `(6, 7)` tuple and the `2.0` float, into arrays on the way in. When we write our own goals we can follow the pattern without dwelling on the shapes.
+
 So instantiating a goal costs us almost nothing, which is the point.
 But that begs a question: what *is* an `EdgeLengthGoal`, and what happens under the hood?
 
 ### What is under the hood
 
-Surprisingly little. An `EdgeLengthGoal` looks like this:
+Surprisingly little. Laying the three methods that make a goal tick side by side, an `EdgeLengthGoal` amounts to this:
 
 ```python
-from jaxtyping import Array
-
 from jax_fdm.goals.edge import EdgeGoal
 from jax_fdm.goals import GoalState
 
@@ -101,10 +106,12 @@ There are four parts underpinning how any goal works:
 - **The `goal` method says *toward what*.** An error term in the loss measures the gap between a goal's *prediction* and its *goal* value. Here `goal` just hands back the `target` unchanged: reach the target length, plain and simple. But it receives the current `prediction` too, and some goals use it to compare against a *moving* reference rather than a fixed target, the trick behind `NodeLineGoal` and `NodePlaneGoal`. [Custom goals](custom_goals.md#recipe-2-a-custom-vector-goal-with-a-moving-target) puts it to work.
 - **The `__call__` method says *put it together*.** A goal is a callable object: `__call__` is the one method that runs the others. It resolves the element `index` from the structure, asks `prediction` for the current value, hands that to `goal` to get the reference to compare against, and bundles the two with the `weight` into a `GoalState`, a small record carrying exactly the three numbers an error term needs. We never call this ourselves, but it is the seam where a goal plugs into the rest of the library's workflow.
 
+We grouped all three methods above to show the whole machine in one view, but only one of them, `prediction`, actually lives on `EdgeLengthGoal`. The `goal` and `__call__` methods (and the shape check `__call__` runs, trimmed here for clarity) are defined once on the base `Goal` and inherited unchanged, which is exactly why the goals we write below are so short: a real `EdgeLengthGoal` is just its `prediction`.
+
 Here is how those pieces compose in a single evaluation. Given an `eq_state` and the `structure` it was solved on, calling the goal resolves the index, reads the quantity, resolves the reference, and packages both with the weight:
 
 ```python
-goal_state = goal(eq_state, structure)   # -> GoalState(goal=..., prediction=..., weight=...)
+goal_state = goal(eq_state, structure)   # -> GoalState(goal=..., weight=..., prediction=...)
 ```
 
 A goal turns three separate concerns, *what to read*, *what to aim at*, and *how much it matters*, into one uniform `GoalState` that downstream loss code can consume without knowing anything about edges or lengths.
@@ -122,6 +129,27 @@ To recapitulate:
 - The `goal` method decides what to compare it against.
 - `__call__` resolves the index and composes the three into a `GoalState` the error and the loss consumes.
 
+### Trying a goal out with `evaluate`
+
+That `goal(eq_state, structure)` call is the goal talking straight to the numerical core: it wants the solved arrays and the structure, the low-level objects [form-finding](form_finding.md#the-numerical-core) assembles. Handy inside the machinery, but a mouthful when we just want to sanity-check a goal we wrote.
+
+For that, every goal carries a convenience method, `evaluate`, that lifts the very same call up to the datastructure layer:
+
+```python
+from jax_fdm.equilibrium import fdm
+from jax_fdm.goals import EdgeLengthGoal
+
+
+eq_network = fdm(network)                      # a form-found network
+goal = EdgeLengthGoal((0, 1), target=2.0)
+
+goal_state = goal.evaluate(eq_network)         # -> GoalState(goal=2.0, weight=1.0, prediction=...)
+```
+
+`evaluate` takes a network or mesh instead of the raw arrays, reads the equilibrium state and structure off it, and calls the goal against them, returning the same `GoalState` as before. It is *pure convenience*: `goal.evaluate(datastructure)` is `goal(eq_state, structure)` with the array-plumbing done for us, ideal for poking at a single goal in a notebook before wiring it into a full optimization.
+
+One caveat worth internalizing: `evaluate` reads the datastructure's geometry **as-is and never solves**. Hand it a freshly built network whose edges have no length yet and the prediction reads zero; hand it a form-found one, as above, and the prediction is the real edge length. So evaluate a goal on the output of `fdm`, not on the raw model, when the quantity depends on the equilibrium shape.
+
 ## Goal families
 
 The `EdgeLengthGoal` above made one choice, `EdgeGoal`, and that is the axis every goal is built along, its **element family**:
@@ -132,7 +160,7 @@ The `EdgeLengthGoal` above made one choice, `EdgeGoal`, and that is the axis eve
 
 The family fixes the vocabulary the goal's key is resolved against: an `EdgeGoal` resolves its key against the structure's edges, a `NodeGoal` against its nodes, and so on.
 
-A goal's *rank*, one number per element (scalar) or one xyz vector per element (vector), is not a second choice we make up front. It falls straight out of what the `prediction` returns: hand back a lone value and the goal is scalar, hand back a triple and it is a vector. The two must agree with the target we stored, and `__call__` checks exactly that, raising a `ValueError` if a goal's prediction shape and its target shape disagree, the usual sign that a scalar target was handed to a vector goal or the other way around.
+A goal's *rank*, one number per element (scalar) or one xyz vector per element (vector), is not a second choice we make up front. It falls straight out of what the `prediction` returns: hand back a lone value and the goal is scalar, hand back a triple and it is a vector. The prediction and the reference the `goal` method returns must have the same shape, and `__call__` checks exactly that, raising a `ValueError` when they disagree, the usual sign that a scalar target was handed to a vector goal or the other way around.
 
 ## Goals in action
 

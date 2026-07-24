@@ -125,7 +125,7 @@ Structures come in four flavors, one per datastructure kind and solver: network 
 ### The parameter state
 
 If the structure is the fixed topology, the **parameter state** is the variable data the FDM solver is a function of, the independent quantities that, together with the connectivity, pin down one equilibrium.
-An `EquilibriumParametersState` is a named tuple of three arrays, read off our datastructure by `EquilibriumParametersState.from_datastructure`:
+An `EquilibriumParametersState` is a named tuple of three fields, read off our datastructure by `EquilibriumParametersState.from_datastructure`:
 
 | Field | Shape | What it holds |
 | --- | --- | --- |

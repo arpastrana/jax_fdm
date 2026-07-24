@@ -50,8 +50,7 @@ The [same function purity rules](custom_goals.md#recipe-1-a-custom-scalar-goal) 
 
 ## Retargeting a constraint from nodes to vertices
 
-The `NodeZCoordinateConstraint` from the [anatomy](constraints.md#the-anatomy-of-a-constraint) speaks only network: aim it at a mesh and we get a `TypeError`, because the two datastructures resolve keys through different index tables - silently mixing them is a subtle-bug factory.
-The two dialects of [custom goals](custom_goals.md#recipe-4-retargeting-a-goal-from-nodes-to-vertices) rule constraints too: `Node*` constraints speak network, `Vertex*` constraints speak mesh, and crossing them points us at the right counterpart.
+The same node-versus-vertex rule that governs [custom goals](custom_goals.md#recipe-4-retargeting-a-goal-from-nodes-to-vertices) governs constraints: `Node*` constraints speak network, `Vertex*` constraints speak mesh, and aiming one at the wrong datastructure raises a `TypeError` that points us at the counterpart. So `NodeZCoordinateConstraint` is network-only.
 
 So how do we bound a mesh vertex's height?
 We simply write the vertex twin of that class:
@@ -68,9 +67,9 @@ class VertexZCoordinateConstraint(VertexConstraint, NodeZCoordinateConstraint):
 
 The only requirements are a docstring and an inheritance list with `VertexConstraint` first, so the vertex key resolution wins the method resolution order.
 The `constraint` body comes along for the ride, as well as all the other computation machinery inherited from the parent classes.
-The constraint above is real though: it is the library's own `VertexZCoordinateConstraint`, verbatim, and every `Vertex*` constraint is built this exact way.
+The constraint above is real though: it is the library's own `VertexZCoordinateConstraint`, verbatim, and the whole vertex coordinate family (`VertexXCoordinateConstraint`, `VertexYCoordinateConstraint`, `VertexZCoordinateConstraint`) is built this exact way. A `Vertex*` constraint with genuinely new behavior, such as `VertexCurvatureConstraint`, writes its own `constraint` body instead, exactly as the [custom recipe above](#recipe-a-custom-constraint) does.
 
 ## Summary
 
-Customized constraints can join the differentiable machinery of JAX FDM as a first-class citizen, honored by the `SLSQP` and `IPOPT` optimizers exactly like the built-in bounds.
+Customized constraints can join the differentiable machinery of JAX FDM as a first-class citizen, honored by the constraint-aware optimizers (`SLSQP`, `IPOPT`, and `TrustRegionConstrained`) exactly like the built-in bounds.
 Remember to contribute if you think your future self might find your custom constraint useful ;)

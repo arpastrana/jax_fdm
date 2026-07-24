@@ -77,14 +77,12 @@ The next section makes those differences precise.
 
 ## How a constraint works
 
-A constraint lives the same two-phase life as a goal.
-We construct it with an element key and two bounds, and when we call `constrained_fdm`, the constraint resolves that key to an integer index inside the equilibrium structure at evaluation time.
-Keys at construction, array rows at evaluation, resolved on the fly against the structure — the [same translation step](goals.md#goals-in-action) goals go through, and like a goal a constraint is a stateless pytree that caches nothing.
+A constraint lives the [same two-phase life as a goal](goals.md#goals-in-action): we construct it with a key and two bounds, and it resolves that key to a structure index on the fly at evaluation, caching nothing. It is the same stateless pytree, with bounds where a goal keeps a target and weight.
 
 The differences are twofold.
 
 - **Law needs an enforcer.**
-Constraints are honored only by optimizers that support them, `SLSQP` and `IPOPT`.
+Constraints are honored only by optimizers that support them, `SLSQP`, `IPOPT`, and `TrustRegionConstrained`.
 Hand constraints to any other optimizer and they are politely ignored.
 - **One method, different name.**
 Where a goal implements `prediction`, a constraint implements `constraint`.
@@ -92,6 +90,8 @@ Same signature, same job: slice the quantity of interest for one element out of 
 
 One constraint, one key, same as goals.
 To bound many elements, create one constraint per element, and the machinery stacks same-type constraints into a single vectorized call.
+
+Constraints also share the goal's `evaluate` convenience: `constraint.evaluate(datastructure)` reads the equilibrium state off a network or mesh and returns the constrained quantity, a quick way to check a bound is where we think it is before handing the constraint to an optimizer. See [trying a goal out](goals.md#trying-a-goal-out-with-evaluate) for the shape of it, keeping in mind it reads the datastructure's geometry as-is and does not solve.
 
 ## Where to next
 

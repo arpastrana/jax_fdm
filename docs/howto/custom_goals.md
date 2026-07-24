@@ -4,7 +4,7 @@ JAX FDM ships with a rich bank of goals, but sooner or later a structural design
 Maybe we want an edge to carry a target force, whether it pulls or pushes.
 Maybe we want a node to hover directly above a point on the ground.
 
-This guide walks us through four recipes for custom goal-making, from a two-line scalar goal to a goal that chases a moving target.
+This guide walks us through five recipes for custom goal-making, from a two-line scalar goal to a goal that chases a moving target and one that carries reference data of its own.
 It assumes you have read [goals](goals.md), which lays out the anatomy the recipes below build on.
 
 ## Recipe 1: A custom scalar goal
@@ -169,7 +169,57 @@ No methods and no body.
 Just a docstring and an inheritance list, with `VertexGoal` first so the vertex key resolution wins the method resolution order.
 The prediction and the vertical-line projection come along for the ride.
 
-Every vertex goal in the library (`VertexPointGoal`, `VertexLineGoal`, `VertexResidualForceGoal`, and friends) is built exactly this way.
+Much of the vertex goal family in the library (`VertexPointGoal`, `VertexLineGoal`, `VertexResidualForceGoal`, and friends) is built exactly this way, an empty twin of a `Node*` goal. The exceptions are the vertex goals with genuinely mesh-only behavior, such as `VertexNormalAngleGoal`, which have no network counterpart to inherit from and so write their own `prediction`.
+
+## Recipe 5: A goal that carries its own data
+
+Every goal so far got by on the three fields the base gives us: `key`, `target`, `weight`.
+But some goals need to *carry an extra piece of data* of their own.
+Consider driving the angle between an edge and a fixed reference direction toward a target: the goal has to remember which direction to measure against, and that direction is neither the target nor the key.
+It is a fourth field, stored on the goal alongside the other three.
+
+Because a goal is an [equinox](https://docs.kidger.site/equinox/) module, adding a field is a one-liner, but there is a subtlety in *how* we declare it. Here is the library's own `EdgeAngleGoal`:
+
+```python
+import equinox as eqx
+import jax.numpy as jnp
+from jaxtyping import Array
+from jaxtyping import Float
+
+from jax_fdm.geometry import angle_vectors
+from jax_fdm.goals.edge import EdgeGoal
+
+
+class EdgeAngleGoal(EdgeGoal):
+    """
+    Drive the angle between an edge and a reference vector toward a target.
+    """
+
+    vector: Float[Array, "3"] = eqx.field(kw_only=True)
+
+    def __init__(self, key, target, weight=1.0, *, vector):
+        self.key = key
+        self.target = target
+        self.weight = weight
+        self.vector = jnp.asarray(vector)
+
+    def prediction(self, eq_state, structure, index):
+        return angle_vectors(eq_state.vectors[index, :], self.vector)
+```
+
+Two things earn an explanation.
+
+- **The new field is `kw_only=True`.** Our `vector` is *required*, it has no sensible default, but the base already gives `weight` a default of `1.0`. Plain field order would then put a required field after a defaulted one, which Python's dataclass rules forbid ("non-default argument follows default argument"). Marking `vector` keyword-only sidesteps the ordering rule entirely: it lives off in its own keyword-only slot, so it can stay required while `weight` keeps its default. That is why we construct the goal as `EdgeAngleGoal(edge, target=0.0, vector=[0, 0, 1])`, with `vector` always named.
+- **We write an explicit `__init__`.** Equinox would happily synthesize one, so why not lean on it as the other recipes do? Because `vector` is a differentiable array leaf, and hiding it from the constructor (with `init=False`) would make equinox warn that a float leaf is left unset. Writing the constructor ourselves lets us both accept `vector` as an argument and coerce it (here `jnp.asarray`) on the way in.
+
+The `prediction` then reads its stored `vector` straight off `self`, exactly as it reads its `index` from the structure.
+This is the pattern for any goal that needs reference data of its own: a plane's normal, a set of anchor points, a per-element weight map.
+Declare it as a `kw_only=True` field, set it in a small `__init__`, and read it off `self` in the prediction.
+
+!!! tip "When a simple field is enough"
+
+    If the extra data has a natural default, a plain `eqx.field(default=...)` needs neither `kw_only` nor a hand-written `__init__`, equinox synthesizes the constructor and the field slots in after `weight` without complaint.
+    The `kw_only` dance is specifically for data that is *required* and has *no default*, which is the common case for a reference the goal cannot invent on its own.
 
 ## Summary
 
