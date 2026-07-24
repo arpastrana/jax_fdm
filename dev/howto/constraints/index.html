@@ -18,7 +18,7 @@
         <link rel="prev" href="../goals/">
       
       
-        <link rel="next" href="../../api/jax_fdm.datastructures/">
+        <link rel="next" href="../custom_goals/">
       
       
         
@@ -29,7 +29,7 @@
     
     
       
-        <title>Custom constraints - JAX FDM</title>
+        <title>Constraints - JAX FDM</title>
       
     
     
@@ -84,7 +84,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#custom-constraints" class="md-skip">
+        <a href="#constraints" class="md-skip">
           Skip to content
         </a>
       
@@ -123,7 +123,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Custom constraints
+              Constraints
             
           </span>
         </div>
@@ -437,7 +437,91 @@
   <span class="md-ellipsis">
     
   
-    Arch optimization
+    Length optimization
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../examples/shape_matching/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Shape matching
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../examples/truss_equal_force/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Equal-force truss
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../examples/gridshell_planarization/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Gridshell planarization
   
 
     
@@ -547,6 +631,62 @@
   
   
     <li class="md-nav__item">
+      <a href="../form_finding/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Form-finding
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../constrained_form_finding/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Constrained form-finding
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../goals/" class="md-nav__link">
         
   
@@ -554,7 +694,7 @@
   <span class="md-ellipsis">
     
   
-    Custom goals
+    Goals
   
 
     
@@ -591,7 +731,7 @@
   <span class="md-ellipsis">
     
   
-    Custom constraints
+    Constraints
   
 
     
@@ -609,7 +749,7 @@
   <span class="md-ellipsis">
     
   
-    Custom constraints
+    Constraints
   
 
     
@@ -635,6 +775,45 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#the-anatomy-of-a-constraint" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The anatomy of a constraint
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="The anatomy of a constraint">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#what-we-pass-in" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What we pass in
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#what-is-under-the-hood" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What is under the hood
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#how-a-constraint-works" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -646,21 +825,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#recipe-a-custom-constraint" class="md-nav__link">
+  <a href="#where-to-next" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Recipe: A custom constraint
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#retargeting-a-constraint-from-nodes-to-vertices" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Retargeting a constraint from nodes to vertices
+        Where to next
       
     </span>
   </a>
@@ -671,6 +839,62 @@
   
 </nav>
       
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../custom_goals/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Custom goals
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../custom_constraints/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Custom constraints
+  
+
+    
+  </span>
+  
+  
+
+      </a>
     </li>
   
 
@@ -1134,6 +1358,45 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#the-anatomy-of-a-constraint" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The anatomy of a constraint
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="The anatomy of a constraint">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#what-we-pass-in" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What we pass in
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#what-is-under-the-hood" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What is under the hood
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#how-a-constraint-works" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1145,21 +1408,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#recipe-a-custom-constraint" class="md-nav__link">
+  <a href="#where-to-next" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Recipe: A custom constraint
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#retargeting-a-constraint-from-nodes-to-vertices" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Retargeting a constraint from nodes to vertices
+        Where to next
       
     </span>
   </a>
@@ -1186,76 +1438,85 @@
   
 
 
-<h1 id="custom-constraints">Custom constraints<a class="headerlink" href="#custom-constraints" title="Permanent link">¤</a></h1>
-<p>Goals express <em>soft</em> preference: get as close to the target as you can.
+<h1 id="constraints">Constraints<a class="headerlink" href="#constraints" title="Permanent link">¤</a></h1>
+<p>Goals express <em>soft</em> preference: get as close to the target as we can.
 Constraints express <em>hard</em> restrictions: stay between these bounds, or the optimizer does not go home.</p>
-<p>This guide assumes you have read <a href="../goals/">Custom goals</a>.
-Constraints reuse most of that machinery, so here we focus on what changes.</p>
-<h2 id="how-a-constraint-works">How a constraint works<a class="headerlink" href="#how-a-constraint-works" title="Permanent link">¤</a></h2>
-<p>A constraint lives the same two-phase life as a goal.
-You construct it with an element key and two bounds, and when you call <code>constrained_fdm</code>, its <code>init</code> resolves the key to an integer index inside the equilibrium structure.
-Keys at construction, array rows at evaluation, <code>init</code> in between — the <a href="../goals/#how-a-goal-works">same translation step</a> goals go through.</p>
-<p>The differences are three.</p>
+<p>This guide is about what a constraint <em>is</em> and how it differs from a goal.
+It assumes we have read <a href="../goals/">goals</a>. Constraints reuse most of that machinery, so here we focus on what changes.
+Once the anatomy is clear, <a href="../custom_constraints/">custom constraints</a> shows how to write our own, and for how goals and constraints slot into a full optimization problem, see <a href="../constrained_form_finding/">constrained form-finding</a>.</p>
+<h2 id="the-anatomy-of-a-constraint">The anatomy of a constraint<a class="headerlink" href="#the-anatomy-of-a-constraint" title="Permanent link">¤</a></h2>
+<p>We take a constraint apart the same top-down way the <a href="../goals/#the-anatomy-of-a-goal">goals</a> guide takes apart <code>EdgeLengthGoal</code>.
+Suppose that instead of <em>nudging</em> a quantity toward a target, we want a hard floor and ceiling: no node in the network may sink below zero or rise above three.
+We grab <code>NodeZCoordinateConstraint</code>, one per node, and hand each a pair of bounds:</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">jax_fdm.constraints</span><span class="w"> </span><span class="kn">import</span> <span class="n">NodeZCoordinateConstraint</span>
+
+
+<span class="n">constraints</span> <span class="o">=</span> <span class="p">[</span><span class="n">NodeZCoordinateConstraint</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">bound_low</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">bound_up</span><span class="o">=</span><span class="mf">3.0</span><span class="p">)</span> <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">network</span><span class="o">.</span><span class="n">nodes</span><span class="p">()]</span>
+</code></pre></div>
+<p>One constraint per node, each pinning that node's height between 0.0 and 3.0.
+The most evident difference with respect to a goal is already visible: where the goal took a <code>target</code>, the constraint takes two bounds.</p>
+<h3 id="what-we-pass-in">What we pass in<a class="headerlink" href="#what-we-pass-in" title="Permanent link">¤</a></h3>
+<p>Every constraint is built from a key and two bounds, defined once as fields on the base <code>Constraint</code> and inherited by every constraint in the library:</p>
+<div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">equinox</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">eqx</span>
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">Constraint</span><span class="p">(</span><span class="n">eqx</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+
+    <span class="n">key</span><span class="p">:</span> <span class="n">Array</span>        <span class="c1"># which element (resolved to an index at evaluation time)</span>
+    <span class="n">bound_low</span><span class="p">:</span> <span class="n">Array</span>  <span class="c1"># lower limit; None becomes -inf</span>
+    <span class="n">bound_up</span><span class="p">:</span> <span class="n">Array</span>   <span class="c1"># upper limit; None becomes +inf</span>
+</code></pre></div>
+<p>Like a goal, a constraint is an <a href="https://docs.kidger.site/equinox/">equinox</a> module: its fields are the leaves of a registered pytree, the constructor is synthesized, and a <code>None</code> bound is normalized to the matching infinity as it is stored. So, as with goals, the constraints we write declare no <code>__init__</code> of their own.
+The <code>key</code> behaves exactly as a goal's: stored as given, the node key here, then resolved to an integer <code>index</code> against the structure when the optimizer evaluates the constraint.
+But <strong>the target and weight are gone</strong>.
+They are replaced by two bounds:</p>
 <ul>
-<li><strong>Bounds instead of a target.</strong>
-A constraint carries no target and no weight; it carries <code>bound_low</code> and <code>bound_up</code>, and the optimizer keeps the constrained quantity between them.
-Leave either bound as <code>None</code> and it becomes an infinity of the appropriate sign, so one-sided constraints cost you nothing.</li>
+<li><strong><code>bound_low</code></strong> and <strong><code>bound_up</code></strong> are the limits the optimizer must keep the quantity between. If we pass <code>None</code> for either, the constraint will convert it to the matching infinity, so a one-sided constraint (a floor with no ceiling, say) is straightforward to set up.</li>
+<li>There is <strong>no weight</strong>, because a constraint is not weighed against anything. It is satisfied or the solution is rejected, full stop.</li>
+</ul>
+<h3 id="what-is-under-the-hood">What is under the hood<a class="headerlink" href="#what-is-under-the-hood" title="Permanent link">¤</a></h3>
+<p>Even less than a goal. Here is the whole class:</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">jax_fdm.constraints.node</span><span class="w"> </span><span class="kn">import</span> <span class="n">NodeConstraint</span>
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">NodeZCoordinateConstraint</span><span class="p">(</span><span class="n">NodeConstraint</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Bound the Z coordinate of a node between a lower and an upper value.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">constraint</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">eq_state</span><span class="p">,</span> <span class="n">structure</span><span class="p">,</span> <span class="n">index</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">eq_state</span><span class="o">.</span><span class="n">xyz</span><span class="p">[</span><span class="n">index</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span>
+</code></pre></div>
+<p>Two moving parts, mirroring the goal with two deliberate differences:</p>
+<ul>
+<li><strong>One base class, and no rank at all.</strong> A constraint subclasses only an element family (<code>NodeConstraint</code>). There is nothing like a goal's scalar-versus-vector distinction to worry about: a constraint always reduces to a single number per element, so its <code>constraint</code> returns one scalar and <code>__call__</code> checks that it did.</li>
+<li><strong>The <code>constraint</code> method is the one thing we write.</strong> It plays the exact role <code>prediction</code> plays for a goal, same signature, same job: given an <code>eq_state</code>, the <code>structure</code>, and the <code>index</code> our key resolved to, return the quantity of interest, here the node's Z coordinate pulled from the <code>xyz</code> array. Only the name differs.</li>
+</ul>
+<p>So a constraint is a goal with the target-and-weight swapped for bounds and a single-family base class.
+The next section makes those differences precise.</p>
+<div class="admonition note">
+<p class="admonition-title">Where the equilibrium state comes from</p>
+<p>A goal and a constraint both take a ready-made <code>eq_state</code>: their <code>__call__(eq_state, structure)</code> slices the quantity out of it and never solves for equilibrium itself. The difference is <em>who</em> does the solving. A goal is evaluated inside the loss, on the state the loss already has in hand. A constraint is evaluated by the optimizer on its own schedule, apart from the loss: the optimizer solves for equilibrium once per step, <code>eqstate = model(params, structure)</code>, then vectorizes the constraint over that shared state. This separate evaluation path is exactly why only optimizers like <code>SLSQP</code> built to do it can enforce constraints.</p>
+</div>
+<h2 id="how-a-constraint-works">How a constraint works<a class="headerlink" href="#how-a-constraint-works" title="Permanent link">¤</a></h2>
+<p>A constraint lives the <a href="../goals/#goals-in-action">same two-phase life as a goal</a>: we construct it with a key and two bounds, and it resolves that key to a structure index on the fly at evaluation, caching nothing. It is the same stateless pytree, with bounds where a goal keeps a target and weight.</p>
+<p>The differences are twofold.</p>
+<ul>
 <li><strong>Law needs an enforcer.</strong>
-Constraints are honored only by optimizers that support them, <code>SLSQP</code> and <code>IPOPT</code>.
+Constraints are honored only by optimizers that support them, <code>SLSQP</code>, <code>IPOPT</code>, and <code>TrustRegionConstrained</code>.
 Hand constraints to any other optimizer and they are politely ignored.</li>
 <li><strong>One method, different name.</strong>
 Where a goal implements <code>prediction</code>, a constraint implements <code>constraint</code>.
 Same signature, same job: slice the quantity of interest for one element out of an <code>EquilibriumState</code>.</li>
 </ul>
 <p>One constraint, one key, same as goals.
-To bound many elements, create one constraint per element, and the machinery batches same-type constraints into a single vectorized call.</p>
-<h2 id="recipe-a-custom-constraint">Recipe: A custom constraint<a class="headerlink" href="#recipe-a-custom-constraint" title="Permanent link">¤</a></h2>
-<p>Suppose you want to <em>cap</em> how much any edge climbs, rather than nudge it toward a preferred rise.
-A custom constraint subclasses an element family (<code>EdgeConstraint</code>, <code>NodeConstraint</code>, <code>VertexConstraint</code>) and implements <code>constraint</code>:</p>
-<div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">jax.numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">jnp</span>
-
-<span class="kn">from</span><span class="w"> </span><span class="nn">jax_fdm.constraints.edge</span><span class="w"> </span><span class="kn">import</span> <span class="n">EdgeConstraint</span>
-
-
-<span class="k">class</span><span class="w"> </span><span class="nc">EdgeRiseConstraint</span><span class="p">(</span><span class="n">EdgeConstraint</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Bound the vertical rise of an edge.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-
-    <span class="k">def</span><span class="w"> </span><span class="nf">constraint</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">eq_state</span><span class="p">,</span> <span class="n">index</span><span class="p">):</span>
-        <span class="n">vector</span> <span class="o">=</span> <span class="n">eq_state</span><span class="o">.</span><span class="n">vectors</span><span class="p">[</span><span class="n">index</span><span class="p">,</span> <span class="p">:]</span>
-
-        <span class="k">return</span> <span class="n">jnp</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">vector</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
-</code></pre></div>
-<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">jax_fdm.optimization</span><span class="w"> </span><span class="kn">import</span> <span class="n">SLSQP</span>
-
-
-<span class="n">constraints</span> <span class="o">=</span> <span class="p">[</span><span class="n">EdgeRiseConstraint</span><span class="p">(</span><span class="n">edge</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.4</span><span class="p">)</span> <span class="k">for</span> <span class="n">edge</span> <span class="ow">in</span> <span class="n">network</span><span class="o">.</span><span class="n">edges</span><span class="p">()]</span>
-
-<span class="n">network</span> <span class="o">=</span> <span class="n">constrained_fdm</span><span class="p">(</span>
-    <span class="n">network</span><span class="p">,</span>
-    <span class="n">optimizer</span><span class="o">=</span><span class="n">SLSQP</span><span class="p">(),</span>
-    <span class="n">loss</span><span class="o">=</span><span class="n">loss</span><span class="p">,</span>
-    <span class="n">parameters</span><span class="o">=</span><span class="n">parameters</span><span class="p">,</span>
-    <span class="n">constraints</span><span class="o">=</span><span class="n">constraints</span><span class="p">,</span>
-    <span class="n">maxiter</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>
-<span class="p">)</span>
-</code></pre></div>
-<p>The bounds arrive through the constructor as <code>bound_low</code> and <code>bound_up</code>, here pinning every rise between zero and 0.4.
-The body of <code>constraint</code> is written for a single element and vectorized across all of them, exactly like a goal's <code>prediction</code> — and the <a href="../goals/#recipe-1-a-custom-scalar-goal">same purity rules</a> apply: <code>jnp</code> operations only, no Python branching on array values.</p>
-<h2 id="retargeting-a-constraint-from-nodes-to-vertices">Retargeting a constraint from nodes to vertices<a class="headerlink" href="#retargeting-a-constraint-from-nodes-to-vertices" title="Permanent link">¤</a></h2>
-<p>The two dialects of <a href="../goals/#recipe-4-retargeting-a-goal-from-nodes-to-vertices">Custom goals</a> rule constraints too: <code>Node*</code> constraints speak network, <code>Vertex*</code> constraints speak mesh, and crossing them raises a <code>TypeError</code> pointing at the right counterpart.
-The remedy is the same thin twin:</p>
-<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">jax_fdm.constraints.vertex</span><span class="w"> </span><span class="kn">import</span> <span class="n">VertexConstraint</span>
-
-
-<span class="k">class</span><span class="w"> </span><span class="nc">VertexZCoordinateConstraint</span><span class="p">(</span><span class="n">VertexConstraint</span><span class="p">,</span> <span class="n">NodeZCoordinateConstraint</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Bound the Z coordinate of a vertex between a lower and an upper value.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-</code></pre></div>
-<p>A docstring, an inheritance list with <code>VertexConstraint</code> first, and nothing else.
-This one is real: it is the library's own <code>VertexZCoordinateConstraint</code>, verbatim.</p>
+To bound many elements, create one constraint per element, and the machinery stacks same-type constraints into a single vectorized call.</p>
+<p>Constraints also share the goal's <code>evaluate</code> convenience: <code>constraint.evaluate(datastructure)</code> reads the equilibrium state off a network or mesh and returns the constrained quantity, a quick way to check a bound is where we think it is before handing the constraint to an optimizer. See <a href="../goals/#trying-a-goal-out-with-evaluate">trying a goal out</a> for the shape of it, keeping in mind it reads the datastructure's geometry as-is and does not solve.</p>
+<h2 id="where-to-next">Where to next<a class="headerlink" href="#where-to-next" title="Permanent link">¤</a></h2>
+<ul>
+<li>To write a constraint the library does not ship, head to <a href="../custom_constraints/">custom constraints</a>.</li>
+<li>To nudge a quantity toward a target instead of bounding it, see <a href="../goals/">goals</a>.</li>
+</ul>
 
 
 

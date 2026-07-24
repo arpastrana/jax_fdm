@@ -437,7 +437,91 @@
   <span class="md-ellipsis">
     
   
-    Arch optimization
+    Length optimization
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../examples/shape_matching/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Shape matching
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../examples/truss_equal_force/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Equal-force truss
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../examples/gridshell_planarization/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Gridshell planarization
   
 
     
@@ -545,7 +629,119 @@
   
   
     <li class="md-nav__item">
+      <a href="../../howto/form_finding/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Form-finding
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../howto/constrained_form_finding/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Constrained form-finding
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../howto/goals/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Goals
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../howto/constraints/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Constraints
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../howto/custom_goals/" class="md-nav__link">
         
   
   
@@ -573,7 +769,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../howto/constraints/" class="md-nav__link">
+      <a href="../../howto/custom_constraints/" class="md-nav__link">
         
   
   
@@ -3831,7 +4027,7 @@ Goals are collected into an error term of a <a href="../jax_fdm.losses/">loss fu
 
 
 
-        <p>The base class for all goals, targets an equilibrium quantity reaches.</p>
+        <p>The base class for all goals.</p>
 
 
 <p><span class="doc-section-title">Attributes:</span></p>
@@ -3841,7 +4037,7 @@ Goals are collected into an error term of a <a href="../jax_fdm.losses/">loss fu
               (<code><span title="jaxtyping.Int">Int</span>[<span title="jaxtyping.Array">Array</span>, ...]</code>)
           –
           <div class="doc-md-description">
-            <p>The key of the element the goal acts on; a sequence of keys (a list or
+            <p>The key of the element the goal acts on. A sequence of keys (a list or
 a tuple) only for aggregate goals.</p>
           </div>
         </li>

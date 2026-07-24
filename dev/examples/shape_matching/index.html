@@ -12,13 +12,13 @@
         <meta name="author" content="Rafael Pastrana">
       
       
-        <link rel="canonical" href="https://arpastrana.github.io/jax_fdm/dev/examples/more/">
+        <link rel="canonical" href="https://arpastrana.github.io/jax_fdm/dev/examples/shape_matching/">
       
       
-        <link rel="prev" href="../gridshell_planarization/">
+        <link rel="prev" href="../arch/">
       
       
-        <link rel="next" href="../../howto/form_finding/">
+        <link rel="next" href="../truss_equal_force/">
       
       
         
@@ -29,7 +29,7 @@
     
     
       
-        <title>More examples - JAX FDM</title>
+        <title>Shape matching - JAX FDM</title>
       
     
     
@@ -84,7 +84,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#more-examples" class="md-skip">
+        <a href="#shape-matching" class="md-skip">
           Skip to content
         </a>
       
@@ -123,7 +123,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              More examples
+              Shape matching
             
           </span>
         </div>
@@ -457,10 +457,37 @@
                 
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="../shape_matching/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Shape matching
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         
   
   
@@ -476,6 +503,81 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#the-target" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The target
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#before-a-first-guess" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Before: a first guess
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#after-the-optimized-match" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        After: the optimized match
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#interrogating-the-result" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Interrogating the result
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#where-to-next" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Where to next
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -541,37 +643,10 @@
                 
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    More examples
-  
-
-    
-  </span>
-  
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../more/" class="md-nav__link">
         
   
   
@@ -587,48 +662,6 @@
   
 
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#jupyter-notebooks" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Jupyter notebooks
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#python-scripts" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Python scripts
-      
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -1319,10 +1352,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#jupyter-notebooks" class="md-nav__link">
+  <a href="#the-target" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Jupyter notebooks
+        The target
       
     </span>
   </a>
@@ -1330,10 +1363,43 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#python-scripts" class="md-nav__link">
+  <a href="#before-a-first-guess" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Python scripts
+        Before: a first guess
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#after-the-optimized-match" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        After: the optimized match
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#interrogating-the-result" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Interrogating the result
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#where-to-next" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Where to next
       
     </span>
   </a>
@@ -1360,21 +1426,169 @@
   
 
 
-<h1 id="more-examples">More examples<a class="headerlink" href="#more-examples" title="Permanent link">¤</a></h1>
-<h2 id="jupyter-notebooks">Jupyter notebooks<a class="headerlink" href="#jupyter-notebooks" title="Permanent link">¤</a></h2>
-<p>These notebooks run directly from your browser without having to install anything locally! Their sources live in the <a href="https://github.com/arpastrana/jax_fdm/tree/main/notebooks"><code>notebooks/</code></a> folder.</p>
+<h1 id="shape-matching">Shape Matching<a class="headerlink" href="#shape-matching" title="Permanent link">¤</a></h1>
+<p>The <a href="../arch/">arch optimization</a> example minimized a mechanical quantity, the load path energy.
+This time the design intent is <em>visual</em>: you have a shape in mind, and you want a structure that looks like it while still standing up under self-weight in pure compression.</p>
+<p>Why would this matter, you wonder?
+A funicular geometry, one that carries its loads through axial forces alone, is mechanically efficient: it is the shape a hanging net or a masonry vault naturally wants to take.
+But left alone, form-finding gives you <em>a</em> funicular shape, not necessarily <em>the</em> one your design calls for.
+Shape matching lets you steer the force density method toward a target surface, so mechanical efficiency and your visual intent meet in the same geometry.<sup id="fnref:cmame"><a class="footnote-ref" href="#fn:cmame">1</a></sup>
+It is how one designs compression-only gridshells and thin shells that keep an envisioned silhouette.
+Another useful application of shape matching is to assess whether an existing masonry vault can stand as a thrust network.</p>
+<p>In this walkthrough we will approximate a doubly-curved <strong>creased shell</strong> with a compression-only network.
+The approach is the same one that scales to any target: pick a shape, form-find a first guess, then let the optimizer find the force densities that best fit the target.</p>
+<h2 id="the-target">The target<a class="headerlink" href="#the-target" title="Permanent link">¤</a></h2>
+<p>Our design intent is a <code>creased_shell</code> network, a doubly-curved surface with a sharp ridge running across it, and it ships with JAX FDM<sup id="fnref:panozzo"><a class="footnote-ref" href="#fn:panozzo">2</a></sup> (swap in your own network whenever you like).</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">jax_fdm.datastructures</span><span class="w"> </span><span class="kn">import</span> <span class="n">FDNetwork</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">jax_fdm.visualization</span><span class="w"> </span><span class="kn">import</span> <span class="n">Viewer</span>
+
+
+<span class="n">network</span> <span class="o">=</span> <span class="n">FDNetwork</span><span class="o">.</span><span class="n">from_json</span><span class="p">(</span><span class="s2">&quot;data/json/creased_shell.json&quot;</span><span class="p">)</span>
+
+<span class="n">viewer</span> <span class="o">=</span> <span class="n">Viewer</span><span class="p">()</span>
+<span class="n">viewer</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">network</span><span class="p">)</span>
+<span class="n">viewer</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</code></pre></div>
+<p><img alt="Shape matching, target" src="../../assets/images/shape_matching_target.png" /></p>
+<p>This 193-node, 324-edge network is the shape we want to approximate, so we record every node's position as the target to aim for before we touch anything.</p>
+<div class="highlight"><pre><span></span><code><span class="n">targets</span> <span class="o">=</span> <span class="p">{</span><span class="n">node</span><span class="p">:</span> <span class="n">network</span><span class="o">.</span><span class="n">node_coordinates</span><span class="p">(</span><span class="n">node</span><span class="p">)</span> <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">network</span><span class="o">.</span><span class="n">nodes</span><span class="p">()}</span>
+</code></pre></div>
+<p>Now we set up the structural problem on that same network: support it along its perimeter (the leaf nodes, in graph-theory lingo), hang a small downward point load on every free node, and seed every edge with a constant force density, the same starting guess for all of them.</p>
+<div class="highlight"><pre><span></span><code><span class="n">supports</span> <span class="o">=</span> <span class="p">[</span><span class="n">node</span> <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">network</span><span class="o">.</span><span class="n">nodes</span><span class="p">()</span> <span class="k">if</span> <span class="n">network</span><span class="o">.</span><span class="n">is_leaf</span><span class="p">(</span><span class="n">node</span><span class="p">)]</span>
+<span class="n">network</span><span class="o">.</span><span class="n">nodes_supports</span><span class="p">(</span><span class="n">supports</span><span class="p">)</span>
+<span class="n">network</span><span class="o">.</span><span class="n">nodes_loads</span><span class="p">([</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.2</span><span class="p">],</span> <span class="n">keys</span><span class="o">=</span><span class="n">network</span><span class="o">.</span><span class="n">nodes_free</span><span class="p">())</span>
+<span class="n">network</span><span class="o">.</span><span class="n">edges_forcedensities</span><span class="p">(</span><span class="n">q</span><span class="o">=-</span><span class="mf">1.0</span><span class="p">)</span>
+</code></pre></div>
+<p>The negative force density puts every edge in compression, since we are looking for a compression-only solution.</p>
+<h2 id="before-a-first-guess">Before: a first guess<a class="headerlink" href="#before-a-first-guess" title="Permanent link">¤</a></h2>
+<p>What does that constant force density give you on its own?
+We run one plain form-finding pass to see.</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">compas.colors</span><span class="w"> </span><span class="kn">import</span> <span class="n">Color</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">compas.datastructures</span><span class="w"> </span><span class="kn">import</span> <span class="n">Network</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">jax_fdm.equilibrium</span><span class="w"> </span><span class="kn">import</span> <span class="n">fdm</span>
+
+
+<span class="n">network_guess</span> <span class="o">=</span> <span class="n">fdm</span><span class="p">(</span><span class="n">network</span><span class="p">)</span>
+
+<span class="n">viewer</span> <span class="o">=</span> <span class="n">Viewer</span><span class="p">()</span>
+<span class="n">viewer</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">network_guess</span><span class="p">,</span> <span class="n">edgecolor</span><span class="o">=</span><span class="s2">&quot;fd&quot;</span><span class="p">)</span>
+<span class="n">viewer</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">network</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="bp">cls</span><span class="o">=</span><span class="n">Network</span><span class="p">),</span> <span class="n">color</span><span class="o">=</span><span class="n">Color</span><span class="o">.</span><span class="n">grey</span><span class="p">())</span>
+
+<span class="n">viewer</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</code></pre></div>
+<p><img alt="Shape matching, initial guess" src="../../assets/images/shape_matching_initial.png" /></p>
+<p>The result is funicular, it hangs in equilibrium, and it even reaches roughly the right overall height, rising to about 4.3 meters against the creased target's 4.5.
+But a shared force density can only produce a smooth, rounded dome, rounding off exactly the features that make the target distinctive, above all its sharp crease.
+So while the silhouette is in the ballpark, the fit node by node is poor: the free nodes sit about 1.5 meters from their targets on average, and the <a href="https://en.wikipedia.org/wiki/Hausdorff_distance">Hausdorff distance</a>, the largest gap between the two, is about 5.2 meters.
+To sharpen the shape the force densities need to <em>vary</em> across the network, and finding that variation by hand is hopeless.
+That is a job for optimization.</p>
+<h2 id="after-the-optimized-match">After: the optimized match<a class="headerlink" href="#after-the-optimized-match" title="Permanent link">¤</a></h2>
+<p>We want the force densities that pull the form-found network as close to the target as possible.
+Three pieces express that intent.</p>
+<p><strong>The parameters</strong> are the force densities of every edge, free to move between a lower and an upper bound.
+Capping the upper bound at zero keeps every edge in compression (or slack at worst), so the structure never flips an edge into tension during the search.</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">jax_fdm.parameters</span><span class="w"> </span><span class="kn">import</span> <span class="n">EdgeForceDensityParameter</span>
+
+<span class="n">parameters</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="k">for</span> <span class="n">edge</span> <span class="ow">in</span> <span class="n">network</span><span class="o">.</span><span class="n">edges</span><span class="p">():</span>
+    <span class="n">parameter</span> <span class="o">=</span> <span class="n">EdgeForceDensityParameter</span><span class="p">(</span><span class="n">edge</span><span class="p">,</span> <span class="o">-</span><span class="mf">20.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)</span>
+    <span class="n">parameters</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">parameter</span><span class="p">)</span>
+</code></pre></div>
+<p><strong>The goals</strong> ask each free node to reach its counterpart on the target.
+We create one <a href="../../api/jax_fdm.goals/"><code>NodePointGoal</code></a> per free node, aimed at the target's coordinates for that node.</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">jax_fdm.goals</span><span class="w"> </span><span class="kn">import</span> <span class="n">NodePointGoal</span>
+
+
+<span class="n">goals</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">network</span><span class="o">.</span><span class="n">nodes_free</span><span class="p">():</span>
+    <span class="n">goal</span> <span class="o">=</span> <span class="n">NodePointGoal</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="n">targets</span><span class="p">[</span><span class="n">node</span><span class="p">])</span>
+    <span class="n">goals</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">goal</span><span class="p">)</span>
+</code></pre></div>
+<p><strong>The loss</strong> measures how far, on average, the nodes land from their targets.
+The root-mean-squared error reports that gap in the units of the problem, meters, which makes it easy to reason about.</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">jax_fdm.losses</span><span class="w"> </span><span class="kn">import</span> <span class="n">Loss</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">jax_fdm.losses</span><span class="w"> </span><span class="kn">import</span> <span class="n">RootMeanSquaredError</span>
+
+
+<span class="n">loss</span> <span class="o">=</span> <span class="n">Loss</span><span class="p">(</span><span class="n">RootMeanSquaredError</span><span class="p">(</span><span class="n">goals</span><span class="p">))</span>
+</code></pre></div>
+<p>Minimizing this loss would be a least-squares match.
+An exact fit would drive it to zero, but for an arbitrary target that is unlikely, since it would mean the target was already funicular (we are often not that lucky).
+The optimizer instead finds the funicular geometry that comes closest.</p>
+<p>Once the problem is defined, we hand the problem to <code>constrained_fdm</code> with a gradient-based optimizer.
+<code>LBFGSB</code> handles the bounded force densities well and converges rapidly.</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">jax_fdm.equilibrium</span><span class="w"> </span><span class="kn">import</span> <span class="n">constrained_fdm</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">jax_fdm.optimization</span><span class="w"> </span><span class="kn">import</span> <span class="n">LBFGSB</span>
+
+
+<span class="n">network_matched</span> <span class="o">=</span> <span class="n">constrained_fdm</span><span class="p">(</span>
+    <span class="n">network</span><span class="p">,</span>
+    <span class="n">optimizer</span><span class="o">=</span><span class="n">LBFGSB</span><span class="p">(),</span>
+    <span class="n">loss</span><span class="o">=</span><span class="n">loss</span><span class="p">,</span>
+    <span class="n">parameters</span><span class="o">=</span><span class="n">parameters</span><span class="p">,</span>
+    <span class="n">maxiter</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span>
+    <span class="n">tol</span><span class="o">=</span><span class="mf">1e-6</span><span class="p">,</span>
+<span class="p">)</span>
+</code></pre></div>
+<p><img alt="Shape matching, optimized result" src="../../assets/images/shape_matching_optimized.png" /></p>
+<p>The optimized network now captures the crease the guess had rounded away, and the Hausdorff distance drops from 5.2 meters to 0.70, an order of magnitude closer.
+As the edge colors show, the force densities follow a non-trivial distribution across the edges, exactly the spread a single constant value could never provide.
+Furthermore, none of them turned positive due to the optimization parameter bounds, so the match stays compression-only as intended.</p>
+<div class="admonition tip">
+<p class="admonition-title">Why the match matters mechanically</p>
+<p>The payoff is not only visual. A shape close to funicular carries its loads mostly through axial forces rather than bending, which is what makes shells and gridshells so material-efficient. Nudging an arbitrary target toward its nearest compression-only geometry can cut its strain energy substantially, so a small geometric change buys an outsized gain in structural performance.</p>
+</div>
+<h2 id="interrogating-the-result">Interrogating the result<a class="headerlink" href="#interrogating-the-result" title="Permanent link">¤</a></h2>
+<p>We can measure the quality of the fit directly, the same way the numbers above were computed, with a Hausdorff distance between the two point sets:</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">scipy.spatial.distance</span><span class="w"> </span><span class="kn">import</span> <span class="n">directed_hausdorff</span>
+
+
+<span class="n">matched</span> <span class="o">=</span> <span class="p">[</span><span class="n">network_matched</span><span class="o">.</span><span class="n">node_coordinates</span><span class="p">(</span><span class="n">n</span><span class="p">)</span> <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">network_matched</span><span class="o">.</span><span class="n">nodes</span><span class="p">()]</span>
+<span class="n">target</span> <span class="o">=</span> <span class="p">[</span><span class="n">targets</span><span class="p">[</span><span class="n">n</span><span class="p">]</span> <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">network_matched</span><span class="o">.</span><span class="n">nodes</span><span class="p">()]</span>
+
+<span class="n">forward</span> <span class="o">=</span> <span class="n">directed_hausdorff</span><span class="p">(</span><span class="n">matched</span><span class="p">,</span> <span class="n">target</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+<span class="n">backward</span> <span class="o">=</span> <span class="n">directed_hausdorff</span><span class="p">(</span><span class="n">target</span><span class="p">,</span> <span class="n">matched</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+<span class="n">hausdorff</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">forward</span><span class="p">,</span> <span class="n">backward</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Hausdorff distance: </span><span class="si">{</span><span class="n">hausdorff</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</code></pre></div>
+<p>To see the match, we draw the optimized network colored by its force densities next to the target as a plain wireframe, with a line from each node to the target point it was chasing.
+A fresh load of <code>creased_shell.json</code> gives us the target surface back as its own network to draw.</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">compas.colors</span><span class="w"> </span><span class="kn">import</span> <span class="n">Color</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">compas.datastructures</span><span class="w"> </span><span class="kn">import</span> <span class="n">Network</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">compas.geometry</span><span class="w"> </span><span class="kn">import</span> <span class="n">Line</span>
+
+
+<span class="n">network_target</span> <span class="o">=</span> <span class="n">FDNetwork</span><span class="o">.</span><span class="n">from_json</span><span class="p">(</span><span class="s2">&quot;data/json/creased_shell.json&quot;</span><span class="p">)</span>
+
+<span class="n">viewer</span> <span class="o">=</span> <span class="n">Viewer</span><span class="p">()</span>
+<span class="n">viewer</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">network_matched</span><span class="p">,</span> <span class="n">edgecolor</span><span class="o">=</span><span class="s2">&quot;fd&quot;</span><span class="p">)</span>
+<span class="n">viewer</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">network</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="bp">cls</span><span class="o">=</span><span class="n">Network</span><span class="p">),</span> <span class="n">color</span><span class="o">=</span><span class="n">Color</span><span class="o">.</span><span class="n">grey</span><span class="p">())</span>
+
+<span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">network_matched</span><span class="o">.</span><span class="n">nodes</span><span class="p">():</span>
+    <span class="n">line</span> <span class="o">=</span> <span class="n">Line</span><span class="p">(</span><span class="n">network_matched</span><span class="o">.</span><span class="n">node_coordinates</span><span class="p">(</span><span class="n">node</span><span class="p">),</span> <span class="n">targets</span><span class="p">[</span><span class="n">node</span><span class="p">])</span>
+    <span class="n">viewer</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">line</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="n">Color</span><span class="o">.</span><span class="n">red</span><span class="p">())</span>
+
+<span class="n">viewer</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</code></pre></div>
+<p>The red lines, so prominent in the initial guess, shrink to almost nothing after optimization, a visual echo of the collapsed Hausdorff distance.</p>
+<h2 id="where-to-next">Where to next<a class="headerlink" href="#where-to-next" title="Permanent link">¤</a></h2>
 <ul>
-<li><a href="https://colab.research.google.com/github/arpastrana/jax_fdm/blob/main/notebooks/arch.ipynb">Arch</a>: Control the height and the horizontal projection of a 2D arch.</li>
-<li><a href="https://colab.research.google.com/github/arpastrana/jax_fdm/blob/main/notebooks/spiral.ipynb">3D spiral</a>: Calculate the loads required to maintain a compression-only 3D spiral in equilibrium <a href="https://doi.org/10.1016/j.engstruct.2021.112176">(Angelillo, et al. 2021)</a>.</li>
-<li><a href="https://colab.research.google.com/github/arpastrana/jax_fdm/blob/main/notebooks/vault.ipynb">Creased masonry shell</a>: Best-fit a target surface <a href="https://cims.nyu.edu/gcl/papers/designing-unreinforced-masonry-models-siggraph-2013-panozzo-et-al.pdf">(Panozzo, et al. 2013)</a>.</li>
+<li>Curious how goals, losses, and the optimizer fit together? Read <a href="../../howto/constrained_form_finding/">constrained form-finding</a>.</li>
+<li>Want a target the goal bank does not cover? Write a <a href="../../howto/custom_goals/">custom goal</a>.</li>
+<li>The runnable script for this example lives in <a href="https://github.com/arpastrana/jax_fdm/blob/main/examples/creased_shell/creased_shell.py"><code>examples/creased_shell/creased_shell.py</code></a>.</li>
 </ul>
-<h2 id="python-scripts">Python scripts<a class="headerlink" href="#python-scripts" title="Permanent link">¤</a></h2>
-<p>The scripts require a local installation of JAX FDM.</p>
-<ul>
-<li><a href="https://github.com/arpastrana/jax_fdm/blob/main/examples/dome/dome.py">Pointy dome</a>: Control the tilt and the coarse width of a brick dome.</li>
-<li><a href="https://github.com/arpastrana/jax_fdm/blob/main/examples/monkey_saddle/monkey_saddle.py">Triple-branching shell</a>: Design the distribution of thrusts at the supports of a tripod while constraining the edge lengths.</li>
-<li><a href="https://github.com/arpastrana/jax_fdm/blob/main/examples/pringle/pringle.py">Saddle bridge</a>: Create a crease in the middle of the bridge while constraining the transversal edges of the network to a target plane.</li>
-</ul>
+<div class="footnote">
+<hr />
+<ol>
+<li id="fn:cmame">
+<p>The shape-matching task, and the strain-energy analysis behind the efficiency claims, are studied in detail in Pastrana et al., <em>Differentiable force density method for the design of lightweight structures</em>, Computer Methods in Applied Mechanics and Engineering (2026). See the <a href="../../citation/">citation page</a>.&#160;<a class="footnote-backref" href="#fnref:cmame" title="Jump back to footnote 1 in the text">&#8617;</a></p>
+</li>
+<li id="fn:panozzo">
+<p>This surface appears in <a href="https://cims.nyu.edu/gcl/papers/designing-unreinforced-masonry-models-siggraph-2013-panozzo-et-al.pdf">Panozzo, et al. (2013)</a> and is taken with attribution from their supplementary material.&#160;<a class="footnote-backref" href="#fnref:panozzo" title="Jump back to footnote 2 in the text">&#8617;</a></p>
+</li>
+</ol>
+</div>
 
 
 

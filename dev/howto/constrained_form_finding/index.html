@@ -12,13 +12,13 @@
         <meta name="author" content="Rafael Pastrana">
       
       
-        <link rel="canonical" href="https://arpastrana.github.io/jax_fdm/dev/examples/arch/">
+        <link rel="canonical" href="https://arpastrana.github.io/jax_fdm/dev/howto/constrained_form_finding/">
       
       
-        <link rel="prev" href="../../license/">
+        <link rel="prev" href="../form_finding/">
       
       
-        <link rel="next" href="../shape_matching/">
+        <link rel="next" href="../goals/">
       
       
         
@@ -29,7 +29,7 @@
     
     
       
-        <title>Length optimization - JAX FDM</title>
+        <title>Constrained form-finding - JAX FDM</title>
       
     
     
@@ -84,7 +84,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#length-optimization" class="md-skip">
+        <a href="#constrained-form-finding" class="md-skip">
           Skip to content
         </a>
       
@@ -123,7 +123,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Length optimization
+              Constrained form-finding
             
           </span>
         </div>
@@ -375,8 +375,6 @@
       
   
   
-    
-  
   
   
     
@@ -389,11 +387,11 @@
       
     
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" checked>
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
         
           
           <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="">
@@ -414,7 +412,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="true">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_5">
             <span class="md-nav__icon md-icon"></span>
             
@@ -429,19 +427,10 @@
                 
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../../examples/arch/" class="md-nav__link">
         
   
   
@@ -457,7 +446,6 @@
   
 
       </a>
-      
     </li>
   
 
@@ -470,7 +458,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../shape_matching/" class="md-nav__link">
+      <a href="../../examples/shape_matching/" class="md-nav__link">
         
   
   
@@ -498,7 +486,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../truss_equal_force/" class="md-nav__link">
+      <a href="../../examples/truss_equal_force/" class="md-nav__link">
         
   
   
@@ -526,7 +514,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../gridshell_planarization/" class="md-nav__link">
+      <a href="../../examples/gridshell_planarization/" class="md-nav__link">
         
   
   
@@ -554,7 +542,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../more/" class="md-nav__link">
+      <a href="../../examples/more/" class="md-nav__link">
         
   
   
@@ -586,8 +574,10 @@
       
   
   
+    
   
   
+  
     
     
     
@@ -598,11 +588,11 @@
       
     
     
-    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" checked>
         
           
           <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="">
@@ -623,7 +613,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="true">
           <label class="md-nav__title" for="__nav_6">
             <span class="md-nav__icon md-icon"></span>
             
@@ -641,7 +631,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../howto/form_finding/" class="md-nav__link">
+      <a href="../form_finding/" class="md-nav__link">
         
   
   
@@ -666,10 +656,37 @@
                 
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="../../howto/constrained_form_finding/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Constrained form-finding
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         
   
   
@@ -685,6 +702,131 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#the-five-ingredients" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The five ingredients
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="The five ingredients">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-parameters-what-the-optimizer-may-change" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Parameters: what the optimizer may change
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-goals-what-we-strive-for" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Goals: what we strive for
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-the-loss-translating-intent-to-numbers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. The loss: translating intent to numbers
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4-constraints-the-lines-we-will-not-cross" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Constraints: the lines we will not cross
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#5-the-optimizer-searching-in-parameter-space" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. The optimizer: searching in parameter space
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#putting-it-together" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Putting it together
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#reading-the-result" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Reading the result
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#where-to-next" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Where to next
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -697,7 +839,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../howto/goals/" class="md-nav__link">
+      <a href="../goals/" class="md-nav__link">
         
   
   
@@ -725,7 +867,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../howto/constraints/" class="md-nav__link">
+      <a href="../constraints/" class="md-nav__link">
         
   
   
@@ -753,7 +895,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../howto/custom_goals/" class="md-nav__link">
+      <a href="../custom_goals/" class="md-nav__link">
         
   
   
@@ -781,7 +923,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../howto/custom_constraints/" class="md-nav__link">
+      <a href="../custom_constraints/" class="md-nav__link">
         
   
   
@@ -1253,6 +1395,119 @@
     
   
   
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#the-five-ingredients" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The five ingredients
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="The five ingredients">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-parameters-what-the-optimizer-may-change" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Parameters: what the optimizer may change
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-goals-what-we-strive-for" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Goals: what we strive for
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-the-loss-translating-intent-to-numbers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. The loss: translating intent to numbers
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4-constraints-the-lines-we-will-not-cross" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Constraints: the lines we will not cross
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#5-the-optimizer-searching-in-parameter-space" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. The optimizer: searching in parameter space
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#putting-it-together" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Putting it together
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#reading-the-result" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Reading the result
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#where-to-next" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Where to next
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
 </nav>
                   </div>
                 </div>
@@ -1271,13 +1526,144 @@
   
 
 
-<h1 id="length-optimization">Length Optimization<a class="headerlink" href="#length-optimization" title="Permanent link">¤</a></h1>
-<p>Suppose we want to find a suitable funicular geometry for a 5-meter span arch subjected to vertical point loads of 0.3 kN.
-The arch has to be compression-dominant.
-We model the arch as a <code>jax_fdm</code> network built from scratch: a straight line of nodes evenly spaced along the span, joined edge to edge.
-Then, we apply a force density of -1 to all of its edges, and compute the required shape with the force density method.</p>
+<h1 id="constrained-form-finding">Constrained form-finding<a class="headerlink" href="#constrained-form-finding" title="Permanent link">¤</a></h1>
+<p>Plain <a href="../form_finding/">form-finding</a> provides us with <em>one</em> equilibrium solution for given input parameters.
+But a design brief rarely asks for just any equilibrium state.
+Most often that not, it asks for a <em>particular</em> equilibrium state to design a slender gridshell whose member lengths stay between three-quarters of a meter and a meter, or a roof that touches down exactly on four given points, but where the magnitude of the reaction force at one of the supports must reach a target value.</p>
+<p>Constrained form-finding is how we guide equilibrium computation towards <em>that</em> shape (and by extension, to its corresponding full equilibrium state).
+We describe a design specification we want as a loss to minimize and a set of bounds to respect, and <code>constrained_fdm</code> searches the space of force densities (and, if we like, supports and loads) for the geometry and the equilibrium configuration that satisfies them.</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">jax_fdm.equilibrium</span><span class="w"> </span><span class="kn">import</span> <span class="n">constrained_fdm</span>
+
+
+<span class="n">optimized</span> <span class="o">=</span> <span class="n">constrained_fdm</span><span class="p">(</span><span class="n">datastructure</span><span class="p">,</span> <span class="n">optimizer</span><span class="p">,</span> <span class="n">loss</span><span class="p">,</span> <span class="n">parameters</span><span class="p">,</span> <span class="n">constraints</span><span class="p">)</span>
+</code></pre></div>
+<p>Under the hood <code>constrained_fdm</code> runs the same force density solve as <code>fdm</code>, repeatedly inside an optimization loop.
+Each iteration nudges the parameters, re-solves for equilibrium, and scores the result against our loss.
+Because the whole solve is differentiable, the optimizer gets exact gradients for free to adjust the FDM parameters at each iteration until convergence.</p>
+<p>The rest of this guide is a tour of the five ingredients we assemble, from the parameters the optimizer moves to the algorithm that moves them.</p>
+<h2 id="the-five-ingredients">The five ingredients<a class="headerlink" href="#the-five-ingredients" title="Permanent link">¤</a></h2>
+<h3 id="1-parameters-what-the-optimizer-may-change">1. Parameters: what the optimizer may change<a class="headerlink" href="#1-parameters-what-the-optimizer-may-change" title="Permanent link">¤</a></h3>
+<p>A <strong>parameter</strong> marks one quantity as a design variable, something the optimizer is allowed to tune between bounds.
+The most common one is the force density of an edge:</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">jax_fdm.parameters</span><span class="w"> </span><span class="kn">import</span> <span class="n">EdgeForceDensityParameter</span>
+
+
+<span class="n">edge</span> <span class="o">=</span> <span class="p">(</span><span class="mi">6</span><span class="p">,</span> <span class="mi">7</span><span class="p">)</span>
+<span class="n">parameter</span> <span class="o">=</span> <span class="n">EdgeForceDensityParameter</span><span class="p">(</span><span class="n">edge</span><span class="p">,</span> <span class="o">-</span><span class="mf">20.0</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.1</span><span class="p">)</span>
+</code></pre></div>
+<p>Each parameter takes an element key and a lower and upper bound (<code>None</code> on either side leaves it unbounded).
+Here every edge force density is free to move within <code>[-20.0, -0.1]</code>, keeping the structure in compression.</p>
+<p>We are not limited, however, to force densities.
+Support positions (<code>NodeSupportXParameter</code>, <code>NodeSupportZParameter</code>, …) and applied loads (<code>NodeLoadXParameter</code>, …) can be design variables too, and group variants (<code>EdgeGroupForceDensityParameter</code>, …) tie many elements to a single shared value.</p>
+<div class="admonition note">
+<p class="admonition-title">Parameters are optional</p>
+<p>If we pass <code>parameters=None</code>, the optimizer falls back to a sensible default: every edge force density becomes a free variable, unbounded.
+So the quickest constrained run needs no explicit parameters at all, and we reach for them when we want bounds or want to expose supports and loads.</p>
+</div>
+<h3 id="2-goals-what-we-strive-for">2. Goals: what we strive for<a class="headerlink" href="#2-goals-what-we-strive-for" title="Permanent link">¤</a></h3>
+<p>A <strong>goal</strong> is a soft target on an quantity in the structure's equilibrium configuration: reach this length, hover over this point, minimize this force.
+Soft means the optimizer trades goals off against one another rather than satisfying any single one exactly.</p>
+<p>See the guide on <a href="../goals/">goals</a> for details.
+It covers what a goal is and how keys become indices, to spoil you a few things.
+Here it is enough to know that JAX FDM ships a large bank of them and that we create one goal per element we want to steer:</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">jax_fdm.goals</span><span class="w"> </span><span class="kn">import</span> <span class="n">VertexZCoordinateGoal</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">jax_fdm.goals</span><span class="w"> </span><span class="kn">import</span> <span class="n">EdgeForceGoal</span>
+
+
+<span class="n">vertex</span> <span class="o">=</span> <span class="mi">4</span>
+<span class="n">goal_z</span> <span class="o">=</span> <span class="n">VertexZCoordinateGoal</span><span class="p">(</span><span class="n">vertex</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
+
+<span class="n">edge</span> <span class="o">=</span> <span class="p">(</span><span class="mi">6</span><span class="p">,</span> <span class="mi">7</span><span class="p">)</span>
+<span class="n">goal_force</span> <span class="o">=</span> <span class="n">EdgeForceGoal</span><span class="p">(</span><span class="n">edge</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="mf">2.0</span><span class="p">)</span>
+</code></pre></div>
+<h3 id="3-the-loss-translating-intent-to-numbers">3. The loss: translating intent to numbers<a class="headerlink" href="#3-the-loss-translating-intent-to-numbers" title="Permanent link">¤</a></h3>
+<p>An optimizer minimizes one scalar.
+A <strong>loss</strong> is what turns our list of goals into that scalar, by measuring how far each goal's prediction sits from its target and summing the misfit.</p>
+<p>We wrap our goals in an <strong>error term</strong> and hand the term to <code>Loss</code>:</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">jax_fdm.losses</span><span class="w"> </span><span class="kn">import</span> <span class="n">Loss</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">jax_fdm.losses</span><span class="w"> </span><span class="kn">import</span> <span class="n">MeanSquaredError</span>
+
+
+<span class="n">goals</span> <span class="o">=</span> <span class="p">[</span><span class="n">goal_z</span><span class="p">,</span> <span class="n">goal_force</span><span class="p">]</span>
+<span class="n">loss</span> <span class="o">=</span> <span class="n">Loss</span><span class="p">(</span><span class="n">MeanSquaredError</span><span class="p">(</span><span class="n">goals</span><span class="o">=</span><span class="n">goals</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">1.0</span><span class="p">))</span>
+</code></pre></div>
+<p><code>MeanSquaredError</code> is, for example, is the mean weighted sum of squared prediction-target gaps.
+JAX FDM offers a family of error terms for when the squared gap is not what we want:</p>
+<table>
+<thead>
+<tr>
+<th>Error term</th>
+<th>Measures</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>SquaredError</code></td>
+<td>the summed squared gap to target</td>
+</tr>
+<tr>
+<td><code>MeanSquaredError</code></td>
+<td>the same, averaged over goals</td>
+</tr>
+<tr>
+<td><code>RootMeanSquaredError</code></td>
+<td>the root of the mean squared gap, back in the units of the quantity</td>
+</tr>
+<tr>
+<td><code>AbsoluteError</code>, <code>MeanAbsoluteError</code></td>
+<td>the absolute gap, less swayed by outliers</td>
+</tr>
+<tr>
+<td><code>PredictionError</code>, <code>MeanPredictionError</code></td>
+<td>the predicted quantity itself, no target, for minimizing something like load path toward zero</td>
+</tr>
+<tr>
+<td><code>LogMaxError</code></td>
+<td>a soft one-sided barrier that penalizes only overshoot past the target</td>
+</tr>
+</tbody>
+</table>
+<p>A loss can hold several error terms at once, each with its own <code>alpha</code> weight scaling its contribution, so we can, say, chase a target shape while gently minimizing load path.
+We can also add a <strong>regularizer</strong> such as <code>L2Regularizer(alpha)</code>, which penalizes the force densities themselves to keep the solution well-behaved.</p>
+<div class="admonition tip">
+<p class="admonition-title">Prediction errors need no target</p>
+<p>Most error terms compare a prediction against a goal's target.
+<code>PredictionError</code> and its mean cousin skip the target and penalize the raw predicted quantity, which is exactly what we want when the aim is to <em>minimize</em> a quantity (total load path, total area) rather than drive it to a set value.
+Another way to look at <code>PredictionError</code> is as an error term where the target value is <code>0.0</code>, which would equivalently push to minimize the predicted quantities.</p>
+</div>
+<h3 id="4-constraints-the-lines-we-will-not-cross">4. Constraints: the lines we will not cross<a class="headerlink" href="#4-constraints-the-lines-we-will-not-cross" title="Permanent link">¤</a></h3>
+<p>While a goal is a soft preference, a <strong>constraint</strong> is a hard bound, where the optimizer must keep the constrained quantity between its limits.</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">jax_fdm.constraints</span><span class="w"> </span><span class="kn">import</span> <span class="n">EdgeLengthConstraint</span>
+
+
+<span class="n">constraints</span> <span class="o">=</span> <span class="p">[</span><span class="n">EdgeLengthConstraint</span><span class="p">(</span><span class="n">edge</span><span class="p">,</span> <span class="mf">0.75</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">)</span> <span class="k">for</span> <span class="n">edge</span> <span class="ow">in</span> <span class="n">network</span><span class="o">.</span><span class="n">edges</span><span class="p">()]</span>
+</code></pre></div>
+<p>Constraints are covered in <a href="../constraints/">constraints</a>.
+The fine print here is that they render more complex and potentially more expensive optimization problem, so apply them judiciously if you care about solution speed.
+Two things matter when composing a constrained form-finding problem with hard constraints: they are honored only by the optimizers that support them (<code>SLSQP</code>, <code>IPOPT</code>, and <code>TrustRegionConstrained</code>), and they are optional, leave them out for an unconstrained minimization.</p>
+<h3 id="5-the-optimizer-searching-in-parameter-space">5. The optimizer: searching in parameter space<a class="headerlink" href="#5-the-optimizer-searching-in-parameter-space" title="Permanent link">¤</a></h3>
+<p>The <strong>optimizer</strong> is the algorithm that walks the parameter space toward a minimum.
+JAX FDM wraps a spread of them, sorted by what they can do:</p>
+<ul>
+<li><strong>Gradient-based, unconstrained</strong> — <code>LBFGSB</code>, <code>BFGS</code>, <code>GradientDescent</code>, and the second-order Newton and trust-region family (<code>NewtonCG</code>, <code>TruncatedNewton</code>, <code>TrustRegionNewton</code>, …). Fast, and the usual first choice when we have no hard constraints.</li>
+<li><strong>Gradient-based, constrained</strong> — <code>SLSQP</code>, <code>IPOPT</code>, <code>TrustRegionConstrained</code>. These are the ones that honor the constraints from ingredient 4.</li>
+<li><strong>Gradient-free</strong> — <code>DifferentialEvolution</code>, <code>DualAnnealing</code>, <code>Powell</code>, <code>NelderMead</code>. Slower, but they need no gradients and can escape local minima, useful for rough or non-smooth objectives, or for benchmarking against their gradient-based counterparts.</li>
+</ul>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">jax_fdm.optimization</span><span class="w"> </span><span class="kn">import</span> <span class="n">SLSQP</span>
+
+
+<span class="n">optimizer</span> <span class="o">=</span> <span class="n">SLSQP</span><span class="p">()</span>
+</code></pre></div>
+<h2 id="putting-it-together">Putting it together<a class="headerlink" href="#putting-it-together" title="Permanent link">¤</a></h2>
+<p>Here is a complete constrained form-finding run, the same one featured in the <a href="../../examples/arch/">arch optimization</a> example.
+The brief: find the arch that minimizes total load path while keeping every segment between 0.75 and 1 meter.</p>
 <div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">jax_fdm.datastructures</span><span class="w"> </span><span class="kn">import</span> <span class="n">FDNetwork</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">jax_fdm.equilibrium</span><span class="w"> </span><span class="kn">import</span> <span class="n">fdm</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">jax_fdm.equilibrium</span><span class="w"> </span><span class="kn">import</span> <span class="n">constrained_fdm</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">jax_fdm.optimization</span><span class="w"> </span><span class="kn">import</span> <span class="n">SLSQP</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">jax_fdm.constraints</span><span class="w"> </span><span class="kn">import</span> <span class="n">EdgeLengthConstraint</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">jax_fdm.goals</span><span class="w"> </span><span class="kn">import</span> <span class="n">NetworkLoadPathGoal</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">jax_fdm.losses</span><span class="w"> </span><span class="kn">import</span> <span class="n">Loss</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">jax_fdm.losses</span><span class="w"> </span><span class="kn">import</span> <span class="n">PredictionError</span>
 
 
 <span class="n">length</span> <span class="o">=</span> <span class="mf">5.0</span>
@@ -1289,41 +1675,39 @@ Then, we apply a force density of -1 to all of its edges, and compute the requir
 <span class="n">edges</span> <span class="o">=</span> <span class="p">[(</span><span class="n">i</span><span class="p">,</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_segments</span><span class="p">)]</span>
 
 <span class="n">network</span> <span class="o">=</span> <span class="n">FDNetwork</span><span class="o">.</span><span class="n">from_nodes_and_edges</span><span class="p">(</span><span class="n">nodes</span><span class="p">,</span> <span class="n">edges</span><span class="p">)</span>
+
 <span class="n">network</span><span class="o">.</span><span class="n">edges_forcedensities</span><span class="p">(</span><span class="n">q</span><span class="o">=-</span><span class="mf">1.0</span><span class="p">)</span>
 <span class="n">network</span><span class="o">.</span><span class="n">nodes_supports</span><span class="p">(</span><span class="n">keys</span><span class="o">=</span><span class="p">[</span><span class="n">node</span> <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">network</span><span class="o">.</span><span class="n">nodes</span><span class="p">()</span> <span class="k">if</span> <span class="n">network</span><span class="o">.</span><span class="n">is_leaf</span><span class="p">(</span><span class="n">node</span><span class="p">)])</span>
 <span class="n">network</span><span class="o">.</span><span class="n">nodes_loads</span><span class="p">([</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.3</span><span class="p">])</span>
 
-<span class="n">f_network</span> <span class="o">=</span> <span class="n">fdm</span><span class="p">(</span><span class="n">network</span><span class="p">)</span>
-</code></pre></div>
-<p>We now wish to find a new form for this arch that minimizes the <a href="https://doi.org/10.1007/s00158-019-02214-w">total Michell's load path</a>, while keeping the length of the arch segments between 0.75 and 1 meters.
-We solve this constrained form-finding problem with the SLSQP gradient-based optimizer.</p>
-<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">jax_fdm.equilibrium</span><span class="w"> </span><span class="kn">import</span> <span class="n">constrained_fdm</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">jax_fdm.optimization</span><span class="w"> </span><span class="kn">import</span> <span class="n">SLSQP</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">jax_fdm.constraints</span><span class="w"> </span><span class="kn">import</span> <span class="n">EdgeLengthConstraint</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">jax_fdm.goals</span><span class="w"> </span><span class="kn">import</span> <span class="n">NetworkLoadPathGoal</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">jax_fdm.losses</span><span class="w"> </span><span class="kn">import</span> <span class="n">PredictionError</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">jax_fdm.losses</span><span class="w"> </span><span class="kn">import</span> <span class="n">Loss</span>
-
-
 <span class="n">loss</span> <span class="o">=</span> <span class="n">Loss</span><span class="p">(</span><span class="n">PredictionError</span><span class="p">(</span><span class="n">goals</span><span class="o">=</span><span class="p">[</span><span class="n">NetworkLoadPathGoal</span><span class="p">()]))</span>
 <span class="n">constraints</span> <span class="o">=</span> <span class="p">[</span><span class="n">EdgeLengthConstraint</span><span class="p">(</span><span class="n">edge</span><span class="p">,</span> <span class="mf">0.75</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">)</span> <span class="k">for</span> <span class="n">edge</span> <span class="ow">in</span> <span class="n">network</span><span class="o">.</span><span class="n">edges</span><span class="p">()]</span>
-<span class="n">optimizer</span> <span class="o">=</span> <span class="n">SLSQP</span><span class="p">()</span>
 
-<span class="n">c_network</span> <span class="o">=</span> <span class="n">constrained_fdm</span><span class="p">(</span><span class="n">network</span><span class="p">,</span> <span class="n">optimizer</span><span class="p">,</span> <span class="n">loss</span><span class="p">,</span> <span class="n">constraints</span><span class="o">=</span><span class="n">constraints</span><span class="p">)</span>
+<span class="n">optimized</span> <span class="o">=</span> <span class="n">constrained_fdm</span><span class="p">(</span>
+    <span class="n">network</span><span class="p">,</span>
+    <span class="n">optimizer</span><span class="o">=</span><span class="n">SLSQP</span><span class="p">(),</span>
+    <span class="n">loss</span><span class="o">=</span><span class="n">loss</span><span class="p">,</span>
+    <span class="n">constraints</span><span class="o">=</span><span class="n">constraints</span><span class="p">,</span>
+<span class="p">)</span>
 </code></pre></div>
-<p>We finally visualize the constrained arch <code>c_network</code> with the <code>Viewer</code>, together with the unconstrained arch <code>f_network</code> as a plain wireframe (convert it to a COMPAS <code>Network</code> to draw it without the force density styling).</p>
-<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">compas.datastructures</span><span class="w"> </span><span class="kn">import</span> <span class="n">Network</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">jax_fdm.visualization</span><span class="w"> </span><span class="kn">import</span> <span class="n">Viewer</span>
-
-
-<span class="n">viewer</span> <span class="o">=</span> <span class="n">Viewer</span><span class="p">(</span><span class="n">width</span><span class="o">=</span><span class="mi">1600</span><span class="p">,</span> <span class="n">height</span><span class="o">=</span><span class="mi">900</span><span class="p">)</span>
-<span class="n">viewer</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">c_network</span><span class="p">)</span>
-<span class="n">viewer</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">f_network</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="bp">cls</span><span class="o">=</span><span class="n">Network</span><span class="p">))</span>
-<span class="n">viewer</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
-</code></pre></div>
-<p><img alt="Arch load path" src="../../assets/images/arch_loadpath.png" /></p>
-<p>The constrained form is shallower than the unconstrained one as a result of the optimization process.
-The length of the arch segments also varies within the prescribed bounds to minimize the load path: segments are the longest where the arch's internal forces are lower (1.0 meter, at the apex), and conversely, the segments are shorter where the arch's internal forces are higher (0.75 m, at the base).</p>
+<p>Notice there are no explicit <code>parameters</code> here: with <code>parameters=None</code> the optimizer treats every edge force density as a free variable, which is exactly what this problem wants.
+The <code>PredictionError</code> on a <code>NetworkLoadPathGoal</code> means "make the load path as small as we can" (no target), while the <code>EdgeLengthConstraint</code> list keeps the segments in range.</p>
+<h2 id="reading-the-result">Reading the result<a class="headerlink" href="#reading-the-result" title="Permanent link">¤</a></h2>
+<p><code>constrained_fdm</code>, like <code>fdm</code>, returns a <em>copy</em> of the datastructure in equilibrium, leaving the original untouched.
+The optimizer's solution is baked into that copy: every edge reports its optimized force density <code>q</code>, along with the resulting <code>length</code> and <code>force</code>, and every node reports its equilibrium <code>xyz</code>, residual, and load.
+If you have a sharp eye, the compression-only requirement is handled by construction by the optimization problem, even when we do not set limits on the parameters, since we start from a negative initial guess of <code>q</code>, and the path of least resistance for the optimizer in this simple problem is to remain in the compression regime rather than switching to the tension regime (which would result in a steeper optimization landscap and would require a lot more effort).
+We read the outcome straight off <code>optimized</code> with the usual datastructure accessors, or hand it to the <a href="../../api/jax_fdm.visualization.viewers/"><code>Viewer</code></a> to see it.</p>
+<div class="admonition note">
+<p class="admonition-title">Constraints run on the dense solver</p>
+<p>The sparse solver does not support constraints yet.
+When we pass constraints with the default <code>sparse=True</code>, <code>constrained_fdm</code> switches the solve to dense and prints a short notice.
+Unconstrained problems keep the sparse solver and its scaling.</p>
+</div>
+<h2 id="where-to-next">Where to next<a class="headerlink" href="#where-to-next" title="Permanent link">¤</a></h2>
+<ul>
+<li>New to the objects <code>constrained_fdm</code> juggles under the hood? Start with <a href="../form_finding/">form-finding</a>.</li>
+<li>Need a target or a bound the library does not ship? Write a <a href="../custom_goals/">custom goal</a> or <a href="../custom_constraints/">custom constraint</a>.</li>
+</ul>
 
 
 

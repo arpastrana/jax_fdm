@@ -12,29 +12,31 @@
         <meta name="author" content="Rafael Pastrana">
       
       
-        <link rel="canonical" href="https://arpastrana.github.io/jax_fdm/dev/">
+        <link rel="canonical" href="https://arpastrana.github.io/jax_fdm/dev/howto/custom_constraints/">
       
       
+        <link rel="prev" href="../custom_goals/">
       
-        <link rel="next" href="installation/">
+      
+        <link rel="next" href="../../api/jax_fdm.datastructures/">
       
       
         
       
       
-      <link rel="icon" href="assets/images/jax_logo.svg">
+      <link rel="icon" href="../../assets/images/jax_logo.svg">
       <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
     
     
       
-        <title>JAX FDM</title>
+        <title>Custom constraints - JAX FDM</title>
       
     
     
-      <link rel="stylesheet" href="assets/stylesheets/main.484c7ddc.min.css">
+      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
       
         
-        <link rel="stylesheet" href="assets/stylesheets/palette.ab4e12ef.min.css">
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
       
       
 
@@ -53,11 +55,11 @@
       
     
     
-      <link rel="stylesheet" href="assets/_mkdocstrings.css">
+      <link rel="stylesheet" href="../../assets/_mkdocstrings.css">
     
-      <link rel="stylesheet" href="assets/css/custom.css">
+      <link rel="stylesheet" href="../../assets/css/custom.css">
     
-    <script>__md_scope=new URL(".",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
 
@@ -82,7 +84,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#overview" class="md-skip">
+        <a href="#custom-constraints" class="md-skip">
           Skip to content
         </a>
       
@@ -102,9 +104,9 @@
 
 <header class="md-header md-header--shadow" data-md-component="header">
   <nav class="md-header__inner md-grid" aria-label="Header">
-    <a href="." title="JAX FDM" class="md-header__button md-logo" aria-label="JAX FDM" data-md-component="logo">
+    <a href="../.." title="JAX FDM" class="md-header__button md-logo" aria-label="JAX FDM" data-md-component="logo">
       
-  <img src="assets/images/jax_logo.svg" alt="logo">
+  <img src="../../assets/images/jax_logo.svg" alt="logo">
 
     </a>
     <label class="md-header__button md-icon" for="__drawer">
@@ -121,7 +123,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Overview
+              Custom constraints
             
           </span>
         </div>
@@ -239,9 +241,9 @@
 
 <nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
-    <a href="." title="JAX FDM" class="md-nav__button md-logo" aria-label="JAX FDM" data-md-component="logo">
+    <a href="../.." title="JAX FDM" class="md-nav__button md-logo" aria-label="JAX FDM" data-md-component="logo">
       
-  <img src="assets/images/jax_logo.svg" alt="logo">
+  <img src="../../assets/images/jax_logo.svg" alt="logo">
 
     </a>
     JAX FDM
@@ -265,37 +267,10 @@
       
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Overview
-  
-
-    
-  </span>
-  
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="." class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
         
   
   
@@ -311,59 +286,6 @@
   
 
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#features" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Features
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#acknowledgements" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Acknowledgements
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#see-also" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        See also
-      
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -375,7 +297,7 @@
   
   
     <li class="md-nav__item">
-      <a href="installation/" class="md-nav__link">
+      <a href="../../installation/" class="md-nav__link">
         
   
   
@@ -402,7 +324,7 @@
   
   
     <li class="md-nav__item">
-      <a href="citation/" class="md-nav__link">
+      <a href="../../citation/" class="md-nav__link">
         
   
   
@@ -429,7 +351,7 @@
   
   
     <li class="md-nav__item">
-      <a href="license/" class="md-nav__link">
+      <a href="../../license/" class="md-nav__link">
         
   
   
@@ -508,7 +430,7 @@
   
   
     <li class="md-nav__item">
-      <a href="examples/arch/" class="md-nav__link">
+      <a href="../../examples/arch/" class="md-nav__link">
         
   
   
@@ -536,7 +458,7 @@
   
   
     <li class="md-nav__item">
-      <a href="examples/shape_matching/" class="md-nav__link">
+      <a href="../../examples/shape_matching/" class="md-nav__link">
         
   
   
@@ -564,7 +486,7 @@
   
   
     <li class="md-nav__item">
-      <a href="examples/truss_equal_force/" class="md-nav__link">
+      <a href="../../examples/truss_equal_force/" class="md-nav__link">
         
   
   
@@ -592,7 +514,7 @@
   
   
     <li class="md-nav__item">
-      <a href="examples/gridshell_planarization/" class="md-nav__link">
+      <a href="../../examples/gridshell_planarization/" class="md-nav__link">
         
   
   
@@ -620,7 +542,7 @@
   
   
     <li class="md-nav__item">
-      <a href="examples/more/" class="md-nav__link">
+      <a href="../../examples/more/" class="md-nav__link">
         
   
   
@@ -652,8 +574,10 @@
       
   
   
+    
   
   
+  
     
     
     
@@ -664,11 +588,11 @@
       
     
     
-    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" checked>
         
           
           <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="">
@@ -689,7 +613,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="true">
           <label class="md-nav__title" for="__nav_6">
             <span class="md-nav__icon md-icon"></span>
             
@@ -707,7 +631,7 @@
   
   
     <li class="md-nav__item">
-      <a href="howto/form_finding/" class="md-nav__link">
+      <a href="../form_finding/" class="md-nav__link">
         
   
   
@@ -735,7 +659,7 @@
   
   
     <li class="md-nav__item">
-      <a href="howto/constrained_form_finding/" class="md-nav__link">
+      <a href="../constrained_form_finding/" class="md-nav__link">
         
   
   
@@ -763,7 +687,7 @@
   
   
     <li class="md-nav__item">
-      <a href="howto/goals/" class="md-nav__link">
+      <a href="../goals/" class="md-nav__link">
         
   
   
@@ -791,7 +715,7 @@
   
   
     <li class="md-nav__item">
-      <a href="howto/constraints/" class="md-nav__link">
+      <a href="../constraints/" class="md-nav__link">
         
   
   
@@ -819,7 +743,7 @@
   
   
     <li class="md-nav__item">
-      <a href="howto/custom_goals/" class="md-nav__link">
+      <a href="../custom_goals/" class="md-nav__link">
         
   
   
@@ -844,10 +768,37 @@
                 
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="howto/custom_constraints/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Custom constraints
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         
   
   
@@ -863,6 +814,59 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#recipe-a-custom-constraint" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Recipe: A custom constraint
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#retargeting-a-constraint-from-nodes-to-vertices" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Retargeting a constraint from nodes to vertices
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Summary
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -934,7 +938,7 @@
   
   
     <li class="md-nav__item">
-      <a href="api/jax_fdm.datastructures/" class="md-nav__link">
+      <a href="../../api/jax_fdm.datastructures/" class="md-nav__link">
         
   
   
@@ -962,7 +966,7 @@
   
   
     <li class="md-nav__item">
-      <a href="api/jax_fdm.equilibrium/" class="md-nav__link">
+      <a href="../../api/jax_fdm.equilibrium/" class="md-nav__link">
         
   
   
@@ -990,7 +994,7 @@
   
   
     <li class="md-nav__item">
-      <a href="api/jax_fdm.goals/" class="md-nav__link">
+      <a href="../../api/jax_fdm.goals/" class="md-nav__link">
         
   
   
@@ -1018,7 +1022,7 @@
   
   
     <li class="md-nav__item">
-      <a href="api/jax_fdm.constraints/" class="md-nav__link">
+      <a href="../../api/jax_fdm.constraints/" class="md-nav__link">
         
   
   
@@ -1046,7 +1050,7 @@
   
   
     <li class="md-nav__item">
-      <a href="api/jax_fdm.losses/" class="md-nav__link">
+      <a href="../../api/jax_fdm.losses/" class="md-nav__link">
         
   
   
@@ -1074,7 +1078,7 @@
   
   
     <li class="md-nav__item">
-      <a href="api/jax_fdm.optimization/" class="md-nav__link">
+      <a href="../../api/jax_fdm.optimization/" class="md-nav__link">
         
   
   
@@ -1102,7 +1106,7 @@
   
   
     <li class="md-nav__item">
-      <a href="api/jax_fdm.parameters/" class="md-nav__link">
+      <a href="../../api/jax_fdm.parameters/" class="md-nav__link">
         
   
   
@@ -1130,7 +1134,7 @@
   
   
     <li class="md-nav__item">
-      <a href="api/jax_fdm.geometry/" class="md-nav__link">
+      <a href="../../api/jax_fdm.geometry/" class="md-nav__link">
         
   
   
@@ -1207,7 +1211,7 @@
   
   
     <li class="md-nav__item">
-      <a href="api/jax_fdm.visualization.viewers/" class="md-nav__link">
+      <a href="../../api/jax_fdm.visualization.viewers/" class="md-nav__link">
         
   
   
@@ -1235,7 +1239,7 @@
   
   
     <li class="md-nav__item">
-      <a href="api/jax_fdm.visualization.notebooks/" class="md-nav__link">
+      <a href="../../api/jax_fdm.visualization.notebooks/" class="md-nav__link">
         
   
   
@@ -1263,7 +1267,7 @@
   
   
     <li class="md-nav__item">
-      <a href="api/jax_fdm.visualization.plotters/" class="md-nav__link">
+      <a href="../../api/jax_fdm.visualization.plotters/" class="md-nav__link">
         
   
   
@@ -1326,10 +1330,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#features" class="md-nav__link">
+  <a href="#recipe-a-custom-constraint" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Features
+        Recipe: A custom constraint
       
     </span>
   </a>
@@ -1337,10 +1341,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#acknowledgements" class="md-nav__link">
+  <a href="#retargeting-a-constraint-from-nodes-to-vertices" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Acknowledgements
+        Retargeting a constraint from nodes to vertices
       
     </span>
   </a>
@@ -1348,10 +1352,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#see-also" class="md-nav__link">
+  <a href="#summary" class="md-nav__link">
     <span class="md-ellipsis">
       
-        See also
+        Summary
       
     </span>
   </a>
@@ -1378,51 +1382,64 @@
   
 
 
-<h1 id="overview">Overview<a class="headerlink" href="#overview" title="Permanent link">¤</a></h1>
-<!-- Shared prose: edit README.md between the snippet markers, not here. -->
-<p>Lightweight structures span long distances with slender cross-sections due to their mechanically efficient shapes.
-However, simulating these structures and turning them into feasible designs that satisfy additional technical constraints remains challenging.
-This is because of the geometrically nonlinear mechanical behaviors of these structure and the high-dimensional search spaces that describe them.</p>
-<p>JAX FDM solves inverse design problems for lightweight structures modeled as pin-jointed bar systems using the force density method (FDM) and gradient-based optimization.
-It streamlines the integration of mechanical simulations into deep learning models for machine learning research.</p>
-<p><img alt="JAX FDM" src="assets/images/jax_logo.gif" /></p>
-<h2 id="features">Features<a class="headerlink" href="#features" title="Permanent link">¤</a></h2>
-<ul>
-<li><strong>Legendary form-finding solver.</strong>
-JAX FDM computes static equilibrium states for pin-jointed bar systems with the <a href="https://www.sciencedirect.com/science/article/pii/0045782574900450">force density method (FDM)</a>, the time-tested solver for geometrically nonlinear systems backed up by over 50 years of peer-reviewed research 📚.</li>
-</ul>
-<!--  -->
-<ul>
-<li><strong>Derivatives, JIT compilation, and parallelization.</strong>
-JAX FDM is written in <a href="https://github.com/google/jax">JAX</a>, a library for high-performance numerical computing and machine learning research, and it thus inherits many of JAX's perks: calculate derivatives, parallelize, and just-in-time (JIT) compile entire structural simulations written in Python code, and run them on a CPU, a GPU, or a TPU 🤯.</li>
-<li><strong>Autotune those force densities, loads, and supports.</strong>
-A lightweight structure should fulfill additional technical requirements to become a feasible system for real-world construction.
-This requires finding the parameters that lead to a specific constrained equilibrium state satisfying these conditions.
-Formulate such an inverse problem with JAX FDM, and let one of its gradient-based optimizers solve it by automatically tweaking the system's force densities, applied loads, and support positions 🕺🏻.</li>
-<li><strong>A rich bank of goals, constraints, and loss functions.</strong>
-No two structures are alike.
-JAX FDM allows you to model a custom design task with its (growing!) collection of goals, constraints, and loss functions via a simple, object-oriented API.
-The available goals and constraints in the framework are granular and applicable to an entire structure; to a subset of its nodes (i.e., vertices), edges, and combinations thereof 💡.</li>
-</ul>
-<!-- Don't see a goal or a constraint you fit?. Add yours with ease! Consult our documentation guide (in progress) to see how you add yours. -->
-<ul>
-<li><strong>Structural simulations as another layer in a neural network.</strong>
-As an auto-differentiable library, JAX FDM can be seamlessly added as a layer in a differentiable function approximator like a neural network that can be then trained end-to-end.
-Let the neural network learn the underlying physics of static equilibrium <em>directly</em> from the simulation, instead of resorting to laborious techniques like data augmentation 🤖.</li>
-</ul>
-<div class="admonition warning">
-<p class="admonition-title">Work in progress</p>
-<p>JAX FDM is a research project under development.
-Expect sharp edges and possibly some API breaking changes as we continue to support a broader set of features.</p>
-</div>
-<h2 id="acknowledgements">Acknowledgements<a class="headerlink" href="#acknowledgements" title="Permanent link">¤</a></h2>
-<p>This work has been supported by the <strong>U.S. National Science Foundation</strong> under grant <strong>OAC-2118201</strong> and the <a href="https://www.mines.edu/id4/">Institute for Data Driven Dynamical Design</a>.</p>
-<h2 id="see-also">See also<a class="headerlink" href="#see-also" title="Permanent link">¤</a></h2>
-<ul>
-<li><a href="https://github.com/arpastrana/compas_cem">COMPAS CEM</a>: Inverse design of 3D trusses with the combinatorial equilibrium modeling (CEM) framework.</li>
-<li><a href="https://github.com/arpastrana/jax_cem">JAX CEM</a>: The combinatorial equilibrium modeling (CEM) framework in JAX.</li>
-<li><a href="https://github.com/google/jax">JAX</a>: Composable transformations of Python+NumPy programs.</li>
-</ul>
+<h1 id="custom-constraints">Custom constraints<a class="headerlink" href="#custom-constraints" title="Permanent link">¤</a></h1>
+<p>A custom constraint is one class and one method away, the same in spirit as a <a href="../custom_goals/">custom goal</a>.
+This guide assumes you have read <a href="../constraints/">constraints</a> for the anatomy the recipe below builds on.
+Because constraints reuse most of the goal machinery, there is little new to learn, and we mostly point out what changes.</p>
+<h2 id="recipe-a-custom-constraint">Recipe: A custom constraint<a class="headerlink" href="#recipe-a-custom-constraint" title="Permanent link">¤</a></h2>
+<p>Suppose we want to <em>cap</em> the force magnitude in any edge, keeping it below a ceiling rather than nudging it toward a target as the <a href="../custom_goals/#recipe-1-a-custom-scalar-goal">custom goal</a> did.
+A custom constraint subclasses an element family (<code>EdgeConstraint</code>, <code>NodeConstraint</code>, <code>VertexConstraint</code>) and implements <code>constraint</code>:</p>
+<div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">jax.numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">jnp</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">jax_fdm.constraints.edge</span><span class="w"> </span><span class="kn">import</span> <span class="n">EdgeConstraint</span>
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">EdgeForceMagnitudeConstraint</span><span class="p">(</span><span class="n">EdgeConstraint</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Bound the absolute internal force of an edge.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">constraint</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">eq_state</span><span class="p">,</span> <span class="n">structure</span><span class="p">,</span> <span class="n">index</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">jnp</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">eq_state</span><span class="o">.</span><span class="n">forces</span><span class="p">[</span><span class="n">index</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span>
+</code></pre></div>
+<p>We hand a list of these constraints to <code>constrained_fdm</code> alongside the <code>loss</code> and <code>parameters</code> we set up as in <a href="../constrained_form_finding/">constrained form-finding</a>.
+Next, let's utilize an optimizer that is able to ingest these constraints:</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">jax_fdm.equilibrium</span><span class="w"> </span><span class="kn">import</span> <span class="n">constrained_fdm</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">jax_fdm.optimization</span><span class="w"> </span><span class="kn">import</span> <span class="n">SLSQP</span>
+
+
+<span class="n">constraints</span> <span class="o">=</span> <span class="p">[</span><span class="n">EdgeForceMagnitudeConstraint</span><span class="p">(</span><span class="n">edge</span><span class="p">,</span> <span class="n">bound_low</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">bound_up</span><span class="o">=</span><span class="mf">2.0</span><span class="p">)</span> <span class="k">for</span> <span class="n">edge</span> <span class="ow">in</span> <span class="n">network</span><span class="o">.</span><span class="n">edges</span><span class="p">()]</span>
+
+<span class="n">network</span> <span class="o">=</span> <span class="n">constrained_fdm</span><span class="p">(</span>
+    <span class="n">network</span><span class="p">,</span>
+    <span class="n">optimizer</span><span class="o">=</span><span class="n">SLSQP</span><span class="p">(),</span>
+    <span class="n">loss</span><span class="o">=</span><span class="n">loss</span><span class="p">,</span>
+    <span class="n">parameters</span><span class="o">=</span><span class="n">parameters</span><span class="p">,</span>
+    <span class="n">constraints</span><span class="o">=</span><span class="n">constraints</span><span class="p">,</span>
+    <span class="n">maxiter</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>
+<span class="p">)</span>
+</code></pre></div>
+<p>The bounds arrive through the constructor as <code>bound_low</code> and <code>bound_up</code>, here keeping every edge force magnitude between zero and 2.0.
+The body of <code>constraint</code> is written for a single element and vectorized by the numerical core across all of them, exactly like a goal's <code>prediction</code>.
+The <a href="../custom_goals/#recipe-1-a-custom-scalar-goal">same function purity rules</a> apply: <code>jnp</code> operations only, no Python branching or looping on array values.</p>
+<h2 id="retargeting-a-constraint-from-nodes-to-vertices">Retargeting a constraint from nodes to vertices<a class="headerlink" href="#retargeting-a-constraint-from-nodes-to-vertices" title="Permanent link">¤</a></h2>
+<p>The same node-versus-vertex rule that governs <a href="../custom_goals/#recipe-4-retargeting-a-goal-from-nodes-to-vertices">custom goals</a> governs constraints: <code>Node*</code> constraints speak network, <code>Vertex*</code> constraints speak mesh, and aiming one at the wrong datastructure raises a <code>TypeError</code> that points us at the counterpart. So <code>NodeZCoordinateConstraint</code> is network-only.</p>
+<p>So how do we bound a mesh vertex's height?
+We simply write the vertex twin of that class:</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">jax_fdm.constraints.vertex</span><span class="w"> </span><span class="kn">import</span> <span class="n">VertexConstraint</span>
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">VertexZCoordinateConstraint</span><span class="p">(</span><span class="n">VertexConstraint</span><span class="p">,</span> <span class="n">NodeZCoordinateConstraint</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Bound the Z coordinate of a vertex between a lower and an upper value.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+</code></pre></div>
+<p>The only requirements are a docstring and an inheritance list with <code>VertexConstraint</code> first, so the vertex key resolution wins the method resolution order.
+The <code>constraint</code> body comes along for the ride, as well as all the other computation machinery inherited from the parent classes.
+The constraint above is real though: it is the library's own <code>VertexZCoordinateConstraint</code>, verbatim, and the whole vertex coordinate family (<code>VertexXCoordinateConstraint</code>, <code>VertexYCoordinateConstraint</code>, <code>VertexZCoordinateConstraint</code>) is built this exact way. A <code>Vertex*</code> constraint with genuinely new behavior, such as <code>VertexCurvatureConstraint</code>, writes its own <code>constraint</code> body instead, exactly as the <a href="#recipe-a-custom-constraint">custom recipe above</a> does.</p>
+<h2 id="summary">Summary<a class="headerlink" href="#summary" title="Permanent link">¤</a></h2>
+<p>Customized constraints can join the differentiable machinery of JAX FDM as a first-class citizen, honored by the constraint-aware optimizers (<code>SLSQP</code>, <code>IPOPT</code>, and <code>TrustRegionConstrained</code>) exactly like the built-in bounds.
+Remember to contribute if you think your future self might find your custom constraint useful ;)</p>
 
 
 
@@ -1482,12 +1499,12 @@ Expect sharp edges and possibly some API breaking changes as we continue to supp
     
       
       
-      <script id="__config" type="application/json">{"annotate": null, "base": ".", "features": ["navigation.sections", "navigation.top", "content.code.copy", "search.highlight", "search.suggest", "toc.follow"], "search": "assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"default": "latest", "provider": "mike"}}</script>
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.sections", "navigation.top", "content.code.copy", "search.highlight", "search.suggest", "toc.follow"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"default": "latest", "provider": "mike"}}</script>
     
     
-      <script src="assets/javascripts/bundle.79ae519e.min.js"></script>
+      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
       
-        <script src="assets/js/mathjax.js"></script>
+        <script src="../../assets/js/mathjax.js"></script>
       
         <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
       

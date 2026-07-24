@@ -12,13 +12,13 @@
         <meta name="author" content="Rafael Pastrana">
       
       
-        <link rel="canonical" href="https://arpastrana.github.io/jax_fdm/dev/examples/more/">
+        <link rel="canonical" href="https://arpastrana.github.io/jax_fdm/dev/examples/truss_equal_force/">
       
       
-        <link rel="prev" href="../gridshell_planarization/">
+        <link rel="prev" href="../shape_matching/">
       
       
-        <link rel="next" href="../../howto/form_finding/">
+        <link rel="next" href="../gridshell_planarization/">
       
       
         
@@ -29,7 +29,7 @@
     
     
       
-        <title>More examples - JAX FDM</title>
+        <title>Equal-force truss - JAX FDM</title>
       
     
     
@@ -84,7 +84,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#more-examples" class="md-skip">
+        <a href="#equal-force-truss" class="md-skip">
           Skip to content
         </a>
       
@@ -123,7 +123,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              More examples
+              Equal-force truss
             
           </span>
         </div>
@@ -485,10 +485,37 @@
                 
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="../truss_equal_force/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Equal-force truss
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         
   
   
@@ -504,6 +531,92 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#the-truss" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The truss
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#before-uneven-force-along-the-bottom-chord" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Before: uneven force along the bottom chord
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#defining-the-equal-force-problem" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Defining the equal-force problem
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#after-one-force-one-cross-section" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        After: one force, one cross-section
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#reading-the-result" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Reading the result
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#where-to-next" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Where to next
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -541,37 +654,10 @@
                 
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    More examples
-  
-
-    
-  </span>
-  
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../more/" class="md-nav__link">
         
   
   
@@ -587,48 +673,6 @@
   
 
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#jupyter-notebooks" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Jupyter notebooks
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#python-scripts" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Python scripts
-      
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -1319,10 +1363,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#jupyter-notebooks" class="md-nav__link">
+  <a href="#the-truss" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Jupyter notebooks
+        The truss
       
     </span>
   </a>
@@ -1330,10 +1374,54 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#python-scripts" class="md-nav__link">
+  <a href="#before-uneven-force-along-the-bottom-chord" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Python scripts
+        Before: uneven force along the bottom chord
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#defining-the-equal-force-problem" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Defining the equal-force problem
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#after-one-force-one-cross-section" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        After: one force, one cross-section
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#reading-the-result" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Reading the result
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#where-to-next" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Where to next
       
     </span>
   </a>
@@ -1360,21 +1448,154 @@
   
 
 
-<h1 id="more-examples">More examples<a class="headerlink" href="#more-examples" title="Permanent link">¤</a></h1>
-<h2 id="jupyter-notebooks">Jupyter notebooks<a class="headerlink" href="#jupyter-notebooks" title="Permanent link">¤</a></h2>
-<p>These notebooks run directly from your browser without having to install anything locally! Their sources live in the <a href="https://github.com/arpastrana/jax_fdm/tree/main/notebooks"><code>notebooks/</code></a> folder.</p>
+<h1 id="equal-force-truss">Equal-Force Truss<a class="headerlink" href="#equal-force-truss" title="Permanent link">¤</a></h1>
+<p>This example chases a <em>force</em> target: we reshape a truss so that one of its chords carries the same internal force everywhere.</p>
+<p>Why would we want that? Consider the bottom chord of a planar truss, the tension tie that keeps the two supports from spreading apart. In a typical design its internal force varies from segment to segment, so each segment wants a different cross-section: thicker where the force is high, thinner where it is low. That is a fabrication headache. Every change of section is a detail to design, a splice to connect, and a place where mechanical continuity can go wrong.</p>
+<p>If instead the force were <em>uniform</em> along the whole chord, we could build it from a <strong>single, constant cross-section</strong>, a cable or a rod of one size, used at its full capacity end to end. One section, no splices to reconcile, maximal material utilization. That is the payoff, and it is a classic problem in graphic statics.<sup id="fnref:gs"><a class="footnote-ref" href="#fn:gs">2</a></sup></p>
+<p>In this walkthrough we start from a <a href="https://en.wikipedia.org/wiki/Vierendeel_bridge">Vierendeel-like</a> truss (a top chord, a bottom chord, and vertical struts, no diagonal bracing) and let the force density method morph the bottom chord into the shape that makes its force constant, all while keeping the top chord straight.</p>
+<div class="admonition note">
+<p class="admonition-title">The graphic-statics reading</p>
+<p>Classically, this problem is solved by drawing the truss's <em>reciprocal force diagram</em>, a companion figure in which every member maps to a line whose length is proportional to the member's axial force. A constant-force chord is then simply one whose reciprocal lines are all the same length, and the designer reshapes the truss by editing that diagram by hand.<sup id="fnref2:gs"><a class="footnote-ref" href="#fn:gs">2</a></sup> Here we arrive at the same design from the force side too, but through the force density method: the design variables are the edge force densities, so we search in the force domain and read the equilibrium shape back out, rather than moving nodes around and hoping the forces cooperate.<sup id="fnref:cmame"><a class="footnote-ref" href="#fn:cmame">1</a></sup></p>
+</div>
+<h2 id="the-truss">The truss<a class="headerlink" href="#the-truss" title="Permanent link">¤</a></h2>
+<p>The truss lives in a vertical plane. We build three families of members:</p>
 <ul>
-<li><a href="https://colab.research.google.com/github/arpastrana/jax_fdm/blob/main/notebooks/arch.ipynb">Arch</a>: Control the height and the horizontal projection of a 2D arch.</li>
-<li><a href="https://colab.research.google.com/github/arpastrana/jax_fdm/blob/main/notebooks/spiral.ipynb">3D spiral</a>: Calculate the loads required to maintain a compression-only 3D spiral in equilibrium <a href="https://doi.org/10.1016/j.engstruct.2021.112176">(Angelillo, et al. 2021)</a>.</li>
-<li><a href="https://colab.research.google.com/github/arpastrana/jax_fdm/blob/main/notebooks/vault.ipynb">Creased masonry shell</a>: Best-fit a target surface <a href="https://cims.nyu.edu/gcl/papers/designing-unreinforced-masonry-models-siggraph-2013-panozzo-et-al.pdf">(Panozzo, et al. 2013)</a>.</li>
+<li>a <strong>top chord</strong>, a straight line of nodes between the two supports,</li>
+<li>a <strong>bottom chord</strong>, a second line of nodes below it,</li>
+<li><strong>struts</strong>, verticals tying each bottom node up to a top node.</li>
 </ul>
-<h2 id="python-scripts">Python scripts<a class="headerlink" href="#python-scripts" title="Permanent link">¤</a></h2>
-<p>The scripts require a local installation of JAX FDM.</p>
+<p>Since every node sits at an evenly spaced station along the x axis, we can place the points by hand, no geometry library needed. The top chord runs along <code>y=0</code>, and the bottom chord hangs below it at <code>y=depth</code>. Its two ends are dropped so the bottom chord meets the supports directly.</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">compas.itertools</span><span class="w"> </span><span class="kn">import</span> <span class="n">pairwise</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">jax_fdm.datastructures</span><span class="w"> </span><span class="kn">import</span> <span class="n">FDNetwork</span>
+
+
+<span class="n">length</span> <span class="o">=</span> <span class="mf">5.0</span>
+<span class="n">num_segments</span> <span class="o">=</span> <span class="mi">11</span>
+<span class="n">depth</span> <span class="o">=</span> <span class="o">-</span><span class="mf">2.0</span>
+
+<span class="n">step</span> <span class="o">=</span> <span class="n">length</span> <span class="o">/</span> <span class="n">num_segments</span>
+<span class="n">xs</span> <span class="o">=</span> <span class="p">[</span><span class="o">-</span><span class="n">length</span> <span class="o">/</span> <span class="mf">2.0</span> <span class="o">+</span> <span class="n">i</span> <span class="o">*</span> <span class="n">step</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_segments</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)]</span>
+
+<span class="n">top_points</span> <span class="o">=</span> <span class="p">[[</span><span class="n">x</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">]</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">xs</span><span class="p">]</span>
+<span class="n">bottom_points</span> <span class="o">=</span> <span class="p">[[</span><span class="n">x</span><span class="p">,</span> <span class="n">depth</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">]</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">xs</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]]</span>  <span class="c1"># interior only; the ends meet the supports</span>
+</code></pre></div>
+<p>With the points in hand, we add the nodes to an empty network (top chord first, then the bottom chord) and wire up the three families of edges: the top and bottom chords, and the struts between them. The bottom chord runs support to support, so its end segments meet the top-chord supports directly.</p>
+<div class="highlight"><pre><span></span><code><span class="n">network</span> <span class="o">=</span> <span class="n">FDNetwork</span><span class="p">()</span>
+
+<span class="n">top_nodes</span> <span class="o">=</span> <span class="p">[</span><span class="n">network</span><span class="o">.</span><span class="n">add_node</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="n">y</span><span class="p">,</span> <span class="n">z</span><span class="o">=</span><span class="n">z</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span> <span class="ow">in</span> <span class="n">top_points</span><span class="p">]</span>
+<span class="n">top_nodes_free</span> <span class="o">=</span> <span class="n">top_nodes</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>  <span class="c1"># every top node but the two supports</span>
+<span class="n">bottom_nodes</span> <span class="o">=</span> <span class="p">[</span><span class="n">network</span><span class="o">.</span><span class="n">add_node</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="n">y</span><span class="p">,</span> <span class="n">z</span><span class="o">=</span><span class="n">z</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span> <span class="ow">in</span> <span class="n">bottom_points</span><span class="p">]</span>
+
+<span class="n">bottom_chord</span> <span class="o">=</span> <span class="p">[</span><span class="n">top_nodes</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span> <span class="o">+</span> <span class="n">bottom_nodes</span> <span class="o">+</span> <span class="p">[</span><span class="n">top_nodes</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]]</span>
+<span class="n">top_edges</span> <span class="o">=</span> <span class="p">[</span><span class="n">network</span><span class="o">.</span><span class="n">add_edge</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">u</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">pairwise</span><span class="p">(</span><span class="n">top_nodes</span><span class="p">)]</span>
+<span class="n">bottom_edges</span> <span class="o">=</span> <span class="p">[</span><span class="n">network</span><span class="o">.</span><span class="n">add_edge</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">u</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">pairwise</span><span class="p">(</span><span class="n">bottom_chord</span><span class="p">)]</span>
+<span class="n">strut_edges</span> <span class="o">=</span> <span class="p">[</span><span class="n">network</span><span class="o">.</span><span class="n">add_edge</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">u</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">bottom_nodes</span><span class="p">,</span> <span class="n">top_nodes_free</span><span class="p">)]</span>
+</code></pre></div>
+<p>The two chord ends are the supports, and every free top node carries a small downward load. The top-chord edges get a compressive (negative) force density, the bottom chord a tensile (positive) one, and the struts a mild compressive one, our starting guess.</p>
+<div class="highlight"><pre><span></span><code><span class="n">network</span><span class="o">.</span><span class="n">node_support</span><span class="p">(</span><span class="n">top_nodes</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+<span class="n">network</span><span class="o">.</span><span class="n">node_support</span><span class="p">(</span><span class="n">top_nodes</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+
+<span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">top_nodes_free</span><span class="p">:</span>
+    <span class="n">network</span><span class="o">.</span><span class="n">node_load</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.2</span><span class="p">])</span>
+
+<span class="k">for</span> <span class="n">edge</span> <span class="ow">in</span> <span class="n">top_edges</span><span class="p">:</span>
+    <span class="n">network</span><span class="o">.</span><span class="n">edge_forcedensity</span><span class="p">(</span><span class="n">edge</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.0</span><span class="p">)</span>
+
+<span class="k">for</span> <span class="n">edge</span> <span class="ow">in</span> <span class="n">bottom_edges</span><span class="p">:</span>
+    <span class="n">network</span><span class="o">.</span><span class="n">edge_forcedensity</span><span class="p">(</span><span class="n">edge</span><span class="p">,</span> <span class="mf">2.0</span><span class="p">)</span>
+
+<span class="k">for</span> <span class="n">edge</span> <span class="ow">in</span> <span class="n">strut_edges</span><span class="p">:</span>
+    <span class="n">network</span><span class="o">.</span><span class="n">edge_forcedensity</span><span class="p">(</span><span class="n">edge</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.5</span><span class="p">)</span>
+</code></pre></div>
+<h2 id="before-uneven-force-along-the-bottom-chord">Before: uneven force along the bottom chord<a class="headerlink" href="#before-uneven-force-along-the-bottom-chord" title="Permanent link">¤</a></h2>
+<p>We form-find the truss once to see the starting state.</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">jax_fdm.equilibrium</span><span class="w"> </span><span class="kn">import</span> <span class="n">fdm</span>
+
+
+<span class="n">network_guess</span> <span class="o">=</span> <span class="n">fdm</span><span class="p">(</span><span class="n">network</span><span class="p">)</span>
+</code></pre></div>
+<p><img alt="Equal-force truss, initial guess" src="../../assets/images/truss_equalforce_initial.png" /></p>
+<p>The truss hangs in equilibrium, but the force in the bottom chord is far from uniform: it ranges from about 0.9 near midspan to 1.7 near the supports, a spread of nearly two to one. Built literally, this chord would need a fat cross-section at the ends tapering to a thin one in the middle, with every joint between sections to detail and splice. We would like to do better.</p>
+<p>Working in the force domain also sidesteps a headache that a conventional analysis would hit here. Because our truss has no diagonal bracing, it is not fully triangulated, and a stiffness-based solver would see a singular stiffness matrix and stall unless we added members we do not want. Form-finding never assembles that matrix. It only ever produces equilibrated states, so the un-triangulated truss is solved as readily as any other.</p>
+<h2 id="defining-the-equal-force-problem">Defining the equal-force problem<a class="headerlink" href="#defining-the-equal-force-problem" title="Permanent link">¤</a></h2>
+<p>We want the bottom-chord segments to <em>all carry the same force</em>, at a value we choose, while the top chord stays a clean straight line. Two goals, bundled into one loss, say exactly that.</p>
+<p><strong>A target force</strong> on every bottom edge does the equalizing. We aim each of them at the same value, here 1.5. If they all reach it, they are equal by construction, so there is no need for a separate goal to compare them against each other.</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">jax_fdm.goals</span><span class="w"> </span><span class="kn">import</span> <span class="n">EdgeForceGoal</span>
+
+
+<span class="n">goals_force</span> <span class="o">=</span> <span class="p">[</span><span class="n">EdgeForceGoal</span><span class="p">(</span><span class="n">edge</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="mf">1.5</span><span class="p">)</span> <span class="k">for</span> <span class="n">edge</span> <span class="ow">in</span> <span class="n">bottom_edges</span><span class="p">]</span>
+</code></pre></div>
+<p><strong>A colinearity goal</strong> keeps the top chord straight. <code>NodesColinearGoal</code> penalizes any top node that strays off the line through its neighbors, so the top chord stays the clean straight member a Vierendeel truss expects, and only the bottom chord is left free to morph.</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">jax_fdm.goals</span><span class="w"> </span><span class="kn">import</span> <span class="n">NodesColinearGoal</span>
+
+
+<span class="n">goals_colinear</span> <span class="o">=</span> <span class="p">[</span><span class="n">NodesColinearGoal</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="n">top_nodes</span><span class="p">)]</span>
+</code></pre></div>
+<p>We assemble the two into a single loss. The forces are measured as a squared error toward their set value, and the colinearity term is a prediction error, driving the top chord's off-line deviation straight to zero.</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">jax_fdm.losses</span><span class="w"> </span><span class="kn">import</span> <span class="n">Loss</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">jax_fdm.losses</span><span class="w"> </span><span class="kn">import</span> <span class="n">MeanSquaredError</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">jax_fdm.losses</span><span class="w"> </span><span class="kn">import</span> <span class="n">PredictionError</span>
+
+
+<span class="n">loss</span> <span class="o">=</span> <span class="n">Loss</span><span class="p">(</span>
+    <span class="n">MeanSquaredError</span><span class="p">(</span><span class="n">goals_force</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;ForceTarget&quot;</span><span class="p">),</span>
+    <span class="n">PredictionError</span><span class="p">(</span><span class="n">goals_colinear</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;ColinearTopChord&quot;</span><span class="p">),</span>
+<span class="p">)</span>
+</code></pre></div>
+<h2 id="after-one-force-one-cross-section">After: one force, one cross-section<a class="headerlink" href="#after-one-force-one-cross-section" title="Permanent link">¤</a></h2>
+<p>We hand the loss to <code>constrained_fdm</code>. Here the design variables are the force densities of every edge, and with no explicit <code>parameters</code> the optimizer takes them all by default.</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">jax_fdm.equilibrium</span><span class="w"> </span><span class="kn">import</span> <span class="n">constrained_fdm</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">jax_fdm.optimization</span><span class="w"> </span><span class="kn">import</span> <span class="n">LBFGSB</span>
+
+
+<span class="n">network_equalforce</span> <span class="o">=</span> <span class="n">constrained_fdm</span><span class="p">(</span>
+    <span class="n">network</span><span class="p">,</span>
+    <span class="n">optimizer</span><span class="o">=</span><span class="n">LBFGSB</span><span class="p">(),</span>
+    <span class="n">loss</span><span class="o">=</span><span class="n">loss</span><span class="p">,</span>
+    <span class="n">maxiter</span><span class="o">=</span><span class="mi">10000</span><span class="p">,</span>
+    <span class="n">tol</span><span class="o">=</span><span class="mf">1e-9</span><span class="p">,</span>
+<span class="p">)</span>
+</code></pre></div>
+<p><img alt="Equal-force truss, optimized result" src="../../assets/images/truss_equalforce_optimized.png" /></p>
+<p>The bottom chord has settled into a shallow curve, and its force is now uniform: every segment carries essentially 1.500, agreeing to within a thousandth of the 1.5 we asked for, down from the two-to-one spread we started with. The top chord stayed straight, so the truss keeps its Vierendeel character. The morphed bottom chord is now a single-section tie, buildable from one cable, used at its full capacity along its entire length.</p>
+<p><img alt="Bottom-chord force, before and after" src="../../assets/images/truss_equalforce_force_plot.png" /></p>
+<div class="admonition tip">
+<p class="admonition-title">Why equal force is worth the trouble</p>
+<p>A member sized to its allowable stress needs a cross-sectional area proportional to the force it carries: <span class="arithmatex">\(A = |F| / \sigma\)</span>. So a chord whose force is uniform can be a single, constant cross-section sized once to its capacity, one profile to buy, one connection detail to repeat, and no material wasted on segments that never see the peak force. Letting the geometry absorb the force variation, rather than the cross-section, is a small change to the shape that pays off in fabrication and material rationality.</p>
+</div>
+<h2 id="reading-the-result">Reading the result<a class="headerlink" href="#reading-the-result" title="Permanent link">¤</a></h2>
+<p>You can read the bottom-chord forces straight off the optimized network to confirm the match:</p>
+<div class="highlight"><pre><span></span><code><span class="n">forces</span> <span class="o">=</span> <span class="p">[</span><span class="n">network_equalforce</span><span class="o">.</span><span class="n">edge_force</span><span class="p">(</span><span class="n">edge</span><span class="p">)</span> <span class="k">for</span> <span class="n">edge</span> <span class="ow">in</span> <span class="n">bottom_edges</span><span class="p">]</span>
+<span class="nb">print</span><span class="p">([</span><span class="nb">round</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">forces</span><span class="p">])</span>
+</code></pre></div>
+<p>To see it, we draw the initial guess as a plain wireframe next to the optimized truss colored by its member forces.</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">compas.datastructures</span><span class="w"> </span><span class="kn">import</span> <span class="n">Network</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">jax_fdm.visualization</span><span class="w"> </span><span class="kn">import</span> <span class="n">Viewer</span>
+
+
+<span class="n">viewer</span> <span class="o">=</span> <span class="n">Viewer</span><span class="p">()</span>
+<span class="n">viewer</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">network_guess</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="bp">cls</span><span class="o">=</span><span class="n">Network</span><span class="p">))</span>
+<span class="n">viewer</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">network_equalforce</span><span class="p">,</span> <span class="n">edgewidth</span><span class="o">=</span><span class="mf">0.05</span><span class="p">,</span> <span class="n">edgecolor</span><span class="o">=</span><span class="s2">&quot;force&quot;</span><span class="p">,</span> <span class="n">show_nodes</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="n">viewer</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</code></pre></div>
+<h2 id="where-to-next">Where to next<a class="headerlink" href="#where-to-next" title="Permanent link">¤</a></h2>
 <ul>
-<li><a href="https://github.com/arpastrana/jax_fdm/blob/main/examples/dome/dome.py">Pointy dome</a>: Control the tilt and the coarse width of a brick dome.</li>
-<li><a href="https://github.com/arpastrana/jax_fdm/blob/main/examples/monkey_saddle/monkey_saddle.py">Triple-branching shell</a>: Design the distribution of thrusts at the supports of a tripod while constraining the edge lengths.</li>
-<li><a href="https://github.com/arpastrana/jax_fdm/blob/main/examples/pringle/pringle.py">Saddle bridge</a>: Create a crease in the middle of the bridge while constraining the transversal edges of the network to a target plane.</li>
+<li>Curious how goals, losses, and the optimizer fit together? Read <a href="../../howto/constrained_form_finding/">constrained form-finding</a>.</li>
+<li>Want to match a shape instead of a force? See <a href="../shape_matching/">shape matching</a>.</li>
+<li>The runnable script for this example lives in <a href="https://github.com/arpastrana/jax_fdm/blob/main/examples/truss/truss_equal_force.py"><code>examples/truss/truss_equal_force.py</code></a>.</li>
 </ul>
+<div class="footnote">
+<hr />
+<ol>
+<li id="fn:cmame">
+<p>Equal-force and other force-controlled design tasks with the differentiable force density method are studied in Pastrana et al., <em>Differentiable force density method for the design of lightweight structures</em>, Computer Methods in Applied Mechanics and Engineering (2026). See the <a href="../../citation/">citation page</a>.&#160;<a class="footnote-backref" href="#fnref:cmame" title="Jump back to footnote 1 in the text">&#8617;</a></p>
+</li>
+<li id="fn:gs">
+<p>The constant chord-force truss is a classical graphic-statics exercise. See Zalewski and Allen, <em>Shaping Structures: Statics</em> (Wiley, 1998), and its use as an optimization benchmark in Beghini et al., <em>Structural optimization using graphic statics</em>, Structural and Multidisciplinary Optimization 49 (2014), 351–366, <a href="https://doi.org/10.1007/s00158-013-1002-x">doi:10.1007/s00158-013-1002-x</a>.&#160;<a class="footnote-backref" href="#fnref:gs" title="Jump back to footnote 2 in the text">&#8617;</a><a class="footnote-backref" href="#fnref2:gs" title="Jump back to footnote 2 in the text">&#8617;</a></p>
+</li>
+</ol>
+</div>
 
 
 

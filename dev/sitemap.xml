@@ -65,11 +65,39 @@
          <lastmod>2026-07-24</lastmod>
     </url>
     <url>
+         <loc>https://arpastrana.github.io/jax_fdm/dev/examples/gridshell_planarization/</loc>
+         <lastmod>2026-07-24</lastmod>
+    </url>
+    <url>
          <loc>https://arpastrana.github.io/jax_fdm/dev/examples/more/</loc>
          <lastmod>2026-07-24</lastmod>
     </url>
     <url>
+         <loc>https://arpastrana.github.io/jax_fdm/dev/examples/shape_matching/</loc>
+         <lastmod>2026-07-24</lastmod>
+    </url>
+    <url>
+         <loc>https://arpastrana.github.io/jax_fdm/dev/examples/truss_equal_force/</loc>
+         <lastmod>2026-07-24</lastmod>
+    </url>
+    <url>
+         <loc>https://arpastrana.github.io/jax_fdm/dev/howto/constrained_form_finding/</loc>
+         <lastmod>2026-07-24</lastmod>
+    </url>
+    <url>
          <loc>https://arpastrana.github.io/jax_fdm/dev/howto/constraints/</loc>
+         <lastmod>2026-07-24</lastmod>
+    </url>
+    <url>
+         <loc>https://arpastrana.github.io/jax_fdm/dev/howto/custom_constraints/</loc>
+         <lastmod>2026-07-24</lastmod>
+    </url>
+    <url>
+         <loc>https://arpastrana.github.io/jax_fdm/dev/howto/custom_goals/</loc>
+         <lastmod>2026-07-24</lastmod>
+    </url>
+    <url>
+         <loc>https://arpastrana.github.io/jax_fdm/dev/howto/form_finding/</loc>
          <lastmod>2026-07-24</lastmod>
     </url>
     <url>
