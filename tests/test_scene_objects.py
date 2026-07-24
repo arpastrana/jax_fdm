@@ -355,3 +355,39 @@ def test_facecolor_default_leaves_the_surface_unstyled(mesh):
     """
     obj = FDMeshObject(item=mesh, context="Viewer")
     assert len(faces_child(obj).facecolor) == 0
+
+
+def edge_children(obj):
+    return category_groups(obj)["Edges"].children
+
+
+def test_edgeopacity_reaches_the_edges(network, mesh):
+    """
+    edgeopacity lands on the edge category children of both a network and a
+    mesh, so the wireframe can read opaque over the faces.
+    """
+    for item, cls in ((network, FDNetworkObject), (mesh, FDMeshObject)):
+        obj = cls(item=item, context="Viewer", edgeopacity=1.0)
+        assert obj.edge_opacity == 1.0
+        assert all(child.opacity == 1.0 for child in edge_children(obj))
+
+
+def test_edgeopacity_default_and_leaves_other_categories(network, mesh):
+    """
+    Without edgeopacity the edges fall back to the shared wireframe default,
+    and every non-edge category keeps that default regardless.
+    """
+    for item, cls in ((network, FDNetworkObject), (mesh, FDMeshObject)):
+        obj = cls(item=item, context="Viewer", show_points=True, edgeopacity=0.3)
+        assert obj.edge_opacity == 0.3
+
+        groups = category_groups(obj)
+        for name, group in groups.items():
+            if name == "Edges":
+                continue
+            for child in group.children:
+                assert child.opacity == obj.default_opacity
+
+        default = cls(item=item, context="Viewer")
+        assert default.edge_opacity == default.default_opacity
+        assert all(child.opacity == 0.75 for child in edge_children(default))
