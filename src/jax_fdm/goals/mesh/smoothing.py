@@ -8,10 +8,7 @@ from jax_fdm.equilibrium import EquilibriumMeshStructure
 from jax_fdm.equilibrium import EquilibriumState
 from jax_fdm.goals.mesh.mesh import MeshGoal
 
-__all__ = [
-    "MeshSmoothGoal",
-    "vertices_nbrs_fairness",
-]
+__all__ = ["MeshSmoothGoal"]
 
 
 class MeshSmoothGoal(MeshGoal):

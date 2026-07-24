@@ -58,7 +58,7 @@ PointSizeSpec = float | PointSizes | None
 # ==========================================================================
 
 # Colors
-COLOR_EDGE = Color.teal()
+COLOR_EDGE = Color.grey()
 COLOR_POINT = Color.grey().lightened(factor=50)
 COLOR_SUPPORT = Color.from_rgb255(0, 150, 10)
 
