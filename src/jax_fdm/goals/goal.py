@@ -136,12 +136,12 @@ def as_key(key: KeyLike) -> Int[Array, "..."]:
 
 class Goal(eqx.Module):
     """
-    The base class for all goals, targets an equilibrium quantity reaches.
+    The base class for all goals.
 
     Attributes
     ----------
     key :
-        The key of the element the goal acts on; a sequence of keys (a list or
+        The key of the element the goal acts on. A sequence of keys (a list or
         a tuple) only for aggregate goals.
     target :
         The value the goal drives its quantity of interest toward.

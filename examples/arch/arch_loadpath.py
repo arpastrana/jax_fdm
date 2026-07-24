@@ -9,7 +9,16 @@ from jax_fdm.losses import PredictionError
 from jax_fdm.optimization import SLSQP
 from jax_fdm.visualization import Viewer
 
-network = FDNetwork.from_json("data/json/arch.json")
+arch_length = 5.0
+num_segments = 10
+
+segment_length = arch_length / num_segments
+
+xs = [-arch_length / 2.0 + i * segment_length for i in range(num_segments + 1)]
+nodes = [[x, 0.0, 0.0] for x in xs]
+edges = [(i, i + 1) for i in range(num_segments)]
+
+network = FDNetwork.from_nodes_and_edges(nodes, edges)
 network.edges_forcedensities(q=-1.0)
 network.nodes_anchors(keys=[node for node in network.nodes() if network.is_leaf(node)])
 network.nodes_loads([0.0, 0.0, -0.3])
