@@ -8,10 +8,7 @@ from jax_fdm.equilibrium import EquilibriumState
 from jax_fdm.equilibrium import EquilibriumStructure
 from jax_fdm.goals.network.network import NetworkGoal
 
-__all__ = [
-    "NetworkSmoothGoal",
-    "nodes_nbrs_fairness",
-]
+__all__ = ["NetworkSmoothGoal"]
 
 
 class NetworkSmoothGoal(NetworkGoal):

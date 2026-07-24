@@ -770,7 +770,7 @@ class FDMeshObject(FDDatastructureObject):
     points_name = "Vertices"
     point_name = "Vertex"
 
-    default_faceopacity = 0.4
+    default_faceopacity = 1.0
 
     # Narrows the base class's FDNetwork | FDMesh attribute to the type this
     # subclass actually holds, so the vertex-vocabulary accessors below
