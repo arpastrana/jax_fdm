@@ -33,23 +33,17 @@ classifiers = [
 ]
 dynamic = ["version"]
 dependencies = [
-    # lineax 0.1.0 is the binding constraint here: it requires jax >= 0.6.1,
-    # which in turn requires numpy >= 2.0. A numpy 1.x floor is only reachable
-    # by backtracking jax below that, so 2.0 is the real floor, not a choice.
     "jax[cpu]>=0.6.1",
     "numpy>=2.0",
     "compas>=2.15,<3.0",
     "matplotlib>=3.8",
     "scipy>=1.13",
     "jaxopt>=0.8.2",
-    # 0.13.4 is the oldest equinox that imports against current jax; goals and
-    # constraints are eqx.Modules built on field(converter=...) and error_if.
     "equinox>=0.13.4",
     # lineax gained the Normal operator, used by the fixed-point adjoint, in 0.1.0.
     "lineax>=0.1.0",
     "optimistix>=0.1.0",
-    # 0.2.24 is what lineax and optimistix require.
-    "jaxtyping>=0.2.24",
+    "jaxtyping>=0.2.33",
 ]
 
 [project.urls]
@@ -58,10 +52,8 @@ Repository = "https://github.com/arpastrana/jax_fdm"
 Documentation = "https://arpastrana.github.io/jax_fdm/"
 
 [project.optional-dependencies]
-# 3D viewer and notebook viewer for the COMPAS 2.x scene system.
-# pythreejs comes with compas_notebook; pinned here because the notebook
-# scene objects import it directly to build batched render buffers.
-viz = ["compas_viewer>=1.0", "compas_notebook>=0.11", "pythreejs", "compas_plotter>=1.0"]
+# 3D viewer, plotter, and notebook viewer for the COMPAS 2.x scene system.
+viz = ["compas_viewer>=2.0", "compas_notebook>=0.11", "pythreejs>=2.1", "compas_plotter>=1.0"]
 # Interior-point optimizer. cyipopt needs a system Ipopt library.
 ipopt = ["cyipopt"]
 dev = [
