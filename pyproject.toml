@@ -131,7 +131,7 @@ known-first-party = ["compas", "jax_fdm"]
 "tests/*" = ["E712", "E501"]
 
 [tool.bumpversion]
-current_version = "0.13.0"
+current_version = "0.14.0"
 commit = true
 tag = true
 message = "Bump version to {new_version}"
