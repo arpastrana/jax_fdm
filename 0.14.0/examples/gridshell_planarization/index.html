@@ -1,0 +1,1749 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Auto-differentiable and hardware-accelerated force density method">
+      
+      
+        <meta name="author" content="Rafael Pastrana">
+      
+      
+        <link rel="canonical" href="https://arpastrana.github.io/jax_fdm/0.14.0/examples/gridshell_planarization/">
+      
+      
+        <link rel="prev" href="../truss_equal_force/">
+      
+      
+        <link rel="next" href="../more/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/jax_logo.svg">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>Gridshell planarization - JAX FDM</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/_mkdocstrings.css">
+    
+      <link rel="stylesheet" href="../../assets/css/custom.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#gridshell-planarization" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+      <div data-md-color-scheme="default" data-md-component="outdated" hidden>
+        
+      </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="JAX FDM" class="md-header__button md-logo" aria-label="JAX FDM" data-md-component="logo">
+      
+  <img src="../../assets/images/jax_logo.svg" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            JAX FDM
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Gridshell planarization
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m17.75 4.09-2.53 1.94.91 3.06-2.63-1.81-2.63 1.81.91-3.06-2.53-1.94L12.44 4l1.06-3 1.06 3zm3.5 6.91-1.64 1.25.59 1.98-1.7-1.17-1.7 1.17.59-1.98L15.75 11l2.06-.05L18.5 9l.69 1.95zm-2.28 4.95c.83-.08 1.72 1.1 1.19 1.85-.32.45-.66.87-1.08 1.27C15.17 23 8.84 23 4.94 19.07c-3.91-3.9-3.91-10.24 0-14.14.4-.4.82-.76 1.27-1.08.75-.53 1.93.36 1.85 1.19-.27 2.86.69 5.83 2.89 8.02a9.96 9.96 0 0 0 8.02 2.89m-1.64 2.02a12.08 12.08 0 0 1-7.8-3.47c-2.17-2.19-3.33-5-3.49-7.82-2.81 3.14-2.7 7.96.31 10.98 3.02 3.01 7.84 3.12 10.98.31"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 7a5 5 0 0 1 5 5 5 5 0 0 1-5 5 5 5 0 0 1-5-5 5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3m0-7 2.39 3.42C13.65 5.15 12.84 5 12 5s-1.65.15-2.39.42zM3.34 7l4.16-.35A7.2 7.2 0 0 0 5.94 8.5c-.44.74-.69 1.5-.83 2.29zm.02 10 1.76-3.77a7.131 7.131 0 0 0 2.38 4.14zM20.65 7l-1.77 3.79a7.02 7.02 0 0 0-2.38-4.15zm-.01 10-4.14.36c.59-.51 1.12-1.14 1.54-1.86.42-.73.69-1.5.83-2.29zM12 22l-2.41-3.44c.74.27 1.55.44 2.41.44.82 0 1.63-.17 2.37-.44z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/arpastrana/jax_fdm" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    arpastrana/jax_fdm
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="JAX FDM" class="md-nav__button md-logo" aria-label="JAX FDM" data-md-component="logo">
+      
+  <img src="../../assets/images/jax_logo.svg" alt="logo">
+
+    </a>
+    JAX FDM
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/arpastrana/jax_fdm" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    arpastrana/jax_fdm
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../installation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Installation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../citation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Citation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../license/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    License
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Examples
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Examples
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../arch/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Length optimization
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../shape_matching/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Shape matching
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../truss_equal_force/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Equal-force truss
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Gridshell planarization
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Gridshell planarization
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#the-starting-gridshell" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The starting gridshell
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#planarize-flat-faces-at-a-price" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Planarize: flat faces at a price
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#smoothing-the-shape" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Smoothing the shape
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#restoring-the-looks" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Restoring the looks
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#bonus-support-finding" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Bonus: Support-finding
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Summary
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#where-to-next" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Where to next
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../more/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    More examples
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    How-to Guides
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    How-to Guides
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../howto/form_finding/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Form-finding
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../howto/constrained_form_finding/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Constrained form-finding
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../howto/goals/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Goals
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../howto/constraints/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Constraints
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../howto/custom_goals/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Custom goals
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../howto/custom_constraints/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Custom constraints
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API reference
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    API reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/jax_fdm.datastructures/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Datastructures
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/jax_fdm.equilibrium/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Equilibrium
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/jax_fdm.goals/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Goals
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/jax_fdm.constraints/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Constraints
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/jax_fdm.losses/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Losses
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/jax_fdm.optimization/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Optimization
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/jax_fdm.parameters/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Parameters
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/jax_fdm.geometry/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Geometry
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7_9" >
+        
+          
+          <label class="md-nav__link" for="__nav_7_9" id="__nav_7_9_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Visualization
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_7_9_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7_9">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Visualization
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/jax_fdm.visualization.viewers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Desktop 3D
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/jax_fdm.visualization.notebooks/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Jupyter notebooks
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/jax_fdm.visualization.plotters/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Plotters
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#the-starting-gridshell" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The starting gridshell
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#planarize-flat-faces-at-a-price" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Planarize: flat faces at a price
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#smoothing-the-shape" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Smoothing the shape
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#restoring-the-looks" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Restoring the looks
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#bonus-support-finding" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Bonus: Support-finding
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Summary
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#where-to-next" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Where to next
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="gridshell-planarization">Gridshell Planarization<a class="headerlink" href="#gridshell-planarization" title="Permanent link">¤</a></h1>
+<p>Visual intent for gridshell design can be resolved using <a href="../shape_matching/">shape matching</a>. But fabrication aspects are equally, if not more important, to translate a visual concept into physical reality. Here we sculpt a compressive, rigid gridshell so that every one of its quad faces is flat<sup id="fnref:triangle"><a class="footnote-ref" href="#fn:triangle">1</a></sup>.</p>
+<p>This example is motivated because a gridshell is only as buildable and affordable as its cladding. Cover the gridshell skin with glass and each quad face becomes a panel to fabricate. A <strong>planar</strong> quad is cut from flat stock, so it is standardized and cheap. A <strong>warped</strong> quad has to be cold-bent, cast on a custom mould, or split into triangles, all of which cost money and multiply the production effort. On a doubly-curved shell computed by form-finding, the faces are generally warped by default to our demise. Therefore, adjusting such a shape by nudging every quad until its four corners share a plane is one of the highest-leverage moves towards both material efficiency and fabrication economy.<sup id="fnref:pq"><a class="footnote-ref" href="#fn:pq">2</a></sup></p>
+<p>In this walkthrough we build the design up one goal at a time and watch the trade-offs play out: planarize, then fair, and then restore the original visual intent. In the last section, we even apply <strong>support-finding</strong> and let some of the supports move too to find a better-performing equilibrium state.</p>
+<h2 id="the-starting-gridshell">The starting gridshell<a class="headerlink" href="#the-starting-gridshell" title="Permanent link">¤</a></h2>
+<p>We start from a quad gridshell on a square base: a <code>FDMesh</code> meshgrid, centered on the origin.</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">compas.geometry</span><span class="w"> </span><span class="kn">import</span> <span class="n">Translation</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">jax_fdm.datastructures</span><span class="w"> </span><span class="kn">import</span> <span class="n">FDMesh</span>
+
+
+<span class="n">length</span> <span class="o">=</span> <span class="mf">10.0</span>
+<span class="n">nx</span> <span class="o">=</span> <span class="mi">8</span>
+
+<span class="n">mesh</span> <span class="o">=</span> <span class="n">FDMesh</span><span class="o">.</span><span class="n">from_meshgrid</span><span class="p">(</span><span class="n">length</span><span class="p">,</span> <span class="n">nx</span><span class="o">=</span><span class="n">nx</span><span class="p">)</span>
+<span class="n">mesh</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">Translation</span><span class="o">.</span><span class="n">from_vector</span><span class="p">([</span><span class="o">-</span><span class="n">length</span> <span class="o">/</span> <span class="mf">2.0</span><span class="p">,</span> <span class="o">-</span><span class="n">length</span> <span class="o">/</span> <span class="mf">2.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">]))</span>
+</code></pre></div>
+<p>We support the four corners and, to make the design a little more interesting, one full boundary side. A downward load hangs on every free vertex, and a negative force density puts the shell into a compressive axial-force state. We give the free boundary edges a stiffer force density than the interior, so the perimeter tautens and the shell spreads to cover more area underneath.</p>
+<div class="highlight"><pre><span></span><code><span class="n">pz</span> <span class="o">=</span> <span class="o">-</span><span class="mf">1.0</span>
+<span class="n">q0</span> <span class="o">=</span> <span class="o">-</span><span class="mf">1.0</span>
+<span class="n">q0_boundary</span> <span class="o">=</span> <span class="o">-</span><span class="mf">5.0</span>
+
+<span class="n">corners</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">mesh</span><span class="o">.</span><span class="n">vertices_where</span><span class="p">(</span><span class="n">vertex_degree</span><span class="o">=</span><span class="mi">2</span><span class="p">))</span>
+<span class="n">side</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">mesh</span><span class="o">.</span><span class="n">vertices_where</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="n">length</span> <span class="o">/</span> <span class="mf">2.0</span><span class="p">))</span>
+<span class="k">for</span> <span class="n">vertex</span> <span class="ow">in</span> <span class="n">corners</span> <span class="o">+</span> <span class="n">side</span><span class="p">:</span>
+    <span class="n">mesh</span><span class="o">.</span><span class="n">vertex_support</span><span class="p">(</span><span class="n">vertex</span><span class="p">)</span>
+
+<span class="k">for</span> <span class="n">vertex</span> <span class="ow">in</span> <span class="n">mesh</span><span class="o">.</span><span class="n">vertices_free</span><span class="p">():</span>
+    <span class="n">mesh</span><span class="o">.</span><span class="n">vertex_load</span><span class="p">(</span><span class="n">vertex</span><span class="p">,</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="n">pz</span><span class="p">])</span>
+
+<span class="k">for</span> <span class="n">edge</span> <span class="ow">in</span> <span class="n">mesh</span><span class="o">.</span><span class="n">edges</span><span class="p">():</span>
+    <span class="k">if</span> <span class="n">mesh</span><span class="o">.</span><span class="n">is_edge_on_boundary</span><span class="p">(</span><span class="n">edge</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">mesh</span><span class="o">.</span><span class="n">is_edge_fully_supported</span><span class="p">(</span><span class="n">edge</span><span class="p">):</span>
+        <span class="n">mesh</span><span class="o">.</span><span class="n">edge_forcedensity</span><span class="p">(</span><span class="n">edge</span><span class="p">,</span> <span class="n">q0_boundary</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">mesh</span><span class="o">.</span><span class="n">edge_forcedensity</span><span class="p">(</span><span class="n">edge</span><span class="p">,</span> <span class="n">q0</span><span class="p">)</span>
+</code></pre></div>
+<p>Form-finding gives us a funicular geometry for the compressive shell.</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">jax_fdm.equilibrium</span><span class="w"> </span><span class="kn">import</span> <span class="n">fdm</span>
+
+
+<span class="n">shell</span> <span class="o">=</span> <span class="n">fdm</span><span class="p">(</span><span class="n">mesh</span><span class="p">)</span>
+</code></pre></div>
+<p><img alt="Gridshell planarization, form-found shell" src="../../assets/images/gridshell_shell.png" /></p>
+<p>The shell rises to about 7.2 meters. But it is doubly curved and warped: the worst face reads a flatness of <strong>12.8</strong>, meaning almost thirteen times past the tolerance we can build to (a 1% relative diagonal gap, see the note below), and only <strong>28% of the faces</strong> come in under the threshold. Clad as-is, most panels would need bending or a bespoke mould. We would like the faces flat.</p>
+<div class="admonition note">
+<p class="admonition-title">Measuring flatness against a budget</p>
+<p>A raw distance ("the worst quad is 142 mm out of plane") tells us little without knowing the panel size, so we use the scale-free planar-quad metric: the <em>diagonal gap</em> (the shortest distance between a quad's two diagonals, which meet only when it is flat) divided by the average edge length, and then divided by a manufacturing tolerance <code>maxdev</code>.
+Here, we take that tolerance as 1%. The reading is thus a fraction of the flatness budget: <strong>below 1.0 a panel is within tolerance and can be clad flat - above 1.0 it cannot.</strong></p>
+</div>
+<p>We can read the panel flatness straight off the mesh, as a fraction of the manufacturing tolerance, and count how many panels come in under budget:</p>
+<div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+
+
+<span class="n">maxdev</span> <span class="o">=</span> <span class="mf">0.01</span>  <span class="c1"># 1% flatness tolerance</span>
+<span class="n">flatness</span> <span class="o">=</span> <span class="p">[</span><span class="n">shell</span><span class="o">.</span><span class="n">face_flatness</span><span class="p">(</span><span class="n">face</span><span class="p">,</span> <span class="n">maxdev</span><span class="o">=</span><span class="n">maxdev</span><span class="p">)</span> <span class="k">for</span> <span class="n">face</span> <span class="ow">in</span> <span class="n">shell</span><span class="o">.</span><span class="n">faces</span><span class="p">()]</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Face flatness (fraction of tolerance): mean </span><span class="si">{</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">flatness</span><span class="p">)</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">  max </span><span class="si">{</span><span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">flatness</span><span class="p">)</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Panels within tolerance: </span><span class="si">{</span><span class="nb">sum</span><span class="p">(</span><span class="n">f</span><span class="w"> </span><span class="o">&lt;=</span><span class="w"> </span><span class="mf">1.0</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="n">f</span><span class="w"> </span><span class="ow">in</span><span class="w"> </span><span class="n">flatness</span><span class="p">)</span><span class="si">}</span><span class="s2"> of </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">flatness</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</code></pre></div>
+<p>To see it, we color each face by its flatness on a shared scale, so the initial shell reads hot (warped) and the optimized one cool (flat), and the worst panels stand out.</p>
+<h2 id="planarize-flat-faces-at-a-price">Planarize: flat faces at a price<a class="headerlink" href="#planarize-flat-faces-at-a-price" title="Permanent link">¤</a></h2>
+<p>The force densities are our design variables, which remain negative so that the shell stays compressive. The <a href="../../api/jax_fdm.goals/"><code>MeshPlanarityGoal</code></a> drives the average face non-planarity to zero.</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">jax_fdm.equilibrium</span><span class="w"> </span><span class="kn">import</span> <span class="n">constrained_fdm</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">jax_fdm.goals</span><span class="w"> </span><span class="kn">import</span> <span class="n">MeshPlanarityGoal</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">jax_fdm.losses</span><span class="w"> </span><span class="kn">import</span> <span class="n">Loss</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">jax_fdm.losses</span><span class="w"> </span><span class="kn">import</span> <span class="n">PredictionError</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">jax_fdm.optimization</span><span class="w"> </span><span class="kn">import</span> <span class="n">LBFGSB</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">jax_fdm.parameters</span><span class="w"> </span><span class="kn">import</span> <span class="n">EdgeForceDensityParameter</span>
+
+
+<span class="n">parameters</span> <span class="o">=</span> <span class="p">[</span><span class="n">EdgeForceDensityParameter</span><span class="p">(</span><span class="n">edge</span><span class="p">,</span> <span class="o">-</span><span class="mf">50.0</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.01</span><span class="p">)</span> <span class="k">for</span> <span class="n">edge</span> <span class="ow">in</span> <span class="n">mesh</span><span class="o">.</span><span class="n">edges</span><span class="p">()]</span>
+
+<span class="n">loss</span> <span class="o">=</span> <span class="n">Loss</span><span class="p">(</span><span class="n">PredictionError</span><span class="p">([</span><span class="n">MeshPlanarityGoal</span><span class="p">()],</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;Planarity&quot;</span><span class="p">))</span>
+
+<span class="n">shell_planar</span> <span class="o">=</span> <span class="n">constrained_fdm</span><span class="p">(</span>
+    <span class="n">mesh</span><span class="p">,</span>
+    <span class="n">optimizer</span><span class="o">=</span><span class="n">LBFGSB</span><span class="p">(),</span>
+    <span class="n">loss</span><span class="o">=</span><span class="n">loss</span><span class="p">,</span>
+    <span class="n">parameters</span><span class="o">=</span><span class="n">parameters</span><span class="p">,</span>
+    <span class="n">maxiter</span><span class="o">=</span><span class="mi">5000</span><span class="p">,</span>
+    <span class="n">tol</span><span class="o">=</span><span class="mf">1e-8</span><span class="p">,</span>
+<span class="p">)</span>
+</code></pre></div>
+<p>The faces flatten dramatically, the worst dropping from 12.8 to about <strong>2.4</strong> times the tolerance and <strong>97% of the faces</strong> now under the threshold, up from 28%, and the shell stays compressive. This is awesome news! But look closely and the surface has gone <strong>ragged</strong>: the quads are flat but their sides are uneven. A planar-but-ragged gridshell is often no easier to build than a smooth-but-warped one because we are just pushing the fabrication complexity from the cladding to the gridshell nodes and members. Let's do something about it.</p>
+<p><img alt="Gridshell planarization, planarized but ragged" src="../../assets/images/gridshell_planar.png" /></p>
+<h2 id="smoothing-the-shape">Smoothing the shape<a class="headerlink" href="#smoothing-the-shape" title="Permanent link">¤</a></h2>
+<p>The raggedness is a classic symptom of an under-constrained optimization: many force-density combinations flatten the faces, and the optimizer lands on a spiky one. The remedy is to add a <strong>fairness energy</strong>, a term that prefers smooth solutions, as a regularizer.</p>
+<p>We use the <a href="../../api/jax_fdm.goals/"><code>MeshSmoothGoal</code></a>, a discrete fairness energy where each vertex is drawn toward the centroid of its neighbors, so the surface irons itself out.<sup id="fnref:tang"><a class="footnote-ref" href="#fn:tang">3</a></sup></p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">jax_fdm.goals</span><span class="w"> </span><span class="kn">import</span> <span class="n">MeshSmoothGoal</span>
+
+
+<span class="n">loss</span> <span class="o">=</span> <span class="n">Loss</span><span class="p">(</span>
+    <span class="n">PredictionError</span><span class="p">([</span><span class="n">MeshPlanarityGoal</span><span class="p">()],</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;Planarity&quot;</span><span class="p">),</span>
+    <span class="n">PredictionError</span><span class="p">([</span><span class="n">MeshSmoothGoal</span><span class="p">()],</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.03</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;Smoothness&quot;</span><span class="p">),</span>
+<span class="p">)</span>
+</code></pre></div>
+<p>The raggedness collapses and the faces stay flat, with <strong>100% of the faces</strong> now under the threshold, so on those two counts we have won. Can we chant victory yet? Not quite. The fairness energy has a side effect we cannot ignore: left to its own devices it squashes the shell toward the ground. The rise drops from 7 meters to under half a meter, and the geometry drifts more than 4 meters from the shape we started with.</p>
+<p><img alt="Gridshell planarization, smooth but collapsed" src="../../assets/images/gridshell_smooth.png" /></p>
+<div class="admonition warning">
+<p class="admonition-title">Smoothing pulls the shell flat</p>
+<p>On its own, <code>MeshSmoothGoal</code> minimizes toward a flat sheet, the lowest-energy fair surface. It fairs the net beautifully and flattens the shell along with it. Something has to anchor the height.</p>
+</div>
+<h2 id="restoring-the-looks">Restoring the looks<a class="headerlink" href="#restoring-the-looks" title="Permanent link">¤</a></h2>
+<p>We come full circle by adding the goal from the <a href="../shape_matching/">shape matching</a> example: a per-vertex <a href="../../api/jax_fdm.goals/"><code>VertexPointGoal</code></a> that pulls every free vertex back toward its position on the original form-found shell. It anchors the rise the smoothing goal was giving away, and biases the whole solution toward the design we intended.</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">jax_fdm.goals</span><span class="w"> </span><span class="kn">import</span> <span class="n">VertexPointGoal</span>
+
+
+<span class="n">shape</span> <span class="o">=</span> <span class="p">{</span><span class="n">vertex</span><span class="p">:</span> <span class="n">shell</span><span class="o">.</span><span class="n">vertex_coordinates</span><span class="p">(</span><span class="n">vertex</span><span class="p">)</span> <span class="k">for</span> <span class="n">vertex</span> <span class="ow">in</span> <span class="n">mesh</span><span class="o">.</span><span class="n">vertices_free</span><span class="p">()}</span>
+<span class="n">goals_shape</span> <span class="o">=</span> <span class="p">[</span><span class="n">VertexPointGoal</span><span class="p">(</span><span class="n">vertex</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="n">shape</span><span class="p">[</span><span class="n">vertex</span><span class="p">])</span> <span class="k">for</span> <span class="n">vertex</span> <span class="ow">in</span> <span class="n">mesh</span><span class="o">.</span><span class="n">vertices_free</span><span class="p">()]</span>
+
+<span class="n">loss</span> <span class="o">=</span> <span class="n">Loss</span><span class="p">(</span>
+    <span class="n">PredictionError</span><span class="p">([</span><span class="n">MeshPlanarityGoal</span><span class="p">()],</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;Planarity&quot;</span><span class="p">),</span>
+    <span class="n">PredictionError</span><span class="p">([</span><span class="n">MeshSmoothGoal</span><span class="p">()],</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.03</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;Smoothness&quot;</span><span class="p">),</span>
+    <span class="n">MeanSquaredError</span><span class="p">(</span><span class="n">goals_shape</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.07</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;ShapeFidelity&quot;</span><span class="p">),</span>
+<span class="p">)</span>
+</code></pre></div>
+<p>Now the three goals balance. The shell recovers its rise (back to about 6.8 meters), the surface stays fair, and the geometry sits close to the shape we designed (a drift of about 0.4 meters), all while remaining a compression-only structure. Flatness pays for it, though: with the shape goal pulling back toward the warped form-found surface, only <strong>81% of the faces</strong> now come in under the threshold (worst about <strong>2.9</strong> times tolerance), down from the 97% that planarizing alone reached. Victory, almost! The three <code>alpha</code> weights are design knobs too: dialing them trades panel flatness against smoothness against fidelity to the original form.</p>
+<p><img alt="Gridshell planarization, planar and faithful" src="../../assets/images/gridshell_shape.png" /></p>
+<div class="admonition tip">
+<p class="admonition-title">Why three goals and not one</p>
+<p>Each goal alone fails: planarity ragged, smoothing collapsed, shape unplanar. It is their <em>composition</em> that lands a buildable design, and the differentiable force density method balances them in a single gradient-based solve. Weighting them is how a designer expresses which trade-off they prefer.</p>
+</div>
+<h2 id="bonus-support-finding">Bonus: Support-finding<a class="headerlink" href="#bonus-support-finding" title="Permanent link">¤</a></h2>
+<p>The shape stage left us at 81% under budget: roughly a fifth of the panels are still too warped to build. What if, on top of the force densities, we could nudge the supports too? So far the optimizer has only moved force densities. But the boundary supports are geometry too, and the differentiable method can treat them as design variables just as readily, something a forward form-finder cannot do. This is <em>support-finding</em>: we let each support on the pinned side slide in and out along the edge, by up to 10% of the base length, so the optimizer places the supports where they best serve the three goals at once.</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">jax_fdm.parameters</span><span class="w"> </span><span class="kn">import</span> <span class="n">VertexSupportXParameter</span>
+
+
+<span class="n">parameters</span> <span class="o">=</span> <span class="p">[</span><span class="n">EdgeForceDensityParameter</span><span class="p">(</span><span class="n">edge</span><span class="p">,</span> <span class="o">-</span><span class="mf">50.0</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.01</span><span class="p">)</span> <span class="k">for</span> <span class="n">edge</span> <span class="ow">in</span> <span class="n">mesh</span><span class="o">.</span><span class="n">edges</span><span class="p">()]</span>
+<span class="k">for</span> <span class="n">vertex</span> <span class="ow">in</span> <span class="n">side</span><span class="p">:</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">shell</span><span class="o">.</span><span class="n">vertex_coordinates</span><span class="p">(</span><span class="n">vertex</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">xtol</span> <span class="o">=</span> <span class="mf">0.1</span> <span class="o">*</span> <span class="n">length</span>  <span class="c1"># let the support slide by up to 10% of the base length</span>
+    <span class="n">parameters</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">VertexSupportXParameter</span><span class="p">(</span><span class="n">vertex</span><span class="p">,</span> <span class="n">x</span> <span class="o">-</span> <span class="n">xtol</span><span class="p">,</span> <span class="n">x</span> <span class="o">+</span> <span class="n">xtol</span><span class="p">))</span>
+</code></pre></div>
+<p>With the supports free to move, the same three-goal solve finds a better optimum: the worst face drops to about <strong>0.6</strong> of the tolerance, so <strong>100% of the faces</strong> are now within the flatness budget, up from 81%, as the boundary reshapes itself to help the faces lie flat. The supports travel about 0.6 meters on average to get there, morphing the initially linear boundary into a soft arch at the base of the structure. Thought we could not do better? Check out the before and after and see for yourself.</p>
+<p><img alt="Gridshell planarization, support-finding" src="../../assets/images/gridshell_supports.png" /></p>
+<h2 id="summary">Summary<a class="headerlink" href="#summary" title="Permanent link">¤</a></h2>
+<p>In retrospect, adding one goal at a time in tabular form is helpful to trace performance trade-offs. Each column in the table below is a design quantity: the shell's rise, the worst face's flatness (as a fraction of the 1% budget), the share of panels under that budget, and how far the geometry drifts from the form-found shell.</p>
+<table>
+<thead>
+<tr>
+<th>Stage</th>
+<th>Rise (m)</th>
+<th>Worst flatness</th>
+<th>Faces under budget</th>
+<th>Shape drift (m)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Form-found shell</td>
+<td>7.2</td>
+<td>12.8</td>
+<td>28%</td>
+<td>—</td>
+</tr>
+<tr>
+<td>Planarize</td>
+<td>6.8</td>
+<td>2.4</td>
+<td>97%</td>
+<td>1.13</td>
+</tr>
+<tr>
+<td>+ Smoothing</td>
+<td>0.5</td>
+<td>0.4</td>
+<td>100%</td>
+<td>4.30</td>
+</tr>
+<tr>
+<td>+ Shape matching</td>
+<td>6.8</td>
+<td>2.9</td>
+<td>81%</td>
+<td>0.38</td>
+</tr>
+<tr>
+<td>+ Support-finding</td>
+<td>6.9</td>
+<td>0.6</td>
+<td>100%</td>
+<td>0.33</td>
+</tr>
+</tbody>
+</table>
+<p>Read down the rows: planarizing flattens the panels but ragged; smoothing perfects flatness but collapses the shell and abandons the design; shape matching restores the form at a real flatness cost, leaving a fifth of the panels over budget; and support-finding recovers full buildability while holding the shape. No single goal wins on every column, which is exactly why it is a good idea to compose them. And JAX FDM gives us the tools to do so.</p>
+<h2 id="where-to-next">Where to next<a class="headerlink" href="#where-to-next" title="Permanent link">¤</a></h2>
+<ul>
+<li>Curious how goals, losses, and the optimizer fit together? Read <a href="../../howto/constrained_form_finding/">constrained form-finding</a>.</li>
+<li>Want to match a shape rather than flatten faces? See <a href="../shape_matching/">shape matching</a>.</li>
+<li>The runnable script for this example lives in <a href="https://github.com/arpastrana/jax_fdm/blob/main/examples/gridshell/gridshell_planarization.py"><code>examples/gridshell/gridshell_planarization.py</code></a>.</li>
+</ul>
+<div class="footnote">
+<hr />
+<ol>
+<li id="fn:triangle">
+<p>We could have chosen a gridshell layout with triangular faces to obtain flat panels from the outset, but where is the fun in that.&#160;<a class="footnote-backref" href="#fnref:triangle" title="Jump back to footnote 1 in the text">&#8617;</a></p>
+</li>
+<li id="fn:pq">
+<p>Planar-quad (PQ) meshes are a central topic in architectural geometry precisely because of this fabrication economy. See Pottmann et al., <em>Architectural Geometry</em> (Bentley Institute Press, 2007).&#160;<a class="footnote-backref" href="#fnref:pq" title="Jump back to footnote 2 in the text">&#8617;</a></p>
+</li>
+<li id="fn:tang">
+<p>The fairness energy is the smoothness term of Tang, Sun, Gomes, Wallner and Pottmann, <em>Form-finding with Polyhedral Meshes Made Simple</em>, ACM Transactions on Graphics 33(4), SIGGRAPH 2014, <a href="https://doi.org/10.1145/2601097.2601213">doi:10.1145/2601097.2601213</a>.&#160;<a class="footnote-backref" href="#fnref:tang" title="Jump back to footnote 3 in the text">&#8617;</a></p>
+</li>
+</ol>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+    <div class="md-copyright__highlight">
+      Copyright &copy; 2026 Rafael Pastrana
+    </div>
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.sections", "navigation.top", "content.code.copy", "search.highlight", "search.suggest", "toc.follow"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"default": "latest", "provider": "mike"}}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+        <script src="../../assets/js/mathjax.js"></script>
+      
+        <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+      
+    
+  </body>
+</html>

@@ -1,0 +1,1708 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Auto-differentiable and hardware-accelerated force density method">
+      
+      
+        <meta name="author" content="Rafael Pastrana">
+      
+      
+        <link rel="canonical" href="https://arpastrana.github.io/jax_fdm/0.14.0/howto/custom_goals/">
+      
+      
+        <link rel="prev" href="../constraints/">
+      
+      
+        <link rel="next" href="../custom_constraints/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/jax_logo.svg">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>Custom goals - JAX FDM</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/_mkdocstrings.css">
+    
+      <link rel="stylesheet" href="../../assets/css/custom.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#custom-goals" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+      <div data-md-color-scheme="default" data-md-component="outdated" hidden>
+        
+      </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="JAX FDM" class="md-header__button md-logo" aria-label="JAX FDM" data-md-component="logo">
+      
+  <img src="../../assets/images/jax_logo.svg" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            JAX FDM
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Custom goals
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m17.75 4.09-2.53 1.94.91 3.06-2.63-1.81-2.63 1.81.91-3.06-2.53-1.94L12.44 4l1.06-3 1.06 3zm3.5 6.91-1.64 1.25.59 1.98-1.7-1.17-1.7 1.17.59-1.98L15.75 11l2.06-.05L18.5 9l.69 1.95zm-2.28 4.95c.83-.08 1.72 1.1 1.19 1.85-.32.45-.66.87-1.08 1.27C15.17 23 8.84 23 4.94 19.07c-3.91-3.9-3.91-10.24 0-14.14.4-.4.82-.76 1.27-1.08.75-.53 1.93.36 1.85 1.19-.27 2.86.69 5.83 2.89 8.02a9.96 9.96 0 0 0 8.02 2.89m-1.64 2.02a12.08 12.08 0 0 1-7.8-3.47c-2.17-2.19-3.33-5-3.49-7.82-2.81 3.14-2.7 7.96.31 10.98 3.02 3.01 7.84 3.12 10.98.31"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 7a5 5 0 0 1 5 5 5 5 0 0 1-5 5 5 5 0 0 1-5-5 5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3m0-7 2.39 3.42C13.65 5.15 12.84 5 12 5s-1.65.15-2.39.42zM3.34 7l4.16-.35A7.2 7.2 0 0 0 5.94 8.5c-.44.74-.69 1.5-.83 2.29zm.02 10 1.76-3.77a7.131 7.131 0 0 0 2.38 4.14zM20.65 7l-1.77 3.79a7.02 7.02 0 0 0-2.38-4.15zm-.01 10-4.14.36c.59-.51 1.12-1.14 1.54-1.86.42-.73.69-1.5.83-2.29zM12 22l-2.41-3.44c.74.27 1.55.44 2.41.44.82 0 1.63-.17 2.37-.44z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/arpastrana/jax_fdm" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    arpastrana/jax_fdm
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="JAX FDM" class="md-nav__button md-logo" aria-label="JAX FDM" data-md-component="logo">
+      
+  <img src="../../assets/images/jax_logo.svg" alt="logo">
+
+    </a>
+    JAX FDM
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/arpastrana/jax_fdm" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    arpastrana/jax_fdm
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../installation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Installation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../citation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Citation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../license/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    License
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Examples
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Examples
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../examples/arch/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Length optimization
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../examples/shape_matching/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Shape matching
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../examples/truss_equal_force/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Equal-force truss
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../examples/gridshell_planarization/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Gridshell planarization
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../examples/more/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    More examples
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    How-to Guides
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    How-to Guides
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../form_finding/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Form-finding
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../constrained_form_finding/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Constrained form-finding
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../goals/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Goals
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../constraints/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Constraints
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Custom goals
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Custom goals
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#recipe-1-a-custom-scalar-goal" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Recipe 1: A custom scalar goal
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#recipe-2-a-custom-vector-goal-with-a-moving-target" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Recipe 2: A custom vector goal with a moving target
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#recipe-3-an-aggregate-goal" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Recipe 3: An aggregate goal
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#recipe-4-retargeting-a-goal-from-nodes-to-vertices" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Recipe 4: Retargeting a goal from nodes to vertices
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#recipe-5-a-goal-that-carries-its-own-data" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Recipe 5: A goal that carries its own data
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Summary
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../custom_constraints/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Custom constraints
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API reference
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    API reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/jax_fdm.datastructures/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Datastructures
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/jax_fdm.equilibrium/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Equilibrium
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/jax_fdm.goals/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Goals
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/jax_fdm.constraints/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Constraints
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/jax_fdm.losses/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Losses
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/jax_fdm.optimization/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Optimization
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/jax_fdm.parameters/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Parameters
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/jax_fdm.geometry/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Geometry
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7_9" >
+        
+          
+          <label class="md-nav__link" for="__nav_7_9" id="__nav_7_9_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Visualization
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_7_9_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7_9">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Visualization
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/jax_fdm.visualization.viewers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Desktop 3D
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/jax_fdm.visualization.notebooks/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Jupyter notebooks
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/jax_fdm.visualization.plotters/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Plotters
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#recipe-1-a-custom-scalar-goal" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Recipe 1: A custom scalar goal
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#recipe-2-a-custom-vector-goal-with-a-moving-target" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Recipe 2: A custom vector goal with a moving target
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#recipe-3-an-aggregate-goal" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Recipe 3: An aggregate goal
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#recipe-4-retargeting-a-goal-from-nodes-to-vertices" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Recipe 4: Retargeting a goal from nodes to vertices
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#recipe-5-a-goal-that-carries-its-own-data" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Recipe 5: A goal that carries its own data
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Summary
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="custom-goals">Custom goals<a class="headerlink" href="#custom-goals" title="Permanent link">¤</a></h1>
+<p>JAX FDM ships with a rich bank of goals, but sooner or later a structural design problem will ask for something the bank does not have.
+Maybe we want an edge to carry a target force, whether it pulls or pushes.
+Maybe we want a node to hover directly above a point on the ground.</p>
+<p>This guide walks us through five recipes for custom goal-making, from a two-line scalar goal to a goal that chases a moving target and one that carries reference data of its own.
+It assumes you have read <a href="../goals/">goals</a>, which lays out the anatomy the recipes below build on.</p>
+<h2 id="recipe-1-a-custom-scalar-goal">Recipe 1: A custom scalar goal<a class="headerlink" href="#recipe-1-a-custom-scalar-goal" title="Permanent link">¤</a></h2>
+<p>Suppose we care about the <em>magnitude</em> of the force in an edge, tension or compression alike, and want to drive it toward a target value.
+The built-in <code>EdgeForceGoal</code> targets the signed force, so a positive target means tension and a negative one compression.
+A magnitude goal that ignores the sign is not in the bank, so we write one from scratch.</p>
+<div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">jax.numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">jnp</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">jax_fdm.goals.edge</span><span class="w"> </span><span class="kn">import</span> <span class="n">EdgeGoal</span>
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">EdgeForceMagnitudeGoal</span><span class="p">(</span><span class="n">EdgeGoal</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Drive the absolute internal force of an edge toward a target value.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">prediction</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">eq_state</span><span class="p">,</span> <span class="n">structure</span><span class="p">,</span> <span class="n">index</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">jnp</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">eq_state</span><span class="o">.</span><span class="n">forces</span><span class="p">[</span><span class="n">index</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span>
+</code></pre></div>
+<p>That is the whole class.
+We subclass a single element family, <code>EdgeGoal</code>, which fixes the goal to edges and resolves its key against them. There is no rank to declare: the prediction returns one number per edge, so the goal is scalar automatically.
+Let us unpack the three arguments the prediction receives.</p>
+<ul>
+<li><code>eq_state</code> is an <a href="../form_finding/#the-equilibrium-state"><code>EquilibriumState</code></a>, the array bundle a form-finding solve produces. It holds the solved geometry and force state: <code>xyz</code>, <code>residuals</code>, <code>lengths</code>, <code>forces</code>, <code>loads</code>, and <code>vectors</code>. Our prediction slices what it needs out of these arrays, here the edge <code>forces</code>.</li>
+<li><code>structure</code> is the <a href="../form_finding/#the-structure">structure</a> the goal is evaluated against, carrying the connectivity and topology. Most goals ignore it, ours included, but it is there when a goal needs to reach for whole-structure data.</li>
+<li><code>index</code> is the integer row our edge key resolves to against the structure: the row of <em>one</em> edge inside those arrays.
+We write the prediction for a single element, and JAX FDM vectorizes it across every edge we attach the goal to.</li>
+</ul>
+<p>Now we use it like any built-in goal:</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">jax_fdm.equilibrium</span><span class="w"> </span><span class="kn">import</span> <span class="n">constrained_fdm</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">jax_fdm.losses</span><span class="w"> </span><span class="kn">import</span> <span class="n">Loss</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">jax_fdm.losses</span><span class="w"> </span><span class="kn">import</span> <span class="n">SquaredError</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">jax_fdm.optimization</span><span class="w"> </span><span class="kn">import</span> <span class="n">LBFGSB</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">jax_fdm.parameters</span><span class="w"> </span><span class="kn">import</span> <span class="n">EdgeForceDensityParameter</span>
+
+
+<span class="n">goals</span> <span class="o">=</span> <span class="p">[</span><span class="n">EdgeForceMagnitudeGoal</span><span class="p">(</span><span class="n">edge</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span> <span class="k">for</span> <span class="n">edge</span> <span class="ow">in</span> <span class="n">network</span><span class="o">.</span><span class="n">edges</span><span class="p">()]</span>
+<span class="n">loss</span> <span class="o">=</span> <span class="n">Loss</span><span class="p">(</span><span class="n">SquaredError</span><span class="p">(</span><span class="n">goals</span><span class="o">=</span><span class="n">goals</span><span class="p">))</span>
+<span class="n">parameters</span> <span class="o">=</span> <span class="p">[</span><span class="n">EdgeForceDensityParameter</span><span class="p">(</span><span class="n">edge</span><span class="p">,</span> <span class="o">-</span><span class="mf">20.0</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.1</span><span class="p">)</span> <span class="k">for</span> <span class="n">edge</span> <span class="ow">in</span> <span class="n">network</span><span class="o">.</span><span class="n">edges</span><span class="p">()]</span>
+
+<span class="n">network</span> <span class="o">=</span> <span class="n">constrained_fdm</span><span class="p">(</span>
+    <span class="n">network</span><span class="p">,</span>
+    <span class="n">optimizer</span><span class="o">=</span><span class="n">LBFGSB</span><span class="p">(),</span>
+    <span class="n">loss</span><span class="o">=</span><span class="n">loss</span><span class="p">,</span>
+    <span class="n">parameters</span><span class="o">=</span><span class="n">parameters</span><span class="p">,</span>
+    <span class="n">maxiter</span><span class="o">=</span><span class="mi">200</span><span class="p">,</span>
+<span class="p">)</span>
+</code></pre></div>
+<div class="admonition tip">
+<p class="admonition-title">Keep predictions pure</p>
+<p>A prediction runs inside JAX's tracing machinery, so it must be a pure function of its inputs.
+Use <code>jnp</code> operations only.
+No Python <code>if</code> statements on array values, no <code>for</code> loops, no printing, no mutating outside state.
+In exchange, our goal is differentiated, JIT-compiled, and vectorized for free.</p>
+</div>
+<h2 id="recipe-2-a-custom-vector-goal-with-a-moving-target">Recipe 2: A custom vector goal with a moving target<a class="headerlink" href="#recipe-2-a-custom-vector-goal-with-a-moving-target" title="Permanent link">¤</a></h2>
+<p>Scalar goals compare one number against one number.
+Vector goals compare a 3D vector against another 3D vector.
+And sometimes the target is not a fixed point but a <em>set</em>, like a line, where the reference point depends on where the node currently is.</p>
+<p>That is what the <code>goal</code> method is for.
+It receives the stored target and the current prediction, and returns the reference value the prediction is compared against.
+The built-in <code>NodeLineGoal</code> and <code>NodePlaneGoal</code> use this trick to chase closest points.
+Here we pull a node onto a vertical line through a target point, so the node ends up directly above (or below) the point without caring at what height:</p>
+<div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">jax.numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">jnp</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">jax_fdm.goals.node</span><span class="w"> </span><span class="kn">import</span> <span class="n">NodeGoal</span>
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">NodeVerticalLineGoal</span><span class="p">(</span><span class="n">NodeGoal</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Pull a node onto the vertical line through a target point.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">prediction</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">eq_state</span><span class="p">,</span> <span class="n">structure</span><span class="p">,</span> <span class="n">index</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">eq_state</span><span class="o">.</span><span class="n">xyz</span><span class="p">[</span><span class="n">index</span><span class="p">,</span> <span class="p">:]</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">goal</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="n">prediction</span><span class="p">):</span>
+        <span class="n">target_xy</span> <span class="o">=</span> <span class="n">target</span><span class="p">[:</span><span class="mi">2</span><span class="p">]</span>        <span class="c1"># the line&#39;s x and y</span>
+        <span class="n">node_z</span> <span class="o">=</span> <span class="n">prediction</span><span class="p">[</span><span class="mi">2</span><span class="p">:]</span>       <span class="c1"># the node&#39;s own height</span>
+
+        <span class="k">return</span> <span class="n">jnp</span><span class="o">.</span><span class="n">concatenate</span><span class="p">((</span><span class="n">target_xy</span><span class="p">,</span> <span class="n">node_z</span><span class="p">))</span>
+</code></pre></div>
+<p>This one is a <em>vector</em> goal, and again we never say so out loud: the prediction returns the node's three coordinates, so both prediction and target are xyz triples and the goal is a vector goal by construction.</p>
+<div class="highlight"><pre><span></span><code><span class="n">goals</span> <span class="o">=</span> <span class="p">[</span><span class="n">NodeVerticalLineGoal</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="p">[</span><span class="mf">2.0</span><span class="p">,</span> <span class="mf">3.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">])</span> <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">network</span><span class="o">.</span><span class="n">nodes_free</span><span class="p">()]</span>
+</code></pre></div>
+<p>The <code>goal</code> method builds the reference point by splicing the target's xy with the node's <em>own</em> z, so the reference is <code>(target_x, target_y, node_z)</code>.
+The error the loss then measures, <code>prediction - goal</code>, is <code>(node_x - target_x, node_y - target_y, 0)</code>: it pulls the node's horizontal position toward the target and leaves its height untouched.
+The target's z coordinate is ignored, so any value does.
+Because the reference tracks the node's current height as it moves, the target behaves like a vertical line rather than a single point.</p>
+<h2 id="recipe-3-an-aggregate-goal">Recipe 3: An aggregate goal<a class="headerlink" href="#recipe-3-an-aggregate-goal" title="Permanent link">¤</a></h2>
+<p>The goals we have seen so far assess one entity at a time.
+An aggregate goal judges a <em>group</em> as a whole, such as the total length of a cable represented by a chain of edges, the evenness of a strip of nodes, and the variance of a group of edge forces.</p>
+<p>Aggregates deviate from the standard recipe by one line:</p>
+<div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">jax.numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">jnp</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">jax_fdm.goals.edge</span><span class="w"> </span><span class="kn">import</span> <span class="n">EdgeGoal</span>
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">EdgesTotalLengthGoal</span><span class="p">(</span><span class="n">EdgeGoal</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Drive the combined length of a group of edges toward a target value.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">is_aggregate</span> <span class="o">=</span> <span class="kc">True</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">prediction</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">eq_state</span><span class="p">,</span> <span class="n">structure</span><span class="p">,</span> <span class="n">index</span><span class="p">):</span>
+        <span class="n">lengths</span> <span class="o">=</span> <span class="n">eq_state</span><span class="o">.</span><span class="n">lengths</span><span class="p">[</span><span class="n">index</span><span class="p">]</span>
+
+        <span class="k">return</span> <span class="n">jnp</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">lengths</span><span class="p">)</span>
+</code></pre></div>
+<div class="highlight"><pre><span></span><code><span class="n">goal</span> <span class="o">=</span> <span class="n">EdgesTotalLengthGoal</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">network</span><span class="o">.</span><span class="n">edges</span><span class="p">()),</span> <span class="n">target</span><span class="o">=</span><span class="mf">12.0</span><span class="p">)</span>
+</code></pre></div>
+<p><code>is_aggregate = True</code> does two things for us.
+It marks the goal as taking a whole list of keys rather than a single one (hand a per-element goal a list and it stores it, then trips a shape error at evaluation once the mismatch is known), and it tells the machinery to hand our prediction the <em>whole</em> row of indices in a single call, instead of one index at a time.
+<code>index</code> is then an array of edge positions, and we reduce across it however our quantity demands: a sum here, a variance in <code>EdgesLengthEqualGoal</code>, a colinearity energy in <code>NodesColinearGoal</code>.
+The whole-structure goals (<code>Network*</code>, <code>Mesh*</code>) are aggregates too, just ones whose group is the entire structure, so they take no key list at all.</p>
+<h2 id="recipe-4-retargeting-a-goal-from-nodes-to-vertices">Recipe 4: Retargeting a goal from nodes to vertices<a class="headerlink" href="#recipe-4-retargeting-a-goal-from-nodes-to-vertices" title="Permanent link">¤</a></h2>
+<p>JAX FDM speaks two dialects for its datastructures.
+Networks have <strong>nodes</strong>, meshes have <strong>vertices</strong>, and goals are picky about which one they hear.
+Aim a <code>Node*</code> goal at a mesh and we get a <code>TypeError</code> telling us to use the <code>Vertex*</code> counterpart (and the other way around).
+This is deliberate: the two vocabularies resolve keys through different index tables, and silently mixing them is the stuff of subtle bugs.</p>
+<p>So what if we wrote <code>NodeVerticalLineGoal</code> and now want it on a mesh?
+We write its vertex twin, and the twin is gloriously boring:</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">jax_fdm.goals.vertex</span><span class="w"> </span><span class="kn">import</span> <span class="n">VertexGoal</span>
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">VertexVerticalLineGoal</span><span class="p">(</span><span class="n">VertexGoal</span><span class="p">,</span> <span class="n">NodeVerticalLineGoal</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Pull a mesh vertex onto the vertical line through a target point.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+</code></pre></div>
+<p>No methods and no body.
+Just a docstring and an inheritance list, with <code>VertexGoal</code> first so the vertex key resolution wins the method resolution order.
+The prediction and the vertical-line projection come along for the ride.</p>
+<p>Much of the vertex goal family in the library (<code>VertexPointGoal</code>, <code>VertexLineGoal</code>, <code>VertexResidualForceGoal</code>, and friends) is built exactly this way, an empty twin of a <code>Node*</code> goal. The exceptions are the vertex goals with genuinely mesh-only behavior, such as <code>VertexNormalAngleGoal</code>, which have no network counterpart to inherit from and so write their own <code>prediction</code>.</p>
+<h2 id="recipe-5-a-goal-that-carries-its-own-data">Recipe 5: A goal that carries its own data<a class="headerlink" href="#recipe-5-a-goal-that-carries-its-own-data" title="Permanent link">¤</a></h2>
+<p>Every goal so far got by on the three fields the base gives us: <code>key</code>, <code>target</code>, <code>weight</code>.
+But some goals need to <em>carry an extra piece of data</em> of their own.
+Consider driving the angle between an edge and a fixed reference direction toward a target: the goal has to remember which direction to measure against, and that direction is neither the target nor the key.
+It is a fourth field, stored on the goal alongside the other three.</p>
+<p>Because a goal is an <a href="https://docs.kidger.site/equinox/">equinox</a> module, adding a field is a one-liner, but there is a subtlety in <em>how</em> we declare it. Here is the library's own <code>EdgeAngleGoal</code>:</p>
+<div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">equinox</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">eqx</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">jax.numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">jnp</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">jaxtyping</span><span class="w"> </span><span class="kn">import</span> <span class="n">Array</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">jaxtyping</span><span class="w"> </span><span class="kn">import</span> <span class="n">Float</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">jax_fdm.geometry</span><span class="w"> </span><span class="kn">import</span> <span class="n">angle_vectors</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">jax_fdm.goals.edge</span><span class="w"> </span><span class="kn">import</span> <span class="n">EdgeGoal</span>
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">EdgeAngleGoal</span><span class="p">(</span><span class="n">EdgeGoal</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Drive the angle between an edge and a reference vector toward a target.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">vector</span><span class="p">:</span> <span class="n">Float</span><span class="p">[</span><span class="n">Array</span><span class="p">,</span> <span class="s2">&quot;3&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">eqx</span><span class="o">.</span><span class="n">field</span><span class="p">(</span><span class="n">kw_only</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="n">weight</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">vector</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">key</span> <span class="o">=</span> <span class="n">key</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">target</span> <span class="o">=</span> <span class="n">target</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">weight</span> <span class="o">=</span> <span class="n">weight</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">vector</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">vector</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">prediction</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">eq_state</span><span class="p">,</span> <span class="n">structure</span><span class="p">,</span> <span class="n">index</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">angle_vectors</span><span class="p">(</span><span class="n">eq_state</span><span class="o">.</span><span class="n">vectors</span><span class="p">[</span><span class="n">index</span><span class="p">,</span> <span class="p">:],</span> <span class="bp">self</span><span class="o">.</span><span class="n">vector</span><span class="p">)</span>
+</code></pre></div>
+<p>Two things earn an explanation.</p>
+<ul>
+<li><strong>The new field is <code>kw_only=True</code>.</strong> Our <code>vector</code> is <em>required</em>, it has no sensible default, but the base already gives <code>weight</code> a default of <code>1.0</code>. Plain field order would then put a required field after a defaulted one, which Python's dataclass rules forbid ("non-default argument follows default argument"). Marking <code>vector</code> keyword-only sidesteps the ordering rule entirely: it lives off in its own keyword-only slot, so it can stay required while <code>weight</code> keeps its default. That is why we construct the goal as <code>EdgeAngleGoal(edge, target=0.0, vector=[0, 0, 1])</code>, with <code>vector</code> always named.</li>
+<li><strong>We write an explicit <code>__init__</code>.</strong> Equinox would happily synthesize one, so why not lean on it as the other recipes do? Because <code>vector</code> is a differentiable array leaf, and hiding it from the constructor (with <code>init=False</code>) would make equinox warn that a float leaf is left unset. Writing the constructor ourselves lets us both accept <code>vector</code> as an argument and coerce it (here <code>jnp.asarray</code>) on the way in.</li>
+</ul>
+<p>The <code>prediction</code> then reads its stored <code>vector</code> straight off <code>self</code>, exactly as it reads its <code>index</code> from the structure.
+This is the pattern for any goal that needs reference data of its own: a plane's normal, a set of anchor points, a per-element weight map.
+Declare it as a <code>kw_only=True</code> field, set it in a small <code>__init__</code>, and read it off <code>self</code> in the prediction.</p>
+<div class="admonition tip">
+<p class="admonition-title">When a simple field is enough</p>
+<p>If the extra data has a natural default, a plain <code>eqx.field(default=...)</code> needs neither <code>kw_only</code> nor a hand-written <code>__init__</code>, equinox synthesizes the constructor and the field slots in after <code>weight</code> without complaint.
+The <code>kw_only</code> dance is specifically for data that is <em>required</em> and has <em>no default</em>, which is the common case for a reference the goal cannot invent on its own.</p>
+</div>
+<h2 id="summary">Summary<a class="headerlink" href="#summary" title="Permanent link">¤</a></h2>
+<p>One class, one method, and the entire differentiable machinery (gradients, JIT compilation, vectorization) adopts our goal as one of its own.
+When a preference is not enough and you need to draw a hard line instead, head over to <a href="../custom_constraints/">custom constraints</a>.
+And if you build a goal that others might want, remember that contributions are warmly welcome 🚀.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+    <div class="md-copyright__highlight">
+      Copyright &copy; 2026 Rafael Pastrana
+    </div>
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.sections", "navigation.top", "content.code.copy", "search.highlight", "search.suggest", "toc.follow"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"default": "latest", "provider": "mike"}}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+        <script src="../../assets/js/mathjax.js"></script>
+      
+        <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+      
+    
+  </body>
+</html>

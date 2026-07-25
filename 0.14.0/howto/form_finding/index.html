@@ -1,0 +1,1858 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Auto-differentiable and hardware-accelerated force density method">
+      
+      
+        <meta name="author" content="Rafael Pastrana">
+      
+      
+        <link rel="canonical" href="https://arpastrana.github.io/jax_fdm/0.14.0/howto/form_finding/">
+      
+      
+        <link rel="prev" href="../../examples/more/">
+      
+      
+        <link rel="next" href="../constrained_form_finding/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/jax_logo.svg">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>Form-finding - JAX FDM</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/_mkdocstrings.css">
+    
+      <link rel="stylesheet" href="../../assets/css/custom.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#form-finding" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+      <div data-md-color-scheme="default" data-md-component="outdated" hidden>
+        
+      </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="JAX FDM" class="md-header__button md-logo" aria-label="JAX FDM" data-md-component="logo">
+      
+  <img src="../../assets/images/jax_logo.svg" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            JAX FDM
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Form-finding
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m17.75 4.09-2.53 1.94.91 3.06-2.63-1.81-2.63 1.81.91-3.06-2.53-1.94L12.44 4l1.06-3 1.06 3zm3.5 6.91-1.64 1.25.59 1.98-1.7-1.17-1.7 1.17.59-1.98L15.75 11l2.06-.05L18.5 9l.69 1.95zm-2.28 4.95c.83-.08 1.72 1.1 1.19 1.85-.32.45-.66.87-1.08 1.27C15.17 23 8.84 23 4.94 19.07c-3.91-3.9-3.91-10.24 0-14.14.4-.4.82-.76 1.27-1.08.75-.53 1.93.36 1.85 1.19-.27 2.86.69 5.83 2.89 8.02a9.96 9.96 0 0 0 8.02 2.89m-1.64 2.02a12.08 12.08 0 0 1-7.8-3.47c-2.17-2.19-3.33-5-3.49-7.82-2.81 3.14-2.7 7.96.31 10.98 3.02 3.01 7.84 3.12 10.98.31"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 7a5 5 0 0 1 5 5 5 5 0 0 1-5 5 5 5 0 0 1-5-5 5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3m0-7 2.39 3.42C13.65 5.15 12.84 5 12 5s-1.65.15-2.39.42zM3.34 7l4.16-.35A7.2 7.2 0 0 0 5.94 8.5c-.44.74-.69 1.5-.83 2.29zm.02 10 1.76-3.77a7.131 7.131 0 0 0 2.38 4.14zM20.65 7l-1.77 3.79a7.02 7.02 0 0 0-2.38-4.15zm-.01 10-4.14.36c.59-.51 1.12-1.14 1.54-1.86.42-.73.69-1.5.83-2.29zM12 22l-2.41-3.44c.74.27 1.55.44 2.41.44.82 0 1.63-.17 2.37-.44z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/arpastrana/jax_fdm" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    arpastrana/jax_fdm
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="JAX FDM" class="md-nav__button md-logo" aria-label="JAX FDM" data-md-component="logo">
+      
+  <img src="../../assets/images/jax_logo.svg" alt="logo">
+
+    </a>
+    JAX FDM
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/arpastrana/jax_fdm" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    arpastrana/jax_fdm
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../installation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Installation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../citation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Citation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../license/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    License
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Examples
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Examples
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../examples/arch/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Length optimization
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../examples/shape_matching/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Shape matching
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../examples/truss_equal_force/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Equal-force truss
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../examples/gridshell_planarization/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Gridshell planarization
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../examples/more/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    More examples
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    How-to Guides
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    How-to Guides
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Form-finding
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Form-finding
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#form-finding-a-datastructure" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Form-finding a datastructure
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Form-finding a datastructure">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#load-types" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Load types
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#tuning-the-solve" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Tuning the solve
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#the-numerical-core" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The numerical core
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="The numerical core">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#the-structure" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The structure
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#the-parameter-state" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The parameter state
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#the-model" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The model
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#the-equilibrium-state" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The equilibrium state
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#where-to-next" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Where to next
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../constrained_form_finding/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Constrained form-finding
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../goals/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Goals
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../constraints/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Constraints
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../custom_goals/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Custom goals
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../custom_constraints/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Custom constraints
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API reference
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    API reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/jax_fdm.datastructures/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Datastructures
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/jax_fdm.equilibrium/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Equilibrium
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/jax_fdm.goals/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Goals
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/jax_fdm.constraints/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Constraints
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/jax_fdm.losses/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Losses
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/jax_fdm.optimization/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Optimization
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/jax_fdm.parameters/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Parameters
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/jax_fdm.geometry/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Geometry
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7_9" >
+        
+          
+          <label class="md-nav__link" for="__nav_7_9" id="__nav_7_9_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Visualization
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_7_9_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7_9">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Visualization
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/jax_fdm.visualization.viewers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Desktop 3D
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/jax_fdm.visualization.notebooks/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Jupyter notebooks
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/jax_fdm.visualization.plotters/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Plotters
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#form-finding-a-datastructure" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Form-finding a datastructure
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Form-finding a datastructure">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#load-types" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Load types
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#tuning-the-solve" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Tuning the solve
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#the-numerical-core" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The numerical core
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="The numerical core">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#the-structure" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The structure
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#the-parameter-state" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The parameter state
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#the-model" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The model
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#the-equilibrium-state" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The equilibrium state
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#where-to-next" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Where to next
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="form-finding">Form-finding<a class="headerlink" href="#form-finding" title="Permanent link">¤</a></h1>
+<p>Form-finding makes forces define a shape.
+We fix a few supports, hang some loads, declare how stiff each edge pulls, and then ask: what geometry holds all of this in equilibrium?
+The force density method answers that question with a single linear solve, and JAX FDM wraps the whole affair in one function call.</p>
+<p>This guide starts at the front door, the public <code>fdm</code> function on a network or mesh, and then opens the hood to show the JAX objects that do the work underneath.
+When we later write a <a href="../custom_goals/">custom goal</a> or <a href="../custom_constraints/">custom constraint</a>, we will be reaching straight into those objects, so it pays to meet them here first.</p>
+<h2 id="form-finding-a-datastructure">Form-finding a datastructure<a class="headerlink" href="#form-finding-a-datastructure" title="Permanent link">¤</a></h2>
+<p>We model a structure as a COMPAS-flavored datastructure: an <code>FDNetwork</code> for bars and cables, an <code>FDMesh</code> for surfaces.
+The datastructure carries everything the force density method needs, all as ordinary attributes we set before solving:</p>
+<ul>
+<li>a <strong>force density</strong> on every edge (the signed force-to-length ratio, negative pulls in compression, positive in tension),</li>
+<li>a set of <strong>supports</strong>, the nodes held fixed in space,</li>
+<li>the <strong>loads</strong> applied to the free nodes.</li>
+</ul>
+<p>To make this concrete, let us form-find the oldest shape in the book: a <strong>hanging cable</strong>.
+Pin a chain of nodes at both ends, hang a weight from each node in between, and let it sag into a catenary, the curve a slack rope settles into under gravity.
+We build the network from scratch, six nodes in a straight line joined by five edges, so the whole example stands on its own with no data file:</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">jax_fdm.datastructures</span><span class="w"> </span><span class="kn">import</span> <span class="n">FDNetwork</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">jax_fdm.equilibrium</span><span class="w"> </span><span class="kn">import</span> <span class="n">fdm</span>
+
+
+<span class="n">nodes</span> <span class="o">=</span> <span class="p">[[</span><span class="n">x</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">]</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">6</span><span class="p">)]</span>
+<span class="n">edges</span> <span class="o">=</span> <span class="p">[(</span><span class="n">i</span><span class="p">,</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">5</span><span class="p">)]</span>
+
+<span class="n">network</span> <span class="o">=</span> <span class="n">FDNetwork</span><span class="o">.</span><span class="n">from_nodes_and_edges</span><span class="p">(</span><span class="n">nodes</span><span class="p">,</span> <span class="n">edges</span><span class="p">)</span>
+
+<span class="n">network</span><span class="o">.</span><span class="n">edges_forcedensities</span><span class="p">(</span><span class="n">q</span><span class="o">=</span><span class="mf">2.0</span><span class="p">)</span>                               <span class="c1"># every segment pulls in tension</span>
+<span class="n">network</span><span class="o">.</span><span class="n">nodes_supports</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">5</span><span class="p">])</span>                                    <span class="c1"># pin the two end nodes</span>
+<span class="n">network</span><span class="o">.</span><span class="n">nodes_loads</span><span class="p">([</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.0</span><span class="p">],</span> <span class="n">keys</span><span class="o">=</span><span class="n">network</span><span class="o">.</span><span class="n">nodes_free</span><span class="p">())</span>  <span class="c1"># hang a unit weight from the rest</span>
+
+<span class="n">eq_network</span> <span class="o">=</span> <span class="n">fdm</span><span class="p">(</span><span class="n">network</span><span class="p">)</span>
+</code></pre></div>
+<p>That is a complete form-finding run.
+Every segment gets a positive force density of <code>2.0</code> (tension pulls the cable taut), the two end nodes are pinned as supports, and each interior node carries a downward unit load.
+The straight line we fed in comes back sagged into a symmetric curve: <code>eq_network</code> is a new datastructure whose interior nodes have dropped to their equilibrium heights and whose edges now report their solved <code>length</code>, <code>force</code>, and force density <code>q</code>.
+The input <code>network</code> is left untouched, so we can form-find the same model many times over.</p>
+<div class="admonition tip">
+<p class="admonition-title">Flip it for an arch</p>
+<p>Change the force densities from <code>+2.0</code> to <code>-2.0</code> and the same script gives us a compression arch instead of a tension cable, the catenary turned upside down.
+That inversion, tension and compression as mirror images, is the whole reason funicular form-finding is such a powerful design tool.</p>
+</div>
+<div class="admonition note">
+<p class="admonition-title">The result is a copy</p>
+<p><code>fdm</code> never mutates its input.
+It reads the force densities, supports, and loads off the datastructure we hand it, solves for equilibrium, and writes the solved geometry into a fresh copy.
+Keep the return value, and the original stays as we built it.</p>
+</div>
+<h3 id="load-types">Load types<a class="headerlink" href="#load-types" title="Permanent link">¤</a></h3>
+<p>The example above loads nodes directly, but a structure can be loaded on three different elements.
+Whatever the element, the force density method ultimately needs a load <em>at each node</em>, so edge and face loads are distributed to the nodes they touch by tributary geometry:</p>
+<table>
+<thead>
+<tr>
+<th>Load</th>
+<th>Applies to</th>
+<th>How to set it</th>
+<th>Distributed to nodes by</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Node / vertex</strong></td>
+<td>a node (<code>FDNetwork</code>) or vertex (<code>FDMesh</code>)</td>
+<td><code>nodes_loads</code>, <code>node_load</code> / <code>vertices_loads</code>, <code>vertex_load</code></td>
+<td>applied directly, no distribution</td>
+</tr>
+<tr>
+<td><strong>Edge</strong></td>
+<td>an edge</td>
+<td><code>edges_loads</code>, <code>edge_load</code></td>
+<td>split to the edge's two end nodes by tributary length</td>
+</tr>
+<tr>
+<td><strong>Face</strong></td>
+<td>a face (<code>FDMesh</code> only)</td>
+<td><code>faces_loads</code>, <code>face_load</code></td>
+<td>split to the face's vertices by tributary area</td>
+</tr>
+</tbody>
+</table>
+<p>A node or vertex load is a plain point load: whatever we set is what the node carries.
+Edge and face loads are <strong>line</strong> and <strong>area</strong> loads, magnitudes per unit length or area, that the model resolves onto nodes for us.</p>
+<div class="admonition warning">
+<p class="admonition-title">Edge and face loads are shape-dependent</p>
+<p>A point load on a node stays put, but the nodal share of a line or area load depends on the current edge lengths and face areas, which change as the structure moves.
+So edge and face loads only take effect when the iterative solver is on: at the default <code>tmax=1</code> they are discarded (see <a href="#tuning-the-solve">tuning the solve</a>).
+Raise <code>tmax</code> to let the solver settle the shape and its loads together.</p>
+</div>
+<h3 id="tuning-the-solve">Tuning the solve<a class="headerlink" href="#tuning-the-solve" title="Permanent link">¤</a></h3>
+<p><code>fdm</code> takes in several keyword arguments that shape <em>how</em> equilibrium is computed.
+The defaults suit most problems, so reach for these only when we need them:</p>
+<ul>
+<li><strong><code>sparse</code></strong> (default <code>True</code>) picks the sparse solver, which scales to large structures. More on this in <a href="#the-numerical-core">the numerical core</a> below.</li>
+<li><strong><code>tmax</code></strong> (default <code>1</code>) is the maximum number of equilibrium iterations. With <code>tmax=1</code> the model takes a single linear force density step, which is the classic FDM and all that most models ever need. Raising it turns on an iterative solve for <strong>shape-dependent loads</strong>, loads that must be recomputed as the geometry moves (self-weight, area loads on a mesh, edge line loads).</li>
+<li><strong><code>is_load_local</code></strong> (default <code>False</code>) applies edge and face loads in their own local frames as the shape changes (follower loads), rather than keeping them fixed in the global frame. The <code>z</code> component of an input load vector corresponds to the direction <em>normal</em> to the edges and faces.</li>
+<li><strong><code>eta</code></strong> (default <code>1e-6</code>) is the convergence tolerance for that iterative solve.</li>
+</ul>
+<h2 id="the-numerical-core">The numerical core<a class="headerlink" href="#the-numerical-core" title="Permanent link">¤</a></h2>
+<p>Everything above happens on the mutable datastructure, in the comfortable world of node keys and edge tuples.
+But the actual solve happens in JAX, on plain, immutable arrays.
+Between the two, <code>fdm</code> quietly assembles a small cast: a <strong>structure</strong> and a <strong>parameter state</strong> as inputs, a <strong>model</strong> that maps one to the other, and an <strong>equilibrium state</strong> as output.</p>
+<div class="highlight"><pre><span></span><code>model(parameters, structure) -&gt; EquilibriumState
+</code></pre></div>
+<p>Generally, we do not build these by hand for a basic workflow.
+However, they are exactly what our custom goals and constraints read from, so they deserve an in-depth explanation.</p>
+<h3 id="the-structure">The structure<a class="headerlink" href="#the-structure" title="Permanent link">¤</a></h3>
+<p>A <strong>structure</strong> is the datastructure's topology, frozen into a form JAX can differentiate through.
+An <code>FDNetwork</code> or <code>FDMesh</code> is a rich, mutable COMPAS object: a dictionary of nodes and edges keyed by arbitrary integers, carrying attributes, geometry, and helper methods.
+That is wonderful for modeling and terrible for a numerical core, which wants contiguous arrays with fixed shapes and no Python-level lookups on the hot path.
+The structure is the bridge: <code>fdm</code> converts our datastructure into one before solving.</p>
+<p>The conversion (<code>EquilibriumStructure.from_network</code>, <code>EquilibriumMeshStructure.from_mesh</code>) does two things.
+First, it <strong>numbers the elements</strong>: it walks <code>network.nodes()</code> and <code>network.edges()</code> in generator order and assigns each a contiguous integer index, building the <strong>index tables</strong> (<code>node_index</code>, <code>edge_index</code>) that map a key to its row. This is where the deterministic ordering comes from, the first edge yielded is row <code>0</code>, the last is row <code>number_of_edges() - 1</code>.
+Second, it <strong>precomputes the connectivity</strong> as matrices: the signed edge-node incidence matrix, split into free and fixed submatrices via the support mask, plus the index maps that reorder nodes between their native and free-fixed arrangements. These are the matrices the force density method multiplies together, assembled once so the solve never has to touch the datastructure again.</p>
+<p>The structure is an immutable <a href="https://docs.kidger.site/equinox/">equinox</a> module, which means JAX treats it as a registered pytree: its static index arrays stay as NumPy (topology never needs a gradient), while its connectivity matrices are JAX arrays that the differentiable solve flows through.</p>
+<p>This is the object behind the key-versus-index duality we will meet in the <a href="../goals/#keys-versus-indices">goals</a> guide.
+The structure records the numbering once, deterministically, so every later lookup, every goal's <code>init</code>, every parameter's index, agrees on which row is which element.</p>
+<p>Structures come in four flavors, one per datastructure kind and solver: network or mesh, dense or sparse.
+<code>fdm</code> picks the right one for us from the datastructure we pass and the <code>sparse</code> flag.</p>
+<h3 id="the-parameter-state">The parameter state<a class="headerlink" href="#the-parameter-state" title="Permanent link">¤</a></h3>
+<p>If the structure is the fixed topology, the <strong>parameter state</strong> is the variable data the FDM solver is a function of, the independent quantities that, together with the connectivity, pin down one equilibrium.
+An <code>EquilibriumParametersState</code> is a named tuple of three fields, read off our datastructure by <code>EquilibriumParametersState.from_datastructure</code>:</p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Shape</th>
+<th>What it holds</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>q</code></td>
+<td><code>(edges,)</code></td>
+<td>the force density of every edge, in structure order</td>
+</tr>
+<tr>
+<td><code>xyz_fixed</code></td>
+<td><code>(nodes_fixed, 3)</code></td>
+<td>the coordinates of the supported nodes</td>
+</tr>
+<tr>
+<td><code>loads</code></td>
+<td>a <code>LoadState</code></td>
+<td>the applied loads, split by element</td>
+</tr>
+</tbody>
+</table>
+<p>The <code>loads</code> field is itself a small <code>LoadState</code> named tuple, because loads can enter on three different elements:</p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Shape</th>
+<th>What it holds</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>nodes</code></td>
+<td><code>(nodes, 3)</code></td>
+<td>the load vector applied directly to each node</td>
+</tr>
+<tr>
+<td><code>edges</code></td>
+<td><code>(edges, 3)</code> or <code>0.0</code></td>
+<td>the line load on each edge</td>
+</tr>
+<tr>
+<td><code>faces</code></td>
+<td><code>(faces, 3)</code> or <code>0.0</code></td>
+<td>the area load on each face (meshes only)</td>
+</tr>
+</tbody>
+</table>
+<p>Edge and face loads collapse to the scalar <code>0.0</code> when every entry is zero, which lets the model skip distributing them altogether, and a network always carries <code>faces=0.0</code>.</p>
+<p>These arrays are the reason the datastructure conversion matters: <code>q</code> is ordered by the structure's edge numbering, <code>xyz_fixed</code> by its support numbering, so the parameter state and the structure speak the same index language.
+For a plain <code>fdm</code> call these come straight off our datastructure. Under <code>constrained_fdm</code>, they are exactly what the optimizer is free to change, one number at a time.</p>
+<h3 id="the-model">The model<a class="headerlink" href="#the-model" title="Permanent link">¤</a></h3>
+<p>A <strong>model</strong> is the force density method itself, expressed as a differentiable function.
+Give it the parameter state and the structure and it returns the equilibrium state:</p>
+<div class="highlight"><pre><span></span><code>model(parameters, structure) -&gt; EquilibriumState
+</code></pre></div>
+<p>There are two models, and they compute the same equilibrium by different means:</p>
+<ul>
+<li><code>EquilibriumModel</code>, the <strong>dense</strong> model, assembles the stiffness matrix as a full array and solves the linear system directly. Simple and fast for small to medium structures.</li>
+<li><code>EquilibriumModelSparse</code>, the <strong>sparse</strong> model, assembles the same system stored in sparse format and solves it with a sparse solver. Identical results, but it scales to large structures where a dense matrix would not fit.</li>
+</ul>
+<p>Sparse is the default, and the one to keep for big unconstrained form-finding.
+The one time it steps aside is when we add constraints: constrained form-finding runs on the dense model, and passing constraints with <code>sparse=True</code> quietly switches us to dense (with a printed heads-up).</p>
+<h3 id="the-equilibrium-state">The equilibrium state<a class="headerlink" href="#the-equilibrium-state" title="Permanent link">¤</a></h3>
+<p>It is tempting to think of the model's output as "the shape," but an <code>EquilibriumState</code> is more than geometry.
+It is the complete configuration of the pin-jointed bar system at equilibrium: where every node sits <em>and</em> how force flows through the whole assembly, the two halves of a static answer.
+Give a bar network force densities and loads and the model returns not just the coordinates the structure settles into, but the axial force it carries, the reactions its supports must supply, and the residual at every free node that says whether equilibrium was actually reached.</p>
+<p>The state is a named tuple of arrays:</p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Shape</th>
+<th>What it holds</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>xyz</code></td>
+<td><code>(nodes, 3)</code></td>
+<td>the equilibrium coordinates of every node</td>
+</tr>
+<tr>
+<td><code>residuals</code></td>
+<td><code>(nodes, 3)</code></td>
+<td>the residual force at each node, zero at free nodes in equilibrium, the reaction at supports</td>
+</tr>
+<tr>
+<td><code>lengths</code></td>
+<td><code>(edges, 1)</code></td>
+<td>the length of each edge</td>
+</tr>
+<tr>
+<td><code>forces</code></td>
+<td><code>(edges, 1)</code></td>
+<td>the axial force in each edge, signed like its force density</td>
+</tr>
+<tr>
+<td><code>loads</code></td>
+<td><code>(nodes, 3)</code></td>
+<td>the load resolved onto each node</td>
+</tr>
+<tr>
+<td><code>vectors</code></td>
+<td><code>(edges, 3)</code></td>
+<td>the edge vectors, pointing from tail node to head node</td>
+</tr>
+</tbody>
+</table>
+<p>The <strong>geometry</strong> lives in <code>xyz</code>, <code>lengths</code>, and <code>vectors</code>, while the <strong>force state</strong> lives in <code>forces</code>, <code>residuals</code>, and <code>loads</code>.
+The residuals do double duty: they are our equilibrium check (a free node with a non-zero residual has not settled) and our reactions (a support's residual <em>is</em> the force it feeds back into the structure).</p>
+<p>This is the object <code>fdm</code> unpacks to update the datastructure it returns.
+It is also, verbatim, the <code>eq_state</code> that a goal's <code>prediction(eq_state, structure, index)</code> (or a constraint's <code>constraint(eq_state, structure, index)</code>) slices into, where <code>index</code> is the row of the element the goal acts on.
+When we write a <a href="../custom_goals/">custom goal</a>, we are reading one row out of these <code>EquilibriumState</code> arrays, whether we care about a coordinate, a length, or a force.
+The numerical core and the <a href="../goals/">goals</a> guide meet right here.</p>
+<p>For the full signatures and every method, see the <a href="../../api/jax_fdm.equilibrium/">equilibrium API reference</a>.</p>
+<h2 id="where-to-next">Where to next<a class="headerlink" href="#where-to-next" title="Permanent link">¤</a></h2>
+<ul>
+<li>To steer form-finding toward a design intent, minimizing, bounding, and targeting quantities, read <a href="../constrained_form_finding/">constrained form-finding</a>.</li>
+<li>To register a target quantity in JAX FDM it does not measure yet, write a <a href="../custom_goals/">custom goal</a> or <a href="../custom_constraints/">custom constraint</a>.</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+    <div class="md-copyright__highlight">
+      Copyright &copy; 2026 Rafael Pastrana
+    </div>
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.sections", "navigation.top", "content.code.copy", "search.highlight", "search.suggest", "toc.follow"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"default": "latest", "provider": "mike"}}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+        <script src="../../assets/js/mathjax.js"></script>
+      
+        <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+      
+    
+  </body>
+</html>
