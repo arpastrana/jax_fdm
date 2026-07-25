@@ -1,12 +1,14 @@
 [build-system]
-requires = ["setuptools>=64"]
+# 77.0.3 is the first setuptools that understands the PEP 639 license fields
+requires = ["setuptools>=77.0.3"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "jax_fdm"
 description = "Auto-differentiable and hardware-accelerated force density method"
 readme = "README.md"
-license = { text = "MIT license" }
+license = "MIT"
+license-files = ["LICENSE"]
 authors = [{ name = "Rafael Pastrana", email = "arpastrana@princeton.edu" }]
 requires-python = ">=3.11,<3.13"
 keywords = [
@@ -20,7 +22,6 @@ classifiers = [
     "Development Status :: 4 - Beta",
     "Intended Audience :: Developers",
     "Topic :: Scientific/Engineering",
-    "License :: OSI Approved :: MIT License",
     "Operating System :: Unix",
     "Operating System :: POSIX",
     "Operating System :: Microsoft :: Windows",
@@ -32,16 +33,23 @@ classifiers = [
 ]
 dynamic = ["version"]
 dependencies = [
-    "jax[cpu]",
-    "numpy",
+    # lineax 0.1.0 is the binding constraint here: it requires jax >= 0.6.1,
+    # which in turn requires numpy >= 2.0. A numpy 1.x floor is only reachable
+    # by backtracking jax below that, so 2.0 is the real floor, not a choice.
+    "jax[cpu]>=0.6.1",
+    "numpy>=2.0",
     "compas>=2.15,<3.0",
-    "matplotlib",
-    "scipy",
-    "jaxopt",
-    "equinox",
-    "lineax",
-    "optimistix",
-    "jaxtyping>=0.2.20",
+    "matplotlib>=3.8",
+    "scipy>=1.13",
+    "jaxopt>=0.8.2",
+    # 0.13.4 is the oldest equinox that imports against current jax; goals and
+    # constraints are eqx.Modules built on field(converter=...) and error_if.
+    "equinox>=0.13.4",
+    # lineax gained the Normal operator, used by the fixed-point adjoint, in 0.1.0.
+    "lineax>=0.1.0",
+    "optimistix>=0.1.0",
+    # 0.2.24 is what lineax and optimistix require.
+    "jaxtyping>=0.2.24",
 ]
 
 [project.urls]
