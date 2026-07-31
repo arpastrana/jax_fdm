@@ -11,9 +11,9 @@ from jax_fdm.equilibrium import fdm
 from jax_fdm.optimization import OptimizationRecorder
 from jax_fdm.visualization import Viewer
 
-# ==========================================================================
+# ==============================================================================
 # Parameters
-# ==========================================================================
+# ==============================================================================
 
 # NOTE: the input files are not committed to the repository. Generate them by
 # running examples/monkey_saddle/monkey_saddle.py with record = True and export = True.
@@ -28,9 +28,9 @@ interval = 50  # milliseconds between frames
 animate = True
 rotate_while_animate = False
 
-# ==========================================================================
+# ==============================================================================
 # Read in force density mesh
-# ==========================================================================
+# ==============================================================================
 
 HERE = os.path.join(os.path.dirname(__file__), "../../data/json/")
 FILE_IN = os.path.abspath(os.path.join(HERE, f"{name}_base.json"))
@@ -40,16 +40,16 @@ model = EquilibriumModel(tmax=1, eta=1e-6)
 structure = EquilibriumMeshStructure.from_mesh(mesh0)
 mesh = fdm(mesh0)
 
-# ==========================================================================
+# ==============================================================================
 # Read in optimization history
-# ==========================================================================
+# ==============================================================================
 
 FILE_IN = os.path.abspath(os.path.join(HERE, f"{name}_history.json"))
 recorder = OptimizationRecorder.from_json(FILE_IN)
 
-# ==========================================================================
+# ==============================================================================
 # Visualization
-# ==========================================================================
+# ==============================================================================
 
 # instantiate viewer
 viewer = Viewer(show_grid=show_grid)

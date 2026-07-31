@@ -12,6 +12,7 @@ These notebooks run directly from your browser without having to install anythin
 
 The scripts require a local installation of JAX FDM.
 
+- [Square cable-net](https://github.com/arpastrana/jax_fdm/blob/main/examples/cablenet/cablenet.py): Prestress a tensile net so that its boundary cables reach a target force and its interior cables a target length.
 - [Pointy dome](https://github.com/arpastrana/jax_fdm/blob/main/examples/dome/dome.py): Control the tilt and the coarse width of a brick dome.
 - [Triple-branching shell](https://github.com/arpastrana/jax_fdm/blob/main/examples/monkey_saddle/monkey_saddle.py): Design the distribution of thrusts at the supports of a tripod while constraining the edge lengths.
 - [Saddle bridge](https://github.com/arpastrana/jax_fdm/blob/main/examples/pringle/pringle.py): Create a crease in the middle of the bridge while constraining the transversal edges of the network to a target plane.

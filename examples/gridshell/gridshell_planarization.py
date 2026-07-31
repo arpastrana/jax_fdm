@@ -20,9 +20,9 @@ from jax_fdm.parameters import EdgeForceDensityParameter
 from jax_fdm.parameters import VertexSupportXParameter
 from jax_fdm.visualization import Viewer
 
-# ==========================================================================
+# ==============================================================================
 # Helper functions
-# ==========================================================================
+# ==============================================================================
 
 
 def face_flatness(datastructure, maxdev=0.01):
@@ -62,9 +62,9 @@ def distance_vertices(mesh, mesh_target, vertices):
     return distances
 
 
-# ==========================================================================
+# ==============================================================================
 # Parameters
-# ==========================================================================
+# ==============================================================================
 
 length = 10.0  # side length of the square gridshell
 nx = 8  # number of quad faces per side
@@ -84,16 +84,16 @@ shape_weight = 0.07  # if 0.0 = modify freely, raise to hold the funicular shape
 pin_side = True  # also pin one full boundary side, not just the four corners
 find_supports = True  # let the pinned side's supports slide along x (needs pin_side)
 
-# ==========================================================================
+# ==============================================================================
 # Build a square quad gridshell
-# ==========================================================================
+# ==============================================================================
 
 mesh = FDMesh.from_meshgrid(length, nx=nx)
 mesh.transform(Translation.from_vector([-length / 2.0, -length / 2.0, 0.0]))
 
-# ==========================================================================
+# ==============================================================================
 # Assemble the structural system: a corner-supported compression shell
-# ==========================================================================
+# ==============================================================================
 
 # pin the four corners, and optionally one full boundary side (at x = length/2)
 corners = list(mesh.vertices_where(vertex_degree=2))
@@ -117,9 +117,9 @@ for edge in mesh.edges():
     else:
         mesh.edge_forcedensity(edge, q0)
 
-# ==========================================================================
+# ==============================================================================
 # Form-find the compression shell
-# ==========================================================================
+# ==============================================================================
 
 shell = fdm(mesh)
 
@@ -135,9 +135,9 @@ print(f"Shell rise: {rise:.3f}")
 print(f"Shell face flatness: mean {np.mean(values):.2f}  max {np.max(values):.2f}")
 print(f"Faces under the flatness threshold: {under:.0f}%")
 
-# ==========================================================================
+# ==============================================================================
 # Planarize: find the compression state whose quad faces are flat
-# ==========================================================================
+# ==============================================================================
 
 # the design variables are the edge force densities
 parameters = [EdgeForceDensityParameter(edge, qmin, qmax) for edge in mesh.edges()]
@@ -209,9 +209,9 @@ if find_supports and pin_side:
     mean_move, max_move = np.mean(support_moves), np.max(support_moves)
     print(f"Support travel: mean {mean_move:.3f}  max {max_move:.3f}")
 
-# ==========================================================================
+# ==============================================================================
 # Visualization
-# ==========================================================================
+# ==============================================================================
 
 viewer = Viewer(width=1200, height=600, show_grid=True)
 

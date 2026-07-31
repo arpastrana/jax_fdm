@@ -10,9 +10,9 @@ from jax_fdm.equilibrium import fdm
 from jax_fdm.optimization import OptimizationRecorder
 from jax_fdm.visualization import Viewer
 
-# ==========================================================================
+# ==============================================================================
 # Parameters
-# ==========================================================================
+# ==============================================================================
 
 # NOTE: the input files are not committed to the repository. Generate them by
 # running examples/pringle/pringle.py with record = True and export = True.
@@ -27,9 +27,9 @@ interval = 30  # milliseconds between frames
 animate = True
 rotate_while_animate = True
 
-# ==========================================================================
+# ==============================================================================
 # Read in force density network
-# ==========================================================================
+# ==============================================================================
 
 HERE = os.path.join(os.path.dirname(__file__), "../../data/json/")
 FILE_IN = os.path.abspath(os.path.join(HERE, f"{name}_base.json"))
@@ -39,16 +39,16 @@ model = EquilibriumModel(tmax=1, eta=1e-6)
 structure = EquilibriumStructure.from_network(network0)
 network = fdm(network0)
 
-# ==========================================================================
+# ==============================================================================
 # Read in optimization history
-# ==========================================================================
+# ==============================================================================
 
 FILE_IN = os.path.abspath(os.path.join(HERE, f"{name}_history.json"))
 recorder = OptimizationRecorder.from_json(FILE_IN)
 
-# ==========================================================================
+# ==============================================================================
 # Visualization
-# ==========================================================================
+# ==============================================================================
 
 # instantiate viewer
 viewer = Viewer(show_grid=show_grid)

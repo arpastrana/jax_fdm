@@ -23,18 +23,18 @@ from jax_fdm.optimization import LBFGSB
 from jax_fdm.optimization import OptimizationRecorder
 from jax_fdm.visualization import Viewer
 
-# ==========================================================================
+# ==============================================================================
 # Parameters
-# ==========================================================================
+# ==============================================================================
 
 length = 5.0
 num_segments = 11
 depth = -2.0
 target_force = 1.5
 
-# ==========================================================================
+# ==============================================================================
 # Create the spaced points along x
-# ==========================================================================
+# ==============================================================================
 
 step = length / num_segments
 xs = [-length / 2.0 + i * step for i in range(num_segments + 1)]
@@ -42,9 +42,9 @@ xs = [-length / 2.0 + i * step for i in range(num_segments + 1)]
 top_points = [[x, 0.0, 0.0] for x in xs]  # with supports at both ends
 bottom_points = [[x, depth, 0.0] for x in xs[1:-1]]  # without supports
 
-# ==========================================================================
+# ==============================================================================
 # Build the truss network: top chord, bottom chord, and struts
-# ==========================================================================
+# ==============================================================================
 
 # create an empty network
 network = FDNetwork()
@@ -60,9 +60,9 @@ top_edges = [network.add_edge(u, v) for u, v in pairwise(top_nodes)]
 bottom_edges = [network.add_edge(u, v) for u, v in pairwise(bottom_chord)]
 strut_edges = [network.add_edge(u, v) for u, v in zip(bottom_nodes, top_nodes_free)]
 
-# ==========================================================================
+# ==============================================================================
 # Assemble the structural system
-# ==========================================================================
+# ==============================================================================
 
 # supports at both ends
 network.node_support(top_nodes[0])
@@ -84,18 +84,18 @@ for edge in bottom_edges:
 for edge in strut_edges:
     network.edge_forcedensity(edge, -0.5)
 
-# ==========================================================================
+# ==============================================================================
 # Form-find the truss for a first guess
-# ==========================================================================
+# ==============================================================================
 
 network_guess = fdm(network)
 
 forces_guess = [network_guess.edge_force(edge) for edge in bottom_edges]
 print(f"Guess force: min {min(forces_guess):.3f} max {max(forces_guess):.3f}")
 
-# ==========================================================================
+# ==============================================================================
 # Define the equal-force problem (two goals)
-# ==========================================================================
+# ==============================================================================
 
 # aim every bottom edge at the same force, so they are equal by construction
 goals_force = [EdgeForceGoal(edge, target=target_force) for edge in bottom_edges]
@@ -108,9 +108,9 @@ loss = Loss(
     PredictionError(goals_colinear, name="ColinearTopChord"),
 )
 
-# ==========================================================================
+# ==============================================================================
 # Solve the constrained form-finding problem
-# ==========================================================================
+# ==============================================================================
 
 optimizer = LBFGSB()
 recorder = OptimizationRecorder(optimizer)
@@ -127,9 +127,9 @@ network_equalforce = constrained_fdm(
 forces = [network_equalforce.edge_force(edge) for edge in bottom_edges]
 print(f"Optimized bottom-chord force: min {min(forces):.3f}  max {max(forces):.3f}")
 
-# ==========================================================================
+# ==============================================================================
 # Bottom-chord force plot (before vs after)
-# ==========================================================================
+# ==============================================================================
 
 segments = range(1, len(bottom_edges) + 1)
 
@@ -147,9 +147,9 @@ IMAGES = os.path.join(HERE, "../../docs/assets/images")
 fig.savefig(os.path.abspath(os.path.join(IMAGES, "truss_equalforce_force_plot.png")))
 plt.show()
 
-# ==========================================================================
+# ==============================================================================
 # Visualization
-# ==========================================================================
+# ==============================================================================
 
 # default the scene to a front view for screenshots
 config = Config(
