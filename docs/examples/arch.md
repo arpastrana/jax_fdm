@@ -1,8 +1,8 @@
 # Length Optimization
 
-Suppose we want to find a suitable funicular geometry for a 5-meter span arch subjected to vertical point loads of 0.3 kN.
-The arch has to be compression-dominant.
-We model the arch as a `jax_fdm` network built from scratch: a straight line of nodes evenly spaced along the span, joined edge to edge.
+Suppose we want to find a suitable funicular geometry for a 5-meter span linear structure subjected to vertical point loads of 0.3 kN.
+This has to be a compression-only structure.
+We model the structure as a `jax_fdm` network built from a straight line of nodes evenly spaced along the span, joined edge to edge.
 Then, we apply a force density of -1 to all of its edges, and compute the required shape with the force density method.
 
 ```python
@@ -25,6 +25,8 @@ network.nodes_loads([0.0, 0.0, -0.3])
 
 f_network = fdm(network)
 ```
+
+No surprises here. The resulting shape is an arch!
 
 We now wish to find a new form for this arch that minimizes the [total Michell's load path](https://doi.org/10.1007/s00158-019-02214-w), while keeping the length of the arch segments between 0.75 and 1 meters.
 We solve this constrained form-finding problem with the SLSQP gradient-based optimizer.
