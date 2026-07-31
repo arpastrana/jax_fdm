@@ -1272,9 +1272,9 @@
 
 
 <h1 id="length-optimization">Length Optimization<a class="headerlink" href="#length-optimization" title="Permanent link">¤</a></h1>
-<p>Suppose we want to find a suitable funicular geometry for a 5-meter span linear structure subjected to vertical point loads of 0.3 kN.
-This has to be a compression-only structure.
-We model the structure as a <code>jax_fdm</code> network built from a straight line of nodes evenly spaced along the span, joined edge to edge.
+<p>Suppose we want to find a suitable funicular geometry for a 5-meter span arch subjected to vertical point loads of 0.3 kN.
+The arch has to be a compression-only structure.
+We model the arch as a <code>jax_fdm</code> network built from a straight line of nodes evenly spaced along the span, joined edge to edge.
 Then, we apply a force density of -1 to all of its edges, and compute the required shape with the force density method.</p>
 <div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">jax_fdm.datastructures</span><span class="w"> </span><span class="kn">import</span> <span class="n">FDNetwork</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">jax_fdm.equilibrium</span><span class="w"> </span><span class="kn">import</span> <span class="n">fdm</span>
@@ -1295,7 +1295,6 @@ Then, we apply a force density of -1 to all of its edges, and compute the requir
 
 <span class="n">f_network</span> <span class="o">=</span> <span class="n">fdm</span><span class="p">(</span><span class="n">network</span><span class="p">)</span>
 </code></pre></div>
-<p>No surprises here. The resulting shape is an arch!</p>
 <p>We now wish to find a new form for this arch that minimizes the <a href="https://doi.org/10.1007/s00158-019-02214-w">total Michell's load path</a>, while keeping the length of the arch segments between 0.75 and 1 meters.
 We solve this constrained form-finding problem with the SLSQP gradient-based optimizer.</p>
 <div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">jax_fdm.equilibrium</span><span class="w"> </span><span class="kn">import</span> <span class="n">constrained_fdm</span>
