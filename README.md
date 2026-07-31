@@ -19,7 +19,7 @@ Auto-differentiable and hardware accelerated force density method.
 <!-- --8<-- [start:pitch] -->
 Lightweight structures span long distances with slender cross-sections due to their mechanically efficient shapes.
 However, simulating these structures and turning them into feasible designs that satisfy additional technical constraints remains challenging.
-This is because of the geometrically nonlinear mechanical behaviors of these structure and the high-dimensional search spaces that describe them.
+This is because of their geometrically nonlinear mechanical behaviors and the high-dimensional search spaces that describe them.
 
 JAX FDM solves inverse design problems for lightweight structures modeled as pin-jointed bar systems using the force density method (FDM) and gradient-based optimization.
 It streamlines the integration of mechanical simulations into deep learning models for machine learning research.
@@ -66,9 +66,9 @@ For the optional extras (3D and notebook viewers, a 2D plotter, the IPOPT optimi
 
 ## Quick example
 
-Suppose you are interested in generating a form in static equilibrium for a 5-meter span arch subjected to vertical point loads of 0.3 kN.
-The arch has to be a compression-only structure.
-You model the arch as a `jax_fdm` network built from scratch: a straight line of nodes evenly spaced along the span, joined edge to edge.
+Suppose you are interested in generating a form in static equilibrium for a 5-meter span linear structure subjected to vertical point loads of 0.3 kN.
+This has to be a compression-only structure.
+You model the structure as a `jax_fdm` network built from a straight line of nodes evenly spaced along the span, joined edge to edge.
 Then, you apply a force density of -1 to all of its edges, and compute the required shape with the force density method.
 
 ```python
@@ -92,6 +92,7 @@ network.nodes_loads([0.0, 0.0, -0.3])
 f_network = fdm(network)
 ```
 
+No surprises here. The resulting shape is an arch!
 Continue this example (adding constraints, optimizing the form, and visualizing the result) in the [docs](https://arpastrana.github.io/jax_fdm/examples/), which also collects runnable Colab notebooks and more advanced example scripts.
 
 ## Citation
