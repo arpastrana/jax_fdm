@@ -9,7 +9,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Added a square cable-net example (`examples/cablenet/cablenet.py`, listed in `docs/examples/more.md`) that prestresses a corner-supported tensile net until its boundary cables reach a target force and its interior cables a target length. Sets the starting force densities as a target force over a rest length, then drives the two `MeanSquaredError` terms (`EdgeForceGoal` on the boundary, `EdgeLengthGoal` in the interior) to zero with `LBFGSB`, while bounding every `EdgeForceDensityParameter` to positive values.
+
 ### Changed
+
+- Changed the README quick example from the 2D compression arch to the 3D tensile cable-net that opens `examples/cablenet/cablenet.py`, so the landing snippet form-finds an anticlastic surface with `FDMesh.from_meshgrid` instead of a hanging chain.
 
 ### Removed
 

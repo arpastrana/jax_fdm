@@ -66,34 +66,40 @@ For the optional extras (3D and notebook viewers, a 2D plotter, the IPOPT optimi
 
 ## Quick example
 
-Suppose you are interested in generating a form in static equilibrium for a 5-meter span linear structure subjected to vertical point loads of 0.3 kN.
-This has to be a compression-only structure.
-You model the structure as a `jax_fdm` network built from a straight line of nodes evenly spaced along the span, joined edge to edge.
-Then, you apply a force density of -1 to all of its edges, and compute the required shape with the force density method.
+Suppose you are interested in simulating a prestressed cable-net that spans 10 meters per side.
+This is a tension-only structure.
+You model it as a mesh built from a square grid of 10 by 10 quadrilateral cells, anchor its four corners, and lift two opposite ones by 5 meters.
+Then, you set the force density of every cable as the ratio between a target force and a rest length, and simulate the cable-net with the FDM solver.
 
 ```python
-from jax_fdm.datastructures import FDNetwork
+from jax_fdm.datastructures import FDMesh
 from jax_fdm.equilibrium import fdm
 
 
-length = 5.0
-num_segments = 10
-segment_length = length / num_segments
+cablenet = FDMesh.from_meshgrid(10.0, nx=10)
 
-xs = [-length / 2.0 + i * segment_length for i in range(num_segments + 1)]
-nodes = [[x, 0.0, 0.0] for x in xs]
-edges = [(i, i + 1) for i in range(num_segments)]
+# support the four corners, and lift two opposite ones by 5 meters
+corners = list(cablenet.vertices_where(vertex_degree=2))
+cablenet.vertices_supports(corners)
+cablenet.vertex_attribute(corners[0], "z", 5.0)
+cablenet.vertex_attribute(corners[-1], "z", 5.0)
 
-network = FDNetwork.from_nodes_and_edges(nodes, edges)
-network.edges_forcedensities(q=-1.0)
-network.nodes_supports(keys=[node for node in network.nodes() if network.is_leaf(node)])
-network.nodes_loads([0.0, 0.0, -0.3])
+# a force density is a target force (kN) divided by a rest length (m)
+for edge in cablenet.edges():
+    force = 20.0 if cablenet.is_edge_on_boundary(edge) else 1.0
+    rest_length = cablenet.edge_length(edge)
+    cablenet.edge_forcedensity(edge, force / rest_length)
 
-f_network = fdm(network)
+f_cablenet = fdm(cablenet)
 ```
 
-No surprises here. The resulting shape is an arch!
-Continue this example (adding constraints, optimizing the form, and visualizing the result) in the [docs](https://arpastrana.github.io/jax_fdm/examples/), which also collects runnable Colab notebooks and more advanced example scripts.
+![Prestressed cable-net in equilibrium](docs/assets/images/cablenet.png)
+
+The net settles into a saddle shape, with all of its cables in tension.
+Its boundary cables, however, carry up to a quarter less force than the 20 kN you asked for: a force density prescribes a force *per unit length*, and the cable lengths change as the net finds equilibrium.
+Forward simulation is thus tractable, but it leaves your control over such target properties indirect.
+Meeting them exactly calls for constrained form-finding, which JAX FDM solves with gradient-based optimization.
+Continue with the [examples in the docs](https://arpastrana.github.io/jax_fdm/examples/), which also collect runnable Colab notebooks and more advanced example scripts.
 
 ## Citation
 
