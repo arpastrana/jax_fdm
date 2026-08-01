@@ -53,7 +53,7 @@ Documentation = "https://arpastrana.github.io/jax_fdm/"
 
 [project.optional-dependencies]
 # 3D viewer, plotter, and notebook viewer for the COMPAS 2.x scene system.
-viz = ["compas_viewer>=2.0", "compas_notebook>=0.11", "pythreejs>=2.1", "compas_plotter>=1.0"]
+viz = ["compas_viewer>=2.0", "compas_notebook>=0.11", "pythreejs>=2.1", "compas_plotter>=1.0.1"]
 # Interior-point optimizer. cyipopt needs a system Ipopt library.
 ipopt = ["cyipopt"]
 dev = [
