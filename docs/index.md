@@ -1,5 +1,9 @@
 # Overview
 
+Lightweight structures span long distances with slender cross-sections due to their mechanically efficient shapes.
+However, simulating these structures and turning them into feasible designs that satisfy additional technical constraints remains challenging.
+This is because of their geometrically nonlinear mechanical behaviors and the high-dimensional search spaces that describe them.
+
 <!-- Shared prose: edit README.md between the snippet markers, not here. -->
 --8<-- "README.md:pitch"
 

@@ -1,6 +1,10 @@
 <h1 align='center'>JAX FDM</h1>
 
 <!-- Badges -->
+<div align="center">
+
+**Auto-differentiable and hardware accelerated force density method.**
+
 ![build](https://github.com/arpastrana/jax_fdm/actions/workflows/build.yml/badge.svg)
 [![docs](https://github.com/arpastrana/jax_fdm/actions/workflows/docs.yml/badge.svg)](https://arpastrana.github.io/jax_fdm/)
 [![CMAME](https://img.shields.io/badge/CMAME-10.1016%2Fj.cma.2026.118783-blue.svg)](https://doi.org/10.1016/j.cma.2026.118783)
@@ -8,24 +12,26 @@
 [![PyPI - Python Version](https://img.shields.io/pypi/pyversions/jax-fdm.svg)](https://pypi.python.org/project/jax-fdm)
 [![arXiv](https://img.shields.io/badge/arXiv-2307.12407-b31b1b.svg)](https://arxiv.org/abs/2307.12407)
 [![DOI](https://img.shields.io/badge/DOI-10.5281%2Fzenodo.7258292-blue.svg)](https://doi.org/10.5281/zenodo.7258292)
-<!-- [![GitHub - License](https://img.shields.io/github/license/arpastrana/jax_fdm.svg)](https://github.com/arpastrana/jax_fdm) -->
 
-Auto-differentiable and hardware accelerated force density method.
+<p align="center">
+  <a href="#features">Features</a> •
+  <a href="#installation">Installation</a> •
+  <a href="#quick-example">Quick example</a> •
+  <a href="#documentation">Documentation</a> •
+  <a href="#citation">Citation</a> •
+  <a href="#license">License</a>
+</p>
 
-> Crafted with care in the [AI Lab](http://ai.princeton.edu/) at [Princeton University](https://princeton.edu) ❤️🇺🇸
+> Crafted with care at [Princeton University](https://princeton.edu) ❤️🇺🇸
 
-![](docs/assets/images/jax_logo.gif)
+</div>
+
+![](https://raw.githubusercontent.com/arpastrana/jax_fdm/main/docs/assets/images/jax_logo.gif)
 
 <!-- --8<-- [start:pitch] -->
-Lightweight structures span long distances with slender cross-sections due to their mechanically efficient shapes.
-However, simulating these structures and turning them into feasible designs that satisfy additional technical constraints remains challenging.
-This is because of their geometrically nonlinear mechanical behaviors and the high-dimensional search spaces that describe them.
-
 JAX FDM solves inverse design problems for lightweight structures modeled as pin-jointed bar systems using the force density method (FDM) and gradient-based optimization.
 It streamlines the integration of mechanical simulations into deep learning models for machine learning research.
 <!-- --8<-- [end:pitch] -->
-
-The full documentation lives at [arpastrana.github.io/jax_fdm](https://arpastrana.github.io/jax_fdm/).
 
 ## Features
 
@@ -62,20 +68,20 @@ pip install jax-fdm
 
 This pulls in COMPAS 2.x and the other core dependencies automatically.
 JAX FDM supports Python 3.11 to 3.12, and builds on JAX, SciPy, Equinox, and the COMPAS framework.
-For the optional extras (3D and notebook viewers, a 2D plotter, the IPOPT optimizer, development tools) and platform notes for Windows, see the [installation guide](https://arpastrana.github.io/jax_fdm/installation/).
+For the optional extras (3D and notebook viewers, a 2D plotter, the IPOPT optimizer, development tools) and platform notes for Windows, see the [installation guide](https://arpastrana.github.io/jax_fdm/latest/installation/).
 
 ## Quick example
 
-Suppose you are interested in simulating a prestressed cable-net that spans 10 meters per side.
-This is a tension-only structure.
+Suppose you are interested in [form-finding](https://arpastrana.github.io/jax_fdm/latest/howto/form_finding/) a prestressed cable-net that spans 10 meters per side, a tension-only structure.
 You model it as a mesh built from a square grid of 10 by 10 quadrilateral cells, anchor its four corners, and lift two opposite ones by 5 meters.
-Then, you set the force density of every cable as the ratio between a target force and a rest length, and simulate the cable-net with the FDM solver.
+Then, you set the force density of every cable as the ratio between a target force and a rest length, and compute the cable-net shape with the FDM.
 
 ```python
 from jax_fdm.datastructures import FDMesh
 from jax_fdm.equilibrium import fdm
 
 
+# create a cable-net from a square mesh grid
 cablenet = FDMesh.from_meshgrid(10.0, nx=10)
 
 # support the four corners, and lift two opposite ones by 5 meters
@@ -84,22 +90,27 @@ cablenet.vertices_supports(corners)
 cablenet.vertex_attribute(corners[0], "z", 5.0)
 cablenet.vertex_attribute(corners[-1], "z", 5.0)
 
-# a force density is a target force (kN) divided by a rest length (m)
+# set force densities from target forces and rest lengths
 for edge in cablenet.edges():
     force = 20.0 if cablenet.is_edge_on_boundary(edge) else 1.0
     rest_length = cablenet.edge_length(edge)
     cablenet.edge_forcedensity(edge, force / rest_length)
 
+# form follows function
 f_cablenet = fdm(cablenet)
 ```
 
-![Prestressed cable-net in equilibrium](docs/assets/images/cablenet.png)
+![Prestressed cable-net in equilibrium](https://raw.githubusercontent.com/arpastrana/jax_fdm/main/docs/assets/images/cablenet.png)
 
-The net settles into a saddle shape, with all of its cables in tension.
-Its boundary cables, however, carry up to a quarter less force than the 20 kN you asked for: a force density prescribes a force *per unit length*, and the cable lengths change as the net finds equilibrium.
+The net settles into a saddle shape, with all of its cables in tension. Hooray! 🎉
+Its boundary cables, however, carry less force than the 20 kN you asked for: a force density prescribes a force *per unit length*, and the cable lengths change as the net finds equilibrium.
 Forward simulation is thus tractable, but it leaves your control over such target properties indirect.
-Meeting them exactly calls for constrained form-finding, which JAX FDM solves with gradient-based optimization.
-Continue with the [examples in the docs](https://arpastrana.github.io/jax_fdm/examples/), which also collect runnable Colab notebooks and more advanced example scripts.
+Meeting them to design a *buildable* cable-net calls for [constrained form-finding](https://arpastrana.github.io/jax_fdm/latest/howto/constrained_form_finding/), which JAX FDM tackles with gradient-based optimization.
+To see constrained form-finding in action, continue this example (adding constraints and optimizing the tension-only shape) in the [docs](https://arpastrana.github.io/jax_fdm/latest/examples/more/), which also collect more advanced example scripts and runnable Colab notebooks.
+
+## Documentation
+
+The full documentation lives at [arpastrana.github.io/jax_fdm](https://arpastrana.github.io/jax_fdm/).
 
 ## Citation
 
