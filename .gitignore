@@ -128,3 +128,5 @@ conda.recipe/
 *.png
 !images
 !docs/assets/images/*.png
+
+.cursor/
