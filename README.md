@@ -3,7 +3,7 @@
 <!-- Badges -->
 <div align="center">
 
-**Auto-differentiable and hardware accelerated force density method.**
+**Auto-differentiable and hardware-accelerated force density method.**
 
 ![build](https://github.com/arpastrana/jax_fdm/actions/workflows/build.yml/badge.svg)
 [![docs](https://github.com/arpastrana/jax_fdm/actions/workflows/docs.yml/badge.svg)](https://arpastrana.github.io/jax_fdm/)
