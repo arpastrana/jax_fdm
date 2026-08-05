@@ -11,26 +11,28 @@ from jax_fdm.goals import EdgeLengthGoal
 from jax_fdm.losses import Loss
 from jax_fdm.losses import MeanSquaredError
 from jax_fdm.optimization import LBFGSB
+from jax_fdm.optimization import OptimizationRecorder
 from jax_fdm.parameters import EdgeForceDensityParameter
+from jax_fdm.visualization import LossPlotter
 from jax_fdm.visualization import Viewer
 
 # ==============================================================================
 # Parameters
 # ==============================================================================
 
-length = 10.0  # side length of the square cable-net
+length = 10.0  # side length of the square cable-net in m
 nx = 10  # number of grid cells per side
-support_height = 5.0  # lift of the two opposite corner supports
+support_height = 5.0  # lift of the two opposite corner supports in m
 
-force_boundary = 20.0  # target force in the boundary cables
-force_interior = 1.0  # target force in the interior cables
-length_interior = 1.0  # target length of the interior cables
+force_boundary = 20.0  # target force in the boundary cables in kN
+force_interior = 1.0  # target force in the interior cables in kN
+length_interior = 1.0  # target length of the interior cables in m
 
-# force density bounds, kept positive to stay tension-only
-qmin = 1e-3
+# force density bounds in kN/m, floored well above zero so no cable goes slack
+qmin = 0.1
 qmax = None
 
-optimizer = LBFGSB  # optimization algorithm
+optimizer = LBFGSB()  # optimization algorithm
 maxiter = 1000  # optimizer maximum iterations
 tol = 1e-8  # optimizer tolerance
 
@@ -94,13 +96,17 @@ loss = Loss(
     MeanSquaredError(goals_length, name="InteriorLength"),
 )
 
+# the recorder stores the parameters per iteration to chart the loss afterwards
+recorder = OptimizationRecorder(optimizer)
+
 cablenet_prestressed = constrained_fdm(
     mesh,
-    optimizer=optimizer(),
+    optimizer=optimizer,
     loss=loss,
     parameters=parameters,
     maxiter=maxiter,
     tol=tol,
+    callback=recorder,
 )
 
 # ==============================================================================
@@ -115,16 +121,25 @@ extra_stats = {
 cablenet_prestressed.print_stats(extra_stats)
 
 # ==============================================================================
+# Plot loss components
+# ==============================================================================
+
+plotter = LossPlotter(loss, mesh, dpi=150, figsize=(8, 4))
+plotter.plot(recorder.history)
+plotter.show()
+
+# ==============================================================================
 # Visualization
 # ==============================================================================
 
-viewer = Viewer(width=1200, height=750, show_grid=True)
+viewer = Viewer(width=1200, height=800, show_grid=True)
 
 viewer.add(
     cablenet_prestressed,
     edgecolor="force",
     show_vertices=True,
-    show_reactions=False,
+    reactionscale=0.05,
+    faceopacity=0.5,
 )
 
 viewer.show()

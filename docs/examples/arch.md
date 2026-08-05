@@ -1,4 +1,4 @@
-# Length Optimization
+# Volume Minimization
 
 Suppose we want to find a suitable funicular geometry for a 5-meter span arch subjected to vertical point loads of 0.3 kN.
 The arch has to be a compression-only structure.

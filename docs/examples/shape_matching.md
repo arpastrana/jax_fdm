@@ -1,6 +1,6 @@
 # Shape Matching
 
-The [arch optimization](arch.md) example minimized a mechanical quantity, the load path energy.
+The [volume minimization](arch.md) example optimized a mechanical quantity, the load path energy.
 This time the design intent is *visual*: you have a shape in mind, and you want a structure that looks like it while still standing up under self-weight in pure compression.
 
 Why would this matter, you wonder?

@@ -137,7 +137,7 @@ optimizer = SLSQP()
 
 ## Putting it together
 
-Here is a complete constrained form-finding run, the same one featured in the [arch optimization](../examples/arch.md) example.
+Here is a complete constrained form-finding run, the same one featured in the [volume minimization](../examples/arch.md) example.
 The brief: find the arch that minimizes total load path while keeping every segment between 0.75 and 1 meter.
 
 ```python

@@ -12,6 +12,7 @@
 [![PyPI - Python Version](https://img.shields.io/pypi/pyversions/jax-fdm.svg)](https://pypi.python.org/project/jax-fdm)
 [![arXiv](https://img.shields.io/badge/arXiv-2307.12407-b31b1b.svg)](https://arxiv.org/abs/2307.12407)
 [![DOI](https://img.shields.io/badge/DOI-10.5281%2Fzenodo.7258292-blue.svg)](https://doi.org/10.5281/zenodo.7258292)
+[![Made with COMPAS](https://compas.dev/badge.svg)](https://compas.dev/mission-control/#jax_fdm)
 
 <p align="center">
   <a href="#features">Features</a> •
@@ -106,7 +107,8 @@ The net settles into a saddle shape, with all of its cables in tension. Hooray! 
 Its boundary cables, however, carry less force than the 20 kN you asked for: a force density prescribes a force *per unit length*, and the cable lengths change as the net finds equilibrium.
 Forward simulation is thus tractable, but it leaves your control over such target properties indirect.
 Meeting them to design a *buildable* cable-net calls for [constrained form-finding](https://arpastrana.github.io/jax_fdm/latest/howto/constrained_form_finding/), which JAX FDM tackles with gradient-based optimization.
-To see constrained form-finding in action, continue this example (adding constraints and optimizing the tension-only shape) in the [docs](https://arpastrana.github.io/jax_fdm/latest/examples/more/), which also collect more advanced example scripts and runnable Colab notebooks.
+To see constrained form-finding in action, continue this example in the [cable-net prestress guide](https://arpastrana.github.io/jax_fdm/latest/examples/cablenet/), which adds goals for the target force and the target cable length, and optimizes the tension-only shape.
+The docs also collect [more example scripts](https://arpastrana.github.io/jax_fdm/latest/examples/more/) and runnable Colab notebooks.
 
 ## Documentation
 
