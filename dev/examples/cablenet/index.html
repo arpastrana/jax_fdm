@@ -12,13 +12,13 @@
         <meta name="author" content="Rafael Pastrana">
       
       
-        <link rel="canonical" href="https://arpastrana.github.io/jax_fdm/dev/examples/truss_equal_force/">
+        <link rel="canonical" href="https://arpastrana.github.io/jax_fdm/dev/examples/cablenet/">
       
       
-        <link rel="prev" href="../gridshell_planarization/">
+        <link rel="prev" href="../truss_equal_force/">
       
       
-        <link rel="next" href="../cablenet/">
+        <link rel="next" href="../more/">
       
       
         
@@ -29,7 +29,7 @@
     
     
       
-        <title>Equal-force truss - JAX FDM</title>
+        <title>Cable-net prestress - JAX FDM</title>
       
     
     
@@ -84,7 +84,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#equal-force-truss" class="md-skip">
+        <a href="#cable-net-prestress" class="md-skip">
           Skip to content
         </a>
       
@@ -123,7 +123,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Equal-force truss
+              Cable-net prestress
             
           </span>
         </div>
@@ -513,6 +513,34 @@
                 
   
   
+  
+  
+    <li class="md-nav__item">
+      <a href="../truss_equal_force/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Equal-force truss
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
     
   
   
@@ -532,7 +560,7 @@
   <span class="md-ellipsis">
     
   
-    Equal-force truss
+    Cable-net prestress
   
 
     
@@ -550,7 +578,7 @@
   <span class="md-ellipsis">
     
   
-    Equal-force truss
+    Cable-net prestress
   
 
     
@@ -576,10 +604,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#the-truss" class="md-nav__link">
+  <a href="#the-net" class="md-nav__link">
     <span class="md-ellipsis">
       
-        The truss
+        The net
       
     </span>
   </a>
@@ -587,10 +615,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#before-uneven-force-along-the-bottom-chord" class="md-nav__link">
+  <a href="#guessing-force-densities" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Before: uneven force along the bottom chord
+        Guessing force densities
       
     </span>
   </a>
@@ -598,10 +626,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#defining-the-equal-force-problem" class="md-nav__link">
+  <a href="#before-close-but-not-quite" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Defining the equal-force problem
+        Before: close, but not quite
       
     </span>
   </a>
@@ -609,10 +637,32 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#after-one-force-one-cross-section" class="md-nav__link">
+  <a href="#welcome-to-nonlinear-land" class="md-nav__link">
     <span class="md-ellipsis">
       
-        After: one force, one cross-section
+        Welcome to nonlinear land
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#after-prestressed-and-buildable" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        After: prestressed and buildable
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#watching-the-loss-converge" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Watching the loss converge
       
     </span>
   </a>
@@ -645,34 +695,6 @@
   
 </nav>
       
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../cablenet/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Cable-net prestress
-  
-
-    
-  </span>
-  
-  
-
-      </a>
     </li>
   
 
@@ -1391,10 +1413,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#the-truss" class="md-nav__link">
+  <a href="#the-net" class="md-nav__link">
     <span class="md-ellipsis">
       
-        The truss
+        The net
       
     </span>
   </a>
@@ -1402,10 +1424,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#before-uneven-force-along-the-bottom-chord" class="md-nav__link">
+  <a href="#guessing-force-densities" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Before: uneven force along the bottom chord
+        Guessing force densities
       
     </span>
   </a>
@@ -1413,10 +1435,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#defining-the-equal-force-problem" class="md-nav__link">
+  <a href="#before-close-but-not-quite" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Defining the equal-force problem
+        Before: close, but not quite
       
     </span>
   </a>
@@ -1424,10 +1446,32 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#after-one-force-one-cross-section" class="md-nav__link">
+  <a href="#welcome-to-nonlinear-land" class="md-nav__link">
     <span class="md-ellipsis">
       
-        After: one force, one cross-section
+        Welcome to nonlinear land
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#after-prestressed-and-buildable" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        After: prestressed and buildable
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#watching-the-loss-converge" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Watching the loss converge
       
     </span>
   </a>
@@ -1476,154 +1520,292 @@
   
 
 
-<h1 id="equal-force-truss">Equal-Force Truss<a class="headerlink" href="#equal-force-truss" title="Permanent link">¤</a></h1>
-<p>This example chases a <em>force</em> target: we reshape a truss so that one of its chords carries the same internal force everywhere.</p>
-<p>Why would we want that? Consider the bottom chord of a planar truss, the tension tie that keeps the two supports from spreading apart. In a typical design its internal force varies from segment to segment, so each segment wants a different cross-section: thicker where the force is high, thinner where it is low. That is a fabrication headache. Every change of section is a detail to design, a splice to connect, and a place where mechanical continuity can go wrong.</p>
-<p>If instead the force were <em>uniform</em> along the whole chord, we could build it from a <strong>single, constant cross-section</strong>, a cable or a rod of one size, used at its full capacity end to end. One section, no splices to reconcile, maximal material utilization. That is the payoff, and it is a classic problem in graphic statics.<sup id="fnref:gs"><a class="footnote-ref" href="#fn:gs">2</a></sup></p>
-<p>In this walkthrough we start from a <a href="https://en.wikipedia.org/wiki/Vierendeel_bridge">Vierendeel-like</a> truss (a top chord, a bottom chord, and vertical struts, no diagonal bracing) and let the force density method morph the bottom chord into the shape that makes its force constant, all while keeping the top chord straight.</p>
-<div class="admonition note">
-<p class="admonition-title">The graphic-statics reading</p>
-<p>Classically, this problem is solved by drawing the truss's <em>reciprocal force diagram</em>, a companion figure in which every member maps to a line whose length is proportional to the member's axial force. A constant-force chord is then simply one whose reciprocal lines are all the same length, and the designer reshapes the truss by editing that diagram by hand.<sup id="fnref2:gs"><a class="footnote-ref" href="#fn:gs">2</a></sup> Here we arrive at the same design from the force side too, but through the force density method: the design variables are the edge force densities, so we search in the force domain and read the equilibrium shape back out, rather than moving nodes around and hoping the forces cooperate.<sup id="fnref:cmame"><a class="footnote-ref" href="#fn:cmame">1</a></sup></p>
-</div>
-<h2 id="the-truss">The truss<a class="headerlink" href="#the-truss" title="Permanent link">¤</a></h2>
-<p>The truss lives in a vertical plane. We build three families of members:</p>
-<ul>
-<li>a <strong>top chord</strong>, a straight line of nodes between the two supports,</li>
-<li>a <strong>bottom chord</strong>, a second line of nodes below it,</li>
-<li><strong>struts</strong>, verticals tying each bottom node up to a top node.</li>
-</ul>
-<p>Since every node sits at an evenly spaced station along the x axis, we can place the points by hand, no geometry library needed. The top chord runs along <code>y=0</code>, and the bottom chord hangs below it at <code>y=depth</code>. Its two ends are dropped so the bottom chord meets the supports directly.</p>
-<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">compas.itertools</span><span class="w"> </span><span class="kn">import</span> <span class="n">pairwise</span>
-
-<span class="kn">from</span><span class="w"> </span><span class="nn">jax_fdm.datastructures</span><span class="w"> </span><span class="kn">import</span> <span class="n">FDNetwork</span>
+<h1 id="cable-net-prestress">Cable-net Prestress<a class="headerlink" href="#cable-net-prestress" title="Permanent link">¤</a></h1>
+<p>A cable-net has no bending stiffness.
+Its stiffness is rather <em>geometric</em>, and is a function of how much the cables are pulling, which simultaneously defines the net's shape.
+Geometry and forces are intrinsically coupled.
+If we change how much the net pulls, its shape moves; if we modify the net's shape, the forces will follow.
+This coupling is precisely what makes prestress design intellectually stimulating.</p>
+<p>Tensile roofs are generally specified in force terms.
+The boundary cables that gather the whole net and carry it to the anchors have a working force they are sized for, and the interior cables want a regular spacing so the net can be cut, clamped and clad from repeating parts.
+Neither of those is a shape we can draw <em>a priori</em>.
+They are properties we would want the cable-net to reach.</p>
+<p>This example will walk us through the design of a square cable-net hung from four corners.
+We will start by setting cable force densities from the forces we want on the cables at the net's boundaries, and discover that the form-found net with the FDM misses those numbers.
+To reach those forces, subject to all the internal cables having an equal target length for buildability, we will define goals, and let a gradient-based optimizer find the best force densities that fulfill our desiderata.
+Let's go.</p>
+<h2 id="the-net">The net<a class="headerlink" href="#the-net" title="Permanent link">¤</a></h2>
+<p>Suppose we envision a square mesh grid, 10 meters on a side, cut into 10 cells per direction.
+<code>FDMesh.from_meshgrid</code> gives us the quad mesh, and we split its edges into the two families: the cables around the perimeter and the internal cables.</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">jax_fdm.datastructures</span><span class="w"> </span><span class="kn">import</span> <span class="n">FDMesh</span>
 
 
-<span class="n">length</span> <span class="o">=</span> <span class="mf">5.0</span>
-<span class="n">num_segments</span> <span class="o">=</span> <span class="mi">11</span>
-<span class="n">depth</span> <span class="o">=</span> <span class="o">-</span><span class="mf">2.0</span>
+<span class="n">length</span> <span class="o">=</span> <span class="mf">10.0</span>  <span class="c1"># m</span>
+<span class="n">nx</span> <span class="o">=</span> <span class="mi">10</span>
 
-<span class="n">step</span> <span class="o">=</span> <span class="n">length</span> <span class="o">/</span> <span class="n">num_segments</span>
-<span class="n">xs</span> <span class="o">=</span> <span class="p">[</span><span class="o">-</span><span class="n">length</span> <span class="o">/</span> <span class="mf">2.0</span> <span class="o">+</span> <span class="n">i</span> <span class="o">*</span> <span class="n">step</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_segments</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)]</span>
+<span class="n">mesh</span> <span class="o">=</span> <span class="n">FDMesh</span><span class="o">.</span><span class="n">from_meshgrid</span><span class="p">(</span><span class="n">length</span><span class="p">,</span> <span class="n">nx</span><span class="o">=</span><span class="n">nx</span><span class="p">)</span>
 
-<span class="n">top_points</span> <span class="o">=</span> <span class="p">[[</span><span class="n">x</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">]</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">xs</span><span class="p">]</span>
-<span class="n">bottom_points</span> <span class="o">=</span> <span class="p">[[</span><span class="n">x</span><span class="p">,</span> <span class="n">depth</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">]</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">xs</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]]</span>  <span class="c1"># interior only; the ends meet the supports</span>
+<span class="n">edges_boundary</span> <span class="o">=</span> <span class="p">[</span><span class="n">edge</span> <span class="k">for</span> <span class="n">edge</span> <span class="ow">in</span> <span class="n">mesh</span><span class="o">.</span><span class="n">edges</span><span class="p">()</span> <span class="k">if</span> <span class="n">mesh</span><span class="o">.</span><span class="n">is_edge_on_boundary</span><span class="p">(</span><span class="n">edge</span><span class="p">)]</span>
+<span class="n">edges_interior</span> <span class="o">=</span> <span class="p">[</span><span class="n">edge</span> <span class="k">for</span> <span class="n">edge</span> <span class="ow">in</span> <span class="n">mesh</span><span class="o">.</span><span class="n">edges</span><span class="p">()</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">mesh</span><span class="o">.</span><span class="n">is_edge_on_boundary</span><span class="p">(</span><span class="n">edge</span><span class="p">)]</span>
 </code></pre></div>
-<p>With the points in hand, we add the nodes to an empty network (top chord first, then the bottom chord) and wire up the three families of edges: the top and bottom chords, and the struts between them. The bottom chord runs support to support, so its end segments meet the top-chord supports directly.</p>
-<div class="highlight"><pre><span></span><code><span class="n">network</span> <span class="o">=</span> <span class="n">FDNetwork</span><span class="p">()</span>
+<p>The four corners are the only supports.
+On a mesh grid they are the only vertices with two neighbors, so <code>vertices_where(vertex_degree=2)</code> finds them <em>topologically</em>, without us counting indices.
+We anchor all four, then lift one <em>diagonal</em> pair to 5 meters and leave the other pair on the ground.</p>
+<div class="highlight"><pre><span></span><code><span class="n">support_height</span> <span class="o">=</span> <span class="mf">5.0</span>  <span class="c1"># m</span>
 
-<span class="n">top_nodes</span> <span class="o">=</span> <span class="p">[</span><span class="n">network</span><span class="o">.</span><span class="n">add_node</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="n">y</span><span class="p">,</span> <span class="n">z</span><span class="o">=</span><span class="n">z</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span> <span class="ow">in</span> <span class="n">top_points</span><span class="p">]</span>
-<span class="n">top_nodes_free</span> <span class="o">=</span> <span class="n">top_nodes</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>  <span class="c1"># every top node but the two supports</span>
-<span class="n">bottom_nodes</span> <span class="o">=</span> <span class="p">[</span><span class="n">network</span><span class="o">.</span><span class="n">add_node</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="n">y</span><span class="p">,</span> <span class="n">z</span><span class="o">=</span><span class="n">z</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span> <span class="ow">in</span> <span class="n">bottom_points</span><span class="p">]</span>
-
-<span class="n">bottom_chord</span> <span class="o">=</span> <span class="p">[</span><span class="n">top_nodes</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span> <span class="o">+</span> <span class="n">bottom_nodes</span> <span class="o">+</span> <span class="p">[</span><span class="n">top_nodes</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]]</span>
-<span class="n">top_edges</span> <span class="o">=</span> <span class="p">[</span><span class="n">network</span><span class="o">.</span><span class="n">add_edge</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">u</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">pairwise</span><span class="p">(</span><span class="n">top_nodes</span><span class="p">)]</span>
-<span class="n">bottom_edges</span> <span class="o">=</span> <span class="p">[</span><span class="n">network</span><span class="o">.</span><span class="n">add_edge</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">u</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">pairwise</span><span class="p">(</span><span class="n">bottom_chord</span><span class="p">)]</span>
-<span class="n">strut_edges</span> <span class="o">=</span> <span class="p">[</span><span class="n">network</span><span class="o">.</span><span class="n">add_edge</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">u</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">bottom_nodes</span><span class="p">,</span> <span class="n">top_nodes_free</span><span class="p">)]</span>
+<span class="n">corners</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">mesh</span><span class="o">.</span><span class="n">vertices_where</span><span class="p">(</span><span class="n">vertex_degree</span><span class="o">=</span><span class="mi">2</span><span class="p">))</span>
+<span class="n">mesh</span><span class="o">.</span><span class="n">vertices_supports</span><span class="p">(</span><span class="n">corners</span><span class="p">)</span>
+<span class="n">mesh</span><span class="o">.</span><span class="n">vertex_attribute</span><span class="p">(</span><span class="n">corners</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="s2">&quot;z&quot;</span><span class="p">,</span> <span class="n">support_height</span><span class="p">)</span>
+<span class="n">mesh</span><span class="o">.</span><span class="n">vertex_attribute</span><span class="p">(</span><span class="n">corners</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="s2">&quot;z&quot;</span><span class="p">,</span> <span class="n">support_height</span><span class="p">)</span>
 </code></pre></div>
-<p>The two chord ends are the supports, and every free top node carries a small downward load. The top-chord edges get a compressive (negative) force density, the bottom chord a tensile (positive) one, and the struts a mild compressive one, our starting guess.</p>
-<div class="highlight"><pre><span></span><code><span class="n">network</span><span class="o">.</span><span class="n">node_support</span><span class="p">(</span><span class="n">top_nodes</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
-<span class="n">network</span><span class="o">.</span><span class="n">node_support</span><span class="p">(</span><span class="n">top_nodes</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+<p>Lifting a diagonal pair, rather than an adjacent one, is what makes the net anticlastic because it curves up along one diagonal and down along the other, saddle-like.
+That double curvature helps keep a tensile surface taut.</p>
+<h2 id="guessing-force-densities">Guessing force densities<a class="headerlink" href="#guessing-force-densities" title="Permanent link">¤</a></h2>
+<p>Now the prestress.
+A force density is a ratio of force per unit length, in kN/m, and we can set it directly by dividing the force we want on each cable by how long that cable currently is.</p>
+<div class="highlight"><pre><span></span><code><span class="n">force_boundary</span> <span class="o">=</span> <span class="mf">20.0</span>  <span class="c1"># kN</span>
+<span class="n">force_interior</span> <span class="o">=</span> <span class="mf">1.0</span>  <span class="c1"># kN</span>
 
-<span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">top_nodes_free</span><span class="p">:</span>
-    <span class="n">network</span><span class="o">.</span><span class="n">node_load</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.2</span><span class="p">])</span>
-
-<span class="k">for</span> <span class="n">edge</span> <span class="ow">in</span> <span class="n">top_edges</span><span class="p">:</span>
-    <span class="n">network</span><span class="o">.</span><span class="n">edge_forcedensity</span><span class="p">(</span><span class="n">edge</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.0</span><span class="p">)</span>
-
-<span class="k">for</span> <span class="n">edge</span> <span class="ow">in</span> <span class="n">bottom_edges</span><span class="p">:</span>
-    <span class="n">network</span><span class="o">.</span><span class="n">edge_forcedensity</span><span class="p">(</span><span class="n">edge</span><span class="p">,</span> <span class="mf">2.0</span><span class="p">)</span>
-
-<span class="k">for</span> <span class="n">edge</span> <span class="ow">in</span> <span class="n">strut_edges</span><span class="p">:</span>
-    <span class="n">network</span><span class="o">.</span><span class="n">edge_forcedensity</span><span class="p">(</span><span class="n">edge</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.5</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">edge</span> <span class="ow">in</span> <span class="n">mesh</span><span class="o">.</span><span class="n">edges</span><span class="p">():</span>
+    <span class="n">force</span> <span class="o">=</span> <span class="n">force_boundary</span> <span class="k">if</span> <span class="n">mesh</span><span class="o">.</span><span class="n">is_edge_on_boundary</span><span class="p">(</span><span class="n">edge</span><span class="p">)</span> <span class="k">else</span> <span class="n">force_interior</span>
+    <span class="n">mesh</span><span class="o">.</span><span class="n">edge_forcedensity</span><span class="p">(</span><span class="n">edge</span><span class="p">,</span> <span class="n">force</span> <span class="o">/</span> <span class="n">mesh</span><span class="o">.</span><span class="n">edge_length</span><span class="p">(</span><span class="n">edge</span><span class="p">))</span>
 </code></pre></div>
-<h2 id="before-uneven-force-along-the-bottom-chord">Before: uneven force along the bottom chord<a class="headerlink" href="#before-uneven-force-along-the-bottom-chord" title="Permanent link">¤</a></h2>
-<p>We form-find the truss once to see the starting state.</p>
+<p>We want the boundary cables to pull twenty times harder than the interior ones.
+That ratio is the usual arrangement in a tensile roof, where a stiff, highly stressed edge cable keeps the perimeter taut and gives the light interior net something to hang from.</p>
+<p>Note that the divisor is the length the edge has in its <em>reference configuration</em>, in the lifted-but-not-yet-solved grid.
+For most edges that is the 1 meter of the original grid.
+But the four edges touching the two raised corners have already been stretched to about 5.1 meters by the lift, so they receive a force density near 3.9 kN/m rather than 20 kN/m.
+We will see that show up in a moment.</p>
+<h2 id="before-close-but-not-quite">Before: close, but not quite<a class="headerlink" href="#before-close-but-not-quite" title="Permanent link">¤</a></h2>
+<p>We form-find the net with a single <code>fdm</code> call:</p>
 <div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">jax_fdm.equilibrium</span><span class="w"> </span><span class="kn">import</span> <span class="n">fdm</span>
 
 
-<span class="n">network_guess</span> <span class="o">=</span> <span class="n">fdm</span><span class="p">(</span><span class="n">network</span><span class="p">)</span>
+<span class="n">cablenet</span> <span class="o">=</span> <span class="n">fdm</span><span class="p">(</span><span class="n">mesh</span><span class="p">)</span>
 </code></pre></div>
-<p><img alt="Equal-force truss, initial guess" src="../../assets/images/truss_equalforce_initial.png" /></p>
-<p>The truss hangs in equilibrium, but the force in the bottom chord is far from uniform: it ranges from about 0.9 near midspan to 1.7 near the supports, a spread of nearly two to one. Built literally, this chord would need a fat cross-section at the ends tapering to a thin one in the middle, with every joint between sections to detail and splice. We would like to do better.</p>
-<p>Working in the force domain also sidesteps a headache that a conventional analysis would hit here. Because our truss has no diagonal bracing, it is not fully triangulated, and a stiffness-based solver would see a singular stiffness matrix and stall unless we added members we do not want. Form-finding never assembles that matrix. It only ever produces equilibrated states, so the un-triangulated truss is solved as readily as any other.</p>
-<h2 id="defining-the-equal-force-problem">Defining the equal-force problem<a class="headerlink" href="#defining-the-equal-force-problem" title="Permanent link">¤</a></h2>
-<p>We want the bottom-chord segments to <em>all carry the same force</em>, at a value we choose, while the top chord stays a clean straight line. Two goals, bundled into one loss, say exactly that.</p>
-<p><strong>A target force</strong> on every bottom edge does the equalizing. We aim each of them at the same value, here 1.5. If they all reach it, they are equal by construction, so there is no need for a separate goal to compare them against each other.</p>
+<p><img alt="Cable-net, form-found from the initial force densities" src="../../assets/images/cablenet.png" /></p>
+<p>The surface is a clean saddle, and it is in pure-tension equilibrium.
+But wait.
+The numbers we asked for are not there:</p>
+<table>
+<thead>
+<tr>
+<th>Quantity</th>
+<th>Target</th>
+<th>Form-found</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Boundary force (kN)</td>
+<td>20.0</td>
+<td>15.16 to 18.27</td>
+</tr>
+<tr>
+<td>Interior length (m)</td>
+<td>1.0</td>
+<td>0.78 to 1.80</td>
+</tr>
+</tbody>
+</table>
+<p>The boundary cables all fall short, and the interior cables are anything but regular: the longest is more than twice the shortest.
+Look at the picture and you can see the second one directly, in how the grid bunches up near the middle of the saddle and stretches open toward the raised corners.</p>
+<p>The reason is the coupling we started with.
+We divided by the length each edge had <em>before</em> the solve, but the solve moves everything.
+Once the net settles, each edge has a new length, and its force is the force density we fixed times that new length, not the number we had in mind.
+That is to say, the length comes from the net's <em>updated, equilibrium configuration</em> after undergoing large deformations — a topic that the structural mechanics folk would be very familiar with.
+This is the crux of performing a linearized form-finding with the FDM: it is stable and fast, but it seldom lands where we originally imagined.</p>
+<h2 id="welcome-to-nonlinear-land">Welcome to nonlinear land<a class="headerlink" href="#welcome-to-nonlinear-land" title="Permanent link">¤</a></h2>
+<p>To actually land on the targets, we have to enter the land of nonlinearity.
+We state the targets as nonlinear goals and let the optimizer iteratively search for the force densities that meet them.</p>
+<p>The design variables in the optimization are the force densities of every edge.
+We bound them from below, which is what keeps this a cable-net: a negative force density would mean a strut pushing, and no cable can do that.
+The floor sits at 0.1 kN/m rather than at zero, so that no cable is allowed to go slack either.</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">jax_fdm.parameters</span><span class="w"> </span><span class="kn">import</span> <span class="n">EdgeForceDensityParameter</span>
+
+
+<span class="n">qmin</span> <span class="o">=</span> <span class="mf">0.1</span>  <span class="c1"># kN/m</span>
+<span class="n">qmax</span> <span class="o">=</span> <span class="kc">None</span>
+
+<span class="n">parameters</span> <span class="o">=</span> <span class="p">[</span><span class="n">EdgeForceDensityParameter</span><span class="p">(</span><span class="n">edge</span><span class="p">,</span> <span class="n">qmin</span><span class="p">,</span> <span class="n">qmax</span><span class="p">)</span> <span class="k">for</span> <span class="n">edge</span> <span class="ow">in</span> <span class="n">mesh</span><span class="o">.</span><span class="n">edges</span><span class="p">()]</span>
+</code></pre></div>
+<p>Then the two things we want, one per edge family.
+The boundary cables get a <strong>force</strong> goal, because their force is what sizes them and their anchors.
+The interior cables get a <strong>length</strong> goal, because their regularity is what makes the net buildable from repeatable parts.</p>
 <div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">jax_fdm.goals</span><span class="w"> </span><span class="kn">import</span> <span class="n">EdgeForceGoal</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">jax_fdm.goals</span><span class="w"> </span><span class="kn">import</span> <span class="n">EdgeLengthGoal</span>
 
 
-<span class="n">goals_force</span> <span class="o">=</span> <span class="p">[</span><span class="n">EdgeForceGoal</span><span class="p">(</span><span class="n">edge</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="mf">1.5</span><span class="p">)</span> <span class="k">for</span> <span class="n">edge</span> <span class="ow">in</span> <span class="n">bottom_edges</span><span class="p">]</span>
+<span class="n">length_interior</span> <span class="o">=</span> <span class="mf">1.0</span>  <span class="c1"># m</span>
+
+<span class="n">goals_force</span> <span class="o">=</span> <span class="p">[</span><span class="n">EdgeForceGoal</span><span class="p">(</span><span class="n">edge</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="n">force_boundary</span><span class="p">)</span> <span class="k">for</span> <span class="n">edge</span> <span class="ow">in</span> <span class="n">edges_boundary</span><span class="p">]</span>
+<span class="n">goals_length</span> <span class="o">=</span> <span class="p">[</span><span class="n">EdgeLengthGoal</span><span class="p">(</span><span class="n">edge</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="n">length_interior</span><span class="p">)</span> <span class="k">for</span> <span class="n">edge</span> <span class="ow">in</span> <span class="n">edges_interior</span><span class="p">]</span>
 </code></pre></div>
-<p><strong>A colinearity goal</strong> keeps the top chord straight. <code>NodesColinearGoal</code> penalizes any top node that strays off the line through its neighbors, so the top chord stays the clean straight member a Vierendeel truss expects, and only the bottom chord is left free to morph.</p>
-<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">jax_fdm.goals</span><span class="w"> </span><span class="kn">import</span> <span class="n">NodesColinearGoal</span>
-
-
-<span class="n">goals_colinear</span> <span class="o">=</span> <span class="p">[</span><span class="n">NodesColinearGoal</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="n">top_nodes</span><span class="p">)]</span>
-</code></pre></div>
-<p>We assemble the two into a single loss. The forces are measured as a squared error toward their set value, and the colinearity term is a prediction error, driving the top chord's off-line deviation straight to zero.</p>
+<p>Both families are measured the same way, as a mean squared error against their target, and fed into one loss.
+Naming the terms is worth the keystrokes, since the optimizer reports them separately and it is useful to see which of the two is holding out.</p>
 <div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">jax_fdm.losses</span><span class="w"> </span><span class="kn">import</span> <span class="n">Loss</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">jax_fdm.losses</span><span class="w"> </span><span class="kn">import</span> <span class="n">MeanSquaredError</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">jax_fdm.losses</span><span class="w"> </span><span class="kn">import</span> <span class="n">PredictionError</span>
 
 
 <span class="n">loss</span> <span class="o">=</span> <span class="n">Loss</span><span class="p">(</span>
-    <span class="n">MeanSquaredError</span><span class="p">(</span><span class="n">goals_force</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;ForceTarget&quot;</span><span class="p">),</span>
-    <span class="n">PredictionError</span><span class="p">(</span><span class="n">goals_colinear</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;ColinearTopChord&quot;</span><span class="p">),</span>
+    <span class="n">MeanSquaredError</span><span class="p">(</span><span class="n">goals_force</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;BoundaryForce&quot;</span><span class="p">),</span>
+    <span class="n">MeanSquaredError</span><span class="p">(</span><span class="n">goals_length</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;InteriorLength&quot;</span><span class="p">),</span>
 <span class="p">)</span>
 </code></pre></div>
-<h2 id="after-one-force-one-cross-section">After: one force, one cross-section<a class="headerlink" href="#after-one-force-one-cross-section" title="Permanent link">¤</a></h2>
-<p>We hand the loss to <code>constrained_fdm</code>. Here the design variables are the force densities of every edge, and with no explicit <code>parameters</code> the optimizer takes them all by default.</p>
+<h2 id="after-prestressed-and-buildable">After: prestressed and buildable<a class="headerlink" href="#after-prestressed-and-buildable" title="Permanent link">¤</a></h2>
+<p>We hand the loss, the parameters and a bounded gradient-based optimizer to <code>constrained_fdm</code>.
+We also hand it an <code>OptimizationRecorder</code> as a callback, which stores the parameters at every iteration so that we can chart the convergence afterwards.</p>
 <div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">jax_fdm.equilibrium</span><span class="w"> </span><span class="kn">import</span> <span class="n">constrained_fdm</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">jax_fdm.optimization</span><span class="w"> </span><span class="kn">import</span> <span class="n">LBFGSB</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">jax_fdm.optimization</span><span class="w"> </span><span class="kn">import</span> <span class="n">OptimizationRecorder</span>
 
 
-<span class="n">network_equalforce</span> <span class="o">=</span> <span class="n">constrained_fdm</span><span class="p">(</span>
-    <span class="n">network</span><span class="p">,</span>
-    <span class="n">optimizer</span><span class="o">=</span><span class="n">LBFGSB</span><span class="p">(),</span>
+<span class="n">optimizer</span> <span class="o">=</span> <span class="n">LBFGSB</span><span class="p">()</span>
+<span class="n">recorder</span> <span class="o">=</span> <span class="n">OptimizationRecorder</span><span class="p">(</span><span class="n">optimizer</span><span class="p">)</span>
+
+<span class="n">cablenet_prestressed</span> <span class="o">=</span> <span class="n">constrained_fdm</span><span class="p">(</span>
+    <span class="n">mesh</span><span class="p">,</span>
+    <span class="n">optimizer</span><span class="o">=</span><span class="n">optimizer</span><span class="p">,</span>
     <span class="n">loss</span><span class="o">=</span><span class="n">loss</span><span class="p">,</span>
-    <span class="n">maxiter</span><span class="o">=</span><span class="mi">10000</span><span class="p">,</span>
-    <span class="n">tol</span><span class="o">=</span><span class="mf">1e-9</span><span class="p">,</span>
+    <span class="n">parameters</span><span class="o">=</span><span class="n">parameters</span><span class="p">,</span>
+    <span class="n">maxiter</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span>
+    <span class="n">tol</span><span class="o">=</span><span class="mf">1e-8</span><span class="p">,</span>
+    <span class="n">callback</span><span class="o">=</span><span class="n">recorder</span><span class="p">,</span>
 <span class="p">)</span>
 </code></pre></div>
-<p><img alt="Equal-force truss, optimized result" src="../../assets/images/truss_equalforce_optimized.png" /></p>
-<p>The bottom chord has settled into a shallow curve, and its force is now uniform: every segment carries essentially 1.500, agreeing to within a thousandth of the 1.5 we asked for, down from the two-to-one spread we started with. The top chord stayed straight, so the truss keeps its Vierendeel character. The morphed bottom chord is now a single-section tie, buildable from one cable, used at its full capacity along its entire length.</p>
-<p><img alt="Bottom-chord force, before and after" src="../../assets/images/truss_equalforce_force_plot.png" /></p>
-<div class="admonition tip">
-<p class="admonition-title">Why equal force is worth the trouble</p>
-<p>A member sized to its allowable stress needs a cross-sectional area proportional to the force it carries: <span class="arithmatex">\(A = |F| / \sigma\)</span>. So a chord whose force is uniform can be a single, constant cross-section sized once to its capacity, one profile to buy, one connection detail to repeat, and no material wasted on segments that never see the peak force. Letting the geometry absorb the force variation, rather than the cross-section, is a small change to the shape that pays off in fabrication and material rationality.</p>
+<p><img alt="Cable-net, prestressed to the target force and cable length" src="../../assets/images/cablenet_optimized.png" /></p>
+<p><code>LBFGSB</code> is a sensible optimizer here because our only restriction on the design variables is a box, wherein every force density has to stay positive.
+That is a bound, not a constraint function, so a bound-constrained quasi-Newton method handles it natively and cheaply.
+The 220 force densities converge in a fraction of a second.</p>
+<table>
+<thead>
+<tr>
+<th>Quantity</th>
+<th>Target</th>
+<th>Form-found</th>
+<th>Optimized</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Boundary force (kN)</td>
+<td>20.0</td>
+<td>15.16 to 18.27</td>
+<td>19.998 to 20.002</td>
+</tr>
+<tr>
+<td>Interior length (m)</td>
+<td>1.0</td>
+<td>0.78 to 1.80</td>
+<td>0.97 to 1.05</td>
+</tr>
+</tbody>
+</table>
+<p>The boundary cables now carry an internal tension force of 20 kN, to within a few thousandths.
+The length of the interior cables is 1.0 meter as desired on average, with an error between 3% and 5%, which construction tolerances and good connection engineering can accommodate.
+In the picture above, the interior grid now reads as an even mesh across the whole surface, as we originally imagined, instead of one that crowds at the center.</p>
+<h2 id="watching-the-loss-converge">Watching the loss converge<a class="headerlink" href="#watching-the-loss-converge" title="Permanent link">¤</a></h2>
+<p>The optimizer reports a single number when it stops, a final loss of 0.0008.
+That tells us it converged, but not which of our two demands was the hard one, nor when.
+<code>LossPlotter</code> answers both by replaying the recorded parameter history through the loss and charting every named term next to the total.
+This is where naming the error terms earlier pays off.</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">jax_fdm.visualization</span><span class="w"> </span><span class="kn">import</span> <span class="n">LossPlotter</span>
+
+
+<span class="n">plotter</span> <span class="o">=</span> <span class="n">LossPlotter</span><span class="p">(</span><span class="n">loss</span><span class="p">,</span> <span class="n">mesh</span><span class="p">,</span> <span class="n">dpi</span><span class="o">=</span><span class="mi">150</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">4</span><span class="p">))</span>
+<span class="n">plotter</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">recorder</span><span class="o">.</span><span class="n">history</span><span class="p">)</span>
+<span class="n">plotter</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</code></pre></div>
+<p><img alt="Loss and its two error terms over the optimization" class="center" src="../../assets/images/cablenet_loss.png" width="80%" /></p>
+<p>The plotter also prints the same series as numbers:</p>
+<table>
+<thead>
+<tr>
+<th>Term</th>
+<th>First</th>
+<th>Last</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Loss</td>
+<td>12.695</td>
+<td>0.000804</td>
+</tr>
+<tr>
+<td>BoundaryForce</td>
+<td>12.659</td>
+<td>0.000002</td>
+</tr>
+<tr>
+<td>InteriorLength</td>
+<td>0.036</td>
+<td>0.000803</td>
+</tr>
+</tbody>
+</table>
+<p>The interesting part is how the two terms swap roles.
+At the start the boundary force error is 99.7% of the loss, and the interior length error is almost invisible beside it.
+By the end that has inverted: the boundary force error has fallen close to seven orders of magnitude, while the interior length error drops only 45-fold and ends up as 99.8% of what little is left.
+The term that dominates at the beginning is not the one that limits us at the end.</p>
+<p>There is a structural reason for the split.
+Forty boundary cables are asked for a force, and the optimizer has enough freedom in the force densities to grant it almost exactly.
+The other 180 cables are asked for a length, and 180 interior lengths simply cannot all be 1.0 meter at once on a doubly curved surface, so they settle into the best compromise available.
+That plateau <em>is</em> the 0.97 to 1.05 meter spread in the table above.
+The curve shows us why that row does not read 1.00.</p>
+<p>Notice too that after roughly a hundred iterations the <code>Loss</code> curve disappears behind <code>InteriorLength</code>.
+The total is the sum of its terms, so once one term dominates, the two lines coincide.</p>
+<div class="admonition note">
+<p class="admonition-title">A word on weights</p>
+<p>Every error term carries an <code>alpha</code> weight that defaults to 1.0, and the curves the plotter draws already include it.
+Here both terms are unweighted, so the curves are the plain mean squared errors and they add up to the total exactly, which is what makes the chart above so easy to read.
+Raising <code>alpha</code> on one term scales its curve and pulls the optimizer toward that demand at the expense of the other.
+That knob matters more than it looks, because the two terms are not even in the same units: the boundary force error is measured in kN² and the interior length error in m².
+Their sum is a design objective rather than a physical quantity, and <code>alpha</code> is how we say which half of it we care about more.</p>
 </div>
 <h2 id="reading-the-result">Reading the result<a class="headerlink" href="#reading-the-result" title="Permanent link">¤</a></h2>
-<p>You can read the bottom-chord forces straight off the optimized network to confirm the match:</p>
-<div class="highlight"><pre><span></span><code><span class="n">forces</span> <span class="o">=</span> <span class="p">[</span><span class="n">network_equalforce</span><span class="o">.</span><span class="n">edge_force</span><span class="p">(</span><span class="n">edge</span><span class="p">)</span> <span class="k">for</span> <span class="n">edge</span> <span class="ow">in</span> <span class="n">bottom_edges</span><span class="p">]</span>
-<span class="nb">print</span><span class="p">([</span><span class="nb">round</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">forces</span><span class="p">])</span>
+<p><code>print_stats</code> reports the usual per-edge quantities, and takes an <code>extra_stats</code> mapping so we can watch precisely the two numbers this design is about, rather than reading them out of the global ranges.</p>
+<div class="highlight"><pre><span></span><code><span class="n">extra_stats</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;Boundary force&quot;</span><span class="p">:</span> <span class="p">[</span><span class="n">cablenet_prestressed</span><span class="o">.</span><span class="n">edge_force</span><span class="p">(</span><span class="n">e</span><span class="p">)</span> <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">edges_boundary</span><span class="p">],</span>
+    <span class="s2">&quot;Interior length&quot;</span><span class="p">:</span> <span class="p">[</span><span class="n">cablenet_prestressed</span><span class="o">.</span><span class="n">edge_length</span><span class="p">(</span><span class="n">e</span><span class="p">)</span> <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">edges_interior</span><span class="p">],</span>
+<span class="p">}</span>
+
+<span class="n">cablenet_prestressed</span><span class="o">.</span><span class="n">print_stats</span><span class="p">(</span><span class="n">extra_stats</span><span class="p">)</span>
 </code></pre></div>
-<p>To see it, we draw the initial guess as a plain wireframe next to the optimized truss colored by its member forces.</p>
-<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">compas.datastructures</span><span class="w"> </span><span class="kn">import</span> <span class="n">Network</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">jax_fdm.visualization</span><span class="w"> </span><span class="kn">import</span> <span class="n">Viewer</span>
+<p>To view the net, we add it to the <code>Viewer</code> with <code>edgecolor="force"</code>.
+That colors edges by the <em>sense</em> of their force rather than its size, so a cable-net comes out in a single tension color throughout (red), which is itself a useful check that nothing flipped into compression (blue).
+Moreover, the individual cable thickness is proportional to its internal axial force magnitude, so thicker edges will exhibit higher forces, and vice versa.
+Note that since that width scale is remapped within each net, thicknesses are worth reading inside one picture but not across the two above.</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">jax_fdm.visualization</span><span class="w"> </span><span class="kn">import</span> <span class="n">Viewer</span>
 
 
-<span class="n">viewer</span> <span class="o">=</span> <span class="n">Viewer</span><span class="p">()</span>
-<span class="n">viewer</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">network_guess</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="bp">cls</span><span class="o">=</span><span class="n">Network</span><span class="p">))</span>
-<span class="n">viewer</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">network_equalforce</span><span class="p">,</span> <span class="n">edgewidth</span><span class="o">=</span><span class="mf">0.05</span><span class="p">,</span> <span class="n">edgecolor</span><span class="o">=</span><span class="s2">&quot;force&quot;</span><span class="p">,</span> <span class="n">show_nodes</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="n">viewer</span> <span class="o">=</span> <span class="n">Viewer</span><span class="p">(</span><span class="n">width</span><span class="o">=</span><span class="mi">1200</span><span class="p">,</span> <span class="n">height</span><span class="o">=</span><span class="mi">800</span><span class="p">,</span> <span class="n">show_grid</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<span class="n">viewer</span><span class="o">.</span><span class="n">add</span><span class="p">(</span>
+    <span class="n">cablenet_prestressed</span><span class="p">,</span>
+    <span class="n">edgecolor</span><span class="o">=</span><span class="s2">&quot;force&quot;</span><span class="p">,</span>
+    <span class="n">show_vertices</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">reactionscale</span><span class="o">=</span><span class="mf">0.05</span><span class="p">,</span>
+    <span class="n">faceopacity</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span>
+<span class="p">)</span>
+
 <span class="n">viewer</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
 </code></pre></div>
+<p>If you were wondering, the green arrows at the corners are the support reactions, and they need <code>reactionscale</code> to be readable, otherwise they go out of the view!
+Each anchor pulls with a force of roughly 27 to 33 kN, so drawn true to size the arrows would be three times longer than the net is wide — they would blow up out of the camera!
+At 0.05 they stay inside the frame while still showing which way each corner is being dragged.</p>
+<p>Faces are opaque by default, and <code>faceopacity</code> softens them.
+At 0.5 the ground grid reads through the surface, which keeps the net looking like the membrane it is rather than a solid slab.</p>
 <h2 id="where-to-next">Where to next<a class="headerlink" href="#where-to-next" title="Permanent link">¤</a></h2>
 <ul>
-<li>Curious how goals, losses, and the optimizer fit together? Read <a href="../../howto/constrained_form_finding/">constrained form-finding</a>.</li>
-<li>Want to match a shape instead of a force? See <a href="../shape_matching/">shape matching</a>.</li>
-<li>The runnable script for this example lives in <a href="https://github.com/arpastrana/jax_fdm/blob/main/examples/truss/truss_equal_force.py"><code>examples/truss/truss_equal_force.py</code></a>.</li>
+<li>Comprehensive summary of goals, losses, parameters and optimizers?
+  Read <a href="../../howto/constrained_form_finding/">constrained form-finding</a>.</li>
+<li>Looking for the full catalog of goals you can target?
+  See the <a href="../../howto/goals/">goals guide</a>.</li>
+<li>Need a target met <em>exactly</em> rather than approximately?
+  A hard bound is a <a href="../../howto/constraints/">constraint</a>, not a goal.</li>
+<li>The runnable script for this example lives in <a href="https://github.com/arpastrana/jax_fdm/blob/main/examples/cablenet/cablenet.py"><code>examples/cablenet/cablenet.py</code></a>.</li>
 </ul>
-<div class="footnote">
-<hr />
-<ol>
-<li id="fn:cmame">
-<p>Equal-force and other force-controlled design tasks with the differentiable force density method are studied in Pastrana et al., <em>Differentiable force density method for the design of lightweight structures</em>, Computer Methods in Applied Mechanics and Engineering (2026). See the <a href="../../citation/">citation page</a>.&#160;<a class="footnote-backref" href="#fnref:cmame" title="Jump back to footnote 1 in the text">&#8617;</a></p>
-</li>
-<li id="fn:gs">
-<p>The constant chord-force truss is a classical graphic-statics exercise. See Zalewski and Allen, <em>Shaping Structures: Statics</em> (Wiley, 1998), and its use as an optimization benchmark in Beghini et al., <em>Structural optimization using graphic statics</em>, Structural and Multidisciplinary Optimization 49 (2014), 351–366, <a href="https://doi.org/10.1007/s00158-013-1002-x">doi:10.1007/s00158-013-1002-x</a>.&#160;<a class="footnote-backref" href="#fnref:gs" title="Jump back to footnote 2 in the text">&#8617;</a><a class="footnote-backref" href="#fnref2:gs" title="Jump back to footnote 2 in the text">&#8617;</a></p>
-</li>
-</ol>
-</div>
 
 
 

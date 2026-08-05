@@ -12,6 +12,12 @@ div.doc-contents:not(.first) {
   border-left: 4px solid rgba(230, 230, 230);
 }
 
+/* Center a standalone image: ![alt](img.png){ width="80%" .center } */
+img.center {
+  display: block;
+  margin-inline: auto;
+}
+
 /* Boxed signature headings for API entries. */
 h4.doc-heading,
 h5.doc-heading,
