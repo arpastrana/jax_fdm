@@ -10,7 +10,7 @@ readme = "README.md"
 license = "MIT"
 license-files = ["LICENSE"]
 authors = [{ name = "Rafael Pastrana", email = "arpastrana@princeton.edu" }]
-requires-python = ">=3.11,<3.13"
+requires-python = ">=3.11,<3.14"
 keywords = [
     "jax",
     "automatic-differentiation",
@@ -29,15 +29,16 @@ classifiers = [
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
     "Programming Language :: Python :: Implementation :: CPython",
 ]
 dynamic = ["version"]
 dependencies = [
     "jax[cpu]>=0.6.1",
-    "numpy>=2.0",
+    "numpy>=2.1",
     "compas>=2.15,<3.0",
-    "matplotlib>=3.8",
-    "scipy>=1.13",
+    "matplotlib>=3.9.2",
+    "scipy>=1.14.1",
     "jaxopt>=0.8.2",
     "equinox>=0.13.4",
     # lineax gained the Normal operator, used by the fixed-point adjoint, in 0.1.0.
