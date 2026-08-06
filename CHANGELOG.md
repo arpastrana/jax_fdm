@@ -14,6 +14,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Raised the `requires-python` ceiling from `<3.13` to `<3.14` and added the 3.13 classifier. Every dependency, extras included, resolves to a prebuilt 3.13 wheel on Linux, macOS and Windows. COMPAS runs there, but its upstream classifiers and CI stop at 3.12. Hopefully, it will be upgraded soon. The CI matrix now runs 3.11 and 3.13 on all three runner operating systems, plus 3.12 on Ubuntu.
+- Raised the `numpy` floor to `>=2.1`, `scipy` to `>=1.14.1` and `matplotlib` to `>=3.9.2`, the first releases of each with cp313 wheels. Every other floor was already 3.13-ready as declared. Checked with `uv pip compile --resolution lowest-direct --only-binary :all:`.
 - Renamed the arch example page from "Length Optimization" to "Volume Minimization", since what it minimizes is the load path rather than the segment lengths, which are the bounded constraint. Updated the nav entry and the cross-references in `shape_matching.md` and `howto/constrained_form_finding.md`.
 - Changed the README quick example from the 2D compression arch to the 3D tensile cable-net that opens `examples/cablenet/cablenet.py`, so the landing snippet form-finds an anticlastic surface with `FDMesh.from_meshgrid` instead of a hanging chain. Its "continue this example" pointer now targets the cable-net guide rather than the `more.md` list the example was promoted out of, and says goals rather than constraints, which is what the example actually adds.
 
