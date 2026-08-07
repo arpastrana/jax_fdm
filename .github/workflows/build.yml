@@ -7,11 +7,12 @@ on:
   pull_request:
     branches:
       - main
+  workflow_dispatch:
 
-# Cancel a PR's in-flight run when new commits are pushed to it. Never cancel a
-# main push (post-merge build), so it always runs to completion.
+# Cancel a PR's in-flight run when new commits are pushed to it. Every other
+# event gets a run-unique group, so a stuck run never holds up a later one.
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
+  group: ${{ github.workflow }}-${{ github.ref }}-${{ github.event_name == 'pull_request' && 'pr' || github.run_id }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
