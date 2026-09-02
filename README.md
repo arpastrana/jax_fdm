@@ -67,9 +67,15 @@ Install JAX FDM with a one-liner via `pip`:
 pip install jax-fdm
 ```
 
-This pulls in COMPAS 2.x and the other core dependencies automatically.
+Alternatively, add it to a [uv](https://docs.astral.sh/uv/) project:
+
+```bash
+uv add jax-fdm
+```
+
+Either pulls in COMPAS 2.x and the other core dependencies automatically.
 JAX FDM supports Python 3.11 to 3.13, and builds on JAX, SciPy, Equinox, and the COMPAS framework.
-For the optional extras (3D and notebook viewers, a 2D plotter) and platform notes for Windows, see the [installation guide](https://arpastrana.github.io/jax_fdm/latest/installation/).
+For the optional extras (3D and notebook viewers, a 2D plotter), platform notes for Windows, and the `uv sync` development setup, see the [installation guide](https://arpastrana.github.io/jax_fdm/latest/installation/).
 
 ## Quick example
 

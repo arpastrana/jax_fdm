@@ -20,10 +20,17 @@ To also get the visualization tools, the 3D desktop viewer (`compas_viewer`), th
 pip install "jax-fdm[viz]"
 ```
 
-If you manage your project with [uv](https://docs.astral.sh/uv/), the equivalent is:
+If you manage your project with [uv](https://docs.astral.sh/uv/), declare it as a dependency of that project instead:
 
 ```bash
 uv add "jax-fdm[viz]"
+```
+
+This records the dependency in your `pyproject.toml` and lock file.
+To install it into an existing virtual environment without a project, use uv's pip interface:
+
+```bash
+uv pip install "jax-fdm[viz]"
 ```
 
 ## Develop
