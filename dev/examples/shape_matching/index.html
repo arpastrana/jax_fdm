@@ -1471,7 +1471,7 @@ The approach is the same one that scales to any target: pick a shape, form-find 
 <span class="kn">from</span><span class="w"> </span><span class="nn">jax_fdm.visualization</span><span class="w"> </span><span class="kn">import</span> <span class="n">Viewer</span>
 
 
-<span class="n">network</span> <span class="o">=</span> <span class="n">FDNetwork</span><span class="o">.</span><span class="n">from_json</span><span class="p">(</span><span class="s2">&quot;data/json/creased_shell.json&quot;</span><span class="p">)</span>
+<span class="n">network</span> <span class="o">=</span> <span class="n">FDNetwork</span><span class="o">.</span><span class="n">from_json</span><span class="p">(</span><span class="s2">"data/json/creased_shell.json"</span><span class="p">)</span>
 
 <span class="n">viewer</span> <span class="o">=</span> <span class="n">Viewer</span><span class="p">()</span>
 <span class="n">viewer</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">network</span><span class="p">)</span>
@@ -1500,7 +1500,7 @@ We run one plain form-finding pass to see.</p>
 <span class="n">network_guess</span> <span class="o">=</span> <span class="n">fdm</span><span class="p">(</span><span class="n">network</span><span class="p">)</span>
 
 <span class="n">viewer</span> <span class="o">=</span> <span class="n">Viewer</span><span class="p">()</span>
-<span class="n">viewer</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">network_guess</span><span class="p">,</span> <span class="n">edgecolor</span><span class="o">=</span><span class="s2">&quot;fd&quot;</span><span class="p">)</span>
+<span class="n">viewer</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">network_guess</span><span class="p">,</span> <span class="n">edgecolor</span><span class="o">=</span><span class="s2">"fd"</span><span class="p">)</span>
 <span class="n">viewer</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">network</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="bp">cls</span><span class="o">=</span><span class="n">Network</span><span class="p">),</span> <span class="n">color</span><span class="o">=</span><span class="n">Color</span><span class="o">.</span><span class="n">grey</span><span class="p">())</span>
 
 <span class="n">viewer</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
@@ -1578,7 +1578,7 @@ Furthermore, none of them turned positive due to the optimization parameter boun
 <span class="n">forward</span> <span class="o">=</span> <span class="n">directed_hausdorff</span><span class="p">(</span><span class="n">matched</span><span class="p">,</span> <span class="n">target</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
 <span class="n">backward</span> <span class="o">=</span> <span class="n">directed_hausdorff</span><span class="p">(</span><span class="n">target</span><span class="p">,</span> <span class="n">matched</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
 <span class="n">hausdorff</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">forward</span><span class="p">,</span> <span class="n">backward</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Hausdorff distance: </span><span class="si">{</span><span class="n">hausdorff</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Hausdorff distance: </span><span class="si">{</span><span class="n">hausdorff</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 </code></pre></div>
 <p>To see the match, we draw the optimized network colored by its force densities next to the target as a plain wireframe, with a line from each node to the target point it was chasing.
 A fresh load of <code>creased_shell.json</code> gives us the target surface back as its own network to draw.</p>
@@ -1587,10 +1587,10 @@ A fresh load of <code>creased_shell.json</code> gives us the target surface back
 <span class="kn">from</span><span class="w"> </span><span class="nn">compas.geometry</span><span class="w"> </span><span class="kn">import</span> <span class="n">Line</span>
 
 
-<span class="n">network_target</span> <span class="o">=</span> <span class="n">FDNetwork</span><span class="o">.</span><span class="n">from_json</span><span class="p">(</span><span class="s2">&quot;data/json/creased_shell.json&quot;</span><span class="p">)</span>
+<span class="n">network_target</span> <span class="o">=</span> <span class="n">FDNetwork</span><span class="o">.</span><span class="n">from_json</span><span class="p">(</span><span class="s2">"data/json/creased_shell.json"</span><span class="p">)</span>
 
 <span class="n">viewer</span> <span class="o">=</span> <span class="n">Viewer</span><span class="p">()</span>
-<span class="n">viewer</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">network_matched</span><span class="p">,</span> <span class="n">edgecolor</span><span class="o">=</span><span class="s2">&quot;fd&quot;</span><span class="p">)</span>
+<span class="n">viewer</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">network_matched</span><span class="p">,</span> <span class="n">edgecolor</span><span class="o">=</span><span class="s2">"fd"</span><span class="p">)</span>
 <span class="n">viewer</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">network</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="bp">cls</span><span class="o">=</span><span class="n">Network</span><span class="p">),</span> <span class="n">color</span><span class="o">=</span><span class="n">Color</span><span class="o">.</span><span class="n">grey</span><span class="p">())</span>
 
 <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">network_matched</span><span class="o">.</span><span class="n">nodes</span><span class="p">():</span>

@@ -1668,13 +1668,13 @@ Another way to look at <code>PredictionError</code> is as an error term where th
 </code></pre></div>
 <p>Constraints are covered in <a href="../constraints/">constraints</a>.
 The fine print here is that they render more complex and potentially more expensive optimization problem, so apply them judiciously if you care about solution speed.
-Two things matter when composing a constrained form-finding problem with hard constraints: they are honored only by the optimizers that support them (<code>SLSQP</code>, <code>IPOPT</code>, and <code>TrustRegionConstrained</code>), and they are optional, leave them out for an unconstrained minimization.</p>
+Two things matter when composing a constrained form-finding problem with hard constraints: they are honored only by the optimizers that support them (<code>SLSQP</code> and <code>TrustRegionConstrained</code>), and they are optional, leave them out for an unconstrained minimization.</p>
 <h3 id="5-the-optimizer-searching-in-parameter-space">5. The optimizer: searching in parameter space<a class="headerlink" href="#5-the-optimizer-searching-in-parameter-space" title="Permanent link">¤</a></h3>
 <p>The <strong>optimizer</strong> is the algorithm that walks the parameter space toward a minimum.
 JAX FDM wraps a spread of them, sorted by what they can do:</p>
 <ul>
 <li><strong>Gradient-based, unconstrained</strong> — <code>LBFGSB</code>, <code>BFGS</code>, <code>GradientDescent</code>, and the second-order Newton and trust-region family (<code>NewtonCG</code>, <code>TruncatedNewton</code>, <code>TrustRegionNewton</code>, …). Fast, and the usual first choice when we have no hard constraints.</li>
-<li><strong>Gradient-based, constrained</strong> — <code>SLSQP</code>, <code>IPOPT</code>, <code>TrustRegionConstrained</code>. These are the ones that honor the constraints from ingredient 4.</li>
+<li><strong>Gradient-based, constrained</strong> — <code>SLSQP</code>, <code>TrustRegionConstrained</code>. These are the ones that honor the constraints from ingredient 4.</li>
 <li><strong>Gradient-free</strong> — <code>DifferentialEvolution</code>, <code>DualAnnealing</code>, <code>Powell</code>, <code>NelderMead</code>. Slower, but they need no gradients and can escape local minima, useful for rough or non-smooth objectives, or for benchmarking against their gradient-based counterparts.</li>
 </ul>
 <div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">jax_fdm.optimization</span><span class="w"> </span><span class="kn">import</span> <span class="n">SLSQP</span>

@@ -1565,9 +1565,9 @@ Let us go one step at a time.</p>
 
 <span class="k">class</span><span class="w"> </span><span class="nc">Goal</span><span class="p">(</span><span class="n">eqx</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
 
-    <span class="n">key</span><span class="p">:</span> <span class="n">Int</span><span class="p">[</span><span class="n">Array</span><span class="p">,</span> <span class="s2">&quot;...&quot;</span><span class="p">]</span>       <span class="c1"># which element (resolved to an index at evaluation time)</span>
-    <span class="n">target</span><span class="p">:</span> <span class="n">Float</span><span class="p">[</span><span class="n">Array</span><span class="p">,</span> <span class="s2">&quot;...&quot;</span><span class="p">]</span>  <span class="c1"># the value to drive the quantity toward</span>
-    <span class="n">weight</span><span class="p">:</span> <span class="n">Float</span><span class="p">[</span><span class="n">Array</span><span class="p">,</span> <span class="s2">&quot;...&quot;</span><span class="p">]</span>  <span class="c1"># how much this goal matters in the loss</span>
+    <span class="n">key</span><span class="p">:</span> <span class="n">Int</span><span class="p">[</span><span class="n">Array</span><span class="p">,</span> <span class="s2">"..."</span><span class="p">]</span>       <span class="c1"># which element (resolved to an index at evaluation time)</span>
+    <span class="n">target</span><span class="p">:</span> <span class="n">Float</span><span class="p">[</span><span class="n">Array</span><span class="p">,</span> <span class="s2">"..."</span><span class="p">]</span>  <span class="c1"># the value to drive the quantity toward</span>
+    <span class="n">weight</span><span class="p">:</span> <span class="n">Float</span><span class="p">[</span><span class="n">Array</span><span class="p">,</span> <span class="s2">"..."</span><span class="p">]</span>  <span class="c1"># how much this goal matters in the loss</span>
 </code></pre></div>
 <p>Those three fields are what we supply, and each has a destination:</p>
 <ul>
@@ -1589,26 +1589,26 @@ But that begs a question: what <em>is</em> an <code>EdgeLengthGoal</code>, and w
 
 
 <span class="k">class</span><span class="w"> </span><span class="nc">EdgeLengthGoal</span><span class="p">(</span><span class="n">EdgeGoal</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Drive an edge toward a target length.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">prediction</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">eq_state</span><span class="p">,</span> <span class="n">structure</span><span class="p">,</span> <span class="n">index</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        The edge&#39;s current length in the equilibrium state.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        The edge's current length in the equilibrium state.</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="n">eq_state</span><span class="o">.</span><span class="n">lengths</span><span class="p">[</span><span class="n">index</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">goal</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="n">prediction</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        The reference the prediction is compared against, here the target itself.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="n">target</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">eq_state</span><span class="p">,</span> <span class="n">structure</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Evaluate the goal at an equilibrium state.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">index</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">structure</span><span class="p">)</span>
         <span class="n">prediction</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">prediction</span><span class="p">(</span><span class="n">eq_state</span><span class="p">,</span> <span class="n">structure</span><span class="p">,</span> <span class="n">index</span><span class="p">)</span>
         <span class="n">goal</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">goal</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">target</span><span class="p">,</span> <span class="n">prediction</span><span class="p">)</span>

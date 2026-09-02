@@ -1567,8 +1567,8 @@
 
 
 <span class="n">loss</span> <span class="o">=</span> <span class="n">Loss</span><span class="p">(</span>
-    <span class="n">MeanSquaredError</span><span class="p">(</span><span class="n">goals_force</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;ForceTarget&quot;</span><span class="p">),</span>
-    <span class="n">PredictionError</span><span class="p">(</span><span class="n">goals_colinear</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;ColinearTopChord&quot;</span><span class="p">),</span>
+    <span class="n">MeanSquaredError</span><span class="p">(</span><span class="n">goals_force</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">"ForceTarget"</span><span class="p">),</span>
+    <span class="n">PredictionError</span><span class="p">(</span><span class="n">goals_colinear</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">"ColinearTopChord"</span><span class="p">),</span>
 <span class="p">)</span>
 </code></pre></div>
 <h2 id="after-one-force-one-cross-section">After: one force, one cross-section<a class="headerlink" href="#after-one-force-one-cross-section" title="Permanent link">¤</a></h2>
@@ -1604,7 +1604,7 @@
 
 <span class="n">viewer</span> <span class="o">=</span> <span class="n">Viewer</span><span class="p">()</span>
 <span class="n">viewer</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">network_guess</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="bp">cls</span><span class="o">=</span><span class="n">Network</span><span class="p">))</span>
-<span class="n">viewer</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">network_equalforce</span><span class="p">,</span> <span class="n">edgewidth</span><span class="o">=</span><span class="mf">0.05</span><span class="p">,</span> <span class="n">edgecolor</span><span class="o">=</span><span class="s2">&quot;force&quot;</span><span class="p">,</span> <span class="n">show_nodes</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="n">viewer</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">network_equalforce</span><span class="p">,</span> <span class="n">edgewidth</span><span class="o">=</span><span class="mf">0.05</span><span class="p">,</span> <span class="n">edgecolor</span><span class="o">=</span><span class="s2">"force"</span><span class="p">,</span> <span class="n">show_nodes</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 <span class="n">viewer</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
 </code></pre></div>
 <h2 id="where-to-next">Where to next<a class="headerlink" href="#where-to-next" title="Permanent link">¤</a></h2>

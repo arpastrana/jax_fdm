@@ -1508,9 +1508,9 @@ They are replaced by two bounds:</p>
 
 
 <span class="k">class</span><span class="w"> </span><span class="nc">NodeZCoordinateConstraint</span><span class="p">(</span><span class="n">NodeConstraint</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Bound the Z coordinate of a node between a lower and an upper value.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">constraint</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">eq_state</span><span class="p">,</span> <span class="n">structure</span><span class="p">,</span> <span class="n">index</span><span class="p">):</span>
         <span class="k">return</span> <span class="n">eq_state</span><span class="o">.</span><span class="n">xyz</span><span class="p">[</span><span class="n">index</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span>
@@ -1531,7 +1531,7 @@ The next section makes those differences precise.</p>
 <p>The differences are twofold.</p>
 <ul>
 <li><strong>Law needs an enforcer.</strong>
-Constraints are honored only by optimizers that support them, <code>SLSQP</code>, <code>IPOPT</code>, and <code>TrustRegionConstrained</code>.
+Constraints are honored only by optimizers that support them, <code>SLSQP</code> and <code>TrustRegionConstrained</code>.
 Hand constraints to any other optimizer and they are politely ignored.</li>
 <li><strong>One method, different name.</strong>
 Where a goal implements <code>prediction</code>, a constraint implements <code>constraint</code>.

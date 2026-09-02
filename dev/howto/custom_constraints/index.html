@@ -1423,9 +1423,9 @@ A custom constraint subclasses an element family (<code>EdgeConstraint</code>, <
 
 
 <span class="k">class</span><span class="w"> </span><span class="nc">EdgeForceMagnitudeConstraint</span><span class="p">(</span><span class="n">EdgeConstraint</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Bound the absolute internal force of an edge.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">constraint</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">eq_state</span><span class="p">,</span> <span class="n">structure</span><span class="p">,</span> <span class="n">index</span><span class="p">):</span>
         <span class="k">return</span> <span class="n">jnp</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">eq_state</span><span class="o">.</span><span class="n">forces</span><span class="p">[</span><span class="n">index</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span>
@@ -1458,15 +1458,15 @@ We simply write the vertex twin of that class:</p>
 
 
 <span class="k">class</span><span class="w"> </span><span class="nc">VertexZCoordinateConstraint</span><span class="p">(</span><span class="n">VertexConstraint</span><span class="p">,</span> <span class="n">NodeZCoordinateConstraint</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Bound the Z coordinate of a vertex between a lower and an upper value.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 </code></pre></div>
 <p>The only requirements are a docstring and an inheritance list with <code>VertexConstraint</code> first, so the vertex key resolution wins the method resolution order.
 The <code>constraint</code> body comes along for the ride, as well as all the other computation machinery inherited from the parent classes.
 The constraint above is real though: it is the library's own <code>VertexZCoordinateConstraint</code>, verbatim, and the whole vertex coordinate family (<code>VertexXCoordinateConstraint</code>, <code>VertexYCoordinateConstraint</code>, <code>VertexZCoordinateConstraint</code>) is built this exact way. A <code>Vertex*</code> constraint with genuinely new behavior, such as <code>VertexCurvatureConstraint</code>, writes its own <code>constraint</code> body instead, exactly as the <a href="#recipe-a-custom-constraint">custom recipe above</a> does.</p>
 <h2 id="summary">Summary<a class="headerlink" href="#summary" title="Permanent link">¤</a></h2>
-<p>Customized constraints can join the differentiable machinery of JAX FDM as a first-class citizen, honored by the constraint-aware optimizers (<code>SLSQP</code>, <code>IPOPT</code>, and <code>TrustRegionConstrained</code>) exactly like the built-in bounds.
+<p>Customized constraints can join the differentiable machinery of JAX FDM as a first-class citizen, honored by the constraint-aware optimizers (<code>SLSQP</code> and <code>TrustRegionConstrained</code>) exactly like the built-in bounds.
 Remember to contribute if you think your future self might find your custom constraint useful ;)</p>
 
 

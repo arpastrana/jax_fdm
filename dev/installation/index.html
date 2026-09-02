@@ -357,10 +357,21 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#optional-extras" class="md-nav__link">
+  <a href="#install" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Optional extras
+        Install
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#develop" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Develop
       
     </span>
   </a>
@@ -1345,10 +1356,21 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#optional-extras" class="md-nav__link">
+  <a href="#install" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Optional extras
+        Install
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#develop" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Develop
       
     </span>
   </a>
@@ -1387,19 +1409,36 @@
 
 
 <h1 id="installation">Installation<a class="headerlink" href="#installation" title="Permanent link">¤</a></h1>
-<p>Install JAX FDM with a one-liner via <code>pip</code>:</p>
+<p>JAX FDM supports Python 3.11 to 3.13 on Linux, macOS and Windows.
+It builds on JAX, SciPy, Equinox, and the COMPAS framework.
+See the complete <a href="https://github.com/arpastrana/jax_fdm/blob/main/pyproject.toml">dependency list</a>.</p>
+<h2 id="install">Install<a class="headerlink" href="#install" title="Permanent link">¤</a></h2>
+<p>Install JAX FDM from PyPI with a one-liner via <code>pip</code>:</p>
 <div class="highlight"><pre><span></span><code>pip<span class="w"> </span>install<span class="w"> </span>jax-fdm
 </code></pre></div>
-<p>This pulls in COMPAS 2.x and the other core dependencies automatically.
-JAX FDM supports Python 3.11 to 3.13, and builds on JAX, SciPy, Equinox, and the COMPAS framework.
-See the complete <a href="https://github.com/arpastrana/jax_fdm/blob/main/pyproject.toml">dependency list</a>.</p>
-<h2 id="optional-extras">Optional extras<a class="headerlink" href="#optional-extras" title="Permanent link">¤</a></h2>
-<p>JAX FDM declares optional dependency groups you can install from a source checkout with <code>pip</code>:</p>
-<div class="highlight"><pre><span></span><code>pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </span><span class="s2">&quot;.[viz]&quot;</span><span class="w">    </span><span class="c1"># 3D desktop viewer (compas_viewer), notebook viewer (compas_notebook) and 2D plotter (compas_plotter)</span>
-pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </span><span class="s2">&quot;.[ipopt]&quot;</span><span class="w">  </span><span class="c1"># the IPOPT interior-point optimizer (cyipopt)</span>
-pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </span><span class="s2">&quot;.[dev]&quot;</span><span class="w">    </span><span class="c1"># development tools (ruff, pytest, pre-commit, build, bump-my-version)</span>
+<p>This pulls in COMPAS 2.x and the other core dependencies automatically.</p>
+<p>To also get the visualization tools, the 3D desktop viewer (<code>compas_viewer</code>), the notebook viewer (<code>compas_notebook</code>) and the 2D plotter (<code>compas_plotter</code>), ask for the <code>viz</code> extra:</p>
+<div class="highlight"><pre><span></span><code>pip<span class="w"> </span>install<span class="w"> </span><span class="s2">"jax-fdm[viz]"</span>
 </code></pre></div>
-<p>The <code>ipopt</code> extra might need a system Ipopt library available on your machine.</p>
+<p>If you manage your project with <a href="https://docs.astral.sh/uv/">uv</a>, the equivalent is:</p>
+<div class="highlight"><pre><span></span><code>uv<span class="w"> </span>add<span class="w"> </span><span class="s2">"jax-fdm[viz]"</span>
+</code></pre></div>
+<h2 id="develop">Develop<a class="headerlink" href="#develop" title="Permanent link">¤</a></h2>
+<p>To work on JAX FDM itself, clone the repository and let <code>uv</code> set up the environment.
+It installs a matching Python, the package in editable mode, the visualization extra and every development tool, pinned by the committed <code>uv.lock</code>, in one step:</p>
+<div class="highlight"><pre><span></span><code>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/arpastrana/jax_fdm.git
+<span class="nb">cd</span><span class="w"> </span>jax_fdm
+uv<span class="w"> </span>sync<span class="w"> </span>--all-groups<span class="w"> </span>--extra<span class="w"> </span>viz
+uv<span class="w"> </span>run<span class="w"> </span>invoke<span class="w"> </span><span class="nb">test</span>
+</code></pre></div>
+<p>Prefix commands with <code>uv run</code> and they execute inside the project environment, with no activation step.
+A bare <code>uv sync</code> installs only the runtime dependencies, the same as <code>pip install -e .</code>.
+Contributor tooling lives in <code>[dependency-groups]</code> and is never published to PyPI, so a plain <code>pip install jax-fdm</code> never drags it in.</p>
+<p>If you prefer <code>pip</code>, create and activate a virtual environment on Python 3.11 to 3.13 and install the same groups by name.
+This needs <code>pip</code> 25.1 or newer:</p>
+<div class="highlight"><pre><span></span><code>pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </span><span class="s2">".[viz]"</span><span class="w"> </span>--group<span class="w"> </span>dev<span class="w"> </span>--group<span class="w"> </span>docs<span class="w"> </span>--group<span class="w"> </span>typecheck
+</code></pre></div>
+<p>See the <a href="https://github.com/arpastrana/jax_fdm/blob/main/CONTRIBUTING.md">contributing guide</a> for the rest of the workflow.</p>
 <h2 id="are-you-a-windows-user">Are you a Windows user?<a class="headerlink" href="#are-you-a-windows-user" title="Permanent link">¤</a></h2>
 <p>JAX now provides official native CPU wheels for Windows, so JAX FDM should work directly.
 On Windows you may also need to install the <a href="https://learn.microsoft.com/en-us/cpp/windows/latest-supported-vc-redist">Microsoft Visual Studio 2019 Redistributable</a>.</p>

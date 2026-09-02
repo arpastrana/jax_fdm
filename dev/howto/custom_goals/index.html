@@ -1492,9 +1492,9 @@ A magnitude goal that ignores the sign is not in the bank, so we write one from 
 
 
 <span class="k">class</span><span class="w"> </span><span class="nc">EdgeForceMagnitudeGoal</span><span class="p">(</span><span class="n">EdgeGoal</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Drive the absolute internal force of an edge toward a target value.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">prediction</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">eq_state</span><span class="p">,</span> <span class="n">structure</span><span class="p">,</span> <span class="n">index</span><span class="p">):</span>
         <span class="k">return</span> <span class="n">jnp</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">eq_state</span><span class="o">.</span><span class="n">forces</span><span class="p">[</span><span class="n">index</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span>
@@ -1549,16 +1549,16 @@ Here we pull a node onto a vertical line through a target point, so the node end
 
 
 <span class="k">class</span><span class="w"> </span><span class="nc">NodeVerticalLineGoal</span><span class="p">(</span><span class="n">NodeGoal</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Pull a node onto the vertical line through a target point.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">prediction</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">eq_state</span><span class="p">,</span> <span class="n">structure</span><span class="p">,</span> <span class="n">index</span><span class="p">):</span>
         <span class="k">return</span> <span class="n">eq_state</span><span class="o">.</span><span class="n">xyz</span><span class="p">[</span><span class="n">index</span><span class="p">,</span> <span class="p">:]</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">goal</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="n">prediction</span><span class="p">):</span>
-        <span class="n">target_xy</span> <span class="o">=</span> <span class="n">target</span><span class="p">[:</span><span class="mi">2</span><span class="p">]</span>        <span class="c1"># the line&#39;s x and y</span>
-        <span class="n">node_z</span> <span class="o">=</span> <span class="n">prediction</span><span class="p">[</span><span class="mi">2</span><span class="p">:]</span>       <span class="c1"># the node&#39;s own height</span>
+        <span class="n">target_xy</span> <span class="o">=</span> <span class="n">target</span><span class="p">[:</span><span class="mi">2</span><span class="p">]</span>        <span class="c1"># the line's x and y</span>
+        <span class="n">node_z</span> <span class="o">=</span> <span class="n">prediction</span><span class="p">[</span><span class="mi">2</span><span class="p">:]</span>       <span class="c1"># the node's own height</span>
 
         <span class="k">return</span> <span class="n">jnp</span><span class="o">.</span><span class="n">concatenate</span><span class="p">((</span><span class="n">target_xy</span><span class="p">,</span> <span class="n">node_z</span><span class="p">))</span>
 </code></pre></div>
@@ -1579,9 +1579,9 @@ An aggregate goal judges a <em>group</em> as a whole, such as the total length o
 
 
 <span class="k">class</span><span class="w"> </span><span class="nc">EdgesTotalLengthGoal</span><span class="p">(</span><span class="n">EdgeGoal</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Drive the combined length of a group of edges toward a target value.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="n">is_aggregate</span> <span class="o">=</span> <span class="kc">True</span>
 
@@ -1607,9 +1607,9 @@ We write its vertex twin, and the twin is gloriously boring:</p>
 
 
 <span class="k">class</span><span class="w"> </span><span class="nc">VertexVerticalLineGoal</span><span class="p">(</span><span class="n">VertexGoal</span><span class="p">,</span> <span class="n">NodeVerticalLineGoal</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Pull a mesh vertex onto the vertical line through a target point.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 </code></pre></div>
 <p>No methods and no body.
 Just a docstring and an inheritance list, with <code>VertexGoal</code> first so the vertex key resolution wins the method resolution order.
@@ -1631,11 +1631,11 @@ It is a fourth field, stored on the goal alongside the other three.</p>
 
 
 <span class="k">class</span><span class="w"> </span><span class="nc">EdgeAngleGoal</span><span class="p">(</span><span class="n">EdgeGoal</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Drive the angle between an edge and a reference vector toward a target.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
-    <span class="n">vector</span><span class="p">:</span> <span class="n">Float</span><span class="p">[</span><span class="n">Array</span><span class="p">,</span> <span class="s2">&quot;3&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">eqx</span><span class="o">.</span><span class="n">field</span><span class="p">(</span><span class="n">kw_only</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">vector</span><span class="p">:</span> <span class="n">Float</span><span class="p">[</span><span class="n">Array</span><span class="p">,</span> <span class="s2">"3"</span><span class="p">]</span> <span class="o">=</span> <span class="n">eqx</span><span class="o">.</span><span class="n">field</span><span class="p">(</span><span class="n">kw_only</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="n">weight</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">vector</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">key</span> <span class="o">=</span> <span class="n">key</span>

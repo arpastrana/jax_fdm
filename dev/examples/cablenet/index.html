@@ -1555,8 +1555,8 @@ We anchor all four, then lift one <em>diagonal</em> pair to 5 meters and leave t
 
 <span class="n">corners</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">mesh</span><span class="o">.</span><span class="n">vertices_where</span><span class="p">(</span><span class="n">vertex_degree</span><span class="o">=</span><span class="mi">2</span><span class="p">))</span>
 <span class="n">mesh</span><span class="o">.</span><span class="n">vertices_supports</span><span class="p">(</span><span class="n">corners</span><span class="p">)</span>
-<span class="n">mesh</span><span class="o">.</span><span class="n">vertex_attribute</span><span class="p">(</span><span class="n">corners</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="s2">&quot;z&quot;</span><span class="p">,</span> <span class="n">support_height</span><span class="p">)</span>
-<span class="n">mesh</span><span class="o">.</span><span class="n">vertex_attribute</span><span class="p">(</span><span class="n">corners</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="s2">&quot;z&quot;</span><span class="p">,</span> <span class="n">support_height</span><span class="p">)</span>
+<span class="n">mesh</span><span class="o">.</span><span class="n">vertex_attribute</span><span class="p">(</span><span class="n">corners</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="s2">"z"</span><span class="p">,</span> <span class="n">support_height</span><span class="p">)</span>
+<span class="n">mesh</span><span class="o">.</span><span class="n">vertex_attribute</span><span class="p">(</span><span class="n">corners</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="s2">"z"</span><span class="p">,</span> <span class="n">support_height</span><span class="p">)</span>
 </code></pre></div>
 <p>Lifting a diagonal pair, rather than an adjacent one, is what makes the net anticlastic because it curves up along one diagonal and down along the other, saddle-like.
 That double curvature helps keep a tensile surface taut.</p>
@@ -1648,8 +1648,8 @@ Naming the terms is worth the keystrokes, since the optimizer reports them separ
 
 
 <span class="n">loss</span> <span class="o">=</span> <span class="n">Loss</span><span class="p">(</span>
-    <span class="n">MeanSquaredError</span><span class="p">(</span><span class="n">goals_force</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;BoundaryForce&quot;</span><span class="p">),</span>
-    <span class="n">MeanSquaredError</span><span class="p">(</span><span class="n">goals_length</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;InteriorLength&quot;</span><span class="p">),</span>
+    <span class="n">MeanSquaredError</span><span class="p">(</span><span class="n">goals_force</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">"BoundaryForce"</span><span class="p">),</span>
+    <span class="n">MeanSquaredError</span><span class="p">(</span><span class="n">goals_length</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">"InteriorLength"</span><span class="p">),</span>
 <span class="p">)</span>
 </code></pre></div>
 <h2 id="after-prestressed-and-buildable">After: prestressed and buildable<a class="headerlink" href="#after-prestressed-and-buildable" title="Permanent link">¤</a></h2>
@@ -1766,8 +1766,8 @@ Their sum is a design objective rather than a physical quantity, and <code>alpha
 <h2 id="reading-the-result">Reading the result<a class="headerlink" href="#reading-the-result" title="Permanent link">¤</a></h2>
 <p><code>print_stats</code> reports the usual per-edge quantities, and takes an <code>extra_stats</code> mapping so we can watch precisely the two numbers this design is about, rather than reading them out of the global ranges.</p>
 <div class="highlight"><pre><span></span><code><span class="n">extra_stats</span> <span class="o">=</span> <span class="p">{</span>
-    <span class="s2">&quot;Boundary force&quot;</span><span class="p">:</span> <span class="p">[</span><span class="n">cablenet_prestressed</span><span class="o">.</span><span class="n">edge_force</span><span class="p">(</span><span class="n">e</span><span class="p">)</span> <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">edges_boundary</span><span class="p">],</span>
-    <span class="s2">&quot;Interior length&quot;</span><span class="p">:</span> <span class="p">[</span><span class="n">cablenet_prestressed</span><span class="o">.</span><span class="n">edge_length</span><span class="p">(</span><span class="n">e</span><span class="p">)</span> <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">edges_interior</span><span class="p">],</span>
+    <span class="s2">"Boundary force"</span><span class="p">:</span> <span class="p">[</span><span class="n">cablenet_prestressed</span><span class="o">.</span><span class="n">edge_force</span><span class="p">(</span><span class="n">e</span><span class="p">)</span> <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">edges_boundary</span><span class="p">],</span>
+    <span class="s2">"Interior length"</span><span class="p">:</span> <span class="p">[</span><span class="n">cablenet_prestressed</span><span class="o">.</span><span class="n">edge_length</span><span class="p">(</span><span class="n">e</span><span class="p">)</span> <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">edges_interior</span><span class="p">],</span>
 <span class="p">}</span>
 
 <span class="n">cablenet_prestressed</span><span class="o">.</span><span class="n">print_stats</span><span class="p">(</span><span class="n">extra_stats</span><span class="p">)</span>
@@ -1783,7 +1783,7 @@ Note that since that width scale is remapped within each net, thicknesses are wo
 
 <span class="n">viewer</span><span class="o">.</span><span class="n">add</span><span class="p">(</span>
     <span class="n">cablenet_prestressed</span><span class="p">,</span>
-    <span class="n">edgecolor</span><span class="o">=</span><span class="s2">&quot;force&quot;</span><span class="p">,</span>
+    <span class="n">edgecolor</span><span class="o">=</span><span class="s2">"force"</span><span class="p">,</span>
     <span class="n">show_vertices</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
     <span class="n">reactionscale</span><span class="o">=</span><span class="mf">0.05</span><span class="p">,</span>
     <span class="n">faceopacity</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span>
