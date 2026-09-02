@@ -9,17 +9,17 @@
 repos:
   - repo: local
     hooks:
-      # Both hooks run the ruff pinned in uv.lock, so the hook and `uv run ruff` never disagree.
+      # Both hooks run the ruff pinned in uv.lock (pulled in on demand), so hook and `uv run ruff` agree.
       - id: ruff
         name: ruff
-        entry: uv run ruff check --fix --force-exclude
+        entry: uv run --group dev ruff check --fix --force-exclude
         language: system
         types_or: [python, pyi]
         require_serial: true
       # Format the code, including snippets inside docstrings.
       - id: ruff-format
         name: ruff format
-        entry: uv run ruff format --force-exclude
+        entry: uv run --group dev ruff format --force-exclude
         language: system
         types_or: [python, pyi]
         require_serial: true

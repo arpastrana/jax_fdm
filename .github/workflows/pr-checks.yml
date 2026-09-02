@@ -38,6 +38,7 @@ jobs:
       - name: Set up uv
         uses: astral-sh/setup-uv@v10.0.1
         with:
+          python-version: '3.12'
           enable-cache: true
       - name: Install package
         run: uv sync --locked --no-default-groups --group typecheck --extra viz

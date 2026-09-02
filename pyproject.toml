@@ -80,8 +80,8 @@ docs = [
 ]
 
 [tool.uv]
-# A bare `uv sync` gives a complete contributor environment.
-default-groups = ["dev", "docs", "typecheck"]
+# A bare `uv sync` installs only the runtime dependencies, like `pip install -e .`.
+default-groups = []
 
 [tool.setuptools.dynamic]
 version = { attr = "jax_fdm.__version__" }

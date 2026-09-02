@@ -32,6 +32,7 @@ jobs:
       - name: Set up uv
         uses: astral-sh/setup-uv@v10.0.1
         with:
+          python-version: '3.12'
           enable-cache: true
 
       # PySide6 (via compas_viewer) links against system GL libraries that the
@@ -68,6 +69,7 @@ jobs:
       - name: Set up uv
         uses: astral-sh/setup-uv@v10.0.1
         with:
+          python-version: '3.12'
           enable-cache: true
 
       - name: Install GL libraries

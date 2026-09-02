@@ -9,10 +9,10 @@ In short, this is how that works.
 
 1. Fork [the repository](https://github.com/arpastrana/jax_fdm) and clone the fork.
 2. Install [uv](https://docs.astral.sh/uv/getting-started/installation/) if you do not have it.
-3. Create the development environment. This installs Python 3.12, the package in editable mode, the visualization extra and every development tool, pinned by `uv.lock`:
+3. Create the development environment. This installs a supported Python, the package in editable mode, the visualization extra and every development tool, pinned by `uv.lock`:
 
    ```bash
-   uv sync --extra viz
+   uv sync --all-groups --extra viz
    ```
 
    Prefix commands with `uv run` to execute them inside that environment, no activation needed.

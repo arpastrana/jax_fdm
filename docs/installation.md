@@ -34,11 +34,12 @@ It installs a matching Python, the package in editable mode, the visualization e
 ```bash
 git clone https://github.com/arpastrana/jax_fdm.git
 cd jax_fdm
-uv sync --extra viz
+uv sync --all-groups --extra viz
 uv run invoke test
 ```
 
 Prefix commands with `uv run` and they execute inside the project environment, with no activation step.
+A bare `uv sync` installs only the runtime dependencies, the same as `pip install -e .`.
 Contributor tooling lives in `[dependency-groups]` and is never published to PyPI, so a plain `pip install jax-fdm` never drags it in.
 
 If you prefer `pip`, create and activate a virtual environment on Python 3.12 or 3.13 and install the same groups by name.
