@@ -1,6 +1,6 @@
 # Installation
 
-JAX FDM supports Python 3.12 and 3.13 on Linux, macOS and Windows.
+JAX FDM supports Python 3.11 to 3.13 on Linux, macOS and Windows.
 It builds on JAX, SciPy, Equinox, and the COMPAS framework.
 See the complete [dependency list](https://github.com/arpastrana/jax_fdm/blob/main/pyproject.toml).
 
@@ -42,7 +42,7 @@ Prefix commands with `uv run` and they execute inside the project environment, w
 A bare `uv sync` installs only the runtime dependencies, the same as `pip install -e .`.
 Contributor tooling lives in `[dependency-groups]` and is never published to PyPI, so a plain `pip install jax-fdm` never drags it in.
 
-If you prefer `pip`, create and activate a virtual environment on Python 3.12 or 3.13 and install the same groups by name.
+If you prefer `pip`, create and activate a virtual environment on Python 3.11 to 3.13 and install the same groups by name.
 This needs `pip` 25.1 or newer:
 
 ```bash

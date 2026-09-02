@@ -16,7 +16,7 @@ In short, this is how that works.
    ```
 
    Prefix commands with `uv run` to execute them inside that environment, no activation needed.
-   If you prefer `pip`, create a virtual environment on Python 3.12 or 3.13 and run `pip install -e ".[viz]" --group dev --group docs --group typecheck` (pip 25.1 or newer).
+   If you prefer `pip`, create a virtual environment on Python 3.11 to 3.13 and run `pip install -e ".[viz]" --group dev --group docs --group typecheck` (pip 25.1 or newer).
 
 4. Install the pre-commit hooks (they run `ruff` and basic file checks on each commit):
 
