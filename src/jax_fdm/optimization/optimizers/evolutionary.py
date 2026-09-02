@@ -81,8 +81,6 @@ class DifferentialEvolution(GradientFreeOptimizer):
             result = vmap(func, in_axes=(1))(x)
             return result
 
-        # scipy 1.18's stub renamed `seed` to `rng`, but the installed runtime
-        # still accepts `seed`; the min supported scipy predates `rng`
         return differential_evolution(
             func=func_vmap if self.vectorized else func,
             x0=opt_problem.x0,
@@ -91,7 +89,7 @@ class DifferentialEvolution(GradientFreeOptimizer):
             callback=opt_problem.callback,
             vectorized=self.vectorized,
             polish=False,
-            seed=self.seed,  # pyright: ignore[reportCallIssue]
+            rng=self.seed,
             popsize=self.popsize,
             maxiter=opt_problem.options["maxiter"],
             disp=opt_problem.options["disp"],
@@ -149,8 +147,6 @@ class DualAnnealing(GradientFreeOptimizer):
         ) -> Float[Array, ""]:
             return fun(x)
 
-        # scipy 1.18's stub renamed `seed` to `rng`, but the installed runtime
-        # still accepts `seed`; the min supported scipy predates `rng`
         return dual_annealing(
             func=func,
             x0=opt_problem.x0,
@@ -159,5 +155,5 @@ class DualAnnealing(GradientFreeOptimizer):
             no_local_search=self.no_local_search,
             maxiter=opt_problem.options["maxiter"],
             args=(None,),
-            seed=self.seed,  # pyright: ignore[reportCallIssue]
+            rng=self.seed,
         )

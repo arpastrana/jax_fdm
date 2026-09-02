@@ -16,6 +16,7 @@ from jax import value_and_grad
 from jaxtyping import Array
 from jaxtyping import Float
 from scipy.optimize import Bounds
+from scipy.optimize import NonlinearConstraint
 from scipy.optimize import OptimizeResult
 from scipy.optimize import minimize
 
@@ -61,9 +62,9 @@ class OptProblem:
     options: dict[str, Any]
     jac: bool | Callable = False
     hess: Callable | None = None
-    tol: float | None = None
-    bounds: Bounds | list[tuple[float, float]] | None = None
-    constraints: list[Any] = field(default_factory=list)
+    tol: float = 1e-6
+    bounds: Bounds | None = None
+    constraints: list[NonlinearConstraint] = field(default_factory=list)
     callback: Callable | None = None
 
     def to_kwargs(self) -> dict[str, Any]:
@@ -147,7 +148,7 @@ class Optimizer:
         model: EquilibriumModel,
         structure: EquilibriumStructure,
         params_opt: Float[Array, "parameters"],
-    ) -> list[Any] | None:
+    ) -> list[NonlinearConstraint] | None:
         """
         Convert constraints into the form the SciPy backend expects.
 
@@ -390,10 +391,10 @@ class Optimizer:
             print(f"\tHessian warmup time: {(perf_counter() - start_time):.4} seconds")
 
         # constraints
-        constraints = list(constraints or [])
+        constraints_scipy: list[NonlinearConstraint] = []
         if constraints:
             start_time = perf_counter()
-            constraints = self.constraints(constraints, model, structure, x) or []
+            constraints_scipy = self.constraints(constraints, model, structure, x) or []
             print(
                 f"\tConstraints warmup time: "
                 f"{(perf_counter() - start_time):.4} seconds",
@@ -410,7 +411,7 @@ class Optimizer:
             x0=x,
             tol=tol,
             bounds=bounds,
-            constraints=constraints,
+            constraints=constraints_scipy,
             callback=callback,
             options=options,
         )
@@ -514,12 +515,9 @@ class Optimizer:
     # Parameters
     # ==========================================================================
 
-    def parameters_bounds(self) -> Bounds | list[tuple[float, float]]:
+    def parameters_bounds(self) -> Bounds:
         """
         Return the lower and upper bounds of the optimization parameters.
-
-        Most backends consume a scipy ``Bounds`` object; ``IPOPT`` overrides this
-        to return a list of ``(low, high)`` pairs instead.
         """
         # bounds_low/up are ndarrays; Bounds also accepts array-likes despite
         # its float-only stub

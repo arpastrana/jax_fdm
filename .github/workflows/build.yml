@@ -7,6 +7,9 @@ on:
   pull_request:
     branches:
       - main
+  # Weekly unlocked run against the newest dependencies, an early warning for upstream breakage.
+  schedule:
+    - cron: '0 6 * * 1'
   workflow_dispatch:
 
 # Cancel a PR's in-flight run when new commits are pushed to it. Every other
@@ -14,6 +17,10 @@ on:
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}-${{ github.event_name == 'pull_request' && 'pr' || github.run_id }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+env:
+  # The sync step decides the environment; a run step must not re-sync default groups.
+  UV_NO_SYNC: "1"
 
 jobs:
   build-package:
@@ -32,10 +39,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v5
+      - name: Set up uv and Python ${{ matrix.python-version }}
+        uses: astral-sh/setup-uv@v10.0.1
         with:
           python-version: ${{ matrix.python-version }}
+          enable-cache: true
 
       # PySide6 (via compas_viewer) links against system GL libraries that the
       # headless Linux runners do not ship.
@@ -43,11 +51,16 @@ jobs:
         if: runner.os == 'Linux'
         run: sudo apt-get update && sudo apt-get install -y libegl1 libopengl0
 
+      # --locked fails if uv.lock drifted from pyproject.toml; the weekly schedule resolves fresh instead.
       - name: Install package
-        run: pip install -e ".[dev,viz]"
+        run: uv sync ${{ github.event_name == 'schedule' && '--upgrade' || '--locked' }} --no-default-groups --group dev --extra viz
+
+      - name: Show what moved relative to uv.lock
+        if: github.event_name == 'schedule'
+        run: git --no-pager diff --stat uv.lock
 
       - name: Lint with ruff
-        run: ruff check .
+        run: uv run ruff check .
 
       # The suite recompiles the same jitted equilibrium models every run, so
       # the runtime is XLA-compilation-bound. Persist the compiled kernels
@@ -59,7 +72,7 @@ jobs:
         id: jax
         shell: bash
         run: |
-          echo "version=$(python -c 'import jax; print(jax.__version__)')" >> "$GITHUB_OUTPUT"
+          echo "version=$(uv run python -c 'import jax; print(jax.__version__)')" >> "$GITHUB_OUTPUT"
           echo "JAX_COMPILATION_CACHE_DIR=$RUNNER_TEMP/jax_fdm_jit_cache" >> "$GITHUB_ENV"
 
       - name: Cache compiled XLA kernels
@@ -69,4 +82,4 @@ jobs:
           key: jax-jit-${{ matrix.os }}-py${{ matrix.python-version }}-jax${{ steps.jax.outputs.version }}
 
       - name: Run tests
-        run: pytest
+        run: uv run pytest

@@ -2,7 +2,6 @@
 
 from collections.abc import Sequence
 from typing import TYPE_CHECKING
-from typing import Any
 
 import jax.numpy as jnp
 from jax import jacfwd
@@ -41,7 +40,7 @@ class ConstrainedOptimizer(Optimizer):
         model: EquilibriumModel,
         structure: EquilibriumStructure,
         params_opt: Float[Array, "parameters"],
-    ) -> list[Any] | None:
+    ) -> list[NonlinearConstraint] | None:
         """
         Convert constraints into SciPy ``NonlinearConstraint`` objects.
 
@@ -65,8 +64,6 @@ class ConstrainedOptimizer(Optimizer):
         Notes
         -----
         Each constraint carries a jitted value function and a forward-mode Jacobian.
-        Subclasses may return a different container: ``IPOPT`` returns cyipopt
-        constraint dictionaries instead.
         """
         if not constraints:
             return

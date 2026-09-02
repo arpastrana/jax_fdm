@@ -75,16 +75,6 @@ replay an optimization history.
 
 ---
 
-## Interior-point optimizers
-
-Requires the `ipopt` extra.
-
-::: jax_fdm.optimization.optimizers.ipopt.IPOPT
-    options:
-      heading_level: 3
-
----
-
 ## Gradient-free optimizers
 
 ::: jax_fdm.optimization.optimizers.gradient_free.NelderMead

@@ -8,30 +8,33 @@ We accept code contributions through pull requests.
 In short, this is how that works.
 
 1. Fork [the repository](https://github.com/arpastrana/jax_fdm) and clone the fork.
-2. Create a virtual environment using your tool of choice (e.g. `virtualenv`, `conda`, etc).
-3. Install development dependencies:
+2. Install [uv](https://docs.astral.sh/uv/getting-started/installation/) if you do not have it.
+3. Create the development environment. This installs a supported Python, the package in editable mode, the visualization extra and every development tool, pinned by `uv.lock`:
 
    ```bash
-   pip install -e ".[dev]"
+   uv sync --all-groups --extra viz
    ```
+
+   Prefix commands with `uv run` to execute them inside that environment, no activation needed.
+   If you prefer `pip`, create a virtual environment on Python 3.11 to 3.13 and run `pip install -e ".[viz]" --group dev --group docs --group typecheck` (pip 25.1 or newer).
 
 4. Install the pre-commit hooks (they run `ruff` and basic file checks on each commit):
 
    ```bash
-   pre-commit install
+   uv run pre-commit install
    ```
 
 5. Make sure all tests pass:
 
    ```bash
-   invoke test
+   uv run invoke test
    ```
 
 6. Start making your changes to the **main** branch (or branch off of it).
 7. Make sure all tests still pass:
 
    ```bash
-   invoke test
+   uv run invoke test
    ```
 
 8. Add yourself to the *Contributors* section of `AUTHORS.md`.
@@ -39,7 +42,7 @@ In short, this is how that works.
 10. Create a [pull request](https://help.github.com/articles/about-pull-requests/) through the GitHub website.
 
 During development, use [pyinvoke](http://docs.pyinvoke.org/) tasks on the
-command line to ease recurring operations:
+command line to ease recurring operations (prefix each with `uv run`):
 
 * `invoke clean`: Clean all generated artifacts.
 * `invoke lint`: Check the coding style with ruff.

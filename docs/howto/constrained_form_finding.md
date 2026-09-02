@@ -117,7 +117,7 @@ constraints = [EdgeLengthConstraint(edge, 0.75, 1.0) for edge in network.edges()
 
 Constraints are covered in [constraints](constraints.md).
 The fine print here is that they render more complex and potentially more expensive optimization problem, so apply them judiciously if you care about solution speed.
-Two things matter when composing a constrained form-finding problem with hard constraints: they are honored only by the optimizers that support them (`SLSQP`, `IPOPT`, and `TrustRegionConstrained`), and they are optional, leave them out for an unconstrained minimization.
+Two things matter when composing a constrained form-finding problem with hard constraints: they are honored only by the optimizers that support them (`SLSQP` and `TrustRegionConstrained`), and they are optional, leave them out for an unconstrained minimization.
 
 ### 5. The optimizer: searching in parameter space
 
@@ -125,7 +125,7 @@ The **optimizer** is the algorithm that walks the parameter space toward a minim
 JAX FDM wraps a spread of them, sorted by what they can do:
 
 - **Gradient-based, unconstrained** — `LBFGSB`, `BFGS`, `GradientDescent`, and the second-order Newton and trust-region family (`NewtonCG`, `TruncatedNewton`, `TrustRegionNewton`, …). Fast, and the usual first choice when we have no hard constraints.
-- **Gradient-based, constrained** — `SLSQP`, `IPOPT`, `TrustRegionConstrained`. These are the ones that honor the constraints from ingredient 4.
+- **Gradient-based, constrained** — `SLSQP`, `TrustRegionConstrained`. These are the ones that honor the constraints from ingredient 4.
 - **Gradient-free** — `DifferentialEvolution`, `DualAnnealing`, `Powell`, `NelderMead`. Slower, but they need no gradients and can escape local minima, useful for rough or non-smooth objectives, or for benchmarking against their gradient-based counterparts.
 
 ```python

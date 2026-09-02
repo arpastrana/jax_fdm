@@ -19,6 +19,8 @@ concurrency:
 
 env:
   JAX_PLATFORMS: cpu
+  # The sync step decides the environment; a run step must not re-sync default groups.
+  UV_NO_SYNC: "1"
 
 jobs:
   build:
@@ -27,10 +29,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v10.0.1
         with:
           python-version: '3.12'
+          enable-cache: true
 
       # PySide6 (via compas_viewer) links against system GL libraries that the
       # headless Linux runners do not ship.
@@ -38,10 +41,10 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y libegl1 libopengl0
 
       - name: Install package
-        run: pip install ".[viz,docs]"
+        run: uv sync --locked --no-default-groups --group docs --extra viz
 
       - name: Build docs
-        run: mkdocs build --strict
+        run: uv run mkdocs build --strict
 
   deploy:
     if: github.event_name != 'pull_request'
@@ -63,27 +66,28 @@ jobs:
           git config user.name github-actions[bot]
           git config user.email 41898282+github-actions[bot]@users.noreply.github.com
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v10.0.1
         with:
           python-version: '3.12'
+          enable-cache: true
 
       - name: Install GL libraries
         run: sudo apt-get update && sudo apt-get install -y libegl1 libopengl0
 
       - name: Install package
-        run: pip install ".[viz,docs]"
+        run: uv sync --locked --no-default-groups --group docs --extra viz
 
       # Pushes to main update the rolling "dev" docs; a release tag vX.Y.Z
       # publishes the "X.Y.Z" version and points the "latest" alias (the
       # site's default landing version) at it.
       - name: Deploy dev docs
         if: github.ref == 'refs/heads/main'
-        run: mike deploy --push --update-aliases dev
+        run: uv run mike deploy --push --update-aliases dev
 
       - name: Deploy release docs
         if: startsWith(github.ref, 'refs/tags/v')
         run: |
           VERSION=${GITHUB_REF#refs/tags/v}
-          mike deploy --push --update-aliases "$VERSION" latest
-          mike set-default --push latest
+          uv run mike deploy --push --update-aliases "$VERSION" latest
+          uv run mike set-default --push latest
