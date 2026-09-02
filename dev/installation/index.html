@@ -1420,8 +1420,12 @@ See the complete <a href="https://github.com/arpastrana/jax_fdm/blob/main/pyproj
 <p>To also get the visualization tools, the 3D desktop viewer (<code>compas_viewer</code>), the notebook viewer (<code>compas_notebook</code>) and the 2D plotter (<code>compas_plotter</code>), ask for the <code>viz</code> extra:</p>
 <div class="highlight"><pre><span></span><code>pip<span class="w"> </span>install<span class="w"> </span><span class="s2">"jax-fdm[viz]"</span>
 </code></pre></div>
-<p>If you manage your project with <a href="https://docs.astral.sh/uv/">uv</a>, the equivalent is:</p>
+<p>If you manage your project with <a href="https://docs.astral.sh/uv/">uv</a>, declare it as a dependency of that project instead:</p>
 <div class="highlight"><pre><span></span><code>uv<span class="w"> </span>add<span class="w"> </span><span class="s2">"jax-fdm[viz]"</span>
+</code></pre></div>
+<p>This records the dependency in your <code>pyproject.toml</code> and lock file.
+To install it into an existing virtual environment without a project, use uv's pip interface:</p>
+<div class="highlight"><pre><span></span><code>uv<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span><span class="s2">"jax-fdm[viz]"</span>
 </code></pre></div>
 <h2 id="develop">Develop<a class="headerlink" href="#develop" title="Permanent link">¤</a></h2>
 <p>To work on JAX FDM itself, clone the repository and let <code>uv</code> set up the environment.
