@@ -279,6 +279,14 @@ class FDMeshType:
     def edge_midpoint(self, edge: tuple[int, int]) -> list[float]:
         raise NotImplementedError
 
+    # Same re-narrowing: the two endpoints of an edge are two xyz points.
+    def edge_coordinates(
+        self,
+        edge: tuple[int, int],
+        axes: str = "xyz",
+    ) -> tuple[list[float], list[float]]:
+        raise NotImplementedError
+
     @overload
     def faces(self, data: Literal[False] = False) -> Iterator[int]: ...
     @overload
@@ -449,4 +457,12 @@ class FDNetworkType:
     # COMPAS infers a broad union from its untyped point math; the midpoint
     # of an edge is always a single xyz point, so re-narrow to list[float].
     def edge_midpoint(self, edge: tuple[int, int]) -> list[float]:
+        raise NotImplementedError
+
+    # Same re-narrowing: the two endpoints of an edge are two xyz points.
+    def edge_coordinates(
+        self,
+        edge: tuple[int, int],
+        axes: str = "xyz",
+    ) -> tuple[list[float], list[float]]:
         raise NotImplementedError

@@ -1,30 +1,37 @@
 # Pre-commit hooks for jax_fdm. Install with:
 #
-#     pre-commit install
+#     uv run pre-commit install
 #
 # Run against all files with:
 #
-#     pre-commit run --all-files
+#     uv run pre-commit run --all-files
 #
 repos:
-  - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.15.20
+  - repo: local
     hooks:
-      # Lint and auto-fix (imports, pycodestyle, pyflakes). Mirrors `ruff check`
-      # in CI.
+      # Both hooks run the ruff pinned in uv.lock, so the hook and `uv run ruff` never disagree.
       - id: ruff
-        args: [--fix]
+        name: ruff
+        entry: uv run ruff check --fix --force-exclude
+        language: system
+        types_or: [python, pyi]
+        require_serial: true
       # Format the code, including snippets inside docstrings.
       - id: ruff-format
+        name: ruff format
+        entry: uv run ruff format --force-exclude
+        language: system
+        types_or: [python, pyi]
+        require_serial: true
 
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v6.0.0
     hooks:
-      # Data fixtures under data/ are excluded so the JSON files stay byte-stable.
+      # data/ JSON fixtures and exported SVG assets stay byte-stable, so both are excluded.
       - id: trailing-whitespace
-        exclude: ^data/
+        exclude: ^data/|\.svg$
       - id: end-of-file-fixer
-        exclude: ^data/
+        exclude: ^data/|\.svg$
       # --unsafe checks YAML syntax without constructing custom tags; mkdocs.yml
       # uses !!python/name:... tags (pymdownx fences) that the default loader
       # cannot build.

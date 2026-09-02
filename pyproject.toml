@@ -10,7 +10,7 @@ readme = "README.md"
 license = "MIT"
 license-files = ["LICENSE"]
 authors = [{ name = "Rafael Pastrana", email = "arpastrana@princeton.edu" }]
-requires-python = ">=3.11,<3.14"
+requires-python = ">=3.12,<3.14"
 keywords = [
     "jax",
     "automatic-differentiation",
@@ -27,7 +27,6 @@ classifiers = [
     "Operating System :: Microsoft :: Windows",
     "Programming Language :: Python",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
     "Programming Language :: Python :: Implementation :: CPython",
@@ -38,7 +37,7 @@ dependencies = [
     "numpy>=2.1",
     "compas>=2.15,<3.0",
     "matplotlib>=3.9.2",
-    "scipy>=1.14.1",
+    "scipy>=1.15",
     "jaxopt>=0.8.2",
     "equinox>=0.13.4",
     # lineax gained the Normal operator, used by the fixed-point adjoint, in 0.1.0.
@@ -53,17 +52,16 @@ Repository = "https://github.com/arpastrana/jax_fdm"
 Documentation = "https://arpastrana.github.io/jax_fdm/"
 
 [project.optional-dependencies]
-# 3D viewer, plotter, and notebook viewer for the COMPAS 2.x scene system.
+# The only user-facing extra: 3D viewer, plotter and notebook viewer for the COMPAS 2.x scene system.
 viz = ["compas_viewer>=2.0", "compas_notebook>=0.11", "pythreejs>=2.1", "compas_plotter>=1.0.1"]
-# Interior-point optimizer. cyipopt needs a system Ipopt library.
-ipopt = ["cyipopt"]
+
+# Contributor tooling (PEP 735). Never published to PyPI, so users cannot pull it in by accident.
+[dependency-groups]
 dev = [
-    "ruff",
+    "ruff==0.15.20",
     "pytest >=3.2",
     "pytest-xdist",
     "bump-my-version",
-    "build",
-    "twine",
     "invoke >=0.14",
     "pre-commit",
 ]
@@ -81,6 +79,10 @@ docs = [
     "mike==2.2.0",
 ]
 
+[tool.uv]
+# A bare `uv sync` gives a complete contributor environment.
+default-groups = ["dev", "docs", "typecheck"]
+
 [tool.setuptools.dynamic]
 version = { attr = "jax_fdm.__version__" }
 
@@ -89,7 +91,6 @@ where = ["src"]
 
 [tool.ruff]
 line-length = 88
-target-version = "py311"
 # The Colab notebooks carry !pip magics and notebook-style cells. Matched by the
 # root .ipynb glob so the visualization/notebooks source subpackage, which holds
 # only .py files, stays linted.
@@ -181,7 +182,7 @@ include = ["src/jax_fdm", "examples"]
 # compas_notebook) that the typecheck CI job does not install.
 exclude = ["**/__pycache__", "src/jax_fdm/visualization/notebooks"]
 # Validate against the minimum supported Python, independent of the CI runner.
-pythonVersion = "3.11"
+pythonVersion = "3.12"
 typeCheckingMode = "basic"
 # compas, jaxopt and lineax ship no py.typed marker.
 reportMissingModuleSource = "none"

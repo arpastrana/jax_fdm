@@ -12,6 +12,10 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+env:
+  # The sync step decides the environment; a run step must not re-sync default groups.
+  UV_NO_SYNC: "1"
+
 jobs:
   build:
     name: Check Actions
@@ -31,12 +35,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Set up Python
-        uses: actions/setup-python@v5
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v10
         with:
-          python-version: '3.12'
-          cache: 'pip'
+          enable-cache: true
       - name: Install package
-        run: pip install -e ".[typecheck,viz]"
+        run: uv sync --locked --no-default-groups --group typecheck --extra viz
       - name: Run pyright
-        run: pyright
+        run: uv run pyright

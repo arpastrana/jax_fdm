@@ -40,9 +40,9 @@ def has_backend(name: str) -> bool:
     Check whether an optional backend package is installed.
 
     Several backends are optional dependencies: the 3D viewer (``compas_viewer``),
-    the notebook viewer (``compas_notebook``), the 2D plotter (``compas_plotter``)
-    and the interior-point optimizer (``cyipopt``). Their absence should degrade
-    gracefully instead of breaking ``import jax_fdm``.
+    the notebook viewer (``compas_notebook``) and the 2D plotter
+    (``compas_plotter``). Their absence should degrade gracefully instead of
+    breaking ``import jax_fdm``.
 
     Parameters
     ----------

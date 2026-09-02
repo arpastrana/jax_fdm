@@ -82,7 +82,7 @@ A constraint lives the [same two-phase life as a goal](goals.md#goals-in-action)
 The differences are twofold.
 
 - **Law needs an enforcer.**
-Constraints are honored only by optimizers that support them, `SLSQP`, `IPOPT`, and `TrustRegionConstrained`.
+Constraints are honored only by optimizers that support them, `SLSQP` and `TrustRegionConstrained`.
 Hand constraints to any other optimizer and they are politely ignored.
 - **One method, different name.**
 Where a goal implements `prediction`, a constraint implements `constraint`.

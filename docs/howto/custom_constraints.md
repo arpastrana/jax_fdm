@@ -71,5 +71,5 @@ The constraint above is real though: it is the library's own `VertexZCoordinateC
 
 ## Summary
 
-Customized constraints can join the differentiable machinery of JAX FDM as a first-class citizen, honored by the constraint-aware optimizers (`SLSQP`, `IPOPT`, and `TrustRegionConstrained`) exactly like the built-in bounds.
+Customized constraints can join the differentiable machinery of JAX FDM as a first-class citizen, honored by the constraint-aware optimizers (`SLSQP` and `TrustRegionConstrained`) exactly like the built-in bounds.
 Remember to contribute if you think your future self might find your custom constraint useful ;)

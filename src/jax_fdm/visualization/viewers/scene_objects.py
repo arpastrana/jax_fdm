@@ -256,8 +256,6 @@ class FDEdgeObject(FDObject):
         parent = self.fd_parent
         start, end = parent.datastructure.edge_coordinates(self.key)
 
-        # edge_coordinates always returns plain xyz lists, not compas attribute
-        # views.
         return cylinders_buffer(
             [start],
             [end],
